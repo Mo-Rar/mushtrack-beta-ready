@@ -96,10 +96,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 18px;
-  background: #f5e8e0;
-  font-size: 0.78rem;
-  color: #7a5c50;
+  padding: 5px 14px;
+  background: #18120e;
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.01em;
+}
+
+.auth-user-bar .text-button {
+  color: #fc4c02;
+  font-size: 0.7rem;
+  font-weight: 700;
 }
 
 :root {
@@ -391,15 +398,52 @@ label,
 
 .training-card,
 .plan-summary,
-.insight-panel,
 .race-card,
-.profile-hero,
-.next-race-card article {
+.profile-hero {
   background: linear-gradient(135deg, #fc4c02 0%, #ff6a00 60%, #ff8c00 100%);
   color: #fff;
   border-radius: 18px;
   padding: 18px;
+}
+
+/* Agenda card — sombre avec accent vert/bleu, différent des cartes orange */
+.next-race-card article {
+  background: linear-gradient(135deg, #0f1c2e 0%, #1a2d42 100%);
+  color: #fff;
+  border-radius: 18px;
+  padding: 18px;
+  border-left: 4px solid #3b82f6;
   box-shadow: 0 8px 28px rgba(252, 76, 2, 0.32);
+}
+
+/* Coach card — sombre avec accent orange */
+.insight-panel {
+  background: linear-gradient(135deg, #18120e 0%, #2e1e14 100%);
+  color: #fff;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 8px 24px rgba(10, 6, 4, 0.28);
+  border-left: 4px solid #fc4c02;
+}
+
+.insight-panel span {
+  color: #fc4c02;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.insight-panel strong {
+  display: block;
+  margin: 5px 0;
+  font-size: 1.25rem;
+  color: #fff;
+}
+
+.insight-panel p {
+  color: rgba(255,255,255,0.62);
+  line-height: 1.35;
 }
 
 body.mode-summer .training-card,
@@ -427,7 +471,6 @@ body.mode-summer .profile-hero {
   margin-bottom: 20px;
 }
 
-.insight-panel span,
 .race-card span,
 .profile-hero span,
 .next-race-card span {
@@ -437,7 +480,6 @@ body.mode-summer .profile-hero {
   text-transform: uppercase;
 }
 
-.insight-panel strong,
 .race-card strong,
 .profile-hero strong,
 .next-race-card strong {
@@ -446,7 +488,6 @@ body.mode-summer .profile-hero {
   font-size: 1.35rem;
 }
 
-.insight-panel p,
 .race-card p,
 .profile-hero p,
 .next-race-card p {
@@ -1514,12 +1555,12 @@ textarea {
 
 .bottom-nav button {
   flex: 1 0 0;
-  min-width: 52px;
-  min-height: 54px;
+  min-width: 0;
+  min-height: 50px;
   border-radius: 0;
   background: transparent;
   color: rgba(255,255,255,0.42);
-  font-size: 0.6rem;
+  font-size: 0.52rem;
   font-weight: 700;
   display: flex;
   flex-direction: column;
@@ -1532,8 +1573,8 @@ textarea {
 }
 
 .bottom-nav button svg {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   stroke-width: 1.8;
 }
 
