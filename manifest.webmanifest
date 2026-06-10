@@ -1,0 +1,17 @@
+{
+  "name": "MushTrack",
+  "short_name": "MushTrack",
+  "description": "Carnet GPS, chiens, teams et entrainement pour mushers.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fff7f1",
+  "theme_color": "#fc4c02",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

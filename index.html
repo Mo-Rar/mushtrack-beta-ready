@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MushTrack</title>
+    <meta name="theme-color" content="#fc4c02" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
+  </head>
+  <body>
+    <main class="phone-shell">
+      <section class="screen active" id="dashboard">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Saison active</p>
+            <h1>MushTrack</h1>
+          </div>
+          <button class="round-button" data-go="settings" aria-label="Reglages">MT</button>
+        </header>
+
+        <section class="season-hero">
+          <div class="hero-text">
+            <div class="mode-switch" aria-label="Mode saison">
+              <button class="active" data-mode="winter" type="button">Hiver</button>
+              <button data-mode="summer" type="button">Ete</button>
+            </div>
+            <span>Objectif saison</span>
+            <strong><span data-bind="seasonKm">0</span> / <span data-bind="goalKm">1000</span> km</strong>
+            <small data-bind="goalMessage">Plan en cours de calcul</small>
+            <p class="brand-slogan">Mush vient de marche : avancer avec son chien.</p>
+          </div>
+          <div class="progress-track">
+            <span data-bind-style="progress"></span>
+          </div>
+        </section>
+
+        <section class="quick-stats">
+          <article>
+            <span>Semaine</span>
+            <strong><span data-bind="weekKm">0</span> km</strong>
+          </article>
+          <article>
+            <span>Moyenne</span>
+            <strong><span data-bind="avgSpeed">0.0</span> km/h</strong>
+          </article>
+          <article>
+            <span>Sorties</span>
+            <strong data-bind="runCount">0</strong>
+          </article>
+          <article>
+            <span>Chiens</span>
+            <strong data-bind="dogCount">0</strong>
+          </article>
+        </section>
+
+        <section class="insight-panel">
+          <div>
+            <span>Coach MushTrack</span>
+            <strong data-bind="coachTitle">Equipe prete</strong>
+            <p data-bind="coachText">Charge stable, bonne progression.</p>
+          </div>
+          <button class="primary-button" data-go="analytics">Analyse</button>
+        </section>
+
+        <section class="next-race-card" data-list="nextRace"></section>
+
+        <section class="section-heading">
+          <h2>Prochaine seance</h2>
+          <span data-bind="raceType">Mid-distance</span>
+        </section>
+        <article class="training-card">
+          <div>
+            <strong data-bind="nextWorkoutTitle">Endurance progressive</strong>
+            <p data-bind="nextWorkoutText">18 km faciles, allure stable.</p>
+          </div>
+          <button class="primary-button" data-go="record">Start</button>
+        </article>
+
+      </section>
+
+      <section class="screen" id="record">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">GPS live</p>
+            <h1>Sortie</h1>
+          </div>
+          <button class="round-button" data-go="dashboard" aria-label="Fermer">X</button>
+        </header>
+
+        <section class="live-stats">
+          <article>
+            <span>Distance</span>
+            <strong id="distance">0.00</strong>
+            <small>km</small>
+          </article>
+          <article>
+            <span>Duree</span>
+            <strong id="duration">00:00</strong>
+            <small>min</small>
+          </article>
+          <article>
+            <span>Vitesse</span>
+            <strong id="speed">0.0</strong>
+            <small>km/h</small>
+          </article>
+        </section>
+        
+        <div id="map"></div>
+        <p class="gps-status" id="gps-status">Recherche de ta position...</p>
+
+        <section class="section-heading compact">
+          <h2>Team du jour</h2>
+          <button class="text-button" data-go="dogs">Modifier</button>
+        </section>
+        <section class="team-strip" data-list="selectedTeam"></section>
+
+        <div class="record-actions">
+          <button class="record-button" id="record-button">Demarrer</button>
+          <button class="save-button" id="finish-run">Terminer</button>
+        </div>
+
+        <section class="record-form hidden" id="post-run-form">
+          <div class="section-heading compact">
+            <h2>Bilan apres entrainement</h2>
+            <span>Auto + notes</span>
+          </div>
+          <div class="form-grid">
+            <label>
+              Type detecte
+              <input id="runType" readonly />
+            </label>
+            <label>
+              Meteo auto
+              <input id="weather" readonly />
+            </label>
+          </div>
+          <div class="form-grid">
+            <label>
+              Energie
+              <select id="energy">
+                <option value="5">5 - tres bonne</option>
+                <option value="4" selected>4 - bonne</option>
+                <option value="3">3 - moyenne</option>
+                <option value="2">2 - basse</option>
+                <option value="1">1 - mauvaise</option>
+              </select>
+            </label>
+            <label>
+              Recuperation
+              <select id="recovery">
+                <option>Excellente</option>
+                <option selected>Bonne</option>
+                <option>A surveiller</option>
+                <option>Difficile</option>
+              </select>
+            </label>
+          </div>
+          <div class="check-row">
+            <label><input id="paw-check" type="checkbox" checked /> Pattes controlees</label>
+            <label><input id="hydrated" type="checkbox" checked /> Hydratation OK</label>
+          </div>
+          <label>
+            Notes
+            <textarea id="notes" rows="3">Chiens calmes, bonne traction.</textarea>
+          </label>
+          <button class="primary-button" id="save-run" type="button">Enregistrer la sortie</button>
+        </section>
+
+        <section class="section-heading spaced">
+          <h2>Historique activites</h2>
+          <button id="manual-run-button" class="text-button" type="button">Ajouter</button>
+        </section>
+        <section class="run-list gps-history" data-list="runs"></section>
+      </section>
+
+      <section class="screen" id="team">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Attelage</p>
+            <h1>Team</h1>
+          </div>
+          <button class="round-button" data-go="record" aria-label="Retour">OK</button>
+        </header>
+
+        <section class="team-layout">
+          <article>
+            <span>Leader</span>
+            <div data-team-slot="Leader"></div>
+          </article>
+          <article>
+            <span>Swing</span>
+            <div data-team-slot="Swing"></div>
+          </article>
+          <article>
+            <span>Team</span>
+            <div data-team-slot="Team"></div>
+          </article>
+          <article>
+            <span>Wheel</span>
+            <div data-team-slot="Wheel"></div>
+          </article>
+        </section>
+
+        <section class="section-heading spaced">
+          <h2>Chiens disponibles</h2>
+          <span data-bind="selectedCount">0 selectionnes</span>
+        </section>
+        <section class="dog-picker" data-list="dogPicker"></section>
+      </section>
+
+      <section class="screen" id="dogs">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Carnet</p>
+            <h1>Chiens</h1>
+          </div>
+          <button class="round-button" data-action="toggleDogForm" aria-label="Ajouter">+</button>
+        </header>
+
+        <form class="add-form hidden" id="dog-form">
+          <label>
+            Nom
+            <input id="dog-name" placeholder="Ex: Nova" />
+          </label>
+          <label>
+            Poste
+            <select id="dog-role">
+              <option>Leader</option>
+              <option>Swing</option>
+              <option>Team</option>
+              <option>Wheel</option>
+            </select>
+          </label>
+          <div class="form-grid">
+            <label>
+              Date de naissance
+              <input id="dog-birthdate" type="date" />
+            </label>
+            <label>
+              Poids
+              <input id="dog-weight" type="number" min="1" step="0.5" placeholder="22" />
+            </label>
+          </div>
+          <div class="form-grid">
+            <label>
+              Harnais
+              <input id="dog-harness" placeholder="Ex: M, Zero DC" />
+            </label>
+            <label>
+              Suivi veto
+              <input id="dog-vet" placeholder="Vaccin, controle, dent..." />
+            </label>
+          </div>
+          <label>
+            Point de vigilance
+            <input id="dog-limitation" placeholder="Patte sensible, repos, digestion..." />
+          </label>
+          <label>
+            Note
+            <input id="dog-note" placeholder="Energie, sante, caractere" />
+          </label>
+          <button class="primary-button" id="dog-submit" type="submit">Ajouter</button>
+        </form>
+
+        <section class="section-heading spaced">
+          <h2>Team active</h2>
+          <span data-bind="selectedCount">0 selectionnes</span>
+        </section>
+        <section class="team-layout">
+          <article>
+            <span>Leader</span>
+            <div data-team-slot="Leader"></div>
+          </article>
+          <article>
+            <span>Swing</span>
+            <div data-team-slot="Swing"></div>
+          </article>
+          <article>
+            <span>Team</span>
+            <div data-team-slot="Team"></div>
+          </article>
+          <article>
+            <span>Wheel</span>
+            <div data-team-slot="Wheel"></div>
+          </article>
+        </section>
+
+        <section class="section-heading spaced">
+          <h2>Selection attelage</h2>
+          <span>Touche pour ajouter/enlever</span>
+        </section>
+        <section class="dog-picker" data-list="dogPicker"></section>
+
+        <section class="dog-list" data-list="dogs"></section>
+      </section>
+
+      <section class="screen" id="dog-detail">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Profil chien</p>
+            <h1 data-bind="detailDogName">Chien</h1>
+          </div>
+          <button class="round-button" data-go="dogs" aria-label="Retour">OK</button>
+        </header>
+
+        <section class="dog-profile" data-list="dogProfile"></section>
+      </section>
+
+      <section class="screen" id="analytics">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Analyse saison</p>
+            <h1>Stats</h1>
+          </div>
+          <button class="round-button" data-go="dashboard" aria-label="Retour">OK</button>
+        </header>
+
+        <section class="chart-panel">
+          <div class="chart-bars" data-list="weeklyChart"></div>
+        </section>
+
+        <section class="section-heading spaced">
+          <h2>Sante team</h2>
+          <span>Decision entrainement</span>
+        </section>
+        <section class="team-health" data-list="teamHealth"></section>
+
+        <section class="section-heading spaced">
+          <h2>Charge chiens</h2>
+          <span>7 derniers jours</span>
+        </section>
+        <section class="load-list" data-list="dogLoads"></section>
+
+        <section class="section-heading spaced">
+          <h2>Alertes</h2>
+          <span>Coach</span>
+        </section>
+        <section class="alert-list" data-list="alerts"></section>
+      </section>
+
+      <section class="screen" id="plan">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Preparation</p>
+            <h1>Plan</h1>
+          </div>
+          <button class="round-button" data-go="settings" aria-label="Objectif">Edit</button>
+        </header>
+
+        <section class="plan-summary">
+          <span>Course preparee</span>
+          <strong><span data-bind="raceType">Mid-distance</span> - <span data-bind="raceKm">80</span> km</strong>
+          <p data-bind="planIntro">Le plan augmente doucement le volume, avec une semaine legere toutes les 4 semaines.</p>
+        </section>
+
+        <section class="plan-insights" data-list="planInsights"></section>
+
+        <section class="week-list" data-list="planWeeks"></section>
+      </section>
+
+      <section class="screen" id="race">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Mode competition</p>
+            <h1>Course</h1>
+          </div>
+          <button class="round-button" data-go="settings" aria-label="Reglages">Edit</button>
+        </header>
+
+        <section class="race-card">
+          <span>Objectif principal</span>
+          <strong><span data-bind="raceType">Mid-distance</span> - <span data-bind="raceKm">80</span> km</strong>
+          <p data-bind="raceReadiness">Preparation en cours.</p>
+        </section>
+
+        <section class="race-search-panel">
+          <div class="section-heading">
+            <h2>Radar courses</h2>
+            <span>International</span>
+          </div>
+          <p class="radar-intro">Recherche multi-sources pour reperer les courses officielles, calendriers publics et evenements a verifier.</p>
+          <div class="race-search-controls">
+            <label>
+              Pays / region / nom
+              <input id="race-search-region" placeholder="Ex: Suede, Canada, Amundsen, Jura" />
+            </label>
+            <label>
+              Type
+              <select id="race-search-type">
+                <option value="">Tout</option>
+                <option>Sprint</option>
+                <option>Mid-distance</option>
+                <option>Longue distance</option>
+                <option>Canicross</option>
+                <option>Dryland</option>
+                <option>Skijoring</option>
+              </select>
+            </label>
+            <label>
+              Distance
+              <select id="race-search-distance">
+                <option value="">Toutes</option>
+                <option value="short">Courte</option>
+                <option value="medium">Moyenne</option>
+                <option value="long">Longue</option>
+              </select>
+            </label>
+            <label>
+              Surface
+              <select id="race-search-surface">
+                <option value="">Toutes</option>
+                <option>Neige</option>
+                <option>Dryland</option>
+                <option>Trail</option>
+              </select>
+            </label>
+            <label>
+              Fiabilite
+              <select id="race-search-reliability">
+                <option value="">Toutes</option>
+                <option value="official">Confirmee officielle</option>
+                <option value="calendar">Calendrier public</option>
+                <option value="watch">A surveiller</option>
+                <option value="user">Signalee</option>
+              </select>
+            </label>
+          </div>
+          <button class="secondary-button" id="missing-race-button" type="button">Signaler une course manquante</button>
+          <section class="race-search-results" data-list="raceSearchResults"></section>
+        </section>
+      </section>
+
+      <section class="screen" id="agenda">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Courses & sorties</p>
+            <h1>Agenda</h1>
+          </div>
+          <button class="round-button" data-action="toggleRaceForm" aria-label="Ajouter">+</button>
+        </header>
+
+        <form class="add-form hidden" id="race-form">
+          <label>
+            Nom de la course
+            <input id="agenda-name" placeholder="Ex: Trophee des Neiges" />
+          </label>
+          <div class="form-grid">
+            <label>
+              Date
+              <input id="agenda-date" type="date" />
+            </label>
+            <label>
+              Distance
+              <input id="agenda-distance" type="number" min="1" step="1" placeholder="80" />
+            </label>
+          </div>
+          <div class="form-grid">
+            <label>
+              Type
+              <select id="agenda-type">
+                <option>Sprint</option>
+                <option>Mid-distance</option>
+                <option>Longue distance</option>
+                <option>Canicross</option>
+                <option>Dryland</option>
+              </select>
+            </label>
+            <label>
+              Priorite
+              <select id="agenda-priority">
+                <option>A</option>
+                <option>B</option>
+                <option>C</option>
+              </select>
+            </label>
+          </div>
+          <label>
+            Lieu
+            <input id="agenda-location" placeholder="Village, station, pays" />
+          </label>
+          <label>
+            Notes
+            <textarea id="agenda-notes" rows="3" placeholder="Objectif, team prevue, logistique..."></textarea>
+          </label>
+          <button class="primary-button" type="submit">Ajouter la course</button>
+        </form>
+
+        <section class="agenda-list" data-list="agenda"></section>
+
+        <section class="section-heading spaced">
+          <h2>Sorties ouvertes</h2>
+          <button class="text-button" data-action="toggleOpenRunForm" type="button">Creer</button>
+        </section>
+
+        <form class="add-form hidden" id="open-run-form">
+          <label>
+            Titre
+            <input id="open-run-title" placeholder="Ex: Canicross tranquille Jura" />
+          </label>
+          <div class="form-grid">
+            <label>
+              Date
+              <input id="open-run-date" type="date" />
+            </label>
+            <label>
+              Distance
+              <input id="open-run-distance" type="number" min="1" step="1" placeholder="8" />
+            </label>
+          </div>
+          <div class="form-grid">
+            <label>
+              Discipline
+              <select id="open-run-type">
+                <option>Canicross</option>
+                <option>Marche</option>
+                <option>Cani-rando</option>
+                <option>Dryland</option>
+                <option>Traineau</option>
+                <option>Skijoring</option>
+              </select>
+            </label>
+            <label>
+              Niveau
+              <select id="open-run-level">
+                <option>Tranquille</option>
+                <option>Debutant</option>
+                <option>Intermediaire</option>
+                <option>Sportif</option>
+                <option>Competition</option>
+              </select>
+            </label>
+          </div>
+          <label>
+            Lieu
+            <input id="open-run-location" placeholder="Village, parking, region" />
+          </label>
+          <label>
+            Notes
+            <textarea id="open-run-notes" rows="3" placeholder="Chien debutant accepte, rythme calme, frontale..."></textarea>
+          </label>
+          <button class="primary-button" type="submit">Publier la sortie</button>
+        </form>
+
+        <section class="open-run-list" data-list="openRuns"></section>
+      </section>
+
+      <section class="screen" id="advice">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Sante & performance</p>
+            <h1>Conseils</h1>
+          </div>
+          <button class="round-button" data-go="dashboard" aria-label="Retour">OK</button>
+        </header>
+
+        <section class="advice-list">
+          <article class="advice-card important">
+            <span>Mis a jour web</span>
+            <h2>Conseils recents pour chiens sportifs</h2>
+            <p>Selection de conseils issus de sources veterinaires et sportives, mise a jour le 26.05.2026. Ces infos completent le suivi MushTrack mais ne remplacent jamais un veterinaire.</p>
+          </article>
+
+          <section class="web-advice-list" data-list="webAdvice"></section>
+
+          <article class="advice-card important">
+            <span>Important</span>
+            <h2>Signaux d'alerte</h2>
+            <p>Stoppe la seance si un chien boite, respire difficilement, devient faible, confus, tres anxieux, vomit, chancelle, bave beaucoup ou presente des gencives seches/collantes. En cas de doute, veterinaire.</p>
+          </article>
+
+          <article class="advice-card">
+            <span>Hydratation</span>
+            <h2>Avant, pendant, apres</h2>
+            <p>Propose de l'eau avant la sortie, puis de petites pauses regulieres. Apres l'effort, laisse boire par petites quantites. En ete, prevois toujours eau, gamelle souple et zones d'ombre.</p>
+          </article>
+
+          <article class="advice-card">
+            <span>Chaleur</span>
+            <h2>Mode ete / canicross</h2>
+            <p>Travaille tot le matin ou tard le soir. Evite bitume chaud, soleil direct et grosses intensites. Si le sol brule ta main apres quelques secondes, il peut bruler les coussinets.</p>
+          </article>
+
+          <article class="advice-card">
+            <span>Refroidissement</span>
+            <h2>Apprendre le head dunk</h2>
+            <p>Pour les chiens sportifs, l'apprentissage volontaire de mettre la tete dans l'eau peut aider a refroidir rapidement apres effort. A travailler calmement, sans forcer, et seulement avec un chien lucide.</p>
+          </article>
+
+          <article class="advice-card">
+            <span>Pattes</span>
+            <h2>Coussinets et ongles</h2>
+            <p>Controle les coussinets avant et apres chaque sortie : fissures, rougeurs, coupures, glace entre les doigts. Garde les ongles courts et note les petites blessures dans la fiche chien.</p>
+          </article>
+
+          <article class="advice-card">
+            <span>Recuperation</span>
+            <h2>Le travail continue apres</h2>
+            <p>Prevois retour au calme, observation de la demarche, repas adapte, repos sec et confortable. Une semaine plus legere toutes les 3 a 4 semaines aide a limiter la fatigue accumulee.</p>
+          </article>
+
+          <article class="advice-card">
+            <span>Nourriture</span>
+            <h2>Adapter a la charge</h2>
+            <p>Les chiens d'endurance peuvent avoir besoin d'une ration plus energetique, souvent plus riche en graisses en saison de travail. La transition alimentaire doit etre progressive, idealement sur plusieurs semaines.</p>
+          </article>
+
+          <article class="advice-card">
+            <span>Froid</span>
+            <h2>Hiver et neige</h2>
+            <p>Surveille vent, humidite, glace, pauses trop longues et chiens peu acclimates. Secher les chiens apres la sortie et offrir un endroit abrite aide la recuperation.</p>
+          </article>
+
+          <article class="advice-card">
+            <span>Suivi</span>
+            <h2>Noter pour progresser</h2>
+            <p>Apres chaque sortie, note temperature, type de neige ou terrain, vitesse, chiens presents, appetit, attitude, boiterie et fatigue. Ces notes deviennent precieuses pour construire le plan.</p>
+          </article>
+        </section>
+      </section>
+
+      <section class="screen" id="settings">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Objectifs</p>
+            <h1>Saison</h1>
+          </div>
+          <button class="round-button" data-go="dashboard" aria-label="Retour">OK</button>
+        </header>
+
+        <form class="settings-form" id="settings-form">
+          <section class="profile-settings">
+            <span>Profil MushTrack</span>
+            <label>
+              Pseudo
+              <input id="profile-name" placeholder="Ex: Mo" />
+            </label>
+            <div class="form-grid">
+              <label>
+                Region
+                <input id="profile-region" placeholder="Ex: Jura, Valais, Quebec" />
+              </label>
+              <label>
+                Niveau
+                <select id="profile-level">
+                  <option>Loisir</option>
+                  <option>Competition</option>
+                  <option>Longue distance</option>
+                  <option>Debutant</option>
+                </select>
+              </label>
+            </div>
+            <label>
+              Disciplines
+              <input id="profile-disciplines" placeholder="Canicross, traineau, kart..." />
+            </label>
+          </section>
+          <label>
+            Objectif km
+            <input id="goal-km" type="number" min="50" step="10" />
+          </label>
+          <label>
+            Date limite
+            <input id="goal-date" type="date" />
+          </label>
+          <label>
+            Type de course
+            <select id="race-type">
+              <option>Sprint</option>
+              <option>Mid-distance</option>
+              <option>Longue distance</option>
+            </select>
+          </label>
+          <label>
+            Distance de course
+            <input id="race-km" type="number" min="5" step="5" />
+          </label>
+          <button class="primary-button" type="submit">Mettre a jour</button>
+        </form>
+      </section>
+
+      <nav class="bottom-nav">
+        <button class="active" data-go="dashboard">Accueil</button>
+        <button data-go="record">GPS</button>
+        <button data-go="dogs">Chiens</button>
+        <button data-go="plan">Plan</button>
+        <button data-go="race">Course</button>
+        <button data-go="agenda">Agenda</button>
+        <button data-go="advice">Conseils</button>
+      </nav>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

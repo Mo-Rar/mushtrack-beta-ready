@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh auth *)",
+      "Bash(winget install *)",
+      "Bash(gh --version)",
+      "Bash(git --version)",
+      "PowerShell(gh --version)",
+      "PowerShell(gh auth status)",
+      "PowerShell(Get-Command gh -ErrorAction SilentlyContinue; \\(Get-Item \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" -ErrorAction SilentlyContinue\\).FullName)",
+      "PowerShell([System.Environment]::SetEnvironmentVariable\\(\"Path\", $env:Path + \";C:\\\\Program Files\\\\GitHub CLI\", \"User\"\\); $env:Path += \";C:\\\\Program Files\\\\GitHub CLI\"; gh --version)"
+    ]
+  }
+}
