@@ -110,10 +110,10 @@
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #241109;
-  color: #20140f;
+  background: #0a0a0a;
+  color: #f0f0f0;
 }
 
 * {
@@ -126,7 +126,7 @@ body {
   display: grid;
   place-items: center;
   background:
-    linear-gradient(160deg, rgba(255, 247, 241, 0.95), rgba(252, 76, 2, 0.28)),
+    linear-gradient(160deg, rgba(0, 0, 0, 0.82), rgba(252, 76, 2, 0.18)),
     url("./assets/mode-hiver.jpg");
   background-size: cover;
   background-position: center;
@@ -134,7 +134,7 @@ body {
 
 body.mode-summer {
   background:
-    linear-gradient(160deg, rgba(255, 247, 241, 0.94), rgba(255, 122, 26, 0.32)),
+    linear-gradient(160deg, rgba(0, 0, 0, 0.80), rgba(252, 76, 2, 0.22)),
     url("./assets/mode-ete.jpg");
   background-size: cover;
   background-position: center;
@@ -155,10 +155,10 @@ button {
 .phone-shell {
   width: min(100vw, 430px);
   min-height: min(100vh, 920px);
-  background: #fff7f1;
+  background: #111111;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 30px 80px rgba(13, 27, 24, 0.38);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(252,76,2,0.12);
 }
 
 .screen {
@@ -184,7 +184,7 @@ button {
 .topbar {
   margin-bottom: 18px;
   padding-bottom: 14px;
-  border-bottom: 1px solid rgba(240, 211, 193, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .section-heading {
@@ -362,10 +362,10 @@ body.mode-summer .mode-switch button.active {
 .add-form,
 .settings-form,
 .record-form {
-  background: #fff;
-  border: 1px solid #ede0d8;
+  background: #1c1c1c;
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 14px;
-  box-shadow: 0 2px 12px rgba(26, 15, 8, 0.07), 0 8px 28px rgba(26, 15, 8, 0.05);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
 }
 
 .quick-stats article {
@@ -382,7 +382,7 @@ body.mode-summer .mode-switch button.active {
 .team-layout span,
 label,
 .section-heading > span {
-  color: #6f5d53;
+  color: rgba(255, 255, 255, 0.45);
   font-size: 0.78rem;
   font-weight: 850;
 }
@@ -400,7 +400,7 @@ label,
   margin-top: 6px;
   font-size: 1.6rem;
   font-weight: 800;
-  color: #18120e;
+  color: #ffffff;
   letter-spacing: -0.02em;
 }
 
@@ -531,9 +531,9 @@ body.mode-summer .profile-hero {
 }
 
 .secondary-button {
-  background: #fff1e8;
+  background: rgba(252, 76, 2, 0.12);
   color: #fc4c02;
-  border: 1px solid #ffc3a6;
+  border: 1px solid rgba(252, 76, 2, 0.3);
 }
 
 .danger-button {
@@ -545,11 +545,11 @@ body.mode-summer .profile-hero {
   position: relative;
   height: 282px;
   background:
-    linear-gradient(90deg, rgba(252, 76, 2, 0.08) 1px, transparent 1px),
-    linear-gradient(rgba(252, 76, 2, 0.08) 1px, transparent 1px),
-    #fff0e7;
+    linear-gradient(90deg, rgba(252, 76, 2, 0.1) 1px, transparent 1px),
+    linear-gradient(rgba(252, 76, 2, 0.1) 1px, transparent 1px),
+    #0f0f0f;
   background-size: 34px 34px;
-  border: 1px solid #d5dfd8;
+  border: 1px solid rgba(252, 76, 2, 0.15);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -646,8 +646,8 @@ body.mode-summer .record-button {
 }
 
 .live-stats article {
-  background: #fff;
-  border: 1px solid #f0d3c1;
+  background: #1c1c1c;
+  border: 1px solid rgba(255,255,255,0.07);
   border-radius: 8px;
   padding: 12px 6px;
   text-align: center;
@@ -660,7 +660,7 @@ body.mode-summer .record-button {
 }
 
 .live-stats small {
-  color: #6f5d53;
+  color: rgba(255,255,255,0.4);
 }
 
 .record-form,
@@ -676,7 +676,7 @@ body.mode-summer .record-button {
   display: grid;
   gap: 10px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #f0d3c1;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
 .profile-settings > span {
@@ -691,7 +691,7 @@ body.mode-summer .record-button {
 }
 
 #post-run-form input[readonly] {
-  background: #eef4ef;
+  background: #2a2a2a;
   font-weight: 850;
 }
 
@@ -713,7 +713,7 @@ body.mode-summer .record-button {
   gap: 8px;
   padding: 10px;
   border-radius: 8px;
-  background: #eef4ef;
+  background: #232323;
 }
 
 .check-row input {
@@ -729,11 +729,11 @@ input,
 select,
 textarea {
   width: 100%;
-  border: 1.5px solid #e8d5c8;
+  border: 1.5px solid rgba(255,255,255,0.1);
   border-radius: 12px;
   padding: 12px 14px;
-  background: #fff;
-  color: #20140f;
+  background: #1c1c1c;
+  color: #f0f0f0;
   transition: border-color 0.18s, box-shadow 0.18s;
 }
 
@@ -760,11 +760,11 @@ textarea {
 .chip,
 .dog-picker button {
   flex: 0 0 auto;
-  border: 1px solid #d6e0d9;
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 999px;
   padding: 8px 12px;
-  background: #eaf0ed;
-  color: #20140f;
+  background: #2a2a2a;
+  color: #f0f0f0;
   font-weight: 900;
 }
 
@@ -838,9 +838,9 @@ textarea {
   min-height: 86px;
   border-radius: 8px;
   background:
-    linear-gradient(135deg, rgba(255, 122, 26, 0.18), rgba(252, 76, 2, 0.08)),
-    #fff8f3;
-  border: 1px solid #f0d3c1;
+    linear-gradient(135deg, rgba(252, 76, 2, 0.12), rgba(252, 76, 2, 0.04)),
+    #0f0f0f;
+  border: 1px solid rgba(252, 76, 2, 0.15);
   overflow: hidden;
 }
 
@@ -848,7 +848,7 @@ textarea {
   display: grid;
   place-items: center;
   min-height: 58px;
-  color: #6f5d53;
+  color: rgba(255,255,255,0.35);
   font-size: 0.82rem;
   font-weight: 850;
 }
@@ -890,8 +890,8 @@ textarea {
   gap: 8px;
   padding: 10px;
   border-radius: 8px;
-  background: #fff;
-  border: 1px solid #f0d3c1;
+  background: #222;
+  border: 1px solid rgba(255,255,255,0.07);
 }
 
 .show-details .run-details {
@@ -899,7 +899,7 @@ textarea {
 }
 
 .run-details span {
-  color: #6f5d53;
+  color: rgba(255,255,255,0.4);
   font-size: 0.78rem;
   font-weight: 900;
 }
@@ -907,12 +907,12 @@ textarea {
 .run-details p {
   grid-column: 1 / -1;
   margin: 0;
-  color: #2b211b;
+  color: rgba(255,255,255,0.85);
   font-size: 0.9rem;
 }
 
 .dog-card small {
-  color: #6f5d53;
+  color: rgba(255,255,255,0.4);
 }
 
 .dog-card.ok {
@@ -925,14 +925,14 @@ textarea {
 
 .dog-card.danger {
   border-left: 5px solid #fc4c02;
-  background: #fff3ec;
+  background: rgba(252, 76, 2, 0.1);
 }
 
 .load-meter {
   grid-column: 1 / -1;
   height: 8px;
   border-radius: 999px;
-  background: #e7eee9;
+  background: rgba(255,255,255,0.1);
   overflow: hidden;
 }
 
@@ -955,18 +955,18 @@ textarea {
 .load-row,
 .alert-card,
 .checklist article {
-  background: #fff;
-  border: 1px solid #f0d3c1;
+  background: #1c1c1c;
+  border: 1px solid rgba(255,255,255,0.07);
   border-radius: 8px;
   padding: 14px;
-  box-shadow: 0 10px 24px rgba(26, 45, 40, 0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
 }
 
 .profile-grid span,
 .load-row span,
 .alert-card span,
 .checklist span {
-  color: #6f5d53;
+  color: rgba(255,255,255,0.42);
   font-size: 0.76rem;
   font-weight: 950;
 }
@@ -989,7 +989,7 @@ textarea {
 
 .dog-health-grid .danger {
   border-left-color: #fc4c02;
-  background: #fff3ec;
+  background: rgba(252,76,2,0.1);
 }
 
 .dog-health-grid .ok {
@@ -997,7 +997,7 @@ textarea {
 }
 
 .dog-health-grid span {
-  color: #6f5d53;
+  color: rgba(255,255,255,0.42);
   font-size: 0.76rem;
   font-weight: 950;
   text-transform: uppercase;
@@ -1033,7 +1033,7 @@ textarea {
 
 .chart-bars span,
 .chart-bars b {
-  color: #6f5d53;
+  color: rgba(255,255,255,0.4);
   font-size: 0.72rem;
 }
 
@@ -1052,18 +1052,18 @@ textarea {
 }
 
 .plan-signal {
-  background: #fff;
-  border: 1px solid #f0d3c1;
+  background: #1c1c1c;
+  border: 1px solid rgba(255,255,255,0.07);
   border-left: 5px solid #ff6a00;
   border-radius: 8px;
   padding: 12px 14px;
-  box-shadow: 0 10px 24px rgba(26, 45, 40, 0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
 }
 
 .plan-signal.danger,
 .week-list article.danger {
   border-left-color: #fc4c02;
-  background: #fff3ec;
+  background: rgba(252,76,2,0.1);
 }
 
 .plan-signal.light,
@@ -1072,7 +1072,7 @@ textarea {
 }
 
 .plan-signal span {
-  color: #6f5d53;
+  color: rgba(255,255,255,0.42);
   font-size: 0.76rem;
   font-weight: 950;
   text-transform: uppercase;
@@ -1090,12 +1090,12 @@ textarea {
 .agenda-card,
 .open-run-card,
 .open-run-status {
-  background: #fff;
-  border: 1px solid #f0d3c1;
+  background: #1c1c1c;
+  border: 1px solid rgba(255,255,255,0.07);
   border-left: 5px solid #ff6a00;
   border-radius: 8px;
   padding: 14px;
-  box-shadow: 0 10px 24px rgba(26, 45, 40, 0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
 }
 
 .open-run-status {
@@ -1139,7 +1139,7 @@ textarea {
 
 .agenda-card p,
 .open-run-card p {
-  color: #44504c;
+  color: rgba(255,255,255,0.65);
   line-height: 1.38;
 }
 
@@ -1153,7 +1153,7 @@ textarea {
 .agenda-card span,
 .open-run-card span,
 .agenda-meta span {
-  color: #6f5d53;
+  color: rgba(255,255,255,0.42);
   font-size: 0.76rem;
   font-weight: 950;
 }
@@ -1168,14 +1168,14 @@ textarea {
 .open-run-participants span {
   padding: 6px 9px;
   border-radius: 999px;
-  background: #fff1e8;
+  background: rgba(252,76,2,0.15);
   color: #fc4c02;
 }
 
 .agenda-meta span {
   padding: 6px 9px;
   border-radius: 999px;
-  background: #eef4ef;
+  background: rgba(255,255,255,0.08);
 }
 
 .load-row {
@@ -1216,12 +1216,12 @@ textarea {
 }
 
 .health-grid article {
-  background: #fff;
-  border: 1px solid #f0d3c1;
+  background: #1c1c1c;
+  border: 1px solid rgba(255,255,255,0.07);
   border-left: 5px solid #2f8f46;
   border-radius: 8px;
   padding: 12px;
-  box-shadow: 0 10px 24px rgba(26, 45, 40, 0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
 }
 
 .health-grid article.light {
@@ -1230,12 +1230,12 @@ textarea {
 
 .health-grid article.danger {
   border-left-color: #fc4c02;
-  background: #fff3ec;
+  background: rgba(252,76,2,0.1);
 }
 
 .health-grid span,
 .health-grid small {
-  color: #6f5d53;
+  color: rgba(255,255,255,0.42);
   font-size: 0.74rem;
   font-weight: 850;
 }
@@ -1259,7 +1259,7 @@ textarea {
 
 .alert-card.danger {
   border-left-color: #fc4c02;
-  background: #fff3ec;
+  background: rgba(252,76,2,0.1);
 }
 
 .alert-card.info {
@@ -1268,7 +1268,7 @@ textarea {
 
 .alert-card p,
 .checklist p {
-  color: #44504c;
+  color: rgba(255,255,255,0.65);
   line-height: 1.38;
 }
 
@@ -1283,7 +1283,7 @@ textarea {
 }
 
 .radar-intro {
-  color: #44504c;
+  color: rgba(255,255,255,0.6);
   line-height: 1.38;
 }
 
@@ -1322,7 +1322,7 @@ textarea {
 }
 
 .race-search-controls label {
-  color: #6f5d53;
+  color: rgba(255,255,255,0.42);
   font-size: 0.76rem;
   font-weight: 950;
 }
@@ -1339,12 +1339,12 @@ textarea {
 }
 
 .race-result {
-  background: #fff;
-  border: 1px solid #f0d3c1;
+  background: #1c1c1c;
+  border: 1px solid rgba(255,255,255,0.07);
   border-left: 5px solid #ff6a00;
   border-radius: 8px;
   padding: 14px;
-  box-shadow: 0 10px 24px rgba(26, 45, 40, 0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
 }
 
 .race-result.official {
@@ -1353,11 +1353,11 @@ textarea {
 
 .race-result.watch {
   border-left-color: #ff7a1a;
-  background: #fff8f3;
+  background: rgba(252,76,2,0.06);
 }
 
 .race-result.user {
-  border-left-color: #21140f;
+  border-left-color: rgba(255,255,255,0.3);
 }
 
 .race-result h3 {
@@ -1371,13 +1371,13 @@ textarea {
 }
 
 .race-result span {
-  color: #6f5d53;
+  color: rgba(255,255,255,0.42);
   font-size: 0.76rem;
   font-weight: 950;
 }
 
 .race-result p {
-  color: #44504c;
+  color: rgba(255,255,255,0.65);
   line-height: 1.38;
 }
 
@@ -1396,8 +1396,8 @@ textarea {
   margin-top: 10px;
   padding: 10px;
   border-radius: 8px;
-  background: #fff8f3;
-  border: 1px solid #f0d3c1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
 .race-interest.active {
@@ -1462,17 +1462,17 @@ textarea {
 }
 
 .advice-card {
-  background: #fff;
-  border: 1px solid #f0d3c1;
+  background: #1c1c1c;
+  border: 1px solid rgba(255,255,255,0.07);
   border-left: 5px solid #ff6a00;
   border-radius: 8px;
   padding: 14px;
-  box-shadow: 0 10px 24px rgba(26, 45, 40, 0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
 }
 
 .advice-card.important {
   border-left-color: #fc4c02;
-  background: #fff3ec;
+  background: rgba(252,76,2,0.1);
 }
 
 .advice-card span {
@@ -1487,7 +1487,7 @@ textarea {
 }
 
 .advice-card p {
-  color: #44504c;
+  color: rgba(255,255,255,0.65);
   line-height: 1.42;
 }
 
