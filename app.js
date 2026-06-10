@@ -1707,7 +1707,7 @@ function importRaceToAgenda(id) {
   alert("Course ajoutee a ton agenda.");
 }
 
-function reportMissingRace() {
+async function reportMissingRace() {
   const name = prompt("Nom de la course manquante");
   if (!name) return;
   const location = prompt("Pays / region / lieu", "A verifier") || "A verifier";
@@ -1715,8 +1715,8 @@ function reportMissingRace() {
   const date = prompt("Date si connue, format AAAA-MM-JJ", "") || "";
   const url = prompt("Lien source si tu l'as", "") || "";
 
-  state.missingRaceReports.unshift({
-    id: `missing-${Date.now()}`,
+  const race = {
+    id: `user-${Date.now()}`,
     name,
     date,
     type,
@@ -1724,10 +1724,34 @@ function reportMissingRace() {
     region: location,
     location,
     url,
-    notes: "Course ajoutee manuellement comme manquante. A verifier avec une source officielle."
-  });
+    source: currentUser?.email || "Utilisateur MushTrack",
+    reliability: "user",
+    surface: "",
+    notes: `Course signalee par un utilisateur MushTrack. A verifier avec une source officielle.`
+  };
+
+  // Sauvegarde locale
+  state.missingRaceReports.unshift(race);
   saveState();
   renderRaceSearch();
+
+  // Envoi dans Supabase pour partage communautaire
+  if (supabase) {
+    try {
+      const { error } = await supabase.from("mushtrack_races").insert([race]);
+      if (error) {
+        console.warn("Supabase insert:", error.message);
+        alert(`Course ajoutee localement.\n(Partage communautaire indisponible : ${error.message})`);
+      } else {
+        alert(`"${name}" ajoutee au radar communautaire ! Les autres utilisateurs pourront la voir.`);
+      }
+    } catch (e) {
+      console.warn("Erreur reseau:", e);
+      alert("Course ajoutee localement. Verifiez votre connexion pour le partage.");
+    }
+  } else {
+    alert("Course ajoutee localement.");
+  }
 }
 
 function renderAgenda() {
