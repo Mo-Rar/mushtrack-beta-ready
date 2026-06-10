@@ -10,8 +10,38 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   </head>
   <body>
+    <!-- Écran de connexion -->
+    <div id="auth-overlay" class="auth-overlay hidden">
+      <div class="auth-card">
+        <div class="auth-logo">
+          <h1>MushTrack</h1>
+          <p>Votre compagnon de mushing</p>
+        </div>
+
+        <div id="auth-error" class="auth-error hidden"></div>
+
+        <form id="auth-form">
+          <label>
+            Email
+            <input id="auth-email" type="email" placeholder="vous@exemple.com" autocomplete="email" required />
+          </label>
+          <label>
+            Mot de passe
+            <input id="auth-password" type="password" placeholder="Minimum 6 caractères" autocomplete="current-password" required />
+          </label>
+          <button class="primary-button" id="auth-submit" type="submit">Se connecter</button>
+        </form>
+
+        <div class="auth-toggle">
+          <span id="auth-toggle-text">Pas encore de compte ?</span>
+          <button class="text-button" id="auth-toggle-btn" type="button">Créer un compte</button>
+        </div>
+      </div>
+    </div>
+
     <main class="phone-shell">
       <section class="screen active" id="dashboard">
         <header class="topbar">
