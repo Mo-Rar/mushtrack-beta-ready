@@ -1,7 +1,14 @@
 // ── Supabase Auth ──────────────────────────────────────────────
 const SUPABASE_URL = "https://ipfnldjrpocceptavvaf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DmlDTdYFyuxrgcKjdk1iZw_T-9hiPet";
-const supabase = globalThis.supabase?.createClient(SUPABASE_URL, SUPABASE_KEY);
+let supabase = null;
+try {
+  if (globalThis.supabase && typeof globalThis.supabase.createClient === "function") {
+    supabase = globalThis.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+} catch (e) {
+  console.warn("Supabase non disponible:", e);
+}
 
 let currentUser = null;
 
