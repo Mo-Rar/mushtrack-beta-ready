@@ -1,6 +1,6 @@
 // ── Supabase Auth ──────────────────────────────────────────────
 const SUPABASE_URL = "https://ipfnldjrpocceptavvaf.supabase.co";
-const SUPABASE_KEY = "sb_publishable_DmlDTdYFyuxrgcKjdk1iZw_T-9hiPet";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwZm5sZGpycG9jY2VwdGF2dmFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDk0MTQsImV4cCI6MjA5NjYyNTQxNH0.FVkq0EooacG7lETDAwxJ-ArocxUYFVZVfhxdhyWFhrI";
 let supabase = null;
 try {
   if (globalThis.supabase && typeof globalThis.supabase.createClient === "function") {
