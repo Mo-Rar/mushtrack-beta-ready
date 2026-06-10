@@ -9,7 +9,7 @@
   "crons": [
     {
       "path": "/api/races-refresh",
-      "schedule": "0 */12 * * *"
+      "schedule": "0 8 * * *"
     }
   ],
   "headers": [
