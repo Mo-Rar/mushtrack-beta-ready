@@ -401,7 +401,6 @@ label,
   letter-spacing: -0.02em;
 }
 
-.training-card,
 .plan-summary,
 .race-card,
 .profile-hero {
@@ -409,6 +408,24 @@ label,
   color: #fff;
   border-radius: 18px;
   padding: 18px;
+}
+
+/* Prochaine séance — fond blanc, texte noir */
+.training-card {
+  background: #ffffff;
+  color: #111111;
+  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.training-card strong {
+  color: #111111;
+}
+
+.training-card p {
+  color: #555555;
 }
 
 /* Agenda card — fond blanc, texte noir, bordure orange */
