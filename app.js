@@ -1,3 +1,119 @@
+// ── Supabase Auth ──────────────────────────────────────────────
+const SUPABASE_URL = "https://ipfnldjrpocceptavvaf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DmlDTdYFyuxrgcKjdk1iZw_T-9hiPet";
+const supabase = globalThis.supabase?.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+
+function showAuthOverlay() {
+  document.getElementById("auth-overlay").classList.remove("hidden");
+}
+
+function hideAuthOverlay() {
+  document.getElementById("auth-overlay").classList.add("hidden");
+}
+
+function setAuthError(msg) {
+  const el = document.getElementById("auth-error");
+  if (msg) {
+    el.textContent = msg;
+    el.classList.remove("hidden");
+  } else {
+    el.classList.add("hidden");
+  }
+}
+
+let authMode = "login"; // "login" | "signup"
+
+document.getElementById("auth-toggle-btn")?.addEventListener("click", () => {
+  authMode = authMode === "login" ? "signup" : "login";
+  const isSignup = authMode === "signup";
+  document.getElementById("auth-submit").textContent = isSignup ? "Créer le compte" : "Se connecter";
+  document.getElementById("auth-toggle-text").textContent = isSignup ? "Déjà un compte ?" : "Pas encore de compte ?";
+  document.getElementById("auth-toggle-btn").textContent = isSignup ? "Se connecter" : "Créer un compte";
+  document.getElementById("auth-password").autocomplete = isSignup ? "new-password" : "current-password";
+  setAuthError(null);
+});
+
+document.getElementById("auth-form")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("auth-email").value.trim();
+  const password = document.getElementById("auth-password").value;
+  const btn = document.getElementById("auth-submit");
+  btn.disabled = true;
+  btn.textContent = "...";
+  setAuthError(null);
+
+  try {
+    let result;
+    if (authMode === "signup") {
+      result = await supabase.auth.signUp({ email, password });
+      if (!result.error && result.data?.user && !result.data.session) {
+        setAuthError("Vérifiez votre email pour confirmer votre compte.");
+        btn.disabled = false;
+        btn.textContent = "Créer le compte";
+        return;
+      }
+    } else {
+      result = await supabase.auth.signInWithPassword({ email, password });
+    }
+
+    if (result.error) {
+      setAuthError(result.error.message === "Invalid login credentials"
+        ? "Email ou mot de passe incorrect."
+        : result.error.message);
+      btn.disabled = false;
+      btn.textContent = authMode === "signup" ? "Créer le compte" : "Se connecter";
+      return;
+    }
+
+    currentUser = result.data.user;
+    onAuthSuccess(currentUser);
+  } catch (err) {
+    setAuthError("Erreur réseau. Vérifiez votre connexion.");
+    btn.disabled = false;
+    btn.textContent = authMode === "signup" ? "Créer le compte" : "Se connecter";
+  }
+});
+
+function onAuthSuccess(user) {
+  currentUser = user;
+  // Synchronise le deviceId avec l'ID Supabase pour la communauté
+  state.deviceId = user.id;
+  saveState();
+  hideAuthOverlay();
+  addUserBar(user.email);
+}
+
+function addUserBar(email) {
+  const existing = document.querySelector(".auth-user-bar");
+  if (existing) existing.remove();
+  const bar = document.createElement("div");
+  bar.className = "auth-user-bar";
+  bar.innerHTML = `<span>👤 ${email}</span><button class="text-button" id="logout-btn" type="button">Déconnexion</button>`;
+  document.querySelector(".phone-shell").prepend(bar);
+  document.getElementById("logout-btn").addEventListener("click", async () => {
+    await supabase.auth.signOut();
+    currentUser = null;
+    bar.remove();
+    showAuthOverlay();
+  });
+}
+
+async function initAuth() {
+  if (!supabase) return; // Supabase non disponible
+  const { data } = await supabase.auth.getSession();
+  if (data.session?.user) {
+    onAuthSuccess(data.session.user);
+  } else {
+    showAuthOverlay();
+  }
+}
+
+initAuth();
+
+// ── Fin Auth ───────────────────────────────────────────────────
+
 const screens = document.querySelectorAll(".screen");
 const navButtons = document.querySelectorAll("[data-go]");
 const bottomButtons = document.querySelectorAll(".bottom-nav button");
