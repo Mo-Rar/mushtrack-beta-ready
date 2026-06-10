@@ -618,6 +618,7 @@ function render() {
   renderAnalytics();
   renderDogProfile();
   renderRaceSearch();
+  renderAdminPanel();
   renderAgenda();
   renderOpenRuns();
   renderWebAdvice();
@@ -1446,7 +1447,10 @@ function renderRaceSearch() {
   const distance = document.querySelector("#race-search-distance")?.value || "";
   const surface = document.querySelector("#race-search-surface")?.value || "";
   const reliability = document.querySelector("#race-search-reliability")?.value || "";
-  const reports = state.missingRaceReports.map((report) => ({
+  // Exclure les courses en attente de validation admin
+  const reports = state.missingRaceReports
+    .filter((r) => r.status !== "pending")
+    .map((report) => ({
     ...report,
     type: report.type || "A verifier",
     distance: Number(report.distance || 0),
@@ -1455,7 +1459,9 @@ function renderRaceSearch() {
     source: "Signalee",
     notes: report.notes || "Course signalee manuellement dans MushTrack."
   }));
-  const mergedRaces = mergeRaceSources([...remoteRaceCatalog, ...raceCatalog, ...reports]);
+  // Filtrer les courses remote : seulement approved ou sans status (catalogue officiel)
+  const approvedRemote = remoteRaceCatalog.filter((r) => !r.status || r.status === "approved");
+  const mergedRaces = mergeRaceSources([...approvedRemote, ...raceCatalog, ...reports]);
   const results = mergedRaces.filter((race) => {
     const regionText = `${race.region} ${race.location} ${race.name} ${race.source} ${race.notes}`.toLowerCase();
     const typeMatch = !type || race.type === type || (type === "Dryland" && ["Canicross", "Dryland"].includes(race.type));
@@ -1536,20 +1542,34 @@ function renderRaceSearch() {
       `;
     }
 
-    // Section par pays
+    // Section par pays — accordéon (fermé par défaut)
     const countriesHtml = Object.entries(byCountry)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([country, races]) => `
         <div class="race-country-group">
-          <div class="race-country-header">
+          <button class="race-country-header" type="button" data-country="${country}" aria-expanded="false">
+            <svg class="country-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
             <h3>${country}</h3>
             <span>${races.length} course${races.length > 1 ? "s" : ""}</span>
+          </button>
+          <div class="race-country-body" hidden>
+            ${races.map((r) => buildRaceCard(r, false)).join("")}
           </div>
-          ${races.map((r) => buildRaceCard(r, false)).join("")}
         </div>
       `).join("");
 
     list.innerHTML = radarMeta + pinnedHtml + (countriesHtml || "");
+
+    // Accordéon : toggle au clic sur l'en-tête pays
+    list.querySelectorAll(".race-country-header[data-country]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const body = btn.nextElementSibling;
+        const open = !body.hidden;
+        body.hidden = open;
+        btn.setAttribute("aria-expanded", String(!open));
+        btn.classList.toggle("open", !open);
+      });
+    });
   }
 
   list.querySelectorAll("[data-open-race-source]").forEach((button) => {
@@ -1752,7 +1772,10 @@ function importRaceToAgenda(id) {
   alert("Course ajoutee a ton agenda.");
 }
 
-function reportMissingRace() {
+// Email de l'admin (toi) — seul ce compte peut approuver les courses
+const ADMIN_EMAIL = "morardjuan@hotmail.com";
+
+async function reportMissingRace() {
   const name = prompt("Nom de la course manquante");
   if (!name) return;
   const location = prompt("Pays / region / lieu", "A verifier") || "A verifier";
@@ -1760,19 +1783,99 @@ function reportMissingRace() {
   const date = prompt("Date si connue, format AAAA-MM-JJ", "") || "";
   const url = prompt("Lien source si tu l'as", "") || "";
 
-  state.missingRaceReports.unshift({
-    id: `missing-${Date.now()}`,
+  const report = {
+    id: `pending-${Date.now()}`,
     name,
-    date,
+    date: date || null,
     type,
     distance: 0,
     region: location,
     location,
-    url,
-    notes: "Course ajoutee manuellement comme manquante. A verifier avec une source officielle."
-  });
-  saveState();
+    url: url || null,
+    reliability: "user",
+    source: "Signalee",
+    surface: "A verifier",
+    notes: `Course signalee par ${currentUser?.email || "utilisateur"}.`,
+    status: "pending"
+  };
+
+  // Envoi dans Supabase avec status pending
+  if (supabase) {
+    try {
+      await supabase.from("mushtrack_races").insert([{
+        id: report.id,
+        name: report.name,
+        date: report.date,
+        type: report.type,
+        region: report.region,
+        location: report.location,
+        url: report.url,
+        reliability: "user",
+        source: "Signalee",
+        surface: "A verifier",
+        notes: report.notes,
+        status: "pending"
+      }]);
+      alert(`Merci ! "${name}" a ete soumise et sera visible apres validation par l'administrateur.`);
+    } catch (e) {
+      alert("Erreur lors de l'envoi. La course sera sauvegardee localement.");
+      state.missingRaceReports.unshift(report);
+      saveState();
+    }
+  } else {
+    state.missingRaceReports.unshift(report);
+    saveState();
+    alert(`Merci ! "${name}" a ete soumise et sera visible apres validation.`);
+  }
   renderRaceSearch();
+}
+
+// Panel admin — visible seulement pour l'admin
+function renderAdminPanel() {
+  const isAdmin = currentUser?.email === ADMIN_EMAIL;
+  const panel = document.querySelector("#admin-panel");
+  if (!panel) return;
+  if (!isAdmin) { panel.hidden = true; return; }
+  panel.hidden = false;
+
+  if (!supabase) { panel.innerHTML = `<p class="empty-state">Supabase non disponible.</p>`; return; }
+
+  supabase.from("mushtrack_races").select("*").eq("status", "pending").order("created_at", { ascending: false })
+    .then(({ data, error }) => {
+      if (error || !data || data.length === 0) {
+        panel.innerHTML = `<p class="empty-state">Aucune course en attente de validation. ✅</p>`;
+        return;
+      }
+      panel.innerHTML = data.map((race) => `
+        <article class="race-result" style="border-left:4px solid #f59e0b">
+          <div>
+            <span style="color:#f59e0b;font-weight:900">EN ATTENTE</span>
+            <h3>${race.name}</h3>
+            <p>${race.date || "Date inconnue"} — ${race.location || ""}</p>
+          </div>
+          <strong>${race.type || ""}</strong>
+          <p style="font-size:0.82rem;color:#888">${race.notes || ""}</p>
+          <div class="race-result-actions">
+            <button class="primary-button" data-approve="${race.id}" type="button">✅ Approuver</button>
+            <button class="danger-button" data-reject="${race.id}" type="button">❌ Rejeter</button>
+          </div>
+        </article>
+      `).join("");
+
+      panel.querySelectorAll("[data-approve]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          await supabase.from("mushtrack_races").update({ status: "approved" }).eq("id", btn.dataset.approve);
+          renderAdminPanel();
+          renderRaceSearch();
+        });
+      });
+      panel.querySelectorAll("[data-reject]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          await supabase.from("mushtrack_races").delete().eq("id", btn.dataset.reject);
+          renderAdminPanel();
+        });
+      });
+    });
 }
 
 function renderAgenda() {
