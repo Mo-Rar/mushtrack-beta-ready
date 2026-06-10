@@ -1554,8 +1554,42 @@ textarea {
   overflow-x: auto;
   gap: 0;
   padding: 8px 4px 16px;
-  background: #18120e;
-  border-top: 1px solid #2e1e16;
+  background: #ffffff;
+  border-top: 1px solid #eeeeee;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+}
+
+/* Mode saison dans paramètres */
+.mode-switch-settings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.season-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f5f5f5;
+  border: 2px solid #eeeeee;
+  color: #888888;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.15s;
+}
+
+.season-btn.active {
+  background: #fff4ef;
+  border-color: #fc4c02;
+  color: #fc4c02;
+}
+
+.season-btn svg {
+  stroke: currentColor;
 }
 
 .bottom-nav button {
