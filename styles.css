@@ -411,14 +411,14 @@ label,
   padding: 18px;
 }
 
-/* Agenda card — sombre avec accent vert/bleu, différent des cartes orange */
+/* Agenda card — fond blanc, texte noir, bordure orange */
 .next-race-card article {
-  background: linear-gradient(135deg, #0f1c2e 0%, #1a2d42 100%);
-  color: #fff;
+  background: #ffffff;
+  color: #111111;
   border-radius: 18px;
   padding: 18px;
-  border-left: 4px solid #3b82f6;
-  box-shadow: 0 8px 28px rgba(252, 76, 2, 0.32);
+  border-left: 4px solid #fc4c02;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
 }
 
 /* Coach card — fond orange, texte blanc */
@@ -484,9 +484,15 @@ body.mode-summer .profile-hero {
 }
 
 .race-card span,
-.profile-hero span,
-.next-race-card span {
+.profile-hero span {
   color: rgba(255, 255, 255, 0.72);
+  font-size: 0.76rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.next-race-card span {
+  color: #888888;
   font-size: 0.76rem;
   font-weight: 950;
   text-transform: uppercase;
@@ -500,10 +506,18 @@ body.mode-summer .profile-hero {
   font-size: 1.35rem;
 }
 
+.next-race-card strong {
+  color: #111111;
+}
+
 .race-card p,
-.profile-hero p,
-.next-race-card p {
+.profile-hero p {
   color: rgba(255, 255, 255, 0.78);
+  line-height: 1.35;
+}
+
+.next-race-card p {
+  color: #555555;
   line-height: 1.35;
 }
 
