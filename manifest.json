@@ -3,7 +3,7 @@
   "short_name": "MushTrack",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#fff7f1",
+  "background_color": "#fc4c02",
   "theme_color": "#fc4c02",
   "icons": [
     {
