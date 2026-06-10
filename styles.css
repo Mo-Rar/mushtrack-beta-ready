@@ -176,6 +176,8 @@ button {
 
 .topbar {
   margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(240, 211, 193, 0.5);
 }
 
 .section-heading {
@@ -197,30 +199,42 @@ p {
 }
 
 h1 {
-  font-size: 2rem;
+  font-size: 2.1rem;
   line-height: 1.05;
+  font-weight: 900;
+  letter-spacing: -0.03em;
 }
 
 h2 {
   font-size: 1.08rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .eyebrow {
   margin: 0 0 4px;
-  color: #6f5d53;
-  font-size: 0.76rem;
-  font-weight: 850;
+  color: #fc4c02;
+  font-size: 0.7rem;
+  font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .round-button {
   min-width: 44px;
   height: 44px;
-  padding: 0 12px;
+  padding: 0 14px;
   border-radius: 999px;
   background: #fc4c02;
   color: #fff;
-  font-weight: 900;
+  font-weight: 800;
+  font-size: 0.85rem;
+  box-shadow: 0 3px 10px rgba(252, 76, 2, 0.3);
+  transition: transform 0.12s;
+}
+
+.round-button:active {
+  transform: scale(0.95);
 }
 
 .text-button {
@@ -230,20 +244,21 @@ h2 {
 }
 
 .season-hero {
-  min-height: 210px;
+  min-height: 230px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   gap: 16px;
   color: #fff;
-  border-radius: 8px;
-  padding: 18px;
+  border-radius: 18px;
+  padding: 20px;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(10, 28, 24, 0.08), rgba(10, 28, 24, 0.92)),
+    linear-gradient(180deg, rgba(10, 28, 24, 0.05), rgba(10, 28, 24, 0.88)),
     url("./assets/mode-hiver.jpg");
   background-size: cover;
   background-position: center;
+  box-shadow: 0 8px 32px rgba(10, 28, 24, 0.2);
 }
 
 body.mode-summer .season-hero {
@@ -341,13 +356,14 @@ body.mode-summer .mode-switch button.active {
 .settings-form,
 .record-form {
   background: #fff;
-  border: 1px solid #f0d3c1;
-  border-radius: 8px;
-  box-shadow: 0 10px 24px rgba(26, 45, 40, 0.06);
+  border: 1px solid #ede0d8;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(26, 15, 8, 0.07), 0 8px 28px rgba(26, 15, 8, 0.05);
 }
 
 .quick-stats article {
-  padding: 14px;
+  padding: 16px 14px;
+  border-left: 3px solid #fc4c02;
 }
 
 .quick-stats span,
@@ -367,7 +383,10 @@ label,
 .quick-stats strong {
   display: block;
   margin-top: 6px;
-  font-size: 1.36rem;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #18120e;
+  letter-spacing: -0.02em;
 }
 
 .training-card,
@@ -376,10 +395,11 @@ label,
 .race-card,
 .profile-hero,
 .next-race-card article {
-  background: linear-gradient(145deg, #fc4c02, #ff6a00);
+  background: linear-gradient(135deg, #fc4c02 0%, #ff6a00 60%, #ff8c00 100%);
   color: #fff;
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 8px 28px rgba(252, 76, 2, 0.32);
 }
 
 body.mode-summer .training-card,
@@ -438,9 +458,19 @@ body.mode-summer .profile-hero {
 .save-button {
   background: #fc4c02;
   color: #fff;
-  border-radius: 8px;
-  padding: 12px 14px;
-  font-weight: 950;
+  border-radius: 999px;
+  padding: 13px 22px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  box-shadow: 0 4px 16px rgba(252, 76, 2, 0.35);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+
+.primary-button:active,
+.save-button:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(252, 76, 2, 0.25);
 }
 
 .secondary-button,
@@ -650,11 +680,20 @@ input,
 select,
 textarea {
   width: 100%;
-  border: 1px solid #d5dfd8;
-  border-radius: 8px;
-  padding: 11px 12px;
-  background: #fbfdfb;
+  border: 1.5px solid #e8d5c8;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #fff;
   color: #20140f;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #fc4c02;
+  box-shadow: 0 0 0 3px rgba(252, 76, 2, 0.12);
 }
 
 textarea {
@@ -1467,26 +1506,44 @@ textarea {
   bottom: 0;
   display: flex;
   overflow-x: auto;
-  gap: 4px;
-  padding: 10px 10px 14px;
-  background: rgba(255, 247, 241, 0.95);
-  border-top: 1px solid #f0d3c1;
-  backdrop-filter: blur(12px);
+  gap: 0;
+  padding: 8px 4px 16px;
+  background: #18120e;
+  border-top: 1px solid #2e1e16;
 }
 
 .bottom-nav button {
-  flex: 0 0 68px;
-  min-height: 48px;
-  border-radius: 8px;
+  flex: 1 0 0;
+  min-width: 52px;
+  min-height: 54px;
+  border-radius: 0;
   background: transparent;
-  color: #6f5d53;
-  font-size: 0.64rem;
-  font-weight: 950;
+  color: rgba(255,255,255,0.42);
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: color 0.18s;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.bottom-nav button svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.8;
 }
 
 .bottom-nav button.active {
-  background: #fc4c02;
-  color: #fff;
+  color: #fc4c02;
+  background: transparent;
+}
+
+.bottom-nav button.active svg {
+  stroke-width: 2.5;
 }
 
 @media (min-width: 700px) {
