@@ -366,8 +366,33 @@ body.mode-summer .mode-switch button.active {
 }
 
 .quick-stats article {
-  padding: 16px 14px;
+  padding: 14px 12px;
   border-left: 3px solid #fc4c02;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-icon {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  background: rgba(252, 76, 2, 0.08);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Icônes dans les labels de stats — reset pour nouveau layout */
+.quick-stats span {
+  display: block;
 }
 
 .quick-stats span,
@@ -401,7 +426,6 @@ label,
   letter-spacing: -0.02em;
 }
 
-.training-card,
 .plan-summary,
 .race-card,
 .profile-hero {
@@ -411,28 +435,46 @@ label,
   padding: 18px;
 }
 
-/* Agenda card — sombre avec accent vert/bleu, différent des cartes orange */
-.next-race-card article {
-  background: linear-gradient(135deg, #0f1c2e 0%, #1a2d42 100%);
-  color: #fff;
+/* Prochaine séance — fond blanc, texte noir */
+.training-card {
+  background: #ffffff;
+  color: #111111;
   border-radius: 18px;
   padding: 18px;
-  border-left: 4px solid #3b82f6;
-  box-shadow: 0 8px 28px rgba(252, 76, 2, 0.32);
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
-/* Coach card — sombre avec accent orange */
+.training-card strong {
+  color: #111111;
+}
+
+.training-card p {
+  color: #555555;
+}
+
+/* Agenda card — fond blanc, texte noir, bordure orange */
+.next-race-card article {
+  background: #ffffff;
+  color: #111111;
+  border-radius: 18px;
+  padding: 18px;
+  border-left: 4px solid #fc4c02;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+}
+
+/* Coach card — fond orange, texte blanc */
 .insight-panel {
-  background: linear-gradient(135deg, #18120e 0%, #2e1e14 100%);
+  background: linear-gradient(135deg, #fc4c02 0%, #ff6a00 100%);
   color: #fff;
   border-radius: 18px;
   padding: 18px;
-  box-shadow: 0 8px 24px rgba(10, 6, 4, 0.28);
-  border-left: 4px solid #fc4c02;
+  box-shadow: 0 8px 28px rgba(252, 76, 2, 0.35);
+  border: none;
 }
 
 .insight-panel span {
-  color: #fc4c02;
+  color: rgba(255, 255, 255, 0.82);
   font-size: 0.7rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -447,8 +489,15 @@ label,
 }
 
 .insight-panel p {
-  color: rgba(255,255,255,0.62);
+  color: rgba(255, 255, 255, 0.85);
   line-height: 1.35;
+}
+
+/* Bouton Analyser : blanc avec texte orange */
+.insight-panel .primary-button {
+  background: #ffffff;
+  color: #fc4c02;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
 }
 
 body.mode-summer .training-card,
@@ -477,9 +526,15 @@ body.mode-summer .profile-hero {
 }
 
 .race-card span,
-.profile-hero span,
-.next-race-card span {
+.profile-hero span {
   color: rgba(255, 255, 255, 0.72);
+  font-size: 0.76rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.next-race-card span {
+  color: #888888;
   font-size: 0.76rem;
   font-weight: 950;
   text-transform: uppercase;
@@ -493,10 +548,18 @@ body.mode-summer .profile-hero {
   font-size: 1.35rem;
 }
 
+.next-race-card strong {
+  color: #111111;
+}
+
 .race-card p,
-.profile-hero p,
-.next-race-card p {
+.profile-hero p {
   color: rgba(255, 255, 255, 0.78);
+  line-height: 1.35;
+}
+
+.next-race-card p {
+  color: #555555;
   line-height: 1.35;
 }
 
