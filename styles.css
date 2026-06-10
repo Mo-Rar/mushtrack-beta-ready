@@ -366,8 +366,33 @@ body.mode-summer .mode-switch button.active {
 }
 
 .quick-stats article {
-  padding: 16px 14px;
+  padding: 14px 12px;
   border-left: 3px solid #fc4c02;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-icon {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  background: rgba(252, 76, 2, 0.08);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Icônes dans les labels de stats — reset pour nouveau layout */
+.quick-stats span {
+  display: block;
 }
 
 .quick-stats span,
