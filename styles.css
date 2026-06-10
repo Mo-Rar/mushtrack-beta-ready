@@ -387,6 +387,14 @@ label,
   font-weight: 850;
 }
 
+/* Icônes dans les labels de stats */
+.quick-stats span,
+.hero-text > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .quick-stats strong {
   display: block;
   margin-top: 6px;

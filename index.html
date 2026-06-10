@@ -57,7 +57,10 @@
               <button class="active" data-mode="winter" type="button">Hiver</button>
               <button data-mode="summer" type="button">Ete</button>
             </div>
-            <span>Objectif saison</span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-1px;opacity:.7"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0"/><path d="M12 8v4l3 3"/></svg>
+              Objectif saison
+            </span>
             <strong><span data-bind="seasonKm">0</span> / <span data-bind="goalKm">1000</span> km</strong>
             <small data-bind="goalMessage">Plan en cours de calcul</small>
             <p class="brand-slogan">Mush vient de marche : avancer avec son chien.</p>
@@ -69,19 +72,31 @@
 
         <section class="quick-stats">
           <article>
-            <span>Semaine</span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              Semaine
+            </span>
             <strong><span data-bind="weekKm">0</span> km</strong>
           </article>
           <article>
-            <span>Moyenne</span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20"/><path d="M12 12 8.5 8.5"/><path d="M16.5 7.5 12 12"/></svg>
+              Moyenne
+            </span>
             <strong><span data-bind="avgSpeed">0.0</span> km/h</strong>
           </article>
           <article>
-            <span>Sorties</span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/><path d="M7 20 10 11l3 3 2-5"/><path d="M17 20l-1-6"/></svg>
+              Sorties
+            </span>
             <strong data-bind="runCount">0</strong>
           </article>
           <article>
-            <span>Chiens</span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><ellipse cx="12" cy="5" rx="2" ry="2.5"/><path d="M7 8c-1 2-1 4 0 5s3 1 5 1 4 0 5-1 1-3 0-5"/><path d="M9 14v4a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-4"/></svg>
+              Chiens
+            </span>
             <strong data-bind="dogCount">0</strong>
           </article>
         </section>
