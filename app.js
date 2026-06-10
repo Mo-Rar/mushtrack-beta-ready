@@ -1479,12 +1479,15 @@ function renderRaceSearch() {
     </article>
   `;
 
-  list.innerHTML = radarMeta + (results.map((race) => {
+  // Helper : construit la carte HTML d'une course
+  function buildRaceCard(race, pinned = false) {
     const isSource = !race.date;
     const dateText = isSource ? "Source calendrier" : formatFullDate(race.date);
     const status = race.date ? (daysUntil(race.date) < 0 ? "Archive / a verifier" : `J-${daysUntil(race.date)}`) : "A connecter";
+    const pinnedBadge = pinned ? `<span class="race-pinned-badge">⭐ Selectionnee</span>` : "";
     return `
-      <article class="race-result ${race.reliability || "calendar"}">
+      <article class="race-result ${race.reliability || "calendar"}${pinned ? " pinned" : ""}">
+        ${pinnedBadge}
         <div>
           <span>${status} - ${race.source} - ${getReliabilityLabel(race.reliability)}</span>
           <h3>${race.name}</h3>
@@ -1499,13 +1502,55 @@ function renderRaceSearch() {
         <p>${race.notes}</p>
         <div class="race-result-actions">
           <button class="secondary-button" data-open-race-source="${race.id}" type="button">Source</button>
-          <button class="secondary-button" data-race-interest="${race.id}" type="button">${state.raceInterests[race.id] ? "Interesse" : "Je suis interesse"}</button>
+          <button class="secondary-button" data-race-interest="${race.id}" type="button">${state.raceInterests[race.id] ? "✓ Interesse" : "Je suis interesse"}</button>
           <button class="primary-button" data-import-race="${race.id}" type="button" ${isSource ? "disabled" : ""}>Ajouter</button>
         </div>
         ${renderRaceInterestSummary(race)}
       </article>
     `;
-  }).join("") || `<p class="empty-state">Aucune course trouvee. Essaie une region plus large comme Europe, USA, Canada, Suede ou Amundsen.</p>`);
+  }
+
+  if (results.length === 0) {
+    list.innerHTML = radarMeta + `<p class="empty-state">Aucune course trouvee. Essaie une region plus large comme Europe, USA, Canada, Suede ou Amundsen.</p>`;
+  } else {
+    // Séparer les courses sélectionnées (intérêt marqué) des autres
+    const pinned = results.filter((r) => state.raceInterests[r.id]);
+    const unpinned = results.filter((r) => !state.raceInterests[r.id]);
+
+    // Grouper les non-sélectionnées par pays/région
+    const byCountry = {};
+    unpinned.forEach((race) => {
+      const country = race.region || "Autre";
+      if (!byCountry[country]) byCountry[country] = [];
+      byCountry[country].push(race);
+    });
+
+    // Section courses sélectionnées
+    let pinnedHtml = "";
+    if (pinned.length > 0) {
+      pinnedHtml = `
+        <div class="pinned-races-section">
+          <p class="pinned-races-title">⭐ Mes courses selectionnees (${pinned.length})</p>
+          ${pinned.map((r) => buildRaceCard(r, true)).join("")}
+        </div>
+      `;
+    }
+
+    // Section par pays
+    const countriesHtml = Object.entries(byCountry)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([country, races]) => `
+        <div class="race-country-group">
+          <div class="race-country-header">
+            <h3>${country}</h3>
+            <span>${races.length} course${races.length > 1 ? "s" : ""}</span>
+          </div>
+          ${races.map((r) => buildRaceCard(r, false)).join("")}
+        </div>
+      `).join("");
+
+    list.innerHTML = radarMeta + pinnedHtml + (countriesHtml || "");
+  }
 
   list.querySelectorAll("[data-open-race-source]").forEach((button) => {
     button.addEventListener("click", () => {
