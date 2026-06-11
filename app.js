@@ -767,6 +767,7 @@ const defaultState = {
     }
   ],
   openRunJoins: {},
+  teamPositions: {},
   agenda: [],
   missingRaceReports: [],
   dogs: [],
@@ -1378,12 +1379,136 @@ function renderSelectedTeam() {
 }
 
 function renderTeamSlots() {
-  document.querySelectorAll("[data-team-slot]").forEach((slot) => {
-    const role = slot.dataset.teamSlot;
-    const dogs = state.dogs.filter((dog) => state.selectedDogIds.includes(dog.id) && dog.role === role);
-    slot.innerHTML = `<div class="slot-row">${dogs.map((dog) => `<span class="chip">${dog.name}</span>`).join("") || `<span class="chip">Vide</span>`}</div>`;
+  renderSledDiagram();
+}
+
+// ── Schéma attelage drag & drop ───────────────────────────────
+let _dragDogId   = null;
+let _dragFromSlot = null;
+
+function renderSledDiagram() {
+  const containers = document.querySelectorAll(".sled-diagram");
+  if (!containers.length) return;
+  if (!state.teamPositions) state.teamPositions = {};
+
+  const positions = ["Leader","Swing","Team","Wheel"];
+
+  function dogInSlot(pos, side) {
+    const id = state.teamPositions[`${pos.toLowerCase()}-${side}`];
+    return id ? state.dogs.find(d => d.id === id) : null;
+  }
+
+  function formEmoji(dog) {
+    if (!dog) return "";
+    const signal = dog.healthSignal || "";
+    return signal === "Attention" || signal === "Repos" ? "🔴" : "🟢";
+  }
+
+  function buildHTML() {
+    const rows = positions.map(pos => {
+      const left  = dogInSlot(pos, "l");
+      const right = dogInSlot(pos, "r");
+      const p = pos.toLowerCase();
+      return `
+        <div class="sled-row">
+          <div class="sled-slot ${left?"filled":"empty"}" data-slot="${p}-l"
+               ondragover="event.preventDefault();this.classList.add('drag-over')"
+               ondragleave="this.classList.remove('drag-over')"
+               ondrop="handleSlotDrop(event,'${p}-l')">
+            ${left
+              ? `<span class="sled-dog" draggable="true" ondragstart="handleDogDragStart(event,'${left.id}','${p}-l')">${formEmoji(left)} ${left.name}<button type="button" class="sled-remove" onclick="removeFromSlot('${p}-l')">✕</button></span>`
+              : `<span class="sled-empty-label">+</span>`}
+          </div>
+          <div class="sled-position-label">${pos}</div>
+          <div class="sled-slot ${right?"filled":"empty"}" data-slot="${p}-r"
+               ondragover="event.preventDefault();this.classList.add('drag-over')"
+               ondragleave="this.classList.remove('drag-over')"
+               ondrop="handleSlotDrop(event,'${p}-r')">
+            ${right
+              ? `<span class="sled-dog" draggable="true" ondragstart="handleDogDragStart(event,'${right.id}','${p}-r')">${formEmoji(right)} ${right.name}<button type="button" class="sled-remove" onclick="removeFromSlot('${p}-r')">✕</button></span>`
+              : `<span class="sled-empty-label">+</span>`}
+          </div>
+        </div>`;
+    }).join("");
+    return `<div class="sled-schema">${rows}<div class="sled-trait"></div><div class="sled-icon">🛷</div></div>`;
+  }
+
+  containers.forEach(container => {
+    container.innerHTML = buildHTML();
+
+    // Touch drag (mobile)
+    let touchDogId = null, touchFromSlot = null, touchClone = null;
+
+    container.querySelectorAll(".sled-dog[draggable='true']").forEach(el => {
+      el.addEventListener("touchstart", e => {
+        const slot = el.closest("[data-slot]");
+        touchFromSlot = slot ? slot.dataset.slot : null;
+        touchDogId = touchFromSlot ? state.teamPositions[touchFromSlot] : null;
+        touchClone = el.cloneNode(true);
+        touchClone.style.cssText = "position:fixed;opacity:.75;pointer-events:none;z-index:9999;font-size:0.85rem;background:#fc4c02;color:#fff;padding:6px 10px;border-radius:8px;transform:translate(-50%,-50%)";
+        document.body.appendChild(touchClone);
+      }, { passive: true });
+
+      el.addEventListener("touchmove", e => {
+        if (!touchClone) return;
+        const t = e.touches[0];
+        touchClone.style.left = t.clientX + "px";
+        touchClone.style.top  = t.clientY + "px";
+        e.preventDefault();
+      }, { passive: false });
+
+      el.addEventListener("touchend", e => {
+        if (touchClone) { touchClone.remove(); touchClone = null; }
+        const t = e.changedTouches[0];
+        const target = document.elementFromPoint(t.clientX, t.clientY)?.closest("[data-slot]");
+        if (target && touchDogId) {
+          const toSlot = target.dataset.slot;
+          if (touchFromSlot) delete state.teamPositions[touchFromSlot];
+          const prev = Object.entries(state.teamPositions).find(([,v]) => v === touchDogId);
+          if (prev) delete state.teamPositions[prev[0]];
+          state.teamPositions[toSlot] = touchDogId;
+          saveState();
+          renderSledDiagram();
+        }
+        touchDogId = null; touchFromSlot = null;
+      });
+    });
   });
 }
+
+function handleDogDragStart(event, dogId, fromSlot) {
+  _dragDogId    = dogId;
+  _dragFromSlot = fromSlot || null;
+  event.dataTransfer.setData("text/plain", dogId);
+}
+
+function handleSlotDrop(event, toSlot) {
+  event.preventDefault();
+  document.querySelectorAll(".sled-slot").forEach(s => s.classList.remove("drag-over"));
+  const dogId = _dragDogId || event.dataTransfer.getData("text/plain");
+  if (!dogId) return;
+  if (!state.teamPositions) state.teamPositions = {};
+  if (_dragFromSlot) delete state.teamPositions[_dragFromSlot];
+  const prev = Object.entries(state.teamPositions).find(([,v]) => v === dogId);
+  if (prev) delete state.teamPositions[prev[0]];
+  state.teamPositions[toSlot] = dogId;
+  _dragDogId = null; _dragFromSlot = null;
+  // Met à jour le rôle du chien
+  const roleMap = { leader:"Leader", swing:"Swing", team:"Team", wheel:"Wheel" };
+  const posKey  = toSlot.split("-")[0];
+  const dogIdx  = state.dogs.findIndex(d => d.id === dogId);
+  if (dogIdx !== -1) state.dogs[dogIdx].role = roleMap[posKey] || state.dogs[dogIdx].role;
+  saveState();
+  renderSledDiagram();
+}
+
+function removeFromSlot(slot) {
+  if (!state.teamPositions) return;
+  delete state.teamPositions[slot];
+  saveState();
+  renderSledDiagram();
+}
+// ─────────────────────────────────────────────────────────────
 
 function renderRuns() {
   const runsHtml = state.runs.map((run, index) => {

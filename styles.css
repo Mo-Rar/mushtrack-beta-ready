@@ -1167,6 +1167,37 @@ textarea {
   padding: 13px;
 }
 
+/* ── Schéma attelage ─────────────────────────────────────────── */
+.sled-diagram { margin-bottom: 12px; }
+.sled-schema { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 0; }
+.sled-row { display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center; }
+.sled-position-label {
+  font-size: 0.65rem; text-transform: uppercase; letter-spacing: .06em;
+  color: #bbb; font-weight: 700; width: 44px; text-align: center; flex-shrink: 0;
+}
+.sled-slot {
+  flex: 1; max-width: 130px; min-height: 42px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px dashed #e0e0e0; background: #fafafa;
+  transition: border-color .15s, background .15s, transform .1s;
+  cursor: pointer; position: relative;
+}
+.sled-slot.filled { border-style: solid; border-color: #fc4c02; background: #fff8f5; }
+.sled-slot.drag-over { border-color: #fc4c02; background: #fff0ea; transform: scale(1.04); }
+.sled-dog {
+  font-size: 0.78rem; font-weight: 700; color: #333;
+  display: flex; align-items: center; gap: 4px; padding: 0 6px;
+  cursor: grab; user-select: none;
+}
+.sled-empty-label { font-size: 1rem; color: #ccc; line-height: 1; }
+.sled-remove {
+  background: none; border: none; color: #ccc; font-size: 0.75rem;
+  cursor: pointer; padding: 0 0 0 4px; line-height: 1;
+}
+.sled-remove:hover { color: #fc4c02; }
+.sled-trait { width: 3px; height: 24px; background: linear-gradient(#ccc, #999); border-radius: 2px; margin: 2px 0; }
+.sled-icon { font-size: 1.8rem; line-height: 1; }
+
 .slot-row {
   display: flex;
   flex-wrap: wrap;
