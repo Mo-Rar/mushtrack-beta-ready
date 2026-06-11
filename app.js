@@ -1071,6 +1071,44 @@ function daysUntilGoal() {
   return Math.max(1, Math.ceil((goal - today) / 86400000));
 }
 
+// ── Dashboard hero ────────────────────────────────────────────
+function getTeamReadinessPct() {
+  if (state.dogs.length === 0) return null;
+  if (state.runs.length === 0) return 0;
+  const now = Date.now();
+  const runs30 = state.runs.filter(r => r.date && (now - new Date(r.date + "T12:00:00").getTime()) <= 30 * 86400000);
+  const targetWeekly = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
+  const km30 = runs30.reduce((s, r) => s + Number(r.km || 0), 0);
+  const volumeScore = Math.min(1, (targetWeekly * 4) > 0 ? km30 / (targetWeekly * 4) : 0);
+  const regulariteScore = Math.min(1, runs30.length / 12);
+  const healthyDogs = state.dogs.filter(d => d.healthSignal !== "Attention" && d.healthSignal !== "Repos").length;
+  const healthScore = healthyDogs / state.dogs.length;
+  const recovMap = { "Excellente": 1, "Bonne": 0.8, "Normale": 0.6, "A surveiller": 0.3, "Difficile": 0.1 };
+  const last5 = state.runs.slice(0, 5);
+  const recovScore = last5.length > 0 ? last5.reduce((s, r) => s + (recovMap[r.recovery] || 0.6), 0) / last5.length : 0;
+  return Math.round((volumeScore * 0.40 + regulariteScore * 0.25 + healthScore * 0.20 + recovScore * 0.15) * 100);
+}
+
+function buildHeroSentence(daysLeft, teamPct, workoutTitle) {
+  const raceName = state.raceName || state.raceType || "ta course";
+  const raceKm   = state.raceKm || "—";
+  const parts    = [];
+  if (daysLeft !== null && daysLeft > 0) {
+    parts.push(`Tu prépares ${raceName} (${raceKm} km) dans <strong>${daysLeft} jour${daysLeft > 1 ? "s" : ""}</strong>.`);
+  } else if (daysLeft !== null && daysLeft <= 0) {
+    parts.push(`La course est passée — mets à jour ton objectif dans Paramètres.`);
+  } else {
+    parts.push(`Configure ta course objectif dans Paramètres.`);
+  }
+  if (teamPct !== null) {
+    const emoji = teamPct >= 80 ? "🟢" : teamPct >= 50 ? "🟡" : "🔴";
+    parts.push(`Attelage prêt à <strong>${teamPct} %</strong> ${emoji}.`);
+  }
+  parts.push(`Séance recommandée : <strong>${workoutTitle || "endurance"}</strong>.`);
+  return parts.join(" ");
+}
+// ─────────────────────────────────────────────────────────────
+
 function render() {
   const seasonKm = getSeasonKm();
   const remainingKm = Math.max(0, state.goalKm - seasonKm);
@@ -1102,6 +1140,36 @@ function render() {
     : `Dernière sortie il y a ${lastRunDaysAgo} jours 🔴`;
   bindText("lastRunLabel", lastRunLabel);
   bindText("raceReadiness", getRaceReadiness());
+
+  // ── KPIs dashboard ──────────────────────────────────────────
+  const weekKmVal = getWeekKm();
+  const targetKmVal = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
+  // Progression saison
+  const kpiBar = document.querySelector('[data-bind-style="kpiProgressBar"]');
+  if (kpiBar) kpiBar.style.width = `${progress}%`;
+  bindText("kpiProgress", `${progress} %`);
+  // Course objectif
+  const daysLeft = state.raceDate ? daysUntil(state.raceDate) : null;
+  bindText("kpiDays", daysLeft === null ? "—" : daysLeft === 0 ? "Aujourd'hui !" : `J−${daysLeft}`);
+  bindText("kpiRaceName", state.raceName || state.raceType || "—");
+  // Attelage
+  const teamPct = getTeamReadinessPct();
+  if (teamPct !== null) {
+    bindText("kpiTeam", `${teamPct} %`);
+    bindText("kpiTeamSub", `${state.dogs.length} chien${state.dogs.length > 1 ? "s" : ""} · ${teamPct >= 80 ? "Prêts ✅" : teamPct >= 50 ? "En forme 🟡" : "Surveiller 🔴"}`);
+  } else {
+    bindText("kpiTeam", "—");
+    bindText("kpiTeamSub", "Ajoute tes chiens");
+  }
+  // Cette semaine
+  bindText("kpiWeek", `${weekKmVal.toFixed(1)} km`);
+  bindText("kpiWeekSub", weekKmVal / targetKmVal >= 0.8 ? "Objectif atteint ✅" : `Cible : ${targetKmVal} km`);
+  // Phrase hero + image selon saison
+  const heroEl = document.querySelector('[data-bind="heroSentence"]');
+  if (heroEl) heroEl.innerHTML = buildHeroSentence(daysLeft, teamPct, getNextWorkout().title);
+  const heroCard = document.querySelector('.hero-card');
+  if (heroCard) heroCard.classList.toggle('summer', state.seasonMode === 'summer');
+  // ────────────────────────────────────────────────────────────
 
   const progressBar = document.querySelector('[data-bind-style="progress"]');
   if (progressBar) progressBar.style.width = `${progress}%`;
