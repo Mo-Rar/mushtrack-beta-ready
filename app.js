@@ -1250,71 +1250,181 @@ function renderDogProfile() {
   if (!dog) return;
   activeDogId = dog.id;
   bindText("detailDogName", dog.name);
+
   const runs = state.runs.filter((run) => run.team.includes(dog.id));
   const lastRun = runs[0];
-  const recentKm = getDogRecentKm(dog.id);
-  const avgEnergy = runs.length ? runs.reduce((sum, run) => sum + Number(run.energy || 4), 0) / runs.length : 0;
-  const health = getDogHealthSignal(dog, runs, recentKm, avgEnergy);
-  const readiness = getDogReadiness(dog);
+  const recentKm  = getDogRecentKm(dog.id, 7);
+  const km30      = getDogRecentKm(dog.id, 30);
+  const fatigue   = getDogFatigueIndex(dog.id);
+  const daysSinceRest = getDogDaysSinceRest(dog.id);
+  const avgEnergy = runs.length ? runs.reduce((s, r) => s + Number(r.energy || 4), 0) / runs.length : 0;
+  const health    = getDogHealthSignal(dog, runs, recentKm, avgEnergy);
   const lastRecovery = lastRun ? lastRun.recovery : "Aucune sortie";
-  const pawStatus = lastRun ? (lastRun.paws ? "OK" : "A verifier") : "Non note";
-  const hydrationStatus = lastRun ? (lastRun.hydrated ? "OK" : "A renforcer") : "Non note";
-  const recentNotes = runs
-    .filter((run) => run.notes)
-    .slice(0, 2)
-    .map((run) => `${formatDate(run.date)} : ${run.notes}`)
-    .join("<br>") || "Aucune note recente.";
+  const pawStatus    = lastRun ? (lastRun.paws ? "OK" : "À vérifier") : "Non noté";
+  const recentNotes  = runs.filter(r => r.notes).slice(0, 2)
+    .map(r => `${formatDate(r.date)} : ${r.notes}`).join("<br>") || "Aucune note récente.";
+
+  const fatigueLabel = fatigue < 0.6 ? "Faible" : fatigue < 1.0 ? "Normal" : fatigue < 1.4 ? "Élevé" : "Très élevé";
+  const fatigueColor = fatigue < 0.6 ? "#888" : fatigue < 1.0 ? "#2f8f46" : fatigue < 1.4 ? "#e8a020" : "#d94040";
+  const formEmoji    = health.level === "danger" ? "🔴" : health.level === "warning" ? "🟡" : "🟢";
+
+  const healthHistory = Array.isArray(dog.healthHistory) ? dog.healthHistory : [];
+  const healthIcons   = { blessure:"🤕", veto:"🏥", traitement:"💊", repos:"😴", autre:"📌" };
 
   list.innerHTML = `
-    <article class="profile-hero">
-      <span>${dog.role}</span>
-      <strong>${Math.round(dog.km)} km saison</strong>
-      <p>${dog.note || "Aucune note pour ce chien."}</p>
+    <article class="profile-hero" style="position:relative">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div>
+          <span>${dog.role}</span>
+          <strong>${Math.round(dog.km)} km saison</strong>
+          <p>${dog.note || "Aucune note pour ce chien."}</p>
+        </div>
+        <div style="text-align:center;flex-shrink:0;font-size:2rem;line-height:1">${formEmoji}
+          <div style="font-size:0.7rem;font-weight:700;color:rgba(255,255,255,0.8);margin-top:4px">${health.title}</div>
+        </div>
+      </div>
     </article>
+
+    <!-- Charge individuelle -->
+    <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:10px;border:1px solid #f0f0f0;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
+      <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0 0 12px">Charge individuelle</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
+        <div>
+          <div style="font-size:1.1rem;font-weight:800;color:#1a1a1a">${recentKm.toFixed(0)} km</div>
+          <div style="font-size:0.7rem;color:#999">7 jours</div>
+        </div>
+        <div>
+          <div style="font-size:1.1rem;font-weight:800;color:#1a1a1a">${km30.toFixed(0)} km</div>
+          <div style="font-size:0.7rem;color:#999">30 jours</div>
+        </div>
+        <div>
+          <div style="font-size:1.1rem;font-weight:800;color:${fatigueColor}">${fatigueLabel}</div>
+          <div style="font-size:0.7rem;color:#999">Fatigue</div>
+        </div>
+      </div>
+      ${daysSinceRest !== null
+        ? `<p style="font-size:0.78rem;color:#888;margin:10px 0 0;text-align:center">Dernière bonne récupération il y a ${daysSinceRest} jour${daysSinceRest > 1 ? "s" : ""}</p>`
+        : ""}
+    </div>
+
     <section class="profile-grid">
       <article><span>Naissance</span><b>${formatDogBirthdate(dog.birthdate)}</b></article>
-      <article><span>Age calcule</span><b>${getDogAge(dog)} ans</b></article>
+      <article><span>Âge</span><b>${getDogAge(dog)} ans</b></article>
       <article>${buildWeightSparkline(dog)}</article>
-      <article><span>7 jours</span><b>${recentKm.toFixed(1)} km</b></article>
-      <article><span>Energie moy.</span><b>${avgEnergy ? avgEnergy.toFixed(1) : "-"}/5</b></article>
-      <article><span>Recuperation</span><b>${lastRecovery}</b></article>
-      <article><span>Harnais</span><b>${dog.harness || "A noter"}</b></article>
-      <article><span>Statut</span><b>${readiness.title}</b></article>
+      <article><span>Énergie moy.</span><b>${avgEnergy ? avgEnergy.toFixed(1) : "—"}/5</b></article>
+      <article><span>Récupération</span><b>${lastRecovery}</b></article>
+      <article><span>Harnais</span><b>${dog.harness || "À noter"}</b></article>
     </section>
+
     <section class="dog-health-grid">
       <article class="dog-health ${health.level}">
-        <span>Etat du jour</span>
+        <span>État du jour</span>
         <b>${health.title}</b>
         <p>${health.text}</p>
       </article>
       <article>
-        <span>Carnet sante</span>
-        <b>Pattes ${pawStatus} - Hydratation ${hydrationStatus}</b>
+        <span>Carnet santé</span>
+        <b>Pattes ${pawStatus}</b>
         <p>${recentNotes}</p>
       </article>
       <article class="${dog.limitation ? "danger" : ""}">
         <span>Point de vigilance</span>
         <b>${dog.limitation || "Rien de particulier"}</b>
-        <p>${dog.vet ? `Suivi veto : ${dog.vet}` : "Ajoute ici les infos veto, blessures, sensibilites ou repos impose."}</p>
+        <p>${dog.vet ? `Suivi véto : ${dog.vet}` : "Ajoute les infos véto, blessures ou repos."}</p>
       </article>
     </section>
+
+    <!-- Historique santé -->
+    <div style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0">Historique santé</p>
+        <button type="button" id="add-health-event-btn" style="font-size:0.78rem;color:#fc4c02;background:none;border:none;font-weight:700;cursor:pointer">+ Ajouter</button>
+      </div>
+      <form id="health-event-form" style="display:none;flex-direction:column;gap:8px;background:#fff;border-radius:12px;padding:14px;border:1px solid #f0f0f0;margin-bottom:8px">
+        <select id="health-event-type" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem">
+          <option value="blessure">🤕 Blessure</option>
+          <option value="veto">🏥 Visite vétérinaire</option>
+          <option value="traitement">💊 Traitement</option>
+          <option value="repos">😴 Repos imposé</option>
+          <option value="autre">📌 Autre</option>
+        </select>
+        <input id="health-event-date" type="date" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem" />
+        <textarea id="health-event-notes" placeholder="Description..." rows="2" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem;resize:none"></textarea>
+        <div style="display:flex;gap:8px">
+          <button type="submit" style="flex:1;padding:9px;background:#fc4c02;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">Enregistrer</button>
+          <button type="button" id="health-event-cancel" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;cursor:pointer">Annuler</button>
+        </div>
+      </form>
+      ${healthHistory.length === 0
+        ? `<p style="font-size:0.82rem;color:#aaa;text-align:center;padding:12px">Aucun événement enregistré.</p>`
+        : healthHistory.slice().reverse().map((evt, i) => `
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:#fff;border-radius:10px;border:1px solid #f0f0f0;margin-bottom:6px">
+            <span style="font-size:1.2rem">${healthIcons[evt.type] || "📌"}</span>
+            <div style="flex:1">
+              <div style="font-size:0.8rem;color:#999">${evt.date ? formatFullDate(evt.date) : "—"}</div>
+              <div style="font-size:0.88rem;font-weight:600;color:#333">${evt.notes || evt.type}</div>
+            </div>
+            <button type="button" data-delete-health="${healthHistory.length - 1 - i}" style="background:none;border:none;color:#ccc;font-size:0.9rem;cursor:pointer">✕</button>
+          </div>`).join("")
+      }
+    </div>
+
     <article class="advice-card ${recentKm > 45 ? "important" : ""}">
       <span>Coach</span>
       <h2>${recentKm > 45 ? "Charge haute" : "Charge correcte"}</h2>
       <p>${getDogAdvice(dog, recentKm, lastRun)}</p>
     </article>
+
     <section class="run-list">
       ${runs.slice(0, 4).map((run) => `
         <article>
           <div>
             <b>${run.type}</b>
-            <span>${formatDate(run.date)} - ${run.recovery} - energie ${run.energy}/5</span>
+            <span>${formatDate(run.date)} · ${run.recovery} · énergie ${run.energy}/5</span>
           </div>
           <strong>${Number(run.km).toFixed(1)} km</strong>
         </article>
       `).join("") || `<p class="empty-state">Pas encore de sortie pour ${dog.name}.</p>`}
     </section>
   `;
+
+  // Bouton + Ajouter événement santé
+  const addBtn = list.querySelector("#add-health-event-btn");
+  const healthForm = list.querySelector("#health-event-form");
+  addBtn?.addEventListener("click", () => {
+    healthForm.style.display = healthForm.style.display === "none" ? "flex" : "none";
+    if (healthForm.style.display !== "none") {
+      list.querySelector("#health-event-date").value = new Date().toISOString().slice(0, 10);
+    }
+  });
+  list.querySelector("#health-event-cancel")?.addEventListener("click", () => {
+    healthForm.style.display = "none";
+  });
+  healthForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const dogIdx = state.dogs.findIndex(d => d.id === dog.id);
+    if (dogIdx === -1) return;
+    if (!Array.isArray(state.dogs[dogIdx].healthHistory)) state.dogs[dogIdx].healthHistory = [];
+    state.dogs[dogIdx].healthHistory.push({
+      type:  list.querySelector("#health-event-type").value,
+      date:  list.querySelector("#health-event-date").value,
+      notes: list.querySelector("#health-event-notes").value.trim()
+    });
+    saveState();
+    renderDogProfile();
+  });
+
+  // Supprimer événement santé
+  list.querySelectorAll("[data-delete-health]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = Number(btn.dataset.deleteHealth);
+      const dogIdx = state.dogs.findIndex(d => d.id === dog.id);
+      if (dogIdx === -1) return;
+      state.dogs[dogIdx].healthHistory = (state.dogs[dogIdx].healthHistory || []).filter((_, i) => i !== idx);
+      saveState();
+      renderDogProfile();
+    });
+  });
 }
 
 function renderDogPicker() {
@@ -2807,12 +2917,26 @@ function buildAlerts() {
   return alerts.slice(0, 7);
 }
 
-function getDogRecentKm(id) {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 7);
+function getDogRecentKm(id, days = 7) {
+  const cutoff = Date.now() - days * 86400000;
   return state.runs
-    .filter((run) => new Date(`${run.date}T12:00:00`) >= cutoff && run.team.includes(id))
-    .reduce((sum, run) => sum + Number(run.km), 0);
+    .filter(r => r.date && new Date(`${r.date}T12:00:00`).getTime() >= cutoff && r.team.includes(id))
+    .reduce((sum, r) => sum + Number(r.km || 0), 0);
+}
+
+function getDogFatigueIndex(id) {
+  const km7 = getDogRecentKm(id, 7);
+  const targetWeekly = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
+  const perDog = state.dogs.length > 0 ? targetWeekly / state.dogs.length : targetWeekly;
+  return perDog > 0 ? km7 / perDog : 0;
+}
+
+function getDogDaysSinceRest(id) {
+  const goodRecov = ["Bonne", "Excellente"];
+  const run = state.runs.find(r => r.team.includes(id) && goodRecov.includes(r.recovery));
+  if (!run || !run.date) return null;
+  const diff = Math.round((Date.now() - new Date(`${run.date}T12:00:00`).getTime()) / 86400000);
+  return diff;
 }
 
 function getWeeklyTotals() {
