@@ -90,6 +90,8 @@ function onAuthSuccess(user) {
   saveState();
   hideAuthOverlay();
   addUserBar(user.email);
+  // Réaffiche le panel admin maintenant qu'on connaît l'utilisateur
+  renderAdminPanel();
 }
 
 function addUserBar(email) {
@@ -386,6 +388,7 @@ const defaultState = {
   goalDate: "2027-01-01",
   seasonMode: "winter",
   raceType: "Mid-distance",
+  raceName: "",
   raceKm: 100,
   raceDate: "2026-12-15",
   profile: {
@@ -849,25 +852,51 @@ function renderRuns() {
   const runsHtml = state.runs.map((run, index) => {
     const teamNames = run.team.map((id) => state.dogs.find((dog) => dog.id === id)?.name).filter(Boolean).join(", ");
     const hasTrace = Array.isArray(run.path) && run.path.length > 1;
+    const km = Number(run.km).toFixed(1);
+    const speed = Number(run.avgSpeed || 0).toFixed(1);
+    const dur = run.duration ? formatDuration(run.duration) : "--:--";
+    const paceMin = (run.avgSpeed && run.avgSpeed > 0) ? Math.floor(60 / run.avgSpeed) : null;
+    const paceSec = (run.avgSpeed && run.avgSpeed > 0) ? Math.round((60 / run.avgSpeed - Math.floor(60 / run.avgSpeed)) * 60) : null;
+    const paceStr = paceMin !== null ? `${paceMin}:${String(paceSec).padStart(2,'0')}` : "--:--";
     return `
       <article class="run-card" data-run-index="${index}">
-        <div>
-          <b>${run.type}</b>
-          <span>${formatDate(run.date)} - ${run.weather} - ${run.recovery} - ${teamNames || "Team non precisee"}</span>
+        <div class="run-card-header">
+          <div class="run-card-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/></svg>
+          </div>
+          <div class="run-card-meta">
+            <div class="run-card-title">${run.type}</div>
+            <div class="run-card-date">${formatDate(run.date)}${teamNames ? " · " + teamNames : ""}</div>
+          </div>
+          <button class="strava-run-menu" data-run-option="${index}" type="button" title="Modifier">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+          </button>
         </div>
-        <strong>${Number(run.km).toFixed(1)} km</strong>
-        ${hasTrace ? renderRoutePreview(run.path) : `<div class="route-preview empty">Trace GPS non disponible</div>`}
+        ${hasTrace ? renderRoutePreview(run.path) : ""}
+        <div class="run-card-stats">
+          <div class="run-stat">
+            <span class="run-stat-value">${km}</span>
+            <span class="run-stat-label">km</span>
+          </div>
+          <div class="run-stat">
+            <span class="run-stat-value">${dur}</span>
+            <span class="run-stat-label">Durée</span>
+          </div>
+          <div class="run-stat">
+            <span class="run-stat-value">${paceStr}</span>
+            <span class="run-stat-label">min/km</span>
+          </div>
+        </div>
         <div class="run-details">
-          <span>Vitesse ${Number(run.avgSpeed || 0).toFixed(1)} km/h</span>
-          <span>Energie ${run.energy || "-"}/5</span>
-          <span>Pattes ${run.paws ? "OK" : "a verifier"}</span>
-          <span>Hydratation ${run.hydrated ? "OK" : "a renforcer"}</span>
-          <p>${run.notes || "Aucune note ajoutee apres cette sortie."}</p>
-        </div>
-        <div class="card-actions">
-          <button class="secondary-button" data-run-details="${index}" type="button">Details</button>
-          <button class="secondary-button" data-run-option="${index}" type="button">Modifier</button>
-          <button class="danger-button" data-delete-run="${index}" type="button">Supprimer</button>
+          <span>Vitesse ${speed} km/h</span>
+          <span>Énergie ${run.energy || "-"}/5</span>
+          <span>Pattes ${run.paws ? "OK" : "à vérifier"}</span>
+          <span>Hydratation ${run.hydrated ? "OK" : "à renforcer"}</span>
+          <p>${run.notes || "Aucune note ajoutée."}</p>
+          <div class="card-actions">
+            <button class="secondary-button" data-run-option="${index}" type="button">Modifier</button>
+            <button class="danger-button" data-delete-run="${index}" type="button">Supprimer</button>
+          </div>
         </div>
       </article>
     `;
@@ -883,14 +912,8 @@ function renderRuns() {
     list.querySelectorAll("[data-run-option]").forEach((button) => {
       button.addEventListener("click", (event) => {
         event.stopPropagation();
-        editRun(Number(button.dataset.runOption));
-      });
-    });
-
-    list.querySelectorAll("[data-run-details]").forEach((button) => {
-      button.addEventListener("click", (event) => {
-        event.stopPropagation();
-        button.closest(".run-card")?.classList.toggle("show-details");
+        const card = button.closest(".run-card");
+        if (card) card.classList.toggle("show-details");
       });
     });
 
@@ -1041,56 +1064,760 @@ function renderAlerts() {
   `).join("") || `<p class="empty-state">Aucune alerte. La charge semble bien repartie.</p>`;
 }
 
+// ── Conseils chiens sportifs — banque de 30 conseils ─────────────────────────
+const ADVICE_BANK = [
+  {
+    label: "Échauffement",
+    title: "5 minutes de trot avant l'effort",
+    text: "Un échauffement progressif prépare les tendons, les muscles et le système cardio-vasculaire. Commence toujours par 3 à 5 minutes de trot léger avant d'augmenter l'allure. Les blessures tendineuses surviennent souvent sur des chiens partis trop vite à froid.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Récupération",
+    title: "Le retour au calme est aussi important que l'effort",
+    text: "Après une sortie intense, 5 à 10 minutes de marche permettent de relancer la circulation et d'évacuer l'acide lactique. Observer la respiration, la démarche et l'appétit dans les heures qui suivent donne de précieuses informations sur l'état du chien.",
+    source: "IFSS Athlete Guidelines",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Hydratation",
+    title: "Proposer souvent, ne pas attendre la soif",
+    text: "Un chien sportif ne se rend pas compte de sa déshydratation. Propose de petites prises régulières avant, pendant et après l'effort. En hiver, l'eau doit rester liquide : un chien qui mange de la neige compense mais pas suffisamment.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Nutrition",
+    title: "Graisses pour l'endurance, glucides pour le sprint",
+    text: "Les chiens d'endurance (Iditarod, mid-distance) fonctionnent à 60–70 % sur les lipides. Les chiens de sprint utilisent davantage les glucides. En saison, augmente progressivement la ration de 10 à 30 % selon la charge d'entraînement.",
+    source: "Purina / ISDVMA",
+    url: "https://www.purina.com/articles/dog/health/nutrition/sled-dog-nutrition"
+  },
+  {
+    label: "Coussinets",
+    title: "Durcissement progressif avant la saison",
+    text: "Les coussinets s'endurcissent avec une exposition graduelle à différentes surfaces. Commence sur herbe et terrain souple, puis introduis gravier et asphalte frais sur de courtes distances. Un coussinet dur résiste mieux à la neige abrasive et au bitume chaud.",
+    source: "Cornell Canine Health",
+    url: "https://www.vet.cornell.edu/departments-centers-and-institutes/riney-canine-health-center"
+  },
+  {
+    label: "Chaleur",
+    title: "Sortir tôt le matin, pas après 10h en été",
+    text: "Les chiens évacuent la chaleur principalement par le halètement et les coussinets. Au-delà de 20°C avec humidité, les risques d'hyperthermie augmentent rapidement. Préfère l'aube ou le crépuscule, en forêt ou sur herbe, avec eau disponible.",
+    source: "Cornell / Red Cross",
+    url: "https://www.vet.cornell.edu/departments-centers-and-institutes/riney-canine-health-center/canine-health-topics/summer-heat-safety-tips-dogs"
+  },
+  {
+    label: "Coup de chaleur",
+    title: "Signaux d'alerte à ne jamais ignorer",
+    text: "Halètement excessif, bave épaisse, faiblesse, confusion, vomissements ou effondrement = urgence. Refroidis progressivement avec de l'eau fraîche (pas de glace), arrose cou, aines et pattes, puis vétérinaire immédiatement.",
+    source: "American Red Cross",
+    url: "https://www.redcross.org/take-a-class/resources/learn-pet-first-aid/dog/heat-stroke"
+  },
+  {
+    label: "Froid",
+    title: "Hypothermie : à surveiller après l'effort",
+    text: "Un chien mouillé qui s'arrête perd sa chaleur rapidement. Sèche les chiens après la sortie, évite les longues pauses par temps froid et humide. Les chiens à poil court ou peu entraînés sont plus vulnérables que les nordiques.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Pattes",
+    title: "Glace entre les doigts : source de boiteries",
+    text: "En conditions neige/gel, des boules de glace peuvent se former entre les doigts et créer une douleur aiguë. Vérifie et décoince-les régulièrement pendant la sortie. La cire de protection pour pattes réduit ce risque et protège aussi la neige abrasive.",
+    source: "Canicross UK",
+    url: "https://canicrossuk.com/blog/f/when-canicrossing-in-hotter-weather"
+  },
+  {
+    label: "Tendinites",
+    title: "La surcharge arrive souvent au retour de vacances",
+    text: "Après une pause de 2 semaines ou plus, les chiens perdent leur condition physique plus vite que les humains. Ne reprends pas à la même intensité qu'avant la coupure. Une reprise progressive sur 2 à 3 semaines évite 80 % des blessures tendineuses.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Sommeil",
+    title: "16 à 18h de sommeil par jour pour un chien sportif",
+    text: "Le chien sportif a besoin de plus de repos que le chien sédentaire. La réparation musculaire et la consolidation des apprentissages se font principalement pendant le sommeil. Un chien qui dort bien récupère bien.",
+    source: "VetCompass / RVC",
+    url: "https://www.rvc.ac.uk/vetcompass"
+  },
+  {
+    label: "Progressivité",
+    title: "La règle des 10 % par semaine",
+    text: "N'augmente jamais le volume hebdomadaire de plus de 10 % par rapport à la semaine précédente. Les tendons et cartilages mettent plus de temps à s'adapter que les muscles. C'est cette différence qui provoque les blessures de surcharge.",
+    source: "Journal of Veterinary Sports Medicine",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Alimentation",
+    title: "Ne pas nourrir juste avant l'effort",
+    text: "Un repas important dans les 2 heures précédant l'effort peut provoquer une dilatation gastrique, surtout chez les grandes races. En pratique : repas léger ou rien 2h avant la sortie, et repas principal après le retour au calme complet.",
+    source: "Purina / ISDVMA",
+    url: "https://www.purina.com/articles/dog/health/nutrition/sled-dog-nutrition"
+  },
+  {
+    label: "Muscles",
+    title: "Masse musculaire visible = chien bien préparé",
+    text: "Un chien sportif bien conditionné a une musculature dorsale, lombaire et des cuisses développée. Observe régulièrement la silhouette : perte de masse sur le dos ou les cuisses = signal de surcharge ou d'alimentation insuffisante.",
+    source: "AKC Canine Health Foundation",
+    url: "https://www.akcchf.org/"
+  },
+  {
+    label: "Harnais",
+    title: "Un harnais mal ajusté = frottements et blocages",
+    text: "Un harnais trop large frotte les aisselles et peut créer des plaies. Trop serré, il limite la foulée. L'idéal : 2 doigts entre le harnais et le corps sur toute la surface. Vérifie l'ajustement à chaque sortie car le poids du chien fluctue.",
+    source: "ESDRA / FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Comportement",
+    title: "Un chien qui tire moins = signe à surveiller",
+    text: "Un chien qui tire nettement moins qu'à son habitude peut exprimer une douleur, une fatigue excessive ou un problème de santé débutant. Ce signal précède souvent la boiterie de plusieurs jours. Note-le dans MushTrack et observe les jours suivants.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Vétérinaire",
+    title: "Bilan sportif annuel : un investissement",
+    text: "Un bilan vétérinaire sportif avant la saison (auscultation cardiaque, palpation des tendons, poids, dentition) permet de détecter des problèmes avant qu'ils deviennent graves. Certains vétérinaires proposent aussi un ECG pour les chiens d'endurance.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Équipe",
+    title: "Chaque chien a sa place dans l'attelage",
+    text: "En attelage, les chiens de tête (leaders) ont besoin de bonnes capacités de concentration et d'obéissance. Les roues (proches du sled) sont généralement les plus puissants. Observer les affinités entre chiens aide à former des paires qui tirent mieux ensemble.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Parasites",
+    title: "Tiques et filariose : protection avant la saison",
+    text: "Les chiens sportifs évoluent souvent en milieu boisé ou humide où les tiques sont nombreuses. Vérifie chaque chien après la sortie, en particulier oreilles, aines, cou et entre les doigts. Maintiens à jour la protection antiparasitaire toute l'année.",
+    source: "ESCCAP Guidelines",
+    url: "https://www.esccap.org/"
+  },
+  {
+    label: "Récupération active",
+    title: "La nage : meilleure rééducation musculaire",
+    text: "La nage en eau fraîche combine refroidissement, stimulation musculaire et décharge articulaire. Pour un chien qui récupère d'une blessure légère ou d'une grosse semaine de travail, une courte séance de nage peut remplacer une sortie de récupération.",
+    source: "AKC Canine Health Foundation",
+    url: "https://www.akcchf.org/"
+  },
+  {
+    label: "Psychologie",
+    title: "Un chien motivé progresse plus vite",
+    text: "La motivation est un carburant au même titre que la nutrition. Varie les parcours, alterne efforts et séances de jeu, termine toujours sur une note positive. Un chien qui s'ennuie ou subit l'entraînement développe des comportements d'évitement et régresse.",
+    source: "Canicross UK",
+    url: "https://canicrossuk.com/"
+  },
+  {
+    label: "Électrolytes",
+    title: "En compétition, prévoir des électrolytes",
+    text: "Lors d'efforts longs (plus de 60 à 90 minutes) ou par grande chaleur, les chiens perdent des sels minéraux par transpiration et halètement. Des compléments électrolytiques spécifiques pour chiens sportifs permettent une meilleure récupération.",
+    source: "Purina Pro Plan Veterinary",
+    url: "https://www.purina.com/articles/dog/health/nutrition/sled-dog-nutrition"
+  },
+  {
+    label: "Truffe",
+    title: "Soleil fort : protéger les truffe roses",
+    text: "Les chiens à truffe rose ou dépigmentée peuvent souffrir de coups de soleil sur le museau, surtout lors de sorties longues en altitude ou en neige réfléchissante. Applique un écran solaire adapté aux chiens (non toxique si léché) avant les longues sorties.",
+    source: "VCA Animal Hospitals",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Cardio",
+    title: "Le cœur s'adapte à l'entraînement",
+    text: "Chez les chiens d'endurance bien entraînés, la fréquence cardiaque au repos peut descendre en dessous de 50 bpm (contre 60–100 chez un sédentaire). Une bonne condition cardio se construit sur 3 à 6 mois d'entraînement progressif.",
+    source: "ISDVMA / Veterinary Cardiology",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Blessure",
+    title: "Boiterie légère = repos 3 jours minimum",
+    text: "Une boiterie légère après l'effort qui disparaît le lendemain matin est le premier signe d'une tendinite débutante. 3 jours de repos complet suffisent souvent. Ignorer ce signe et continuer l'entraînement peut transformer une micro-lésion en blessure grave.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Poids",
+    title: "Peser son chien chaque mois",
+    text: "Un chien sportif bien nourri et bien entraîné maintient un poids stable avec une légère variation selon l'intensité de la saison. Une perte de poids sans changement de ration mérite une consultation vétérinaire. On doit sentir les côtes sans les voir.",
+    source: "Cornell Canine Health",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Dents",
+    title: "Santé dentaire et performance",
+    text: "Des dents douloureuses ou infectées réduisent l'appétit et donc les performances. Un détartrage annuel et un brossage hebdomadaire maintiennent une bonne hygiène buccale. L'haleine d'un chien sportif sain ne devrait pas être forte.",
+    source: "AVMA Dental Guidelines",
+    url: "https://www.avma.org/"
+  },
+  {
+    label: "Altitude",
+    title: "En montagne, acclimatation nécessaire",
+    text: "Au-dessus de 2000 m, les chiens comme les humains ont besoin de 2 à 3 jours pour s'acclimater avant de pouvoir fournir un effort maximal. Réduis le volume et l'intensité lors des premiers jours en altitude, observe la récupération et hydrate davantage.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Communication",
+    title: "Apprendre à lire le langage corporel",
+    text: "Un chien qui baisse les oreilles, tourne la tête, se lèche les babines ou bâille en plein effort envoie des signaux de stress ou d'inconfort. Ces micro-signaux, visibles en s'observant et en filmant les sorties, permettent d'anticiper la fatigue ou la douleur.",
+    source: "Turid Rugaas / Canicross",
+    url: "https://canicrossuk.com/"
+  },
+  {
+    label: "Semaine de récup",
+    title: "Une semaine légère toutes les 3 à 4 semaines",
+    text: "Intégrer une semaine de récupération (volume réduit de 40 à 50 %, intensité légère) permet aux tendons, cartilages et au système nerveux de récupérer. Les chiens qui ont des semaines de récup dans leur plan progressent plus vite et se blessent moins.",
+    source: "IFSS Athlete Guidelines",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Neige vs Trail",
+    title: "Le passage neige → terrain dur demande une adaptation",
+    text: "Les chiens habitués à courir sur neige souple ont des coussinets plus sensibles aux terrains durs. En début de saison dryland ou lors du passage hiver → printemps, réduis les distances sur asphalte et observe les coussinets quotidiennement pendant 2 semaines.",
+    source: "FFSLC / Canicross France",
+    url: "https://ffslc.fr/"
+  },
+
+  // ── Conseils 31–100 ──────────────────────────────────────────────
+
+  {
+    label: "Cire coussinets",
+    title: "La cire protège, elle ne remplace pas l'endurance",
+    text: "La cire pour coussinets (Musher's Secret, Pawz, etc.) protège contre la neige collante, le sel de déneigement et les terrains abrasifs. Elle ne remplace pas un durcissement progressif. Applique avant la sortie sur des coussinets propres et secs. Idéal aussi après la sortie pour hydrater.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Alimentation hiver",
+    title: "En grand froid, doubler la ration peut être nécessaire",
+    text: "Par températures très négatives (en dessous de -20°C), un chien de traîneau peut brûler 2 à 3 fois plus de calories que d'habitude pour maintenir sa température. Les mushers de longue distance augmentent la ration de graisse (suif, huile de saumon) plutôt que de glucides.",
+    source: "Iditarod Vet Guidelines",
+    url: "https://iditarod.com/race/veterinary/"
+  },
+  {
+    label: "Bottes chien",
+    title: "Les bottes : à utiliser avec précaution",
+    text: "Les bottes protègent les coussinets lors de sorties sur neige croûtée, glace ou sel. Mais elles modifient la proprioception du chien et peuvent créer des irritations si mal ajustées. Habitue le chien progressivement, commence par 2 pattes, et vérifie après chaque sortie.",
+    source: "Canicross UK",
+    url: "https://canicrossuk.com/"
+  },
+  {
+    label: "Foulée",
+    title: "Observer la foulée permet de détecter une douleur précoce",
+    text: "Filme tes chiens de profil et de derrière pendant l'effort. Une légère asymétrie de foulée, un manque d'amplitude ou une tête qui monte à chaque appui sont souvent visibles sur vidéo avant d'être perceptibles à l'œil en courant avec eux.",
+    source: "ISDVMA / Physio canine",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Chien vieillissant",
+    title: "À partir de 7 ans, adapter la charge progressivement",
+    text: "Les chiens nordiques restent performants jusqu'à 10-12 ans, mais leur récupération ralentit à partir de 7-8 ans. Réduis les intensités élevées, augmente les jours de récupération et sois plus attentif aux signes de raideur matinale. La qualité prime sur la quantité.",
+    source: "VCA Animal Hospitals",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Jeune chien",
+    title: "Avant 18 mois : pas de course à impact répété",
+    text: "Les plaques de croissance des chiens ne sont pas fermées avant 12 à 18 mois selon la race. Les efforts répétés à haute intensité avant cet âge peuvent créer des lésions définitives. Favorise le jeu, la marche, la natation et le travail léger jusqu'à la maturité osseuse.",
+    source: "Cornell Canine Health",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Vaccination",
+    title: "Vaccins à jour avant les regroupements de chiens",
+    text: "En compétition ou stage, tes chiens côtoient des dizaines d'autres chiens. Leptospirose, toux du chenil, parvovirose, rage (si international) : vérifie que les rappels sont à jour 3 semaines avant tout événement pour que l'immunité soit maximale.",
+    source: "ESCCAP Guidelines",
+    url: "https://www.esccap.org/"
+  },
+  {
+    label: "Vermifuge",
+    title: "Vermifuger tous les 3 mois chez le chien sportif",
+    text: "Les chiens actifs en milieu naturel sont plus exposés aux parasites internes. Un vermifuge large spectre tous les 3 mois est recommandé. Certains parasites (ténia, giardia) peuvent affecter l'absorption des nutriments et donc les performances.",
+    source: "ESCCAP Guidelines",
+    url: "https://www.esccap.org/"
+  },
+  {
+    label: "Musculature dorsale",
+    title: "Renforcer le dos pour prévenir les blessures de traction",
+    text: "Les chiens qui tirent (traîneau, bikejoring, canicross) sollicitent fortement les muscles du dos et des épaules. Des exercices de proprioception (marcher sur surfaces instables, cavalettis, natation) renforcent ces muscles et réduisent le risque de hernies discales.",
+    source: "Physiothérapie vétérinaire / CCRP",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Lombes",
+    title: "Surveiller la sensibilité lombaire après effort intense",
+    text: "Après une grosse semaine, passe tes mains le long de la colonne vertébrale du chien. Un tressautement des muscles ou une raideur à la palpation lombaire peut indiquer un début de tension musculaire. 2 jours de repos et massage doux suffisent souvent.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Nettoyage oreilles",
+    title: "Les chiens actifs en forêt accumulent plus de débris",
+    text: "Après chaque sortie en terrain boisé ou humide, vérifie les oreilles. Les chiens aux oreilles tombantes sont plus sujets aux otites. Un coton légèrement imbibé de lotion auriculaire et un contrôle visuel hebdomadaire suffisent à prévenir la plupart des problèmes.",
+    source: "VCA Animal Hospitals",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Griffes",
+    title: "Des griffes trop longues modifient l'appui et fatiguent les tendons",
+    text: "Des griffes qui touchent le sol en position debout forcent les doigts en hyperextension, créant une tension sur les tendons fléchisseurs. Coupe-les toutes les 3 à 4 semaines ou après chaque longue course sur terrain dur qui les lime naturellement.",
+    source: "Cornell Canine Health",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Eau froide",
+    title: "Laisser boire de l'eau froide n'est pas dangereux",
+    text: "Contrairement à une idée reçue, l'eau froide après l'effort ne provoque pas de crampes chez le chien. Ce qui compte c'est la quantité : laisser boire par petites prises pour ne pas provoquer de dilatation gastrique, surtout chez les grandes races.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Alimentation post-effort",
+    title: "La fenêtre métabolique : 30 à 90 minutes après l'effort",
+    text: "Les muscles sont particulièrement réceptifs aux nutriments dans l'heure qui suit l'effort. Un repas riche en protéines et graisses dans cette fenêtre accélère la récupération musculaire. Pour les courses longues, une collation de récupération (viande, fromage) avant le repas principal est utile.",
+    source: "Purina Pro Plan Veterinary",
+    url: "https://www.purina.com/"
+  },
+  {
+    label: "Canicross débutant",
+    title: "Débuter par la marche active, pas la course",
+    text: "Pour un chien débutant en canicross, commence par des marches énergiques en laisse classique avant d'introduire la ligne élastique. Il doit d'abord comprendre le concept de tirer vers l'avant sans distraction. La course vient après la confiance.",
+    source: "FFSLC / Canicross France",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Ligne de trait",
+    title: "Vérifier régulièrement l'état du matériel de traction",
+    text: "Les lignes de trait, traits d'attelage et connecteurs en caoutchouc se fragilisent avec le temps et le froid. Une ligne qui lâche en pleine descente peut provoquer une chute grave. Inspecte coutures, mousquetons et élastiques avant chaque sortie sérieuse.",
+    source: "ESDRA",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Forge mentale",
+    title: "Habituer le chien aux imprévus de course",
+    text: "En compétition, les chiens sont confrontés à d'autres chiens, foules, véhicules, bruits inhabituels. Intègre ces expositions progressivement à l'entraînement : cours dans des environnements variés, habitue ton chien à croiser d'autres équipes au départ.",
+    source: "Comportement canin / FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Gestion de meute",
+    title: "La hiérarchie sociale influence les performances",
+    text: "Des tensions entre chiens de l'attelage réduisent les performances et augmentent le stress de tous. Identifie les affinités et les incompatibilités. Les paires qui s'entendent bien tirent mieux ensemble. Évite de forcer des chiens incompatibles en tandem.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Bivouac",
+    title: "En longue distance : l'arrêt est une partie de la course",
+    text: "Pour les mid-distance et longues distances, les pauses obligatoires sont une opportunité de récupération. Maîtriser l'art du bivouac (alimentation rapide, massage des chiens, remplacement des bottes) peut faire gagner autant de temps qu'une belle allure.",
+    source: "Iditarod Vet Guidelines",
+    url: "https://iditarod.com/race/veterinary/"
+  },
+  {
+    label: "Massage sportif",
+    title: "5 minutes de massage après l'effort = moins de courbatures",
+    text: "Un effleurage léger des masses musculaires principales (épaules, cuisses, dos) après la sortie améliore la circulation et accélère l'élimination des déchets métaboliques. Commence toujours par des mouvements doux dans le sens du poil, en observant les réactions du chien.",
+    source: "Physiothérapie vétérinaire / CCRP",
+    url: "https://www.akcchf.org/"
+  },
+  {
+    label: "Crochets d'attelage",
+    title: "Apprendre les commandes de base avant l'attelage",
+    text: "Avant de harnacher un chien pour la première fois, il doit répondre à : son nom, arrêt, allons-y (ou hike), et gauche/droite pour les leaders. Ces bases facilitent la sécurité et la communication pendant la sortie, surtout sur des carrefours.",
+    source: "FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Surentraînement",
+    title: "Le surentraînement se détecte sur le comportement, pas seulement la performance",
+    text: "Un chien surentraîné ne montre pas toujours de baisse de performance immédiate. Les premiers signes sont comportementaux : moins d'enthousiasme au départ, irritabilité, mauvais appétit, sommeil agité. Prends ces signaux au sérieux avant qu'une blessure ne s'installe.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Fréquence cardiaque",
+    title: "Apprendre à prendre le pouls de son chien",
+    text: "Le pouls se prend à l'intérieur de la cuisse (artère fémorale) ou sur le thorax derrière le coude gauche. Au repos : 60–100 bpm. Après effort intense : jusqu'à 200–220 bpm. Il doit revenir sous 100 bpm dans les 5 minutes suivant l'arrêt de l'effort.",
+    source: "Cornell Canine Health",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Respiration",
+    title: "Le halètement anormal : 3 critères à surveiller",
+    text: "Un halètement est préoccupant s'il est : 1) disproportionné à l'effort fourni, 2) accompagné de bruits inhabituels (sifflement, ronflement), 3) toujours présent 10 minutes après l'arrêt. Ces signes peuvent indiquer une hyperthermie, une douleur ou un problème respiratoire.",
+    source: "American Red Cross / VCA",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Gencives",
+    title: "La couleur des gencives est un indicateur vital",
+    text: "Des gencives roses et humides = chien bien hydraté et oxygéné. Des gencives pâles (anémie possible), blanches (choc), bleues (manque d'oxygène) ou brun-gris (intoxication) sont des urgences vétérinaires. Test de remplissage capillaire : appuie 2 secondes, les gencives doivent redevenir roses en moins de 2 secondes.",
+    source: "American Red Cross",
+    url: "https://www.redcross.org/"
+  },
+  {
+    label: "Course de nuit",
+    title: "Préparer les chiens aux sorties nocturnes",
+    text: "En compétition hivernale, une partie du parcours se fait souvent de nuit. Habilitue tes chiens aux sorties avec frontale pendant l'entraînement. Les lumières des véhicules ou les ombres peuvent perturber certains chiens. La familiarisation progressive évite les blocages en course.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Chaleur et races",
+    title: "Certaines races supportent mieux la chaleur que d'autres",
+    text: "Les races brachycéphales (Boxer, Bouledogue) et les nordiques à double manteau (Husky, Malamute) surchauffent plus vite. Les races à pelage court et fin ou d'origine méditerranéenne (Greyhound, Vizsla, Braque) tolèrent mieux la chaleur mais sont moins isolées en hiver.",
+    source: "Cornell Canine Health",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Poids de course",
+    title: "En compétition, un chien légèrement plus sec court mieux",
+    text: "Un excès de poids de 5 à 10 % au-dessus du poids de course idéal augmente significativement la dépense énergétique. À l'inverse, un chien trop maigre manque de réserves. L'objectif est de sentir les côtes facilement sans les voir, avec une légère silhouette athlétique.",
+    source: "Purina / ISDVMA",
+    url: "https://www.purina.com/"
+  },
+  {
+    label: "Dryland",
+    title: "L'entraînement dryland doit précéder la saison neige",
+    text: "4 à 8 semaines de dryland (vélo, trottinette, quad) avant la neige permet de bâtir une base cardio-vasculaire et musculaire. Les chiens arrivent plus en forme et récupèrent mieux lors des premières sorties sur neige, souvent intenses à cause de leur enthousiasme.",
+    source: "ESDRA / FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Boue et pistes détrempées",
+    title: "Le terrain glissant fatigue 3 fois plus vite",
+    text: "Sur terrain boueux ou glissant, les chiens dépensent beaucoup plus d'énergie musculaire pour maintenir leur équilibre. Réduis le volume de 30 à 40 % par rapport à une piste normale. Les coussinets s'abîment aussi plus vite sur terrain abrasif mouillé.",
+    source: "Canicross UK",
+    url: "https://canicrossuk.com/"
+  },
+  {
+    label: "Gestion de l'eau",
+    title: "Toujours prévoir plus d'eau qu'on ne pense nécessaire",
+    text: "En sortie longue, prévoir au minimum 500 ml par chien par heure en conditions tempérées, et le double par chaleur. En hiver, l'eau doit être tiède pour encourager la consommation : les chiens boivent moins volontiers l'eau froide ou glacée.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Alimentation race longue",
+    title: "En longue distance, alimenter pendant l'effort",
+    text: "Pour les courses de plus de 4 heures (ou 6h de trajet pour les traîneaux), des collations pendant les pauses (viande, fromage, flocons d'avoine gras) maintiennent la glycémie et retardent la fatigue. La capacité à manger pendant l'effort s'entraîne aussi.",
+    source: "Iditarod Vet Guidelines",
+    url: "https://iditarod.com/race/veterinary/"
+  },
+  {
+    label: "Santé des os",
+    title: "Calcium et phosphore : l'équilibre compte plus que la quantité",
+    text: "Un déséquilibre Ca/P dans la ration peut causer des problèmes osseux et articulaires à long terme. Les croquettes premium maintiennent cet équilibre. Si tu donnes de la viande fraîche, ajoute des os à mâcher (riches en calcium) ou un complément minéral adapté.",
+    source: "AVMA Nutritional Guidelines",
+    url: "https://www.avma.org/"
+  },
+  {
+    label: "Oméga-3",
+    title: "L'huile de saumon : un complément simple et efficace",
+    text: "Les oméga-3 (EPA et DHA) réduisent l'inflammation, améliorent la récupération musculaire et la qualité du pelage. 1 à 2 cuillères à café d'huile de saumon par jour pour un chien de 25 kg est une dose courante. Stocke-la au frais et jette-la si elle sent le rance.",
+    source: "Purina Pro Plan Veterinary",
+    url: "https://www.purina.com/"
+  },
+  {
+    label: "Chaleur du sol",
+    title: "Test de la paume : 5 secondes sur le sol = coussinets",
+    text: "Pose ta paume sur l'asphalte 5 secondes. Si tu ne peux pas tenir, tes chiens non plus. En été, même à 20°C ambiants, l'asphalte peut dépasser 50°C. Privilégie les zones ombragées, l'herbe ou les pistes forestières pour protéger les coussinets.",
+    source: "Cornell / Canicross UK",
+    url: "https://canicrossuk.com/"
+  },
+  {
+    label: "Compétition : acclimatation",
+    title: "Arriver tôt pour laisser les chiens se familiariser",
+    text: "Les chiens stressés par l'environnement de course (odeurs, bruits, autres chiens) dépensent de l'énergie avant même le départ. Arriver la veille ou plusieurs heures avant, laisser les chiens explorer en laisse calme et maintenir leur routine alimentaire habituelle.",
+    source: "FFSLC / ESDRA",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Transport",
+    title: "Un trajet de plusieurs heures compte dans la récupération",
+    text: "Un long trajet en voiture avant une course stresse les chiens et réduit leur récupération. Prévois des arrêts toutes les 2h pour qu'ils bougent, urinent et boivent. En caisse, la ventilation est cruciale. Un chien qui arrive stressé et déshydraté court moins bien.",
+    source: "FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Hygiène post-course",
+    title: "Nettoyer les pattes après chaque sortie hivernale",
+    text: "Le sel de déneigement est agressif pour les coussinets et peut provoquer des brûlures chimiques si non rincé. Après chaque sortie en zone traitée, trempe les pattes dans de l'eau tiède propre et sèche-les. Applique de la cire après séchage complet.",
+    source: "VCA Animal Hospitals",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Chien de tête",
+    title: "Un bon leader se forme en plusieurs saisons",
+    text: "Le chien de tête (lead dog) doit répondre aux commandes directionnelles (gee/haw ou droite/gauche), maintenir l'allure et gérer le stress de la tête de meute. Ce rôle s'apprend progressivement : commence à 2 en tête avec un chien expérimenté comme mentor.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Déshydratation légère",
+    title: "Test de la peau pour détecter une déshydratation",
+    text: "Pince doucement la peau du cou ou entre les épaules et relâche. Elle doit revenir à sa position en moins d'une seconde. Un retour plus lent indique une déshydratation légère à modérée. Dans ce cas, offre de l'eau immédiatement et surveille dans les heures suivantes.",
+    source: "American Red Cross / VCA",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Raideur matinale",
+    title: "La raideur au réveil dure combien de temps ?",
+    text: "Une légère raideur après une grosse sortie qui disparaît en moins de 10 minutes après le lever est normale. Si elle persiste plus de 15 minutes, si elle empire ou si elle revient chaque matin, c'est un signal que la charge est trop élevée ou qu'une blessure s'installe.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Nutrition croquettes",
+    title: "Lire l'étiquette : la protéine animale doit être en premier",
+    text: "Sur une étiquette de croquettes, les ingrédients sont listés par ordre de poids. Pour un chien sportif, la viande ou le poisson (poulet, bœuf, saumon) doit être le premier ingrédient. Les croquettes 'all-life-stages' à haute teneur en protéines (30%+) conviennent bien aux chiens actifs.",
+    source: "Purina / AVMA",
+    url: "https://www.purina.com/"
+  },
+  {
+    label: "Antidouleur naturel",
+    title: "Le curcuma : intérêt et limites pour le chien sportif",
+    text: "Le curcuma a des propriétés anti-inflammatoires documentées. Certains mushers l'utilisent en complément (pâte d'or : curcuma + huile de coco + poivre noir). Les effets sont modérés et non immédiats. Il ne remplace pas les anti-inflammatoires vétérinaires lors d'une vraie blessure.",
+    source: "AKC Canine Health Foundation",
+    url: "https://www.akcchf.org/"
+  },
+  {
+    label: "Acide lactique",
+    title: "Les chiens éliminent l'acide lactique plus vite que les humains",
+    text: "Contrairement aux humains, les chiens nordiques entraînés oxydent très efficacement l'acide lactique. Leur principal facteur limitant en endurance n'est pas l'acide lactique mais la déplétion des réserves glycogéniques et la déshydratation. C'est pourquoi nutrition et hydratation sont primordiales.",
+    source: "ISDVMA / Exercise Physiology",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Laisse élastique",
+    title: "Régler correctement l'amortisseur de canicross",
+    text: "La longueur idéale de la ligne de canicross est de 1,5 à 2 mètres (plus l'amortisseur). L'amortisseur doit avoir une extension de 30 à 40 % de sa longueur au repos. Trop court : coups brusques sur les hanches. Trop long : le chien part dans les jambes. Teste à allure stable.",
+    source: "FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Bilan sanguin",
+    title: "Un bilan annuel révèle ce que l'œil ne voit pas",
+    text: "Un bilan sanguin annuel (NFS, biochimie, thyroïde) chez un chien sportif permet de détecter une anémie, une insuffisance rénale débutante ou une hypothyroïdie qui peut expliquer une baisse de performance. Le coût est faible par rapport à une saison perdue.",
+    source: "ISDVMA / Cornell",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Photosensibilité",
+    title: "Les chiens à robe claire sont sensibles aux UV en neige",
+    text: "La réflexion des UV sur la neige peut provoquer des coups de soleil sur la truffe, les oreilles et les zones peu poilues des chiens à robe claire. En haute montagne ou en longue sortie par beau temps hivernal, un écran solaire spécial chien (sans zinc) peut être appliqué.",
+    source: "VCA / Cornell",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Repos actif",
+    title: "Les jours de repos n'ont pas à être passifs",
+    text: "Un jour de repos actif (marche de 20 minutes, natation douce, jeu libre dans un espace clôturé) vaut mieux qu'une journée totalement sédentaire. Le mouvement léger maintient la circulation, réduit les raideurs et garde le chien mentalement stimulé.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Entraînement par temps chaud",
+    title: "Réduire l'allure de 20 % dès 18°C",
+    text: "À partir de 18°C, réduis l'allure de 20 % et la distance de 30 %. À partir de 22°C, envisage de reporter la sortie à tôt le matin ou annuler. Ces seuils sont abaissés pour les races nordiques et les chiens à double manteau.",
+    source: "FFSLC / Canicross UK",
+    url: "https://canicrossuk.com/"
+  },
+  {
+    label: "Sécurité attelage",
+    title: "Toujours sécuriser le sled/vélo avant de harnacher",
+    text: "Un traîneau ou vélo non fixé peut partir seul dès que les premiers chiens sont harnachés. Accroche toujours le frein, le snow hook ou enchaîne le vélo avant de toucher au premier harnais. Un accident à ce moment peut blesser des chiens ou d'autres personnes.",
+    source: "ESDRA",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Ski-joering",
+    title: "La ligne de ski-joering doit avoir un amortisseur obligatoire",
+    text: "En ski-joering, une traction brutale sans amortisseur peut provoquer des chutes dangereuses. La ligne doit comporter un ou deux amortisseurs élastiques et avoir une longueur d'au moins 2,5 mètres entre le harnais et la ceinture. Assure-toi que le chien connaît la commande stop avant de commencer.",
+    source: "ESDRA / FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Bikejoring",
+    title: "Apprendre la commande 'On by' avant tout",
+    text: "En bikejoring, la commande 'On by' (continuer sans s'intéresser à une distraction) est cruciale pour la sécurité. Un chien qui part sur le côté en pleine descente peut faire tomber le cycliste. Travaille cette commande à pied avant de l'utiliser en vélo.",
+    source: "FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Chien Husky",
+    title: "Le Husky sibérien : faible drive alimentaire, fort drive de mouvement",
+    text: "Contrairement à d'autres races, le Husky s'entraîne principalement pour le plaisir de courir, pas pour la nourriture. Son alimentation doit être calculée avec précision car il mange souvent moins qu'on ne l'attend. En revanche, il exprime clairement sa motivation à l'effort par son comportement.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Sécurité route",
+    title: "En canicross, rester visible sur route",
+    text: "Si ton parcours croise des routes, équipe-toi de vêtements réfléchissants et ton chien d'un harnais ou collier avec bande réfléchissante. Le soir ou par mauvaise visibilité, ajoute une lumière clignotante sur le harnais. Un chien sombre est invisible pour un conducteur.",
+    source: "Canicross UK",
+    url: "https://canicrossuk.com/"
+  },
+  {
+    label: "Hernie discale",
+    title: "La prévention passe par le renforcement musculaire",
+    text: "Les hernies discales sont plus fréquentes chez les chiens de grande taille soumis à des efforts répétés. Le renforcement des muscles du tronc (core) par des exercices de proprioception et natation protège la colonne. Évite aussi les sauts répétés à la descente de véhicule pour les grandes races.",
+    source: "Physiothérapie vétérinaire / CCRP",
+    url: "https://www.akcchf.org/"
+  },
+  {
+    label: "Gestion de la douleur",
+    title: "Les chiens masquent la douleur : chercher les signes indirects",
+    text: "Un chien en douleur ne gémit pas toujours. Les signes indirects : réticence à se lever le matin, changement de comportement social, appétit diminué, griffes d'un seul côté plus usées (appui déporté), position de repos inhabituelle. Filme ton chien qui se lève pour détecter une asymétrie.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Contrôle vétérinaire en course",
+    title: "Les checks vétérinaires en compétition sont des opportunités",
+    text: "Dans les courses IFSS et longues distances, des vétérinaires officiels examinent les chiens aux checkpoints. Prépare tes chiens à être manipulés par des inconnus : toucher les pattes, les gencives, les muscles. Un chien qui refuse l'examen peut être retiré de la course.",
+    source: "IFSS Vet Guidelines",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Plaisir avant performance",
+    title: "Un chien qui adore ce qu'il fait s'entraîne mieux",
+    text: "La motivation intrinsèque du chien est le meilleur prédicteur de performance à long terme. Si ton chien montre régulièrement de l'enthousiasme au départ (hurle, saute, tire) c'est bon signe. Si ce drive diminue sans raison physique apparente, examine les conditions d'entraînement et le stress global.",
+    source: "Comportement canin / Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Fourrure",
+    title: "Ne pas tondre un chien nordique en été",
+    text: "Tondre un chien à double manteau (Husky, Malamute, Samoyède) ne le rafraîchit pas, au contraire. Le sous-poil joue un rôle isolant dans les deux sens (froid et chaud). Une coupe courte peut perturber sa repousse pour des mois et augmenter le risque de coup de soleil.",
+    source: "Cornell Canine Health",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Brossage",
+    title: "Le brossage régulier améliore la thermorégulation",
+    text: "Un pelage non brossé et emmêlé réduit la ventilation de la peau et peut provoquer des irritations et une surchauffe. En période de mue (printemps et automne), brosse quotidiennement. Un chien bien brossé régule mieux sa température pendant l'effort.",
+    source: "VCA Animal Hospitals",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Nourriture humide",
+    title: "La pâtée contribue à l'hydratation en hiver",
+    text: "En hiver, les chiens boivent naturellement moins. Ajouter de la pâtée ou de la viande cuite à leur ration augmente leur apport en eau de 70 à 80 %. C'est une stratégie simple et efficace pour maintenir une bonne hydratation en saison froide, surtout lors de longues sorties.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Génétique",
+    title: "La sélection sur les performances : une responsabilité",
+    text: "Les mushers de haut niveau qui font reproduire leurs chiens sélectionnent sur la santé, le tempérament, la conformation et la performance. Reproduire uniquement sur les performances athlétiques sans tenir compte de la santé articulaire et cardiaque peut propager des problèmes génétiques.",
+    source: "AKC Canine Health Foundation",
+    url: "https://www.akcchf.org/"
+  },
+  {
+    label: "Premiers secours",
+    title: "Avoir une trousse de premiers secours canine sur soi",
+    text: "En course ou entraînement éloigné, une trousse de base peut sauver la situation : bandages, bandes cohésives, désinfectant, ciseaux, cire coussinets, couverture de survie, anti-douleur prescrit par ton vétérinaire. Un cours de premiers secours canins (Croix-Rouge) est un investissement précieux.",
+    source: "American Red Cross",
+    url: "https://www.redcross.org/"
+  },
+  {
+    label: "Mue",
+    title: "La mue coïncide souvent avec une baisse de forme",
+    text: "Pendant la grande mue de printemps, certains chiens montrent une légère baisse d'énergie et d'appétit. C'est normal : le corps mobilise des ressources pour le renouvellement du pelage. Augmente légèrement les protéines et réduisez l'intensité pendant 2 à 3 semaines.",
+    source: "VCA / Cornell",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Microbiote intestinal",
+    title: "L'intestin du chien sportif mérite attention",
+    text: "L'effort intense peut temporairement perturber le microbiote intestinal, causant des diarrhées de stress post-compétition. Des probiotiques spécifiques pour chiens (Lactobacillus, Bifidobacterium) peuvent aider à stabiliser le microbiote en période intense. Commence 2 semaines avant une course importante.",
+    source: "Purina Pro Plan Veterinary",
+    url: "https://www.purina.com/"
+  },
+  {
+    label: "Ceinture canicross",
+    title: "Une ceinture bien ajustée protège le dos du coureur",
+    text: "La ceinture de canicross doit se positionner sur les hanches (os iliaques), pas sur les lombaires. Trop haute, elle peut créer des douleurs lombaires au fil des sorties. Un modèle avec rembourrage latéral et attache centrale est plus stable qu'une simple ceinture de trail.",
+    source: "FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Objectif réaliste",
+    title: "Calculer son délai de préparation pour une longue distance",
+    text: "Un chien non entraîné a besoin de 12 à 18 mois de préparation progressive pour courir une mid-distance (80-200 km) dans de bonnes conditions. Pour une longue distance (300 km+), comptez 2 à 3 saisons. Se précipiter est la principale cause d'abandon et de blessures en compétition.",
+    source: "IFSS / Mush with P.R.I.D.E.",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Chiens et chaleur mentale",
+    title: "Le stress pré-compétition augmente la température interne",
+    text: "L'excitation et le stress du départ élèvent la température interne du chien avant même l'effort. Un chien qui démarre déjà 'chaud mentalement' surchauffera plus vite. La gestion du stress pré-départ (lieu calme, routine stable, contact rassurant) fait partie de la préparation.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Nourriture en course",
+    title: "La viande de bœuf + suif : ration classique des mushers",
+    text: "De nombreux mushers de longue distance nourrissent leurs chiens avec un mélange de viande hachée (bœuf, mouton, saumon), de suif et de croquettes trempées pendant la course. Ce mélange est dense en énergie, appétent même par grand froid et facilement réchauffé avec de l'eau chaude.",
+    source: "Iditarod Vet Guidelines",
+    url: "https://iditarod.com/race/veterinary/"
+  },
+  {
+    label: "Après une blessure",
+    title: "La reprise après blessure : plus progressive que la montée en charge",
+    text: "Après une blessure de tendon ou ligament, la reprise doit être 2 à 3 fois plus lente que la montée en charge initiale. Le tissu cicatriciel est moins élastique que le tissu original. Une reprise trop rapide donne une récidive presque assurée dans les 3 mois.",
+    source: "ISDVMA / Physiothérapie vétérinaire",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Évaluation régulière",
+    title: "Réévaluer son plan toutes les 4 semaines",
+    text: "Un plan d'entraînement n'est pas gravé dans le marbre. Évalue les progrès (vitesse, récupération, comportement) toutes les 4 semaines et ajuste. Un chien qui progresse vite peut monter la charge plus rapidement. Un chien qui stagne ou régresse nécessite une pause ou un changement d'approche.",
+    source: "IFSS Athlete Guidelines",
+    url: "https://sleddogsport.net/"
+  }
+];
+
 function renderWebAdvice() {
   const list = document.querySelector('[data-list="webAdvice"]');
   if (!list) return;
 
-  const tips = [
-    {
-      label: "Chaleur",
-      title: "Adapter ou annuler avant que le chien ne force",
-      text: "Les sources veterinaires rappellent que les chiens evacuant surtout la chaleur par le haletement et les coussinets, l'exercice peut devenir dangereux rapidement en conditions chaudes ou humides. MushTrack doit pousser vers tot le matin, ombre, eau, baisse d'intensite et arret au moindre signe anormal.",
-      source: "Cornell / Red Cross",
-      url: "https://www.vet.cornell.edu/departments-centers-and-institutes/riney-canine-health-center/canine-health-topics/summer-heat-safety-tips-dogs"
-    },
-    {
-      label: "Urgence",
-      title: "Signaux heatstroke a surveiller",
-      text: "Haletement excessif, bave importante, faiblesse, confusion, vomissements, diarrhee, convulsions ou effondrement doivent etre traites comme une urgence. On refroidit progressivement avec de l'eau fraiche, sans glace extreme, puis veterinaire.",
-      source: "American Red Cross",
-      url: "https://www.redcross.org/take-a-class/resources/learn-pet-first-aid/dog/heat-stroke"
-    },
-    {
-      label: "Refroidissement",
-      title: "Head dunk et eau fraiche",
-      text: "Pour les chiens de sport, apprendre calmement a mettre la tete dans l'eau peut aider au refroidissement. Ce n'est pas un ordre a forcer: c'est un apprentissage progressif, utile seulement avec un chien lucide et habitue.",
-      source: "AKC Canine Health Foundation",
-      url: "https://www.akcchf.org/educational-resources/library/articles/cool-down-science-how-a-simple-head-dunk-could-save-your-dog-from-heat-stroke/"
-    },
-    {
-      label: "Pattes",
-      title: "Sol chaud, glace, neige dure: controle systematique",
-      text: "Les coussinets peuvent bruler sur surfaces chaudes et s'abimer sur neige/glace abrasive. Controle avant et apres: rougeur, fissure, coupure, boiterie ou lechage insistant. En ete, privilegier herbe/terre et eviter bitume chaud.",
-      source: "Cornell / Canicross UK",
-      url: "https://canicrossuk.com/blog/f/when-canicrossing-in-hotter-weather"
-    },
-    {
-      label: "Hydratation",
-      title: "Proposer souvent, ne pas attendre la soif",
-      text: "En travail ou entrainement, mieux vaut proposer de petites prises regulieres avant, pendant et apres. Apres l'effort, laisser boire par petites quantites et observer recuperation, appetit et attitude.",
-      source: "Mush with P.R.I.D.E.",
-      url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
-    }
-  ];
+  // Calcul de la "période" : change tous les 2 jours
+  const daysSinceEpoch = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+  const periodIndex = Math.floor(daysSinceEpoch / 2);
+  const total = ADVICE_BANK.length;
 
-  list.innerHTML = tips.map((tip) => `
-    <article class="advice-card web-tip">
-      <span>${tip.label}</span>
-      <h2>${tip.title}</h2>
-      <p>${tip.text}</p>
-      <a href="${tip.url}" target="_blank" rel="noopener">${tip.source}</a>
-    </article>
-  `).join("");
+  // 2 conseils différents tirés de la banque selon la période
+  const idx1 = periodIndex % total;
+  const idx2 = (periodIndex + 1) % total;
+  const todayTips = [ADVICE_BANK[idx1], ADVICE_BANK[idx2]];
+
+  // Calcul du prochain changement (combien de jours restants)
+  const nextChangeDay = (periodIndex + 1) * 2;
+  const daysLeft = nextChangeDay - daysSinceEpoch;
+  const nextLabel = daysLeft <= 1 ? "Demain" : `Dans ${daysLeft} jours`;
+
+  list.innerHTML = `
+    <div class="advice-rotation-info">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+      Nouveau conseil : ${nextLabel} · ${periodIndex % total + 1}/${total}
+    </div>
+    ${todayTips.map((tip) => `
+      <article class="advice-card web-tip">
+        <span>${tip.label}</span>
+        <h2>${tip.title}</h2>
+        <p>${tip.text}</p>
+        <a href="${tip.url}" target="_blank" rel="noopener noreferrer">${tip.source} ↗</a>
+      </article>
+    `).join("")}
+  `;
 }
 
 function renderPlan() {
@@ -1838,40 +2565,70 @@ function renderAdminPanel() {
   if (!isAdmin) { panel.hidden = true; return; }
   panel.hidden = false;
 
-  if (!supabase) { panel.innerHTML = `<p class="empty-state">Supabase non disponible.</p>`; return; }
+  if (!supabase) {
+    panel.innerHTML = `<div class="admin-panel-box"><p class="empty-state">Supabase non disponible.</p></div>`;
+    return;
+  }
+
+  panel.innerHTML = `<div class="admin-panel-box"><p style="color:#888;font-size:0.82rem">Chargement des courses en attente…</p></div>`;
 
   supabase.from("mushtrack_races").select("*").eq("status", "pending").order("created_at", { ascending: false })
     .then(({ data, error }) => {
-      if (error || !data || data.length === 0) {
-        panel.innerHTML = `<p class="empty-state">Aucune course en attente de validation. ✅</p>`;
+      if (error) {
+        panel.innerHTML = `<div class="admin-panel-box"><p class="empty-state" style="color:#e53e3e">Erreur Supabase : ${error.message}<br><small>Vérifie que la colonne <b>status</b> existe et que les politiques RLS sont actives.</small></p></div>`;
         return;
       }
-      panel.innerHTML = data.map((race) => `
-        <article class="race-result" style="border-left:4px solid #f59e0b">
-          <div>
-            <span style="color:#f59e0b;font-weight:900">EN ATTENTE</span>
-            <h3>${race.name}</h3>
-            <p>${race.date || "Date inconnue"} — ${race.location || ""}</p>
-          </div>
-          <strong>${race.type || ""}</strong>
-          <p style="font-size:0.82rem;color:#888">${race.notes || ""}</p>
-          <div class="race-result-actions">
-            <button class="primary-button" data-approve="${race.id}" type="button">✅ Approuver</button>
-            <button class="danger-button" data-reject="${race.id}" type="button">❌ Rejeter</button>
-          </div>
-        </article>
-      `).join("");
+      if (!data || data.length === 0) {
+        panel.innerHTML = `<div class="admin-panel-box"><span class="admin-panel-title">✅ Aucune course en attente</span></div>`;
+        return;
+      }
+      panel.innerHTML = `
+        <div class="admin-panel-box">
+          <span class="admin-panel-title">🔐 Admin — ${data.length} course(s) en attente</span>
+          ${data.map((race) => `
+            <article class="admin-race-card">
+              <div class="admin-race-info">
+                <strong>${race.name}</strong>
+                <span>${race.date || "Date inconnue"} · ${race.location || ""} · ${race.type || ""}</span>
+                ${race.notes ? `<small>${race.notes}</small>` : ""}
+              </div>
+              <div class="admin-race-actions">
+                <button class="primary-button admin-approve-btn" data-approve="${race.id}" type="button">✅ Approuver</button>
+                <button class="danger-button admin-reject-btn" data-reject="${race.id}" type="button">❌ Rejeter</button>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      `;
 
       panel.querySelectorAll("[data-approve]").forEach((btn) => {
         btn.addEventListener("click", async () => {
-          await supabase.from("mushtrack_races").update({ status: "approved" }).eq("id", btn.dataset.approve);
+          btn.disabled = true;
+          btn.textContent = "En cours…";
+          const { error } = await supabase.from("mushtrack_races").update({ status: "approved" }).eq("id", btn.dataset.approve);
+          if (error) {
+            alert("Erreur lors de l'approbation : " + error.message + "\n\nVérifie les politiques RLS dans Supabase (UPDATE doit être autorisé).");
+            btn.disabled = false;
+            btn.textContent = "✅ Approuver";
+            return;
+          }
           renderAdminPanel();
           renderRaceSearch();
         });
       });
+
       panel.querySelectorAll("[data-reject]").forEach((btn) => {
         btn.addEventListener("click", async () => {
-          await supabase.from("mushtrack_races").delete().eq("id", btn.dataset.reject);
+          if (!confirm(`Rejeter et supprimer cette course ?`)) return;
+          btn.disabled = true;
+          btn.textContent = "En cours…";
+          const { error } = await supabase.from("mushtrack_races").delete().eq("id", btn.dataset.reject);
+          if (error) {
+            alert("Erreur lors du rejet : " + error.message + "\n\nVérifie les politiques RLS dans Supabase (DELETE doit être autorisé).");
+            btn.disabled = false;
+            btn.textContent = "❌ Rejeter";
+            return;
+          }
           renderAdminPanel();
         });
       });
@@ -2166,6 +2923,8 @@ function fillSettingsForm() {
   document.querySelector("#profile-disciplines").value = state.profile.disciplines || "";
   document.querySelector("#goal-km").value = state.goalKm;
   document.querySelector("#goal-date").value = state.goalDate;
+  document.querySelector("#race-name").value = state.raceName || "";
+  document.querySelector("#race-date").value = state.raceDate || "";
   document.querySelector("#race-type").value = state.raceType;
   document.querySelector("#race-km").value = state.raceKm;
 }
@@ -2361,6 +3120,22 @@ if (polyline) {
     watchId = null;
   }
 }
+function setRecordButtonState(running) {
+  const playIcon = document.querySelector("#record-icon-play");
+  const pauseIcon = document.querySelector("#record-icon-pause");
+  const finishBtn = document.querySelector("#finish-run");
+  if (running) {
+    recordButton.classList.add("running");
+    if (playIcon) playIcon.style.display = "none";
+    if (pauseIcon) pauseIcon.style.display = "";
+    if (finishBtn) finishBtn.classList.remove("hidden");
+  } else {
+    recordButton.classList.remove("running");
+    if (playIcon) playIcon.style.display = "";
+    if (pauseIcon) pauseIcon.style.display = "none";
+  }
+}
+
 function toggleRecording() {
   postRunForm.classList.add("hidden");
 
@@ -2371,20 +3146,25 @@ function toggleRecording() {
     stopGPS();
     startLiveLocation();
 
-    recordButton.textContent = "Reprendre";
-    recordButton.classList.remove("running");
+    setRecordButtonState(false);
     return;
   }
 
   timer = setInterval(() => {
     seconds += 1;
     durationEl.textContent = formatDuration(seconds);
+    // Allure (pace) en min/km
+    const paceEl = document.querySelector("#pace");
+    if (paceEl && distance > 0) {
+      const minPerKm = seconds / 60 / distance;
+      const pMin = Math.floor(minPerKm);
+      const pSec = Math.round((minPerKm - pMin) * 60);
+      paceEl.textContent = `${pMin}:${String(pSec).padStart(2, "0")}`;
+    }
   }, 1000);
 
   startGPS();
-
-  recordButton.textContent = "Pause";
-  recordButton.classList.add("running");
+  setRecordButtonState(true);
 }
 
 function finishCurrentRun() {
@@ -2636,6 +3416,8 @@ settingsForm.addEventListener("submit", (event) => {
   };
   state.goalKm = Number(document.querySelector("#goal-km").value);
   state.goalDate = document.querySelector("#goal-date").value;
+  state.raceName = document.querySelector("#race-name").value.trim();
+  state.raceDate = document.querySelector("#race-date").value;
   state.raceType = document.querySelector("#race-type").value;
   state.raceKm = Number(document.querySelector("#race-km").value);
   saveState();
@@ -2645,6 +3427,161 @@ settingsForm.addEventListener("submit", (event) => {
 recordButton.addEventListener("click", toggleRecording);
 finishRunButton.addEventListener("click", finishCurrentRun);
 saveRunButton.addEventListener("click", saveCurrentRun);
+
+// ── Coach IA ─────────────────────────────────────────────────────────
+const coachModal = document.querySelector("#coach-modal");
+const coachResult = document.querySelector("#coach-result");
+const coachQuestion = document.querySelector("#coach-question");
+
+document.querySelector("#open-coach-btn")?.addEventListener("click", () => {
+  coachModal.classList.remove("hidden");
+  // Réinitialise si pas encore de résultat
+  if (!coachResult.dataset.hasResult) {
+    coachResult.innerHTML = buildCoachWelcome();
+  }
+});
+
+document.querySelector("#coach-modal-close")?.addEventListener("click", () => {
+  coachModal.classList.add("hidden");
+});
+
+// Fermer en cliquant hors de la modal
+coachModal?.addEventListener("click", (e) => {
+  if (e.target === coachModal) coachModal.classList.add("hidden");
+});
+
+document.querySelector("#coach-analyze-btn")?.addEventListener("click", requestCoachAnalysis);
+
+function buildCoachWelcome() {
+  const raceName = state.raceDate ? "course objectif" : "course objectif";
+  const settingsRaceName = state.raceName || state.raceType || "Mid-distance";
+  const raceKm = state.raceKm || 100;
+  const runCount = state.runs.length;
+  const dogCount = state.dogs.length;
+  const totalKm = state.runs.reduce((s, r) => s + Number(r.km || 0), 0).toFixed(0);
+
+  return `
+    <div class="coach-welcome">
+      <div class="coach-welcome-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fc4c02" stroke-width="1.8" width="40" height="40"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-1-5h2v2h-2zm0-8h2v6h-2z"/></svg>
+      </div>
+      <h3>Prêt à analyser ton entraînement</h3>
+      <p>Je vais analyser tes <strong>${runCount} sortie(s)</strong>, tes <strong>${dogCount} chien(s)</strong> et tes <strong>${totalKm} km</strong> enregistrés pour te donner un rapport détaillé vers ton objectif <strong>${settingsRaceName} ${raceKm} km</strong>.</p>
+      <ul class="coach-welcome-list">
+        <li>📊 Évaluation de ta condition actuelle</li>
+        <li>🗓️ Plan d'entraînement 4 semaines personnalisé</li>
+        <li>🐕 Conseils spécifiques pour tes chiens</li>
+        <li>⚡ Actions prioritaires cette semaine</li>
+        <li>⚠️ Alertes si quelque chose doit être corrigé</li>
+      </ul>
+      <p class="coach-welcome-hint">Tu peux poser une question précise dans le champ ci-dessus ou laisser vide pour une analyse complète.</p>
+    </div>
+  `;
+}
+
+async function requestCoachAnalysis() {
+  const btn = document.querySelector("#coach-analyze-btn");
+  const question = coachQuestion?.value?.trim() || "";
+
+  btn.disabled = true;
+  btn.textContent = "Analyse en cours…";
+
+  coachResult.innerHTML = `
+    <div class="coach-loading">
+      <div class="coach-loading-spinner"></div>
+      <p>Le Coach analyse tes données…</p>
+      <small>Cela prend 10 à 20 secondes</small>
+    </div>
+  `;
+  coachResult.dataset.hasResult = "1";
+
+  // Prépare les données à envoyer
+  const payload = {
+    runs: state.runs.slice(0, 15),
+    dogs: state.dogs,
+    settings: {
+      raceType: state.raceType,
+      raceName: state.raceName || state.raceType || "Course objectif",
+      raceKm: state.raceKm || 100,
+      raceDate: state.raceDate || "",
+      seasonMode: state.seasonMode,
+      profileName: state.profile?.name || "Musher",
+      profileLevel: state.profile?.level || "Amateur"
+    },
+    question
+  };
+
+  try {
+    const response = await fetch("/api/coach", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+
+    if (!data.configured) {
+      coachResult.innerHTML = `
+        <div class="coach-error">
+          <strong>⚙️ Coach IA non configuré</strong>
+          <p>${data.message || "La clé API n'est pas encore configurée dans Vercel."}</p>
+        </div>
+      `;
+      return;
+    }
+
+    if (data.error) {
+      coachResult.innerHTML = `
+        <div class="coach-error">
+          <strong>❌ Erreur</strong>
+          <p>${data.error}</p>
+        </div>
+      `;
+      return;
+    }
+
+    // Affiche le résultat formaté
+    coachResult.innerHTML = `
+      <div class="coach-analysis">
+        <div class="coach-analysis-meta">
+          <span>Analyse du ${new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</span>
+          ${question ? `<span>Question : "${question}"</span>` : ""}
+        </div>
+        <div class="coach-analysis-text">${formatCoachMarkdown(data.analysis)}</div>
+        <button class="secondary-button coach-refresh-btn" id="coach-refresh-btn" type="button">🔄 Nouvelle analyse</button>
+      </div>
+    `;
+
+    document.querySelector("#coach-refresh-btn")?.addEventListener("click", () => {
+      delete coachResult.dataset.hasResult;
+      coachResult.innerHTML = buildCoachWelcome();
+    });
+
+  } catch (err) {
+    coachResult.innerHTML = `
+      <div class="coach-error">
+        <strong>❌ Erreur réseau</strong>
+        <p>Impossible de contacter le Coach. Vérifie ta connexion.</p>
+      </div>
+    `;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Analyser`;
+  }
+}
+
+// Convertit le markdown simple (gras, listes, titres) en HTML
+function formatCoachMarkdown(text) {
+  return text
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/^#{1,3} (.+)$/gm, "<h4>$1</h4>")
+    .replace(/^- (.+)$/gm, "<li>$1</li>")
+    .replace(/(<li>.*<\/li>(\n|$))+/g, (m) => `<ul>${m}</ul>`)
+    .replace(/\n\n/g, "</p><p>")
+    .replace(/\n/g, "<br>")
+    .replace(/^(?!<[hul]|<\/[hul])(.+)$/gm, (m) => m.startsWith("<") ? m : `<p>${m}</p>`)
+    .replace(/<p><\/p>/g, "");
+}
 
 ["race-search-region", "race-search-type", "race-search-distance", "race-search-surface", "race-search-reliability"].forEach((id) => {
   document.querySelector(`#${id}`)?.addEventListener("input", () => {

@@ -107,11 +107,14 @@
 
         <section class="insight-panel">
           <div>
-            <span>Coach MushTrack</span>
-            <strong data-bind="coachTitle">Equipe prete</strong>
-            <p data-bind="coachText">Charge stable, bonne progression.</p>
+            <span>Coach MushTrack IA</span>
+            <strong data-bind="coachTitle">Prêt pour l'analyse</strong>
+            <p data-bind="coachText">Analyse IA de tes entraînements et de ton objectif de course.</p>
           </div>
-          <button class="primary-button" data-go="analytics">Analyse</button>
+          <button class="primary-button" id="open-coach-btn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15" style="vertical-align:-2px;margin-right:5px"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-1-5h2v2h-2zm0-8h2v6h-2z"/></svg>
+            Analyser
+          </button>
         </section>
 
         <section class="next-race-card" data-list="nextRace"></section>
@@ -134,66 +137,88 @@
       </section>
 
       <section class="screen" id="record">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow">GPS live</p>
-            <h1>Sortie</h1>
+
+        <!-- Carte plein largeur -->
+        <div class="strava-map-wrap">
+          <div id="map"></div>
+          <!-- Topbar flottant sur la carte -->
+          <div class="strava-topbar">
+            <button class="strava-back-btn" data-go="dashboard" aria-label="Retour">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <span class="strava-topbar-title">Sortie GPS</span>
+            <p class="strava-gps-dot" id="gps-status-dot" title="GPS"></p>
           </div>
-          <button class="round-button" data-go="dashboard" aria-label="Fermer">X</button>
-        </header>
-
-        <section class="live-stats">
-          <article>
-            <span>Distance</span>
-            <strong id="distance">0.00</strong>
-            <small>km</small>
-          </article>
-          <article>
-            <span>Duree</span>
-            <strong id="duration">00:00</strong>
-            <small>min</small>
-          </article>
-          <article>
-            <span>Vitesse</span>
-            <strong id="speed">0.0</strong>
-            <small>km/h</small>
-          </article>
-        </section>
-        
-        <div id="map"></div>
-        <p class="gps-status" id="gps-status">Recherche de ta position...</p>
-
-        <section class="section-heading compact">
-          <h2>Team du jour</h2>
-          <button class="text-button" data-go="dogs">Modifier</button>
-        </section>
-        <section class="team-strip" data-list="selectedTeam"></section>
-
-        <div class="record-actions">
-          <button class="record-button" id="record-button">Demarrer</button>
-          <button class="save-button" id="finish-run">Terminer</button>
+          <p class="strava-gps-status" id="gps-status">Recherche GPS…</p>
         </div>
 
+        <!-- Stats style Strava : distance hero + 3 secondaires -->
+        <div class="strava-stats-panel">
+          <div class="strava-stat-hero">
+            <span class="strava-stat-label">Distance</span>
+            <div class="strava-stat-value-row">
+              <strong id="distance">0.00</strong>
+              <span class="strava-stat-unit">km</span>
+            </div>
+          </div>
+          <div class="strava-stats-row">
+            <div class="strava-stat-secondary">
+              <span class="strava-stat-label">Durée</span>
+              <strong id="duration">00:00</strong>
+            </div>
+            <div class="strava-stat-secondary strava-stat-center-border">
+              <span class="strava-stat-label">Allure</span>
+              <strong id="pace">--:--</strong>
+              <span class="strava-stat-unit-small">min/km</span>
+            </div>
+            <div class="strava-stat-secondary">
+              <span class="strava-stat-label">Vitesse</span>
+              <strong id="speed">0.0</strong>
+              <span class="strava-stat-unit-small">km/h</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Team du jour -->
+        <div class="strava-team-row">
+          <span class="strava-section-label">Attelage du jour</span>
+          <button class="text-button" data-go="dogs">Modifier</button>
+        </div>
+        <section class="team-strip" data-list="selectedTeam"></section>
+
+        <!-- Bouton record rond style Strava -->
+        <div class="strava-record-wrap">
+          <button class="strava-record-btn" id="record-button" aria-label="Démarrer">
+            <svg id="record-icon-play" viewBox="0 0 24 24" fill="currentColor" width="30" height="30"><polygon points="5,3 19,12 5,21"/></svg>
+            <svg id="record-icon-pause" viewBox="0 0 24 24" fill="currentColor" width="28" height="28" style="display:none"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+          </button>
+          <button class="strava-finish-btn hidden" id="finish-run">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><polyline points="20 6 9 17 4 12"/></svg>
+            Terminer
+          </button>
+        </div>
+
+        <!-- Bilan post-sortie -->
         <section class="record-form hidden" id="post-run-form">
           <div class="section-heading compact">
-            <h2>Bilan apres entrainement</h2>
+            <h2>Bilan de la sortie</h2>
             <span>Auto + notes</span>
           </div>
           <div class="form-grid">
             <label>
-              Type detecte
+              Type détecté
               <input id="runType" readonly />
             </label>
             <label>
-              Meteo auto
+              Météo auto
               <input id="weather" readonly />
             </label>
           </div>
           <div class="form-grid">
             <label>
-              Energie
+              Énergie
               <select id="energy">
-                <option value="5">5 - tres bonne</option>
+                <option value="5">5 - très bonne</option>
                 <option value="4" selected>4 - bonne</option>
                 <option value="3">3 - moyenne</option>
                 <option value="2">2 - basse</option>
@@ -201,17 +226,17 @@
               </select>
             </label>
             <label>
-              Recuperation
+              Récupération
               <select id="recovery">
                 <option>Excellente</option>
                 <option selected>Bonne</option>
-                <option>A surveiller</option>
+                <option>À surveiller</option>
                 <option>Difficile</option>
               </select>
             </label>
           </div>
           <div class="check-row">
-            <label><input id="paw-check" type="checkbox" checked /> Pattes controlees</label>
+            <label><input id="paw-check" type="checkbox" checked /> Pattes contrôlées</label>
             <label><input id="hydrated" type="checkbox" checked /> Hydratation OK</label>
           </div>
           <label>
@@ -221,10 +246,11 @@
           <button class="primary-button" id="save-run" type="button">Enregistrer la sortie</button>
         </section>
 
-        <section class="section-heading spaced">
-          <h2>Historique activites</h2>
-          <button id="manual-run-button" class="text-button" type="button">Ajouter</button>
-        </section>
+        <!-- Historique -->
+        <div class="strava-history-header">
+          <span class="strava-section-label">Activités</span>
+          <button id="manual-run-button" class="text-button" type="button">+ Ajouter</button>
+        </div>
         <section class="run-list gps-history" data-list="runs"></section>
       </section>
 
@@ -606,7 +632,7 @@
       <section class="screen" id="advice">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Sante & performance</p>
+            <p class="eyebrow">Santé & performance</p>
             <h1>Conseils</h1>
           </div>
           <button class="round-button" data-go="dashboard" aria-label="Retour">OK</button>
@@ -614,66 +640,12 @@
 
         <section class="advice-list">
           <article class="advice-card important">
-            <span>Mis a jour web</span>
-            <h2>Conseils recents pour chiens sportifs</h2>
-            <p>Selection de conseils issus de sources veterinaires et sportives, mise a jour le 26.05.2026. Ces infos completent le suivi MushTrack mais ne remplacent jamais un veterinaire.</p>
+            <span>🚨 Important</span>
+            <h2>Signaux d'alerte à ne jamais ignorer</h2>
+            <p>Stoppe immédiatement si un chien boite, respire difficilement, devient faible, confus, vomit, bave excessivement ou présente des gencives sèches/collantes. En cas de doute : vétérinaire. Ces conseils ne remplacent pas un avis médical.</p>
           </article>
 
           <section class="web-advice-list" data-list="webAdvice"></section>
-
-          <article class="advice-card important">
-            <span>Important</span>
-            <h2>Signaux d'alerte</h2>
-            <p>Stoppe la seance si un chien boite, respire difficilement, devient faible, confus, tres anxieux, vomit, chancelle, bave beaucoup ou presente des gencives seches/collantes. En cas de doute, veterinaire.</p>
-          </article>
-
-          <article class="advice-card">
-            <span>Hydratation</span>
-            <h2>Avant, pendant, apres</h2>
-            <p>Propose de l'eau avant la sortie, puis de petites pauses regulieres. Apres l'effort, laisse boire par petites quantites. En ete, prevois toujours eau, gamelle souple et zones d'ombre.</p>
-          </article>
-
-          <article class="advice-card">
-            <span>Chaleur</span>
-            <h2>Mode ete / canicross</h2>
-            <p>Travaille tot le matin ou tard le soir. Evite bitume chaud, soleil direct et grosses intensites. Si le sol brule ta main apres quelques secondes, il peut bruler les coussinets.</p>
-          </article>
-
-          <article class="advice-card">
-            <span>Refroidissement</span>
-            <h2>Apprendre le head dunk</h2>
-            <p>Pour les chiens sportifs, l'apprentissage volontaire de mettre la tete dans l'eau peut aider a refroidir rapidement apres effort. A travailler calmement, sans forcer, et seulement avec un chien lucide.</p>
-          </article>
-
-          <article class="advice-card">
-            <span>Pattes</span>
-            <h2>Coussinets et ongles</h2>
-            <p>Controle les coussinets avant et apres chaque sortie : fissures, rougeurs, coupures, glace entre les doigts. Garde les ongles courts et note les petites blessures dans la fiche chien.</p>
-          </article>
-
-          <article class="advice-card">
-            <span>Recuperation</span>
-            <h2>Le travail continue apres</h2>
-            <p>Prevois retour au calme, observation de la demarche, repas adapte, repos sec et confortable. Une semaine plus legere toutes les 3 a 4 semaines aide a limiter la fatigue accumulee.</p>
-          </article>
-
-          <article class="advice-card">
-            <span>Nourriture</span>
-            <h2>Adapter a la charge</h2>
-            <p>Les chiens d'endurance peuvent avoir besoin d'une ration plus energetique, souvent plus riche en graisses en saison de travail. La transition alimentaire doit etre progressive, idealement sur plusieurs semaines.</p>
-          </article>
-
-          <article class="advice-card">
-            <span>Froid</span>
-            <h2>Hiver et neige</h2>
-            <p>Surveille vent, humidite, glace, pauses trop longues et chiens peu acclimates. Secher les chiens apres la sortie et offrir un endroit abrite aide la recuperation.</p>
-          </article>
-
-          <article class="advice-card">
-            <span>Suivi</span>
-            <h2>Noter pour progresser</h2>
-            <p>Apres chaque sortie, note temperature, type de neige ou terrain, vitesse, chiens presents, appetit, attitude, boiterie et fatigue. Ces notes deviennent precieuses pour construire le plan.</p>
-          </article>
         </section>
       </section>
 
@@ -737,15 +709,25 @@
             <input id="goal-date" type="date" />
           </label>
           <label>
+            Nom de la course objectif
+            <input id="race-name" placeholder="Ex: Amundsen Race 250, La Grande Odyssée..." />
+          </label>
+          <label>
+            Date de la course
+            <input id="race-date" type="date" />
+          </label>
+          <label>
             Type de course
             <select id="race-type">
               <option>Sprint</option>
               <option>Mid-distance</option>
               <option>Longue distance</option>
+              <option>Canicross</option>
+              <option>Dryland</option>
             </select>
           </label>
           <label>
-            Distance de course
+            Distance de course (km)
             <input id="race-km" type="number" min="5" step="5" />
           </label>
           <button class="primary-button" type="submit">Mettre a jour</button>
@@ -793,6 +775,31 @@
           <span>Conseils</span>
         </button>
       </nav>
+
+      <!-- ── Modal Coach IA ──────────────────────────────── -->
+      <div class="coach-modal hidden" id="coach-modal" role="dialog" aria-modal="true" aria-label="Coach MushTrack IA">
+        <div class="coach-modal-inner">
+          <div class="coach-modal-header">
+            <div>
+              <p class="eyebrow">Coach MushTrack IA</p>
+              <h2 id="coach-modal-title">Analyse personnalisée</h2>
+            </div>
+            <button class="round-button" id="coach-modal-close" aria-label="Fermer">✕</button>
+          </div>
+
+          <!-- Question libre -->
+          <div class="coach-question-row" id="coach-question-row">
+            <textarea id="coach-question" rows="2" placeholder="Question précise (optionnel) — ex: Mon chien récupère mal, que faire ? Suis-je prêt pour l'Amundsen 250 ?"></textarea>
+            <button class="primary-button" id="coach-analyze-btn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              Analyser
+            </button>
+          </div>
+
+          <!-- Résultat -->
+          <div class="coach-result" id="coach-result"></div>
+        </div>
+      </div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
