@@ -134,66 +134,88 @@
       </section>
 
       <section class="screen" id="record">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow">GPS live</p>
-            <h1>Sortie</h1>
+
+        <!-- Carte plein largeur -->
+        <div class="strava-map-wrap">
+          <div id="map"></div>
+          <!-- Topbar flottant sur la carte -->
+          <div class="strava-topbar">
+            <button class="strava-back-btn" data-go="dashboard" aria-label="Retour">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <span class="strava-topbar-title">Sortie GPS</span>
+            <p class="strava-gps-dot" id="gps-status-dot" title="GPS"></p>
           </div>
-          <button class="round-button" data-go="dashboard" aria-label="Fermer">X</button>
-        </header>
-
-        <section class="live-stats">
-          <article>
-            <span>Distance</span>
-            <strong id="distance">0.00</strong>
-            <small>km</small>
-          </article>
-          <article>
-            <span>Duree</span>
-            <strong id="duration">00:00</strong>
-            <small>min</small>
-          </article>
-          <article>
-            <span>Vitesse</span>
-            <strong id="speed">0.0</strong>
-            <small>km/h</small>
-          </article>
-        </section>
-        
-        <div id="map"></div>
-        <p class="gps-status" id="gps-status">Recherche de ta position...</p>
-
-        <section class="section-heading compact">
-          <h2>Team du jour</h2>
-          <button class="text-button" data-go="dogs">Modifier</button>
-        </section>
-        <section class="team-strip" data-list="selectedTeam"></section>
-
-        <div class="record-actions">
-          <button class="record-button" id="record-button">Demarrer</button>
-          <button class="save-button" id="finish-run">Terminer</button>
+          <p class="strava-gps-status" id="gps-status">Recherche GPS…</p>
         </div>
 
+        <!-- Stats style Strava : distance hero + 3 secondaires -->
+        <div class="strava-stats-panel">
+          <div class="strava-stat-hero">
+            <span class="strava-stat-label">Distance</span>
+            <div class="strava-stat-value-row">
+              <strong id="distance">0.00</strong>
+              <span class="strava-stat-unit">km</span>
+            </div>
+          </div>
+          <div class="strava-stats-row">
+            <div class="strava-stat-secondary">
+              <span class="strava-stat-label">Durée</span>
+              <strong id="duration">00:00</strong>
+            </div>
+            <div class="strava-stat-secondary strava-stat-center-border">
+              <span class="strava-stat-label">Allure</span>
+              <strong id="pace">--:--</strong>
+              <span class="strava-stat-unit-small">min/km</span>
+            </div>
+            <div class="strava-stat-secondary">
+              <span class="strava-stat-label">Vitesse</span>
+              <strong id="speed">0.0</strong>
+              <span class="strava-stat-unit-small">km/h</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Team du jour -->
+        <div class="strava-team-row">
+          <span class="strava-section-label">Attelage du jour</span>
+          <button class="text-button" data-go="dogs">Modifier</button>
+        </div>
+        <section class="team-strip" data-list="selectedTeam"></section>
+
+        <!-- Bouton record rond style Strava -->
+        <div class="strava-record-wrap">
+          <button class="strava-record-btn" id="record-button" aria-label="Démarrer">
+            <svg id="record-icon-play" viewBox="0 0 24 24" fill="currentColor" width="30" height="30"><polygon points="5,3 19,12 5,21"/></svg>
+            <svg id="record-icon-pause" viewBox="0 0 24 24" fill="currentColor" width="28" height="28" style="display:none"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+          </button>
+          <button class="strava-finish-btn hidden" id="finish-run">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><polyline points="20 6 9 17 4 12"/></svg>
+            Terminer
+          </button>
+        </div>
+
+        <!-- Bilan post-sortie -->
         <section class="record-form hidden" id="post-run-form">
           <div class="section-heading compact">
-            <h2>Bilan apres entrainement</h2>
+            <h2>Bilan de la sortie</h2>
             <span>Auto + notes</span>
           </div>
           <div class="form-grid">
             <label>
-              Type detecte
+              Type détecté
               <input id="runType" readonly />
             </label>
             <label>
-              Meteo auto
+              Météo auto
               <input id="weather" readonly />
             </label>
           </div>
           <div class="form-grid">
             <label>
-              Energie
+              Énergie
               <select id="energy">
-                <option value="5">5 - tres bonne</option>
+                <option value="5">5 - très bonne</option>
                 <option value="4" selected>4 - bonne</option>
                 <option value="3">3 - moyenne</option>
                 <option value="2">2 - basse</option>
@@ -201,17 +223,17 @@
               </select>
             </label>
             <label>
-              Recuperation
+              Récupération
               <select id="recovery">
                 <option>Excellente</option>
                 <option selected>Bonne</option>
-                <option>A surveiller</option>
+                <option>À surveiller</option>
                 <option>Difficile</option>
               </select>
             </label>
           </div>
           <div class="check-row">
-            <label><input id="paw-check" type="checkbox" checked /> Pattes controlees</label>
+            <label><input id="paw-check" type="checkbox" checked /> Pattes contrôlées</label>
             <label><input id="hydrated" type="checkbox" checked /> Hydratation OK</label>
           </div>
           <label>
@@ -221,10 +243,11 @@
           <button class="primary-button" id="save-run" type="button">Enregistrer la sortie</button>
         </section>
 
-        <section class="section-heading spaced">
-          <h2>Historique activites</h2>
-          <button id="manual-run-button" class="text-button" type="button">Ajouter</button>
-        </section>
+        <!-- Historique -->
+        <div class="strava-history-header">
+          <span class="strava-section-label">Activités</span>
+          <button id="manual-run-button" class="text-button" type="button">+ Ajouter</button>
+        </div>
         <section class="run-list gps-history" data-list="runs"></section>
       </section>
 

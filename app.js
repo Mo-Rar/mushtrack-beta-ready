@@ -849,25 +849,51 @@ function renderRuns() {
   const runsHtml = state.runs.map((run, index) => {
     const teamNames = run.team.map((id) => state.dogs.find((dog) => dog.id === id)?.name).filter(Boolean).join(", ");
     const hasTrace = Array.isArray(run.path) && run.path.length > 1;
+    const km = Number(run.km).toFixed(1);
+    const speed = Number(run.avgSpeed || 0).toFixed(1);
+    const dur = run.duration ? formatDuration(run.duration) : "--:--";
+    const paceMin = (run.avgSpeed && run.avgSpeed > 0) ? Math.floor(60 / run.avgSpeed) : null;
+    const paceSec = (run.avgSpeed && run.avgSpeed > 0) ? Math.round((60 / run.avgSpeed - Math.floor(60 / run.avgSpeed)) * 60) : null;
+    const paceStr = paceMin !== null ? `${paceMin}:${String(paceSec).padStart(2,'0')}` : "--:--";
     return `
       <article class="run-card" data-run-index="${index}">
-        <div>
-          <b>${run.type}</b>
-          <span>${formatDate(run.date)} - ${run.weather} - ${run.recovery} - ${teamNames || "Team non precisee"}</span>
+        <div class="run-card-header">
+          <div class="run-card-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/></svg>
+          </div>
+          <div class="run-card-meta">
+            <div class="run-card-title">${run.type}</div>
+            <div class="run-card-date">${formatDate(run.date)}${teamNames ? " · " + teamNames : ""}</div>
+          </div>
+          <button class="strava-run-menu" data-run-option="${index}" type="button" title="Modifier">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+          </button>
         </div>
-        <strong>${Number(run.km).toFixed(1)} km</strong>
-        ${hasTrace ? renderRoutePreview(run.path) : `<div class="route-preview empty">Trace GPS non disponible</div>`}
+        ${hasTrace ? renderRoutePreview(run.path) : ""}
+        <div class="run-card-stats">
+          <div class="run-stat">
+            <span class="run-stat-value">${km}</span>
+            <span class="run-stat-label">km</span>
+          </div>
+          <div class="run-stat">
+            <span class="run-stat-value">${dur}</span>
+            <span class="run-stat-label">Durée</span>
+          </div>
+          <div class="run-stat">
+            <span class="run-stat-value">${paceStr}</span>
+            <span class="run-stat-label">min/km</span>
+          </div>
+        </div>
         <div class="run-details">
-          <span>Vitesse ${Number(run.avgSpeed || 0).toFixed(1)} km/h</span>
-          <span>Energie ${run.energy || "-"}/5</span>
-          <span>Pattes ${run.paws ? "OK" : "a verifier"}</span>
-          <span>Hydratation ${run.hydrated ? "OK" : "a renforcer"}</span>
-          <p>${run.notes || "Aucune note ajoutee apres cette sortie."}</p>
-        </div>
-        <div class="card-actions">
-          <button class="secondary-button" data-run-details="${index}" type="button">Details</button>
-          <button class="secondary-button" data-run-option="${index}" type="button">Modifier</button>
-          <button class="danger-button" data-delete-run="${index}" type="button">Supprimer</button>
+          <span>Vitesse ${speed} km/h</span>
+          <span>Énergie ${run.energy || "-"}/5</span>
+          <span>Pattes ${run.paws ? "OK" : "à vérifier"}</span>
+          <span>Hydratation ${run.hydrated ? "OK" : "à renforcer"}</span>
+          <p>${run.notes || "Aucune note ajoutée."}</p>
+          <div class="card-actions">
+            <button class="secondary-button" data-run-option="${index}" type="button">Modifier</button>
+            <button class="danger-button" data-delete-run="${index}" type="button">Supprimer</button>
+          </div>
         </div>
       </article>
     `;
@@ -883,14 +909,8 @@ function renderRuns() {
     list.querySelectorAll("[data-run-option]").forEach((button) => {
       button.addEventListener("click", (event) => {
         event.stopPropagation();
-        editRun(Number(button.dataset.runOption));
-      });
-    });
-
-    list.querySelectorAll("[data-run-details]").forEach((button) => {
-      button.addEventListener("click", (event) => {
-        event.stopPropagation();
-        button.closest(".run-card")?.classList.toggle("show-details");
+        const card = button.closest(".run-card");
+        if (card) card.classList.toggle("show-details");
       });
     });
 
@@ -2361,6 +2381,22 @@ if (polyline) {
     watchId = null;
   }
 }
+function setRecordButtonState(running) {
+  const playIcon = document.querySelector("#record-icon-play");
+  const pauseIcon = document.querySelector("#record-icon-pause");
+  const finishBtn = document.querySelector("#finish-run");
+  if (running) {
+    recordButton.classList.add("running");
+    if (playIcon) playIcon.style.display = "none";
+    if (pauseIcon) pauseIcon.style.display = "";
+    if (finishBtn) finishBtn.classList.remove("hidden");
+  } else {
+    recordButton.classList.remove("running");
+    if (playIcon) playIcon.style.display = "";
+    if (pauseIcon) pauseIcon.style.display = "none";
+  }
+}
+
 function toggleRecording() {
   postRunForm.classList.add("hidden");
 
@@ -2371,20 +2407,25 @@ function toggleRecording() {
     stopGPS();
     startLiveLocation();
 
-    recordButton.textContent = "Reprendre";
-    recordButton.classList.remove("running");
+    setRecordButtonState(false);
     return;
   }
 
   timer = setInterval(() => {
     seconds += 1;
     durationEl.textContent = formatDuration(seconds);
+    // Allure (pace) en min/km
+    const paceEl = document.querySelector("#pace");
+    if (paceEl && distance > 0) {
+      const minPerKm = seconds / 60 / distance;
+      const pMin = Math.floor(minPerKm);
+      const pSec = Math.round((minPerKm - pMin) * 60);
+      paceEl.textContent = `${pMin}:${String(pSec).padStart(2, "0")}`;
+    }
   }, 1000);
 
   startGPS();
-
-  recordButton.textContent = "Pause";
-  recordButton.classList.add("running");
+  setRecordButtonState(true);
 }
 
 function finishCurrentRun() {

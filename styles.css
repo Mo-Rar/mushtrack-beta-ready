@@ -160,13 +160,32 @@ button {
   overflow-y: auto;
 }
 
+#record {
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+}
+
+#record > .strava-stats-panel,
+#record > .strava-team-row,
+#record > .team-strip,
+#record > .strava-record-wrap,
+#record > .record-form,
+#record > .strava-history-header,
+#record > .run-list {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
 .screen.active {
   display: block;
 }
 
 .topbar,
 .section-heading,
-.record-actions {
+.record-actions,
+.strava-team-row,
+.strava-history-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -698,6 +717,312 @@ body.mode-summer .record-button {
   background: #fc4c02;
 }
 
+/* ── Strava-style GPS screen ─────────────────────────────── */
+
+/* Map: edge-to-edge, tall, no border-radius on sides */
+.strava-map-wrap {
+  position: relative;
+  margin: 0 -16px;
+  margin-top: -16px;
+}
+
+#record .strava-map-wrap #map {
+  height: 280px;
+  width: 100%;
+  border-radius: 0;
+  margin: 0;
+  border: none;
+  box-shadow: none;
+}
+
+/* Floating topbar over the map */
+.strava-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 100%);
+}
+
+.strava-back-btn {
+  background: rgba(255,255,255,0.18);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.strava-topbar-title {
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  flex: 1;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+.strava-gps-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.3);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.strava-gps-status {
+  position: absolute;
+  bottom: 8px;
+  left: 14px;
+  color: rgba(255,255,255,0.85);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  margin: 0;
+}
+
+/* Stats panel below map */
+.strava-stats-panel {
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 16px 14px;
+  margin: 0 -16px;
+}
+
+.strava-stat-hero {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.strava-stat-hero .strava-stat-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #888888;
+  margin-bottom: 2px;
+}
+
+.strava-stat-value-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+}
+
+.strava-stat-hero strong {
+  font-size: 3.6rem;
+  font-weight: 900;
+  color: #111111;
+  line-height: 1;
+}
+
+.strava-stat-unit {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #888888;
+}
+
+.strava-stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+}
+
+.strava-stat-secondary {
+  text-align: center;
+  padding: 0 8px;
+}
+
+.strava-stat-center-border {
+  border-left: 1px solid #f0f0f0;
+  border-right: 1px solid #f0f0f0;
+}
+
+.strava-stat-secondary .strava-stat-label {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #aaaaaa;
+  margin-bottom: 2px;
+}
+
+.strava-stat-secondary strong {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #111111;
+  line-height: 1.1;
+}
+
+.strava-stat-unit-small {
+  font-size: 0.62rem;
+  color: #aaaaaa;
+  font-weight: 600;
+}
+
+/* Team row */
+.strava-team-row {
+  margin: 16px 0 8px;
+}
+
+.strava-section-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #aaaaaa;
+}
+
+/* Record button: big circle à la Strava */
+.strava-record-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin: 20px 0 16px;
+}
+
+.strava-record-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #fc4c02;
+  color: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(252,76,2,0.45);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.strava-record-btn:active {
+  transform: scale(0.93);
+  box-shadow: 0 2px 10px rgba(252,76,2,0.3);
+}
+
+.strava-record-btn.running {
+  background: #111111;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.strava-finish-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #ffffff;
+  color: #fc4c02;
+  border: 2px solid #fc4c02;
+  border-radius: 24px;
+  padding: 10px 24px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.strava-finish-btn:active {
+  background: #fff4ef;
+}
+
+/* History header */
+.strava-history-header {
+  margin: 16px 0 10px;
+}
+
+/* History cards style Strava */
+.gps-history .run-card {
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gps-history .run-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gps-history .run-card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(252,76,2,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fc4c02;
+}
+
+.gps-history .run-card-meta {
+  flex: 1;
+}
+
+.gps-history .run-card-title {
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #111111;
+}
+
+.gps-history .run-card-date {
+  font-size: 0.72rem;
+  color: #aaaaaa;
+  font-weight: 600;
+}
+
+.gps-history .run-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-top: 1px solid #f5f5f5;
+  padding-top: 10px;
+}
+
+.gps-history .run-stat {
+  text-align: center;
+}
+
+.gps-history .run-stat:not(:last-child) {
+  border-right: 1px solid #f5f5f5;
+}
+
+.gps-history .run-stat-value {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #111111;
+}
+
+.gps-history .run-stat-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #aaaaaa;
+}
+
+/* Legacy live-stats kept for any other usage */
 .live-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -879,6 +1204,30 @@ textarea {
 .dog-card,
 .run-card {
   cursor: pointer;
+}
+
+.strava-run-menu {
+  background: none;
+  border: none;
+  color: #aaaaaa;
+  padding: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+}
+
+.strava-run-menu:hover {
+  background: #f5f5f5;
+  color: #111111;
+}
+
+.gps-history .route-preview {
+  border-radius: 10px;
+  margin: 4px 0;
+  background: linear-gradient(135deg, rgba(252,76,2,0.08), rgba(252,76,2,0.02)), #f5f5f5;
+  border: 1px solid #f0f0f0;
 }
 
 .card-actions {
@@ -1659,7 +2008,7 @@ textarea {
 }
 
 .record-button.running {
-  background: #fc4c02;
+  background: #111111;
 }
 
 .hidden {
@@ -1771,13 +2120,13 @@ textarea {
 }
 
 #map {
-  height: 340px;
+  height: 280px;
   width: 100%;
-  border-radius: 20px;
-  margin-top: 12px;
+  border-radius: 0;
+  margin: 0;
   overflow: hidden;
-  border: 2px solid #fc4c02;
-  box-shadow: 0 16px 36px rgba(252, 76, 2, 0.18);
+  border: none;
+  box-shadow: none;
 }
 
 .gps-status {
