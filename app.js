@@ -2383,17 +2383,6 @@ function renderWebAdvice() {
 }
 
 function renderPlan() {
-  const list = document.querySelector('[data-list="planWeeks"]');
-  if (!list) return;
-
-  list.innerHTML = buildPlan().map((week) => `
-    <article class="${week.level || ""}">
-      <span>${week.label}</span>
-      <b>${week.km} km</b>
-      <small>${week.focus}</small>
-    </article>
-  `).join("");
-
   renderPlanInsights();
 }
 
