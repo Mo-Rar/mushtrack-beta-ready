@@ -83,7 +83,7 @@ document.getElementById("auth-form")?.addEventListener("submit", async (e) => {
   }
 });
 
-function onAuthSuccess(user) {
+async function onAuthSuccess(user) {
   currentUser = user;
   // Synchronise le deviceId avec l'ID Supabase pour la communauté
   state.deviceId = user.id;
@@ -92,6 +92,8 @@ function onAuthSuccess(user) {
   addUserBar(user.email);
   // Réaffiche le panel admin maintenant qu'on connaît l'utilisateur
   renderAdminPanel();
+  // Charge les données depuis le cloud (silencieux si rien de plus récent)
+  await syncFromSupabase();
 }
 
 function addUserBar(email) {
@@ -748,6 +750,7 @@ const defaultState = {
     disciplines: ""
   },
   deviceId: "",
+  cloudUpdatedAt: 0,
   raceInterests: {},
   openRuns: [
     {
@@ -802,10 +805,45 @@ function loadState() {
   if (!saved) return structuredClone(defaultState);
 
   try {
-    return normalizeState({ ...structuredClone(defaultState), ...JSON.parse(saved) });
-  } catch {
+    const parsed = JSON.parse(saved);
+    // ── Validation des types avant normalisation ──────────────────────
+    const repaired = repairStateTypes(parsed);
+    return normalizeState({ ...structuredClone(defaultState), ...repaired });
+  } catch (err) {
+    console.warn("MushTrack: localStorage corrompu, reset vers état par défaut.", err);
+    // Badge visible pour prévenir l'utilisateur
+    setTimeout(() => showSyncBadge("⚠️ Données locales réinitialisées suite à une erreur"), 1500);
+    localStorage.removeItem("mushtrack-state");
     return structuredClone(defaultState);
   }
+}
+
+// ── Validation et réparation des types avant normalisation ─────────────
+function repairStateTypes(value) {
+  if (!value || typeof value !== "object") return {};
+  // Arrays obligatoires
+  if (!Array.isArray(value.dogs))               value.dogs               = [];
+  if (!Array.isArray(value.runs))               value.runs               = [];
+  if (!Array.isArray(value.agenda))             value.agenda             = [];
+  if (!Array.isArray(value.missingRaceReports)) value.missingRaceReports = [];
+  if (!Array.isArray(value.openRuns))           value.openRuns           = [];
+  // Objects obligatoires
+  if (!value.profile || typeof value.profile !== "object")         value.profile       = {};
+  if (!value.raceInterests || typeof value.raceInterests !== "object") value.raceInterests = {};
+  if (!value.openRunJoins || typeof value.openRunJoins !== "object")   value.openRunJoins  = {};
+  // Valeurs numériques
+  if (isNaN(Number(value.goalKm)))  value.goalKm  = 1000;
+  if (isNaN(Number(value.raceKm)))  value.raceKm  = 100;
+  if (isNaN(Number(value.seasonKm))) value.seasonKm = 0;
+  // Strings
+  if (typeof value.seasonMode !== "string") value.seasonMode = "winter";
+  // Chiens : chaque item doit être un objet avec au moins un id
+  value.dogs = value.dogs.filter((d) => d && typeof d === "object" && d.id);
+  // Sorties : chaque item doit avoir un km numérique
+  value.runs = value.runs.filter((r) => r && typeof r === "object" && !isNaN(Number(r.km)));
+  // Agenda : chaque item doit avoir un id et une date
+  value.agenda = value.agenda.filter((a) => a && typeof a === "object" && a.id && a.date);
+  return value;
 }
 
 function normalizeState(value) {
@@ -871,6 +909,108 @@ function formatDogBirthdate(value) {
 
 function saveState() {
   localStorage.setItem("mushtrack-state", JSON.stringify(state));
+  debouncedSync(); // push vers Supabase si connecté (silencieux)
+}
+
+// ── Sync cross-device via Supabase ────────────────────────────────────────────
+const SYNC_TABLE = "mushtrack_user_data";
+let syncDebounceTimer = null;
+let syncBadgeTimer    = null;
+
+// Appelé depuis saveState() — attend 2s d'inactivité avant d'écrire dans le cloud
+function debouncedSync() {
+  clearTimeout(syncDebounceTimer);
+  syncDebounceTimer = setTimeout(pushToSupabase, 2000);
+}
+
+// Pousse les données vers Supabase (upsert sur user_id)
+async function pushToSupabase() {
+  if (!supabase || !currentUser) return;
+  try {
+    state.cloudUpdatedAt = Date.now();
+    const { error } = await supabase.from(SYNC_TABLE).upsert({
+      user_id:    currentUser.id,
+      dogs:       state.dogs,
+      runs:       state.runs,
+      agenda:     state.agenda,
+      settings: {
+        profile:    state.profile,
+        raceDate:   state.raceDate,
+        raceName:   state.raceName,
+        raceType:   state.raceType,
+        raceKm:     state.raceKm,
+        goalKm:     state.goalKm,
+        goalDate:   state.goalDate,
+        seasonMode: state.seasonMode
+      },
+      updated_at: new Date().toISOString()
+    }, { onConflict: "user_id" });
+
+    if (!error) {
+      // Sauvegarde locale silencieuse du timestamp (sans re-déclencher debouncedSync)
+      localStorage.setItem("mushtrack-state", JSON.stringify(state));
+    }
+  } catch (err) {
+    console.warn("MushTrack sync push failed:", err.message);
+  }
+}
+
+// Tire les données du cloud et les applique si plus récentes que le local
+async function syncFromSupabase() {
+  if (!supabase || !currentUser) return;
+  try {
+    const { data, error } = await supabase
+      .from(SYNC_TABLE)
+      .select("dogs, runs, agenda, settings, updated_at")
+      .eq("user_id", currentUser.id)
+      .single();
+
+    if (error || !data) return; // Pas encore de données cloud pour cet utilisateur
+
+    const remoteTs = new Date(data.updated_at).getTime();
+    const localTs  = state.cloudUpdatedAt || 0;
+
+    // Le cloud est plus récent → on applique ses données
+    if (remoteTs > localTs) {
+      let changed = false;
+      if (Array.isArray(data.dogs)   && data.dogs.length   > 0) { state.dogs   = data.dogs;   changed = true; }
+      if (Array.isArray(data.runs)   && data.runs.length   > 0) { state.runs   = data.runs;   changed = true; }
+      if (Array.isArray(data.agenda) && data.agenda.length > 0) { state.agenda = data.agenda; changed = true; }
+      if (data.settings && typeof data.settings === "object") {
+        const s = data.settings;
+        if (s.profile)    { state.profile    = s.profile;    changed = true; }
+        if (s.raceDate)   { state.raceDate   = s.raceDate;   changed = true; }
+        if (s.raceName)   { state.raceName   = s.raceName;   changed = true; }
+        if (s.raceType)   { state.raceType   = s.raceType;   changed = true; }
+        if (s.raceKm)     { state.raceKm     = s.raceKm;     changed = true; }
+        if (s.goalKm)     { state.goalKm     = s.goalKm;     changed = true; }
+        if (s.goalDate)   { state.goalDate   = s.goalDate;   changed = true; }
+        if (s.seasonMode) { state.seasonMode = s.seasonMode; changed = true; }
+      }
+      if (changed) {
+        state.cloudUpdatedAt = remoteTs;
+        localStorage.setItem("mushtrack-state", JSON.stringify(state));
+        render();
+        showSyncBadge("☁️ Données synchronisées depuis le cloud");
+      }
+    }
+  } catch (err) {
+    console.warn("MushTrack sync pull failed:", err.message);
+  }
+}
+
+// Badge discret en bas de l'écran, disparaît après 3s
+function showSyncBadge(message) {
+  clearTimeout(syncBadgeTimer);
+  let badge = document.querySelector(".sync-badge");
+  if (!badge) {
+    badge = document.createElement("div");
+    badge.className = "sync-badge";
+    document.querySelector(".phone-shell").appendChild(badge);
+  }
+  badge.textContent = message;
+  badge.classList.add("visible");
+  syncBadgeTimer = setTimeout(() => badge.classList.remove("visible"), 3000);
 }
 
 function createDeviceId() {
