@@ -12,6 +12,60 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
   </head>
   <body>
+    <!-- Onboarding premier lancement -->
+    <div id="onboarding-overlay" class="onboarding-overlay hidden">
+      <div class="onboarding-card">
+
+        <!-- Étape 1 : Niveau -->
+        <div class="onboarding-step active" id="ob-step-1">
+          <div class="ob-logo">🐕</div>
+          <h1 class="ob-title">Bienvenue sur MushTrack</h1>
+          <p class="ob-sub">Quelques questions pour personnaliser ton expérience</p>
+          <p class="ob-question">Quel est ton niveau ?</p>
+          <div class="ob-choices">
+            <button class="ob-choice" data-field="level" data-value="Débutant">🌱 Débutant</button>
+            <button class="ob-choice" data-field="level" data-value="Loisir">😊 Loisir</button>
+            <button class="ob-choice" data-field="level" data-value="Amateur compétiteur">🏅 Amateur compétiteur</button>
+            <button class="ob-choice" data-field="level" data-value="Confirmé">🔥 Confirmé</button>
+          </div>
+        </div>
+
+        <!-- Étape 2 : Discipline -->
+        <div class="onboarding-step" id="ob-step-2">
+          <div class="ob-logo">🏁</div>
+          <p class="ob-question">Ta discipline principale ?</p>
+          <div class="ob-choices">
+            <button class="ob-choice" data-field="raceType" data-value="Canicross">🏃 Canicross</button>
+            <button class="ob-choice" data-field="raceType" data-value="Bikejoring">🚴 Bikejoring</button>
+            <button class="ob-choice" data-field="raceType" data-value="Sprint">⚡ Sprint traîneau</button>
+            <button class="ob-choice" data-field="raceType" data-value="Mid-distance">🛷 Mid-distance</button>
+            <button class="ob-choice" data-field="raceType" data-value="Longue distance">🌲 Longue distance</button>
+            <button class="ob-choice" data-field="raceType" data-value="Skijoring">⛷️ Skijoring</button>
+          </div>
+        </div>
+
+        <!-- Étape 3 : Course objectif -->
+        <div class="onboarding-step" id="ob-step-3">
+          <div class="ob-logo">🎯</div>
+          <p class="ob-question">Ta prochaine course objectif ?</p>
+          <div class="ob-form">
+            <input id="ob-race-name" type="text" placeholder="Nom de la course (ex: Trophée des Neiges)" />
+            <input id="ob-race-date" type="date" />
+            <input id="ob-race-km" type="number" min="1" placeholder="Distance en km" />
+          </div>
+          <button class="ob-btn-next" id="ob-finish">C'est parti ! 🚀</button>
+          <button class="ob-skip" id="ob-skip">Passer cette étape</button>
+        </div>
+
+        <!-- Progression -->
+        <div class="ob-progress">
+          <span class="ob-dot active" data-step="1"></span>
+          <span class="ob-dot" data-step="2"></span>
+          <span class="ob-dot" data-step="3"></span>
+        </div>
+      </div>
+    </div>
+
     <!-- Écran de connexion -->
     <div id="auth-overlay" class="auth-overlay hidden">
       <div class="auth-card">

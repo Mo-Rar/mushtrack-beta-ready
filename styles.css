@@ -1,3 +1,115 @@
+/* ── Onboarding ─────────────────────────────────────── */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: linear-gradient(160deg, #1a0a00 0%, #3d1a00 60%, #fc4c02 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.onboarding-overlay.hidden { display: none; }
+
+.onboarding-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 24px;
+  padding: 32px 24px 24px;
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  position: relative;
+}
+
+.onboarding-step { display: none; flex-direction: column; align-items: center; gap: 16px; }
+.onboarding-step.active { display: flex; animation: obFadeIn 0.35s ease; }
+@keyframes obFadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+.ob-logo { font-size: 3rem; line-height: 1; }
+.ob-title { color: #fff; font-size: 1.5rem; font-weight: 800; margin: 0; text-align: center; }
+.ob-sub { color: rgba(255,255,255,0.65); font-size: 0.9rem; margin: 0; text-align: center; }
+.ob-question { color: #fff; font-size: 1.1rem; font-weight: 700; margin: 0; text-align: center; }
+
+.ob-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.ob-choice {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.1);
+  border: 1.5px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.ob-choice:hover { background: rgba(255,255,255,0.18); transform: translateX(4px); }
+.ob-choice.selected { background: #fc4c02; border-color: #fc4c02; }
+
+.ob-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.ob-form input {
+  width: 100%;
+  padding: 13px 14px;
+  background: rgba(255,255,255,0.12);
+  border: 1.5px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+.ob-form input::placeholder { color: rgba(255,255,255,0.45); }
+.ob-form input:focus { outline: none; border-color: #fc4c02; background: rgba(255,255,255,0.18); }
+
+.ob-btn-next {
+  width: 100%;
+  padding: 15px;
+  background: #fc4c02;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  margin-top: 4px;
+}
+.ob-btn-next:hover { opacity: 0.9; transform: scale(1.02); }
+.ob-skip {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 4px;
+}
+.ob-skip:hover { color: rgba(255,255,255,0.8); }
+
+.ob-progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+.ob-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  transition: background 0.2s, transform 0.2s;
+}
+.ob-dot.active { background: #fc4c02; transform: scale(1.3); }
+
 /* Auth overlay */
 .auth-overlay {
   position: fixed;

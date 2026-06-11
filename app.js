@@ -736,6 +736,7 @@ const raceCatalog = [
 ];
 
 const defaultState = {
+  onboarded: false,
   goalKm: 1000,
   goalDate: "2027-01-01",
   seasonMode: "winter",
@@ -777,6 +778,11 @@ const defaultState = {
 };
 
 let state = loadState();
+// Utilisateurs existants : marquer comme déjà onboardés s'ils ont des données
+if (!state.onboarded && (state.runs.length > 0 || state.dogs.length > 0 || state.raceDate !== "2026-12-15")) {
+  state.onboarded = true;
+  saveState();
+}
 let timer = null;
 let watchId = null;
 let liveWatchId = null;
@@ -4554,6 +4560,70 @@ document.querySelectorAll(".advice-filter-btn").forEach((btn) => {
   document.querySelector(`#${id}`)?.addEventListener("input",  () => renderOpenRuns());
   document.querySelector(`#${id}`)?.addEventListener("change", () => renderOpenRuns());
 });
+
+// ── Onboarding premier lancement ────────────────────────────────────
+(function initOnboarding() {
+  if (state.onboarded) return; // déjà fait
+
+  const overlay = document.querySelector("#onboarding-overlay");
+  if (!overlay) return;
+  overlay.classList.remove("hidden");
+
+  let currentStep = 1;
+  const obData = { level: null, raceType: null, raceName: "", raceDate: "", raceKm: "" };
+
+  function goToStep(n) {
+    document.querySelectorAll(".onboarding-step").forEach(s => s.classList.remove("active"));
+    document.querySelector(`#ob-step-${n}`)?.classList.add("active");
+    document.querySelectorAll(".ob-dot").forEach(d => {
+      d.classList.toggle("active", Number(d.dataset.step) === n);
+    });
+    currentStep = n;
+  }
+
+  // Choix niveau & discipline
+  overlay.querySelectorAll(".ob-choice").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const field = btn.dataset.field;
+      const value = btn.dataset.value;
+
+      // Highlight sélection dans ce step
+      btn.closest(".ob-choices").querySelectorAll(".ob-choice").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      obData[field] = value;
+
+      // Passe au step suivant après 300ms
+      setTimeout(() => goToStep(currentStep + 1), 300);
+    });
+  });
+
+  // Terminer
+  function finishOnboarding() {
+    const name = document.querySelector("#ob-race-name")?.value.trim() || "";
+    const date = document.querySelector("#ob-race-date")?.value || "";
+    const km   = Number(document.querySelector("#ob-race-km")?.value) || 0;
+
+    if (obData.level)    state.profile.level = obData.level;
+    if (obData.raceType) state.raceType = obData.raceType;
+    if (name) state.raceName = name;
+    if (date) state.raceDate = date;
+    if (km)   state.raceKm  = km;
+    state.onboarded = true;
+
+    saveState();
+    overlay.style.opacity = "0";
+    overlay.style.transition = "opacity 0.4s";
+    setTimeout(() => { overlay.classList.add("hidden"); overlay.style.opacity = ""; render(); }, 400);
+  }
+
+  document.querySelector("#ob-finish")?.addEventListener("click", finishOnboarding);
+  document.querySelector("#ob-skip")?.addEventListener("click", () => {
+    state.onboarded = true;
+    saveState();
+    overlay.classList.add("hidden");
+    render();
+  });
+})();
 
 render();
 
