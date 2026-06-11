@@ -2294,7 +2294,7 @@ function renderRaceSearch() {
     // Grouper les non-sélectionnées par pays/région
     const byCountry = {};
     unpinned.forEach((race) => {
-      const country = race.region || "Autre";
+      const country = normalizeCountry(race);
       if (!byCountry[country]) byCountry[country] = [];
       byCountry[country].push(race);
     });
