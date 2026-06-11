@@ -2393,6 +2393,37 @@ function getRaceReadiness() {
   return "Tu es dans la bonne zone. Priorite a la regularite et a une team fraiche.";
 }
 
+// Normalise n'importe quelle chaîne location/region en un pays propre
+function normalizeCountry(race) {
+  const raw = `${race.location || ""} ${race.region || ""}`.toLowerCase();
+
+  if (/france|francais|alpes.fran|bellegarde|villedieu|jura/.test(raw)) return "🇫🇷 France";
+  if (/suisse|switzerland|valais|ardon|sion|zurich|berne|geneve/.test(raw)) return "🇨🇭 Suisse";
+  if (/norv[eè]g|norway|alta|tromso|finnmark/.test(raw)) return "🇳🇴 Norvège";
+  if (/su[eè]de|sweden|stromsund|lulea|umea/.test(raw)) return "🇸🇪 Suède";
+  if (/alaska|iditarod|yukon.*alaska|usa|united states/.test(raw)) return "🇺🇸 États-Unis";
+  if (/canada|yukon|whitehorse|quebec|ontario/.test(raw)) return "🇨🇦 Canada";
+  if (/italie|italy|italia/.test(raw)) return "🇮🇹 Italie";
+  if (/royaume.uni|uk|england|scotland|midlands|british/.test(raw)) return "🇬🇧 Royaume-Uni";
+  if (/pays.bas|netherlands|nederland/.test(raw)) return "🇳🇱 Pays-Bas";
+  if (/irlande|ireland/.test(raw)) return "🇮🇪 Irlande";
+  if (/allemagne|germany|deutschland/.test(raw)) return "🇩🇪 Allemagne";
+  if (/belgique|belgium|belgi/.test(raw)) return "🇧🇪 Belgique";
+  if (/espagne|spain|espana/.test(raw)) return "🇪🇸 Espagne";
+  if (/autriche|austria|[oö]sterreich/.test(raw)) return "🇦🇹 Autriche";
+  if (/finlande|finland|suomi/.test(raw)) return "🇫🇮 Finlande";
+  if (/russie|russia|russland/.test(raw)) return "🇷🇺 Russie";
+  if (/pologne|poland|polska/.test(raw)) return "🇵🇱 Pologne";
+  if (/tch[eè]que|czech|moravie/.test(raw)) return "🇨🇿 Rép. Tchèque";
+  if (/europe.centrale|central.europe/.test(raw)) return "🌍 Europe centrale";
+  if (/international|monde|world|europe/.test(raw)) return "🌍 International";
+  if (/a.verifier|signalee|unknown/.test(raw)) return "📍 À localiser";
+
+  // Dernier recours : utiliser location brut si court, sinon "Autre"
+  const loc = (race.location || "").trim();
+  return loc.length > 0 && loc.length <= 30 ? `📍 ${loc}` : "📍 Autre";
+}
+
 function renderRaceSearch() {
   const list = document.querySelector('[data-list="raceSearchResults"]');
   if (!list) return;
@@ -2478,10 +2509,10 @@ function renderRaceSearch() {
     const pinned = results.filter((r) => state.raceInterests[r.id]);
     const unpinned = results.filter((r) => !state.raceInterests[r.id]);
 
-    // Grouper les non-sélectionnées par pays/région
+    // Grouper les non-sélectionnées par pays normalisé
     const byCountry = {};
     unpinned.forEach((race) => {
-      const country = race.region || "Autre";
+      const country = normalizeCountry(race);
       if (!byCountry[country]) byCountry[country] = [];
       byCountry[country].push(race);
     });
