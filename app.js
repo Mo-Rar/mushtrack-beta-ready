@@ -2283,7 +2283,7 @@ function renderRaceSearch() {
     reliability: "user",
     surface: report.surface || "A verifier",
     source: "Signalee",
-    notes: report.notes || "Course signalee manuellement dans MushTrack."
+    notes: report.notes || ""
   }));
   // Filtrer les courses remote : seulement approved ou sans status (catalogue officiel)
   const approvedRemote = remoteRaceCatalog.filter((r) => !r.status || r.status === "approved");
@@ -2633,7 +2633,7 @@ async function reportMissingRace() {
     reliability: "user",
     source: "Signalee",
     surface: "A verifier",
-    notes: `Course signalee par ${currentUser?.email || "utilisateur"}.`,
+    notes: "",
     status: "pending"
   };
 
