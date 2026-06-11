@@ -388,6 +388,7 @@ const defaultState = {
   goalDate: "2027-01-01",
   seasonMode: "winter",
   raceType: "Mid-distance",
+  raceName: "",
   raceKm: 100,
   raceDate: "2026-12-15",
   profile: {
@@ -2422,6 +2423,8 @@ function fillSettingsForm() {
   document.querySelector("#profile-disciplines").value = state.profile.disciplines || "";
   document.querySelector("#goal-km").value = state.goalKm;
   document.querySelector("#goal-date").value = state.goalDate;
+  document.querySelector("#race-name").value = state.raceName || "";
+  document.querySelector("#race-date").value = state.raceDate || "";
   document.querySelector("#race-type").value = state.raceType;
   document.querySelector("#race-km").value = state.raceKm;
 }
@@ -2913,6 +2916,8 @@ settingsForm.addEventListener("submit", (event) => {
   };
   state.goalKm = Number(document.querySelector("#goal-km").value);
   state.goalDate = document.querySelector("#goal-date").value;
+  state.raceName = document.querySelector("#race-name").value.trim();
+  state.raceDate = document.querySelector("#race-date").value;
   state.raceType = document.querySelector("#race-type").value;
   state.raceKm = Number(document.querySelector("#race-km").value);
   saveState();
@@ -2922,6 +2927,161 @@ settingsForm.addEventListener("submit", (event) => {
 recordButton.addEventListener("click", toggleRecording);
 finishRunButton.addEventListener("click", finishCurrentRun);
 saveRunButton.addEventListener("click", saveCurrentRun);
+
+// ── Coach IA ─────────────────────────────────────────────────────────
+const coachModal = document.querySelector("#coach-modal");
+const coachResult = document.querySelector("#coach-result");
+const coachQuestion = document.querySelector("#coach-question");
+
+document.querySelector("#open-coach-btn")?.addEventListener("click", () => {
+  coachModal.classList.remove("hidden");
+  // Réinitialise si pas encore de résultat
+  if (!coachResult.dataset.hasResult) {
+    coachResult.innerHTML = buildCoachWelcome();
+  }
+});
+
+document.querySelector("#coach-modal-close")?.addEventListener("click", () => {
+  coachModal.classList.add("hidden");
+});
+
+// Fermer en cliquant hors de la modal
+coachModal?.addEventListener("click", (e) => {
+  if (e.target === coachModal) coachModal.classList.add("hidden");
+});
+
+document.querySelector("#coach-analyze-btn")?.addEventListener("click", requestCoachAnalysis);
+
+function buildCoachWelcome() {
+  const raceName = state.raceDate ? "course objectif" : "course objectif";
+  const settingsRaceName = state.raceName || state.raceType || "Mid-distance";
+  const raceKm = state.raceKm || 100;
+  const runCount = state.runs.length;
+  const dogCount = state.dogs.length;
+  const totalKm = state.runs.reduce((s, r) => s + Number(r.km || 0), 0).toFixed(0);
+
+  return `
+    <div class="coach-welcome">
+      <div class="coach-welcome-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fc4c02" stroke-width="1.8" width="40" height="40"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-1-5h2v2h-2zm0-8h2v6h-2z"/></svg>
+      </div>
+      <h3>Prêt à analyser ton entraînement</h3>
+      <p>Je vais analyser tes <strong>${runCount} sortie(s)</strong>, tes <strong>${dogCount} chien(s)</strong> et tes <strong>${totalKm} km</strong> enregistrés pour te donner un rapport détaillé vers ton objectif <strong>${settingsRaceName} ${raceKm} km</strong>.</p>
+      <ul class="coach-welcome-list">
+        <li>📊 Évaluation de ta condition actuelle</li>
+        <li>🗓️ Plan d'entraînement 4 semaines personnalisé</li>
+        <li>🐕 Conseils spécifiques pour tes chiens</li>
+        <li>⚡ Actions prioritaires cette semaine</li>
+        <li>⚠️ Alertes si quelque chose doit être corrigé</li>
+      </ul>
+      <p class="coach-welcome-hint">Tu peux poser une question précise dans le champ ci-dessus ou laisser vide pour une analyse complète.</p>
+    </div>
+  `;
+}
+
+async function requestCoachAnalysis() {
+  const btn = document.querySelector("#coach-analyze-btn");
+  const question = coachQuestion?.value?.trim() || "";
+
+  btn.disabled = true;
+  btn.textContent = "Analyse en cours…";
+
+  coachResult.innerHTML = `
+    <div class="coach-loading">
+      <div class="coach-loading-spinner"></div>
+      <p>Le Coach analyse tes données…</p>
+      <small>Cela prend 10 à 20 secondes</small>
+    </div>
+  `;
+  coachResult.dataset.hasResult = "1";
+
+  // Prépare les données à envoyer
+  const payload = {
+    runs: state.runs.slice(0, 15),
+    dogs: state.dogs,
+    settings: {
+      raceType: state.raceType,
+      raceName: state.raceName || state.raceType || "Course objectif",
+      raceKm: state.raceKm || 100,
+      raceDate: state.raceDate || "",
+      seasonMode: state.seasonMode,
+      profileName: state.profile?.name || "Musher",
+      profileLevel: state.profile?.level || "Amateur"
+    },
+    question
+  };
+
+  try {
+    const response = await fetch("/api/coach", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+
+    if (!data.configured) {
+      coachResult.innerHTML = `
+        <div class="coach-error">
+          <strong>⚙️ Coach IA non configuré</strong>
+          <p>${data.message || "La clé API n'est pas encore configurée dans Vercel."}</p>
+        </div>
+      `;
+      return;
+    }
+
+    if (data.error) {
+      coachResult.innerHTML = `
+        <div class="coach-error">
+          <strong>❌ Erreur</strong>
+          <p>${data.error}</p>
+        </div>
+      `;
+      return;
+    }
+
+    // Affiche le résultat formaté
+    coachResult.innerHTML = `
+      <div class="coach-analysis">
+        <div class="coach-analysis-meta">
+          <span>Analyse du ${new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</span>
+          ${question ? `<span>Question : "${question}"</span>` : ""}
+        </div>
+        <div class="coach-analysis-text">${formatCoachMarkdown(data.analysis)}</div>
+        <button class="secondary-button coach-refresh-btn" id="coach-refresh-btn" type="button">🔄 Nouvelle analyse</button>
+      </div>
+    `;
+
+    document.querySelector("#coach-refresh-btn")?.addEventListener("click", () => {
+      delete coachResult.dataset.hasResult;
+      coachResult.innerHTML = buildCoachWelcome();
+    });
+
+  } catch (err) {
+    coachResult.innerHTML = `
+      <div class="coach-error">
+        <strong>❌ Erreur réseau</strong>
+        <p>Impossible de contacter le Coach. Vérifie ta connexion.</p>
+      </div>
+    `;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Analyser`;
+  }
+}
+
+// Convertit le markdown simple (gras, listes, titres) en HTML
+function formatCoachMarkdown(text) {
+  return text
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/^#{1,3} (.+)$/gm, "<h4>$1</h4>")
+    .replace(/^- (.+)$/gm, "<li>$1</li>")
+    .replace(/(<li>.*<\/li>(\n|$))+/g, (m) => `<ul>${m}</ul>`)
+    .replace(/\n\n/g, "</p><p>")
+    .replace(/\n/g, "<br>")
+    .replace(/^(?!<[hul]|<\/[hul])(.+)$/gm, (m) => m.startsWith("<") ? m : `<p>${m}</p>`)
+    .replace(/<p><\/p>/g, "");
+}
 
 ["race-search-region", "race-search-type", "race-search-distance", "race-search-surface", "race-search-reliability"].forEach((id) => {
   document.querySelector(`#${id}`)?.addEventListener("input", () => {

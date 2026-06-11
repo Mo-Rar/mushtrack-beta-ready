@@ -107,11 +107,14 @@
 
         <section class="insight-panel">
           <div>
-            <span>Coach MushTrack</span>
-            <strong data-bind="coachTitle">Equipe prete</strong>
-            <p data-bind="coachText">Charge stable, bonne progression.</p>
+            <span>Coach MushTrack IA</span>
+            <strong data-bind="coachTitle">Prêt pour l'analyse</strong>
+            <p data-bind="coachText">Analyse IA de tes entraînements et de ton objectif de course.</p>
           </div>
-          <button class="primary-button" data-go="analytics">Analyse</button>
+          <button class="primary-button" id="open-coach-btn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15" style="vertical-align:-2px;margin-right:5px"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-1-5h2v2h-2zm0-8h2v6h-2z"/></svg>
+            Analyser
+          </button>
         </section>
 
         <section class="next-race-card" data-list="nextRace"></section>
@@ -706,15 +709,25 @@
             <input id="goal-date" type="date" />
           </label>
           <label>
+            Nom de la course objectif
+            <input id="race-name" placeholder="Ex: Amundsen Race 250, La Grande Odyssée..." />
+          </label>
+          <label>
+            Date de la course
+            <input id="race-date" type="date" />
+          </label>
+          <label>
             Type de course
             <select id="race-type">
               <option>Sprint</option>
               <option>Mid-distance</option>
               <option>Longue distance</option>
+              <option>Canicross</option>
+              <option>Dryland</option>
             </select>
           </label>
           <label>
-            Distance de course
+            Distance de course (km)
             <input id="race-km" type="number" min="5" step="5" />
           </label>
           <button class="primary-button" type="submit">Mettre a jour</button>
@@ -762,6 +775,31 @@
           <span>Conseils</span>
         </button>
       </nav>
+
+      <!-- ── Modal Coach IA ──────────────────────────────── -->
+      <div class="coach-modal hidden" id="coach-modal" role="dialog" aria-modal="true" aria-label="Coach MushTrack IA">
+        <div class="coach-modal-inner">
+          <div class="coach-modal-header">
+            <div>
+              <p class="eyebrow">Coach MushTrack IA</p>
+              <h2 id="coach-modal-title">Analyse personnalisée</h2>
+            </div>
+            <button class="round-button" id="coach-modal-close" aria-label="Fermer">✕</button>
+          </div>
+
+          <!-- Question libre -->
+          <div class="coach-question-row" id="coach-question-row">
+            <textarea id="coach-question" rows="2" placeholder="Question précise (optionnel) — ex: Mon chien récupère mal, que faire ? Suis-je prêt pour l'Amundsen 250 ?"></textarea>
+            <button class="primary-button" id="coach-analyze-btn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              Analyser
+            </button>
+          </div>
+
+          <!-- Résultat -->
+          <div class="coach-result" id="coach-result"></div>
+        </div>
+      </div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
