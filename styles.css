@@ -456,12 +456,21 @@ h2 {
 
 /* ── Hero card & KPI grid ────────────────────────────── */
 .hero-card {
-  background: linear-gradient(135deg, #1a0800 0%, #3d1500 50%, #fc4c02 100%);
+  background:
+    linear-gradient(to bottom, rgba(10,4,0,0.55) 0%, rgba(20,6,0,0.72) 100%),
+    url("./assets/mode-hiver.jpg") center/cover no-repeat;
   border-radius: 20px;
   padding: 22px 20px 18px;
   color: #fff;
   margin-bottom: 14px;
   box-shadow: 0 6px 24px rgba(252,76,2,0.25);
+  position: relative;
+  overflow: hidden;
+}
+.hero-card.summer {
+  background:
+    linear-gradient(to bottom, rgba(10,4,0,0.55) 0%, rgba(20,6,0,0.72) 100%),
+    url("./assets/mode-ete.jpg") center/cover no-repeat;
 }
 .hero-eyebrow {
   font-size: 0.72rem;

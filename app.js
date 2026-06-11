@@ -1178,6 +1178,12 @@ function render() {
   const heroEl = document.querySelector('[data-bind="heroSentence"]');
   if (heroEl) heroEl.innerHTML = buildHeroSentence(daysLeft, teamPct, workout);
 
+  // Image de fond hero selon le mode saison
+  const heroCard = document.querySelector('.hero-card');
+  if (heroCard) {
+    heroCard.classList.toggle('summer', state.seasonMode === 'summer');
+  }
+
   // ── Bindings existants ───────────────────────────────────────
   bindText("seasonKm", Math.round(seasonKm));
   bindText("goalKm", state.goalKm);
