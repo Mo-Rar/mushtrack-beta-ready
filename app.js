@@ -751,6 +751,7 @@ const defaultState = {
   },
   deviceId: "",
   cloudUpdatedAt: 0,
+  hiddenRaceIds: [],
   raceInterests: {},
   openRuns: [
     {
@@ -870,7 +871,8 @@ function normalizeState(value) {
   value.deviceId ||= createDeviceId();
   value.raceInterests ||= {};
   value.openRuns ||= [];
-  value.openRunJoins ||= {};
+  value.openRunJoins  ||= {};
+  value.hiddenRaceIds ||= [];
   value.seasonMode ||= "winter";
   value.agenda ||= structuredClone(defaultState.agenda);
   value.missingRaceReports ||= [];
@@ -2776,9 +2778,14 @@ function renderRaceSearch() {
     notes: report.notes || ""
   }));
   // Filtrer les courses remote : seulement approved ou sans status (catalogue officiel)
+  const isAdmin = currentUser?.email === ADMIN_EMAIL;
   const approvedRemote = remoteRaceCatalog.filter((r) => !r.status || r.status === "approved");
-  const mergedRaces = mergeRaceSources([...approvedRemote, ...raceCatalog, ...reports]);
+  // Catalogue local : exclure les entrées sans date ET les courses cachées par l'admin
+  const hiddenIds = new Set(state.hiddenRaceIds || []);
+  const catalogWithDates = raceCatalog.filter((r) => r.date && !hiddenIds.has(r.id));
+  const mergedRaces = mergeRaceSources([...approvedRemote, ...catalogWithDates, ...reports]);
   const results = mergedRaces.filter((race) => {
+    if (!race.date) return false; // n'affiche que les courses avec une date précise
     const regionText = `${race.region} ${race.location} ${race.name} ${race.source} ${race.notes}`.toLowerCase();
     const typeMatch = !type || race.type === type || (type === "Dryland" && ["Canicross", "Dryland"].includes(race.type));
     const regionMatch = !region || regionText.includes(region);
@@ -2815,31 +2822,48 @@ function renderRaceSearch() {
 
   // Helper : construit la carte HTML d'une course
   function buildRaceCard(race, pinned = false) {
-    const isSource = !race.date;
-    const dateText = isSource ? "Source calendrier" : formatFullDate(race.date);
-    const status = race.date ? (daysUntil(race.date) < 0 ? "Archive / a verifier" : `J-${daysUntil(race.date)}`) : "A connecter";
+    const dateText = formatFullDate(race.date);
+    const dLeft = daysUntil(race.date);
+    const status = dLeft < 0 ? "Terminée" : `J-${dLeft}`;
     const pinnedBadge = pinned ? `<span class="race-pinned-badge">⭐ Selectionnee</span>` : "";
+    const adminBtns = isAdmin ? `
+      <button class="admin-race-edit-btn text-button" data-admin-edit="${race.id}" type="button" title="Modifier">✏️</button>
+      <button class="admin-race-delete-btn text-button" data-admin-delete="${race.id}" type="button" title="Supprimer">🗑️</button>
+    ` : "";
     return `
-      <article class="race-result ${race.reliability || "calendar"}${pinned ? " pinned" : ""}">
+      <article class="race-result ${race.reliability || "calendar"}${pinned ? " pinned" : ""}" data-race-id="${race.id}">
         ${pinnedBadge}
-        <div>
-          <span>${status} - ${race.source} - ${getReliabilityLabel(race.reliability)}</span>
-          <h3>${race.name}</h3>
-          <p>${dateText} - ${race.location}</p>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px">
+          <div>
+            <span>${status} · ${race.source} · ${getReliabilityLabel(race.reliability)}</span>
+            <h3>${race.name}</h3>
+            <p>${dateText} · ${race.location}</p>
+          </div>
+          <div style="display:flex;gap:2px;flex-shrink:0">${adminBtns}</div>
         </div>
         <strong>${race.type}</strong>
         <div class="agenda-meta">
           <span>${race.distance ? `${race.distance} km` : "Distance variable"}</span>
-          <span>${race.region}</span>
           <span>${race.surface || "Surface variable"}</span>
         </div>
-        <p>${race.notes}</p>
+        ${race.notes ? `<p>${race.notes}</p>` : ""}
         <div class="race-result-actions">
           <button class="secondary-button" data-open-race-source="${race.id}" type="button">Source</button>
           <button class="secondary-button" data-race-interest="${race.id}" type="button">${state.raceInterests[race.id] ? "✓ Interesse" : "Je suis interesse"}</button>
-          <button class="primary-button" data-import-race="${race.id}" type="button" ${isSource ? "disabled" : ""}>Ajouter</button>
+          <button class="primary-button" data-import-race="${race.id}" type="button">Ajouter</button>
         </div>
         ${renderRaceInterestSummary(race)}
+        <div class="admin-edit-form hidden" data-edit-form="${race.id}">
+          <input class="admin-edit-name"     placeholder="Nom"       value="${race.name}" />
+          <input class="admin-edit-date"     type="date"             value="${race.date}" />
+          <input class="admin-edit-location" placeholder="Lieu"      value="${race.location || ""}" />
+          <input class="admin-edit-distance" type="number" placeholder="Distance km" value="${race.distance || ""}" />
+          <input class="admin-edit-notes"    placeholder="Notes"     value="${race.notes || ""}" />
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button class="primary-button admin-edit-save" data-save-edit="${race.id}" type="button">💾 Enregistrer</button>
+            <button class="secondary-button admin-edit-cancel" data-cancel-edit="${race.id}" type="button">Annuler</button>
+          </div>
+        </div>
       </article>
     `;
   }
@@ -2916,7 +2940,118 @@ function renderRaceSearch() {
     button.addEventListener("click", () => toggleRaceInterest(button.dataset.raceInterest));
   });
 
+  // ── Boutons admin : supprimer ─────────────────────────────────────────
+  if (isAdmin) {
+    list.querySelectorAll("[data-admin-delete]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.adminDelete;
+        const article = btn.closest("article");
+        const name = article?.querySelector("h3")?.textContent || id;
+
+        if (btn.dataset.confirming === "1") {
+          await adminDeleteRace(id);
+          renderRaceSearch();
+        } else {
+          btn.dataset.confirming = "1";
+          btn.textContent = "⚠️ Confirmer ?";
+          setTimeout(() => { btn.dataset.confirming = "0"; btn.textContent = "🗑️"; }, 5000);
+        }
+      });
+    });
+
+    // ── Boutons admin : ouvrir formulaire édition ────────────────────────
+    list.querySelectorAll("[data-admin-edit]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.adminEdit;
+        const form = list.querySelector(`[data-edit-form="${id}"]`);
+        if (form) form.classList.toggle("hidden");
+      });
+    });
+
+    list.querySelectorAll("[data-cancel-edit]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const form = btn.closest(".admin-edit-form");
+        if (form) form.classList.add("hidden");
+      });
+    });
+
+    list.querySelectorAll("[data-save-edit]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.saveEdit;
+        const form = btn.closest(".admin-edit-form");
+        const updates = {
+          name:     form.querySelector(".admin-edit-name").value.trim(),
+          date:     form.querySelector(".admin-edit-date").value,
+          location: form.querySelector(".admin-edit-location").value.trim(),
+          distance: Number(form.querySelector(".admin-edit-distance").value) || 0,
+          notes:    form.querySelector(".admin-edit-notes").value.trim()
+        };
+        await adminUpdateRace(id, updates);
+        renderRaceSearch();
+      });
+    });
+  }
+
   fetchCommunityInterests(results.map((race) => race.id));
+}
+
+// ── Logique admin : supprimer une course ──────────────────────────────────────
+async function adminDeleteRace(id) {
+  // 1. Course dans Supabase (remoteRaceCatalog) ?
+  const isRemote = remoteRaceCatalog.some((r) => r.id === id);
+  if (isRemote && supabase) {
+    const { error } = await supabase.from("mushtrack_races").delete().eq("id", id);
+    if (!error) {
+      remoteRaceCatalog = remoteRaceCatalog.filter((r) => r.id !== id);
+    } else {
+      alert("Erreur Supabase : " + error.message); return;
+    }
+  }
+  // 2. Signalement utilisateur dans state ?
+  const isReport = state.missingRaceReports.some((r) => r.id === id);
+  if (isReport) {
+    state.missingRaceReports = state.missingRaceReports.filter((r) => r.id !== id);
+  }
+  // 3. Catalogue local (raceCatalog) → masquer via hiddenRaceIds
+  if (!isRemote && !isReport) {
+    state.hiddenRaceIds = [...(state.hiddenRaceIds || []), id];
+  }
+  delete state.raceInterests[id];
+  saveState();
+  showSyncBadge("🗑️ Course supprimée");
+}
+
+// ── Logique admin : modifier une course ──────────────────────────────────────
+async function adminUpdateRace(id, updates) {
+  // 1. Course dans Supabase ?
+  const isRemote = remoteRaceCatalog.some((r) => r.id === id);
+  if (isRemote && supabase) {
+    const { error } = await supabase.from("mushtrack_races").update(updates).eq("id", id);
+    if (!error) {
+      const idx = remoteRaceCatalog.findIndex((r) => r.id === id);
+      if (idx !== -1) remoteRaceCatalog[idx] = { ...remoteRaceCatalog[idx], ...updates };
+    } else { alert("Erreur Supabase : " + error.message); return; }
+  }
+  // 2. Signalement ?
+  const reportIdx = state.missingRaceReports.findIndex((r) => r.id === id);
+  if (reportIdx !== -1) {
+    state.missingRaceReports[reportIdx] = { ...state.missingRaceReports[reportIdx], ...updates };
+    saveState();
+  }
+  // 3. Catalogue local → pousser une version modifiée dans Supabase comme approved
+  if (!isRemote && reportIdx === -1 && supabase) {
+    const original = raceCatalog.find((r) => r.id === id);
+    if (original) {
+      const merged = { ...original, ...updates, id: id + "-edited", status: "approved" };
+      // Masque l'original et insère la version éditée dans Supabase
+      state.hiddenRaceIds = [...(state.hiddenRaceIds || []), id];
+      await supabase.from("mushtrack_races").upsert([merged], { onConflict: "id" });
+      saveState();
+      // Recharge le catalogue remote
+      fetchRaceRadar();
+    }
+  }
+  showSyncBadge("✅ Course mise à jour");
 }
 
 function renderRaceInterestSummary(race) {
