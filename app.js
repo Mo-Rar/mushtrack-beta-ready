@@ -1063,56 +1063,260 @@ function renderAlerts() {
   `).join("") || `<p class="empty-state">Aucune alerte. La charge semble bien repartie.</p>`;
 }
 
+// ── Conseils chiens sportifs — banque de 30 conseils ─────────────────────────
+const ADVICE_BANK = [
+  {
+    label: "Échauffement",
+    title: "5 minutes de trot avant l'effort",
+    text: "Un échauffement progressif prépare les tendons, les muscles et le système cardio-vasculaire. Commence toujours par 3 à 5 minutes de trot léger avant d'augmenter l'allure. Les blessures tendineuses surviennent souvent sur des chiens partis trop vite à froid.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Récupération",
+    title: "Le retour au calme est aussi important que l'effort",
+    text: "Après une sortie intense, 5 à 10 minutes de marche permettent de relancer la circulation et d'évacuer l'acide lactique. Observer la respiration, la démarche et l'appétit dans les heures qui suivent donne de précieuses informations sur l'état du chien.",
+    source: "IFSS Athlete Guidelines",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Hydratation",
+    title: "Proposer souvent, ne pas attendre la soif",
+    text: "Un chien sportif ne se rend pas compte de sa déshydratation. Propose de petites prises régulières avant, pendant et après l'effort. En hiver, l'eau doit rester liquide : un chien qui mange de la neige compense mais pas suffisamment.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Nutrition",
+    title: "Graisses pour l'endurance, glucides pour le sprint",
+    text: "Les chiens d'endurance (Iditarod, mid-distance) fonctionnent à 60–70 % sur les lipides. Les chiens de sprint utilisent davantage les glucides. En saison, augmente progressivement la ration de 10 à 30 % selon la charge d'entraînement.",
+    source: "Purina / ISDVMA",
+    url: "https://www.purina.com/articles/dog/health/nutrition/sled-dog-nutrition"
+  },
+  {
+    label: "Coussinets",
+    title: "Durcissement progressif avant la saison",
+    text: "Les coussinets s'endurcissent avec une exposition graduelle à différentes surfaces. Commence sur herbe et terrain souple, puis introduis gravier et asphalte frais sur de courtes distances. Un coussinet dur résiste mieux à la neige abrasive et au bitume chaud.",
+    source: "Cornell Canine Health",
+    url: "https://www.vet.cornell.edu/departments-centers-and-institutes/riney-canine-health-center"
+  },
+  {
+    label: "Chaleur",
+    title: "Sortir tôt le matin, pas après 10h en été",
+    text: "Les chiens évacuent la chaleur principalement par le halètement et les coussinets. Au-delà de 20°C avec humidité, les risques d'hyperthermie augmentent rapidement. Préfère l'aube ou le crépuscule, en forêt ou sur herbe, avec eau disponible.",
+    source: "Cornell / Red Cross",
+    url: "https://www.vet.cornell.edu/departments-centers-and-institutes/riney-canine-health-center/canine-health-topics/summer-heat-safety-tips-dogs"
+  },
+  {
+    label: "Coup de chaleur",
+    title: "Signaux d'alerte à ne jamais ignorer",
+    text: "Halètement excessif, bave épaisse, faiblesse, confusion, vomissements ou effondrement = urgence. Refroidis progressivement avec de l'eau fraîche (pas de glace), arrose cou, aines et pattes, puis vétérinaire immédiatement.",
+    source: "American Red Cross",
+    url: "https://www.redcross.org/take-a-class/resources/learn-pet-first-aid/dog/heat-stroke"
+  },
+  {
+    label: "Froid",
+    title: "Hypothermie : à surveiller après l'effort",
+    text: "Un chien mouillé qui s'arrête perd sa chaleur rapidement. Sèche les chiens après la sortie, évite les longues pauses par temps froid et humide. Les chiens à poil court ou peu entraînés sont plus vulnérables que les nordiques.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Pattes",
+    title: "Glace entre les doigts : source de boiteries",
+    text: "En conditions neige/gel, des boules de glace peuvent se former entre les doigts et créer une douleur aiguë. Vérifie et décoince-les régulièrement pendant la sortie. La cire de protection pour pattes réduit ce risque et protège aussi la neige abrasive.",
+    source: "Canicross UK",
+    url: "https://canicrossuk.com/blog/f/when-canicrossing-in-hotter-weather"
+  },
+  {
+    label: "Tendinites",
+    title: "La surcharge arrive souvent au retour de vacances",
+    text: "Après une pause de 2 semaines ou plus, les chiens perdent leur condition physique plus vite que les humains. Ne reprends pas à la même intensité qu'avant la coupure. Une reprise progressive sur 2 à 3 semaines évite 80 % des blessures tendineuses.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Sommeil",
+    title: "16 à 18h de sommeil par jour pour un chien sportif",
+    text: "Le chien sportif a besoin de plus de repos que le chien sédentaire. La réparation musculaire et la consolidation des apprentissages se font principalement pendant le sommeil. Un chien qui dort bien récupère bien.",
+    source: "VetCompass / RVC",
+    url: "https://www.rvc.ac.uk/vetcompass"
+  },
+  {
+    label: "Progressivité",
+    title: "La règle des 10 % par semaine",
+    text: "N'augmente jamais le volume hebdomadaire de plus de 10 % par rapport à la semaine précédente. Les tendons et cartilages mettent plus de temps à s'adapter que les muscles. C'est cette différence qui provoque les blessures de surcharge.",
+    source: "Journal of Veterinary Sports Medicine",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Alimentation",
+    title: "Ne pas nourrir juste avant l'effort",
+    text: "Un repas important dans les 2 heures précédant l'effort peut provoquer une dilatation gastrique, surtout chez les grandes races. En pratique : repas léger ou rien 2h avant la sortie, et repas principal après le retour au calme complet.",
+    source: "Purina / ISDVMA",
+    url: "https://www.purina.com/articles/dog/health/nutrition/sled-dog-nutrition"
+  },
+  {
+    label: "Muscles",
+    title: "Masse musculaire visible = chien bien préparé",
+    text: "Un chien sportif bien conditionné a une musculature dorsale, lombaire et des cuisses développée. Observe régulièrement la silhouette : perte de masse sur le dos ou les cuisses = signal de surcharge ou d'alimentation insuffisante.",
+    source: "AKC Canine Health Foundation",
+    url: "https://www.akcchf.org/"
+  },
+  {
+    label: "Harnais",
+    title: "Un harnais mal ajusté = frottements et blocages",
+    text: "Un harnais trop large frotte les aisselles et peut créer des plaies. Trop serré, il limite la foulée. L'idéal : 2 doigts entre le harnais et le corps sur toute la surface. Vérifie l'ajustement à chaque sortie car le poids du chien fluctue.",
+    source: "ESDRA / FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Comportement",
+    title: "Un chien qui tire moins = signe à surveiller",
+    text: "Un chien qui tire nettement moins qu'à son habitude peut exprimer une douleur, une fatigue excessive ou un problème de santé débutant. Ce signal précède souvent la boiterie de plusieurs jours. Note-le dans MushTrack et observe les jours suivants.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Vétérinaire",
+    title: "Bilan sportif annuel : un investissement",
+    text: "Un bilan vétérinaire sportif avant la saison (auscultation cardiaque, palpation des tendons, poids, dentition) permet de détecter des problèmes avant qu'ils deviennent graves. Certains vétérinaires proposent aussi un ECG pour les chiens d'endurance.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Équipe",
+    title: "Chaque chien a sa place dans l'attelage",
+    text: "En attelage, les chiens de tête (leaders) ont besoin de bonnes capacités de concentration et d'obéissance. Les roues (proches du sled) sont généralement les plus puissants. Observer les affinités entre chiens aide à former des paires qui tirent mieux ensemble.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Parasites",
+    title: "Tiques et filariose : protection avant la saison",
+    text: "Les chiens sportifs évoluent souvent en milieu boisé ou humide où les tiques sont nombreuses. Vérifie chaque chien après la sortie, en particulier oreilles, aines, cou et entre les doigts. Maintiens à jour la protection antiparasitaire toute l'année.",
+    source: "ESCCAP Guidelines",
+    url: "https://www.esccap.org/"
+  },
+  {
+    label: "Récupération active",
+    title: "La nage : meilleure rééducation musculaire",
+    text: "La nage en eau fraîche combine refroidissement, stimulation musculaire et décharge articulaire. Pour un chien qui récupère d'une blessure légère ou d'une grosse semaine de travail, une courte séance de nage peut remplacer une sortie de récupération.",
+    source: "AKC Canine Health Foundation",
+    url: "https://www.akcchf.org/"
+  },
+  {
+    label: "Psychologie",
+    title: "Un chien motivé progresse plus vite",
+    text: "La motivation est un carburant au même titre que la nutrition. Varie les parcours, alterne efforts et séances de jeu, termine toujours sur une note positive. Un chien qui s'ennuie ou subit l'entraînement développe des comportements d'évitement et régresse.",
+    source: "Canicross UK",
+    url: "https://canicrossuk.com/"
+  },
+  {
+    label: "Électrolytes",
+    title: "En compétition, prévoir des électrolytes",
+    text: "Lors d'efforts longs (plus de 60 à 90 minutes) ou par grande chaleur, les chiens perdent des sels minéraux par transpiration et halètement. Des compléments électrolytiques spécifiques pour chiens sportifs permettent une meilleure récupération.",
+    source: "Purina Pro Plan Veterinary",
+    url: "https://www.purina.com/articles/dog/health/nutrition/sled-dog-nutrition"
+  },
+  {
+    label: "Truffe",
+    title: "Soleil fort : protéger les truffe roses",
+    text: "Les chiens à truffe rose ou dépigmentée peuvent souffrir de coups de soleil sur le museau, surtout lors de sorties longues en altitude ou en neige réfléchissante. Applique un écran solaire adapté aux chiens (non toxique si léché) avant les longues sorties.",
+    source: "VCA Animal Hospitals",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Cardio",
+    title: "Le cœur s'adapte à l'entraînement",
+    text: "Chez les chiens d'endurance bien entraînés, la fréquence cardiaque au repos peut descendre en dessous de 50 bpm (contre 60–100 chez un sédentaire). Une bonne condition cardio se construit sur 3 à 6 mois d'entraînement progressif.",
+    source: "ISDVMA / Veterinary Cardiology",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Blessure",
+    title: "Boiterie légère = repos 3 jours minimum",
+    text: "Une boiterie légère après l'effort qui disparaît le lendemain matin est le premier signe d'une tendinite débutante. 3 jours de repos complet suffisent souvent. Ignorer ce signe et continuer l'entraînement peut transformer une micro-lésion en blessure grave.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Poids",
+    title: "Peser son chien chaque mois",
+    text: "Un chien sportif bien nourri et bien entraîné maintient un poids stable avec une légère variation selon l'intensité de la saison. Une perte de poids sans changement de ration mérite une consultation vétérinaire. On doit sentir les côtes sans les voir.",
+    source: "Cornell Canine Health",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Dents",
+    title: "Santé dentaire et performance",
+    text: "Des dents douloureuses ou infectées réduisent l'appétit et donc les performances. Un détartrage annuel et un brossage hebdomadaire maintiennent une bonne hygiène buccale. L'haleine d'un chien sportif sain ne devrait pas être forte.",
+    source: "AVMA Dental Guidelines",
+    url: "https://www.avma.org/"
+  },
+  {
+    label: "Altitude",
+    title: "En montagne, acclimatation nécessaire",
+    text: "Au-dessus de 2000 m, les chiens comme les humains ont besoin de 2 à 3 jours pour s'acclimater avant de pouvoir fournir un effort maximal. Réduis le volume et l'intensité lors des premiers jours en altitude, observe la récupération et hydrate davantage.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Communication",
+    title: "Apprendre à lire le langage corporel",
+    text: "Un chien qui baisse les oreilles, tourne la tête, se lèche les babines ou bâille en plein effort envoie des signaux de stress ou d'inconfort. Ces micro-signaux, visibles en s'observant et en filmant les sorties, permettent d'anticiper la fatigue ou la douleur.",
+    source: "Turid Rugaas / Canicross",
+    url: "https://canicrossuk.com/"
+  },
+  {
+    label: "Semaine de récup",
+    title: "Une semaine légère toutes les 3 à 4 semaines",
+    text: "Intégrer une semaine de récupération (volume réduit de 40 à 50 %, intensité légère) permet aux tendons, cartilages et au système nerveux de récupérer. Les chiens qui ont des semaines de récup dans leur plan progressent plus vite et se blessent moins.",
+    source: "IFSS Athlete Guidelines",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Neige vs Trail",
+    title: "Le passage neige → terrain dur demande une adaptation",
+    text: "Les chiens habitués à courir sur neige souple ont des coussinets plus sensibles aux terrains durs. En début de saison dryland ou lors du passage hiver → printemps, réduis les distances sur asphalte et observe les coussinets quotidiennement pendant 2 semaines.",
+    source: "FFSLC / Canicross France",
+    url: "https://ffslc.fr/"
+  }
+];
+
 function renderWebAdvice() {
   const list = document.querySelector('[data-list="webAdvice"]');
   if (!list) return;
 
-  const tips = [
-    {
-      label: "Chaleur",
-      title: "Adapter ou annuler avant que le chien ne force",
-      text: "Les sources veterinaires rappellent que les chiens evacuant surtout la chaleur par le haletement et les coussinets, l'exercice peut devenir dangereux rapidement en conditions chaudes ou humides. MushTrack doit pousser vers tot le matin, ombre, eau, baisse d'intensite et arret au moindre signe anormal.",
-      source: "Cornell / Red Cross",
-      url: "https://www.vet.cornell.edu/departments-centers-and-institutes/riney-canine-health-center/canine-health-topics/summer-heat-safety-tips-dogs"
-    },
-    {
-      label: "Urgence",
-      title: "Signaux heatstroke a surveiller",
-      text: "Haletement excessif, bave importante, faiblesse, confusion, vomissements, diarrhee, convulsions ou effondrement doivent etre traites comme une urgence. On refroidit progressivement avec de l'eau fraiche, sans glace extreme, puis veterinaire.",
-      source: "American Red Cross",
-      url: "https://www.redcross.org/take-a-class/resources/learn-pet-first-aid/dog/heat-stroke"
-    },
-    {
-      label: "Refroidissement",
-      title: "Head dunk et eau fraiche",
-      text: "Pour les chiens de sport, apprendre calmement a mettre la tete dans l'eau peut aider au refroidissement. Ce n'est pas un ordre a forcer: c'est un apprentissage progressif, utile seulement avec un chien lucide et habitue.",
-      source: "AKC Canine Health Foundation",
-      url: "https://www.akcchf.org/educational-resources/library/articles/cool-down-science-how-a-simple-head-dunk-could-save-your-dog-from-heat-stroke/"
-    },
-    {
-      label: "Pattes",
-      title: "Sol chaud, glace, neige dure: controle systematique",
-      text: "Les coussinets peuvent bruler sur surfaces chaudes et s'abimer sur neige/glace abrasive. Controle avant et apres: rougeur, fissure, coupure, boiterie ou lechage insistant. En ete, privilegier herbe/terre et eviter bitume chaud.",
-      source: "Cornell / Canicross UK",
-      url: "https://canicrossuk.com/blog/f/when-canicrossing-in-hotter-weather"
-    },
-    {
-      label: "Hydratation",
-      title: "Proposer souvent, ne pas attendre la soif",
-      text: "En travail ou entrainement, mieux vaut proposer de petites prises regulieres avant, pendant et apres. Apres l'effort, laisser boire par petites quantites et observer recuperation, appetit et attitude.",
-      source: "Mush with P.R.I.D.E.",
-      url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
-    }
-  ];
+  // Calcul de la "période" : change tous les 2 jours
+  const daysSinceEpoch = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+  const periodIndex = Math.floor(daysSinceEpoch / 2);
+  const total = ADVICE_BANK.length;
 
-  list.innerHTML = tips.map((tip) => `
-    <article class="advice-card web-tip">
-      <span>${tip.label}</span>
-      <h2>${tip.title}</h2>
-      <p>${tip.text}</p>
-      <a href="${tip.url}" target="_blank" rel="noopener">${tip.source}</a>
-    </article>
-  `).join("");
+  // 2 conseils différents tirés de la banque selon la période
+  const idx1 = periodIndex % total;
+  const idx2 = (periodIndex + 1) % total;
+  const todayTips = [ADVICE_BANK[idx1], ADVICE_BANK[idx2]];
+
+  // Calcul du prochain changement (combien de jours restants)
+  const nextChangeDay = (periodIndex + 1) * 2;
+  const daysLeft = nextChangeDay - daysSinceEpoch;
+  const nextLabel = daysLeft <= 1 ? "Demain" : `Dans ${daysLeft} jours`;
+
+  list.innerHTML = `
+    <div class="advice-rotation-info">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+      Nouveau conseil : ${nextLabel} · ${periodIndex % total + 1}/${total}
+    </div>
+    ${todayTips.map((tip) => `
+      <article class="advice-card web-tip">
+        <span>${tip.label}</span>
+        <h2>${tip.title}</h2>
+        <p>${tip.text}</p>
+        <a href="${tip.url}" target="_blank" rel="noopener noreferrer">${tip.source} ↗</a>
+      </article>
+    `).join("")}
+  `;
 }
 
 function renderPlan() {

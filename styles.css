@@ -1976,6 +1976,16 @@ textarea {
   text-decoration: none;
 }
 
+.advice-rotation-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #aaaaaa;
+  padding: 4px 0 6px;
+}
+
 .week-list b,
 .week-list small {
   display: block;
