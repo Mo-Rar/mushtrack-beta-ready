@@ -126,11 +126,29 @@ function addUserBar(email) {
 
 async function initAuth() {
   if (!supabase) return; // Supabase non disponible
-  const { data } = await supabase.auth.getSession();
-  if (data.session?.user) {
-    onAuthSuccess(data.session.user);
-  } else {
-    showAuthOverlay();
+
+  // Timeout de sécurité : si Supabase ne répond pas en 5s, on laisse l'app fonctionner
+  const timeout = new Promise(resolve => setTimeout(() => resolve({ data: { session: null }, timedOut: true }), 5000));
+
+  try {
+    const result = await Promise.race([
+      supabase.auth.getSession().then(r => ({ ...r, timedOut: false })),
+      timeout
+    ]);
+
+    if (result.timedOut) {
+      console.warn("[MushTrack] Supabase timeout — app lancée sans auth");
+      return; // Ne pas afficher l'overlay auth si timeout
+    }
+
+    if (result.data?.session?.user) {
+      onAuthSuccess(result.data.session.user);
+    } else {
+      showAuthOverlay();
+    }
+  } catch (err) {
+    console.warn("[MushTrack] Erreur auth, app lancée sans connexion:", err);
+    // Ne pas bloquer l'app si auth échoue
   }
 }
 
