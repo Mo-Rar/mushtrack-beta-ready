@@ -2023,6 +2023,72 @@ textarea {
   padding: 4px 0 6px;
 }
 
+/* ── Filtre conseils ─────────────────────────── */
+.advice-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.advice-filter-btn {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1.5px solid #e0e0e0;
+  background: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.advice-filter-btn.active {
+  background: #fc4c02;
+  color: #fff;
+  border-color: #fc4c02;
+}
+
+/* ── Compteur dernière sortie dashboard ──────── */
+.last-run-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #666;
+  margin: -4px 0 10px;
+  padding: 0 4px;
+}
+
+/* ── Présets paramètres ──────────────────────── */
+.preset-section {
+  margin-bottom: 14px;
+}
+.preset-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 8px;
+}
+.preset-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.preset-btn {
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1.5px solid #fc4c02;
+  background: #fff7f5;
+  color: #fc4c02;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.preset-btn:hover {
+  background: #fc4c02;
+  color: #fff;
+}
+
 .week-list b,
 .week-list small {
   display: block;
