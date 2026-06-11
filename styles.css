@@ -1567,6 +1567,43 @@ textarea {
   font-weight: 950;
 }
 
+/* Boutons d'action agenda */
+.agenda-card-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+.agenda-delete-btn {
+  font-size: 0.78rem;
+  color: #888;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+.agenda-delete-btn.agenda-delete-confirm {
+  background: #fff0ed;
+  color: #fc4c02;
+  font-weight: 700;
+}
+
+/* Filtres sorties ouvertes */
+.open-run-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.open-run-filters select,
+.open-run-filters input {
+  flex: 1;
+  min-width: 120px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1.5px solid #e0e0e0;
+  background: #fff;
+  font-size: 0.84rem;
+}
+
 .open-run-participants {
   display: flex;
   flex-wrap: wrap;
