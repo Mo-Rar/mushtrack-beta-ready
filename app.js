@@ -1079,12 +1079,33 @@ function daysUntilGoal() {
 
 function getTeamReadinessPct() {
   if (state.dogs.length === 0) return null;
+  // Sans aucun entraînement enregistré : pas de score possible
+  if (state.runs.length === 0) return 0;
+
+  const now = Date.now();
+  const runs30 = state.runs.filter(r => r.date && (now - new Date(r.date+"T12:00:00").getTime()) <= 30*86400000);
+
+  // Volume : km 30 jours vs cible mensuelle (4× objectif hebdo)
+  const targetWeekly = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
+  const km30 = runs30.reduce((s, r) => s + Number(r.km || 0), 0);
+  const volumeScore = Math.min(1, (targetWeekly * 4) > 0 ? km30 / (targetWeekly * 4) : 0);
+
+  // Régularité : fréquence des sorties sur 30 jours (cible = 12 sorties/mois)
+  const regulariteScore = Math.min(1, runs30.length / 12);
+
+  // Santé des chiens (uniquement si on a des données réelles)
   const healthyDogs = state.dogs.filter(d => d.healthSignal !== "Attention" && d.healthSignal !== "Repos").length;
   const healthScore = healthyDogs / state.dogs.length;
-  const weekKm = getWeekKm();
-  const targetKm = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
-  const volumeScore = Math.min(1, targetKm > 0 ? weekKm / targetKm : 0);
-  return Math.round((healthScore * 0.65 + volumeScore * 0.35) * 100);
+
+  // Récupération : moyenne sur les 5 dernières sorties
+  const recovMap = { "Excellente":1, "Bonne":0.8, "Normale":0.6, "A surveiller":0.3, "Difficile":0.1 };
+  const last5 = state.runs.slice(0, 5);
+  const recovScore = last5.length > 0
+    ? last5.reduce((s, r) => s + (recovMap[r.recovery] || 0.6), 0) / last5.length
+    : 0;
+
+  // Pondération : volume 40%, régularité 25%, santé 20%, récup 15%
+  return Math.round((volumeScore * 0.40 + regulariteScore * 0.25 + healthScore * 0.20 + recovScore * 0.15) * 100);
 }
 
 function buildHeroSentence(daysLeft, teamPct, workout) {
@@ -2749,10 +2770,47 @@ function getWeekFocus(index, isRest, context = getPlanContext()) {
 }
 
 function getNextWorkout() {
-  const first = buildPlan()[0];
+  // Aucun entraînement → première sortie douce
+  if (!state.runs || state.runs.length === 0) {
+    return {
+      title: "Première sortie",
+      text: "5 km faciles pour découvrir l'attelage et évaluer la forme de l'équipe.",
+      km: 5
+    };
+  }
+
+  // Calcul de la moyenne des 3 dernières sorties
+  const recent = state.runs.slice(0, 3);
+  const avgKm = recent.reduce((s, r) => s + Number(r.km || 0), 0) / recent.length;
+
+  // Progression prudente : +10 % par rapport à la moyenne récente
+  let nextKm = Math.round(avgKm * 1.10);
+
+  // Plafond progressif selon le nombre de sorties enregistrées
+  const targetKm = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
+  const progressCap = Math.min(targetKm, Math.round(avgKm * 1.20 + 2));
+  nextKm = Math.max(4, Math.min(nextKm, progressCap));
+
+  // Contexte météo / course imminente via buildPlan
+  const context = getPlanContext();
+  if (context.volumeFactor < 1) {
+    nextKm = Math.max(4, Math.round(nextKm * context.volumeFactor));
+  }
+
+  // Libellé de séance selon le type de course
+  let label = "Endurance progressive";
+  if (state.raceType === "Sprint") label = "Intervalles courts";
+  else if (state.raceType === "Longue distance") label = "Sortie longue économique";
+
+  const lastRecov = state.runs[0] ? (state.runs[0].recovery || "") : "";
+  const recovNote = (lastRecov === "Difficile" || lastRecov === "A surveiller")
+    ? " Priorise la récupération des chiens avant d'augmenter."
+    : "";
+
   return {
-    title: first.focus.split(",")[0],
-    text: `${first.km} km cette semaine. ${first.focus}`
+    title: label,
+    text: `${nextKm} km recommandés (basé sur ta moyenne récente de ${Math.round(avgKm)} km).${recovNote}`,
+    km: nextKm
   };
 }
 
