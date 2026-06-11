@@ -3356,7 +3356,16 @@ function renderAdminPanel() {
 function renderAgenda() {
   const list = document.querySelector('[data-list="agenda"]');
   if (!list) return;
-  const races = [...state.agenda].sort((a, b) => new Date(a.date) - new Date(b.date));
+  let races = [];
+  try {
+    races = [...state.agenda].sort((a, b) => new Date(a.date) - new Date(b.date));
+  } catch(e) {
+    console.error("renderAgenda sort error:", e);
+  }
+  if (races.length === 0) {
+    list.innerHTML = `<p class="empty-state">Aucune course prevue. Appuie sur + pour en ajouter une.</p>`;
+    return;
+  }
   list.innerHTML = races.map((race) => {
     const days = daysUntil(race.date);
     const status = days < 0 ? "Terminee" : days === 0 ? "Aujourd'hui" : `J-${days}`;
@@ -3375,14 +3384,14 @@ function renderAgenda() {
           <span>${readiness}</span>
         </div>
         <p>${race.notes || "Aucune note."}</p>
-        <div class="agenda-card-actions">
-          <button class="agenda-edit-btn" data-edit-race="${race.id}" type="button">✏️ Modifier</button>
-          <button class="agenda-delete-btn" data-delete-race="${race.id}" type="button">🗑 Supprimer</button>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+          <button class="agenda-edit-btn" data-edit-race="${race.id}" type="button" style="flex:1;padding:8px 12px;font-size:0.85rem;font-weight:600;border:1.5px solid #fc4c02;border-radius:8px;background:#fff;color:#fc4c02;cursor:pointer">✏️ Modifier</button>
+          <button class="agenda-delete-btn" data-delete-race="${race.id}" type="button" style="flex:1;padding:8px 12px;font-size:0.85rem;font-weight:600;border:1.5px solid #ccc;border-radius:8px;background:#fff;color:#888;cursor:pointer">🗑 Supprimer</button>
         </div>
         <form class="agenda-edit-form" data-edit-form="${race.id}" style="display:none">
-          <input name="name" type="text" value="${race.name || ""}" placeholder="Nom de la course" required />
+          <input name="name" type="text" value="${(race.name || "").replace(/"/g, "&quot;")}" placeholder="Nom de la course" required />
           <input name="date" type="date" value="${race.date || ""}" required />
-          <input name="location" type="text" value="${race.location || ""}" placeholder="Lieu" />
+          <input name="location" type="text" value="${(race.location || "").replace(/"/g, "&quot;")}" placeholder="Lieu" />
           <input name="distance" type="number" value="${race.distance || ""}" placeholder="Distance km" min="1" />
           <select name="type">
             <option value="Canicross" ${race.type === "Canicross" ? "selected" : ""}>Canicross</option>
