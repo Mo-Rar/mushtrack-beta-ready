@@ -380,6 +380,92 @@ const raceCatalog = [
     surface: "Neige Dryland",
     url: "https://www.mushing.cz/",
     notes: "Calendrier mushing d'Europe centrale avec evenements IFSS et nationaux."
+  },
+
+  // ── Swiss Canicross 2026 — source : swiss-canicross.ch/course/ ──────
+  {
+    id: "swiss-canicross-saint-cierges-2026",
+    name: "Canicross Saint-Cierges",
+    date: "2026-09-12",
+    type: "Canicross",
+    distance: 7,
+    region: "Suisse Switzerland Vaud Europe",
+    location: "Saint-Cierges, Vaud",
+    source: "Swiss Canicross",
+    reliability: "official",
+    surface: "Trail",
+    url: "https://swiss-canicross.ch/course/",
+    notes: "Ouverture vendredi 17h00. Week-end 12-13 septembre 2026."
+  },
+  {
+    id: "swiss-canicross-yens-2026",
+    name: "Canicross Yens",
+    date: "2026-09-26",
+    type: "Canicross",
+    distance: 7,
+    region: "Suisse Switzerland Vaud Europe",
+    location: "Yens, Vaud",
+    source: "Swiss Canicross",
+    reliability: "official",
+    surface: "Trail",
+    url: "https://swiss-canicross.ch/course/",
+    notes: "Ouverture samedi 9h00. Week-end 26-27 septembre 2026."
+  },
+  {
+    id: "swiss-canitrail-bisses-2026",
+    name: "Canitrail des Bisses",
+    date: "2026-10-03",
+    type: "Canicross",
+    distance: 10,
+    region: "Suisse Switzerland Valais Anzere Europe",
+    location: "Anzère, Valais",
+    source: "Swiss Canicross",
+    reliability: "official",
+    surface: "Trail",
+    url: "https://swiss-canicross.ch/course/",
+    notes: "Canitrail. Week-end 3-4 octobre 2026."
+  },
+  {
+    id: "swiss-canicross-koppigen-2026",
+    name: "Canicross Koppigen",
+    date: "2026-10-10",
+    type: "Canicross",
+    distance: 7,
+    region: "Suisse Switzerland Berne Europe",
+    location: "Koppigen, Berne",
+    source: "Swiss Canicross",
+    reliability: "official",
+    surface: "Trail",
+    url: "https://swiss-canicross.ch/course/",
+    notes: "Parking CHF 5. Ouverture vendredi 17h30. Week-end 10-11 octobre 2026."
+  },
+  {
+    id: "swiss-canicross-givrine-2026",
+    name: "Canicross La Givrine",
+    date: "2026-10-17",
+    type: "Canicross",
+    distance: 7,
+    region: "Suisse Switzerland Vaud Europe",
+    location: "La Givrine, Vaud",
+    source: "Swiss Canicross",
+    reliability: "official",
+    surface: "Trail",
+    url: "https://swiss-canicross.ch/course/",
+    notes: "Week-end 17-18 octobre 2026."
+  },
+  {
+    id: "swiss-canicross-ardon-2026",
+    name: "Canicross Ardon",
+    date: "2026-10-24",
+    type: "Canicross",
+    distance: 7,
+    region: "Suisse Switzerland Valais Ardon Europe",
+    location: "Ardon, Valais",
+    source: "Swiss Canicross",
+    reliability: "official",
+    surface: "Trail",
+    url: "https://swiss-canicross.ch/course/",
+    notes: "Week-end 24-25 octobre 2026."
   }
 ];
 
