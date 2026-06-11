@@ -3527,117 +3527,199 @@ function buildCoachWelcome() {
         <li>⚡ Actions prioritaires cette semaine</li>
         <li>⚠️ Alertes si quelque chose doit être corrigé</li>
       </ul>
-      <p class="coach-welcome-hint">Tu peux poser une question précise dans le champ ci-dessus ou laisser vide pour une analyse complète.</p>
+      <p class="coach-welcome-hint">Analyse 100&nbsp;% locale · gratuite · instantanée.</p>
     </div>
   `;
 }
 
-let lastCoachCallTime = 0;
-const COACH_COOLDOWN_MS = 30000; // 30 secondes entre chaque analyse
-
-async function requestCoachAnalysis() {
+// ── Coach local — 100 % gratuit, zéro appel API ──────────────────────────────
+function requestCoachAnalysis() {
   const btn = document.querySelector("#coach-analyze-btn");
-  const question = coachQuestion?.value?.trim() || "";
-
-  // Rate limit : cooldown 30 s
-  const elapsed = Date.now() - lastCoachCallTime;
-  if (lastCoachCallTime > 0 && elapsed < COACH_COOLDOWN_MS) {
-    const wait = Math.ceil((COACH_COOLDOWN_MS - elapsed) / 1000);
-    coachResult.innerHTML = `
-      <div class="coach-error">
-        <strong>⏳ Patiente encore ${wait} seconde${wait > 1 ? "s" : ""}</strong>
-        <p>Pour éviter des appels inutiles, une nouvelle analyse sera disponible dans ${wait}s.</p>
-      </div>
-    `;
-    coachResult.dataset.hasResult = "1";
-    return;
-  }
-
-  lastCoachCallTime = Date.now();
   btn.disabled = true;
-  btn.textContent = "Analyse en cours…";
 
-  coachResult.innerHTML = `
-    <div class="coach-loading">
-      <div class="coach-loading-spinner"></div>
-      <p>Le Coach analyse tes données…</p>
-      <small>Cela prend 10 à 20 secondes</small>
-    </div>
-  `;
-  coachResult.dataset.hasResult = "1";
-
-  // Prépare les données à envoyer
-  const payload = {
-    runs: state.runs.slice(0, 15),
-    dogs: state.dogs,
-    settings: {
-      raceType: state.raceType,
-      raceName: state.raceName || state.raceType || "Course objectif",
-      raceKm: state.raceKm || 100,
-      raceDate: state.raceDate || "",
-      seasonMode: state.seasonMode,
-      profileName: state.profile?.name || "Musher",
-      profileLevel: state.profile?.level || "Amateur"
-    },
-    question
-  };
-
-  try {
-    const response = await fetch("/api/coach", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    const data = await response.json();
-
-    if (!data.configured) {
-      coachResult.innerHTML = `
-        <div class="coach-error">
-          <strong>⚙️ Coach IA non configuré</strong>
-          <p>${data.message || "La clé API n'est pas encore configurée dans Vercel."}</p>
-        </div>
-      `;
-      return;
-    }
-
-    if (data.error) {
-      coachResult.innerHTML = `
-        <div class="coach-error">
-          <strong>❌ Erreur</strong>
-          <p>${data.error}</p>
-        </div>
-      `;
-      return;
-    }
-
-    // Affiche le résultat formaté
+  // Légère pause visuelle pour que l'analyse paraisse sérieuse
+  setTimeout(() => {
+    const report = buildLocalCoachReport();
     coachResult.innerHTML = `
       <div class="coach-analysis">
         <div class="coach-analysis-meta">
           <span>Analyse du ${new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</span>
-          ${question ? `<span>Question : "${question}"</span>` : ""}
+          <span>Coach MushTrack local · gratuit</span>
         </div>
-        <div class="coach-analysis-text">${formatCoachMarkdown(data.analysis)}</div>
-        <button class="secondary-button coach-refresh-btn" id="coach-refresh-btn" type="button">🔄 Nouvelle analyse</button>
+        <div class="coach-analysis-text">${report}</div>
+        <button class="secondary-button coach-refresh-btn" id="coach-refresh-btn" type="button">🔄 Actualiser l'analyse</button>
       </div>
     `;
-
+    coachResult.dataset.hasResult = "1";
     document.querySelector("#coach-refresh-btn")?.addEventListener("click", () => {
       delete coachResult.dataset.hasResult;
       coachResult.innerHTML = buildCoachWelcome();
+      btn.disabled = false;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Analyser`;
     });
-
-  } catch (err) {
-    coachResult.innerHTML = `
-      <div class="coach-error">
-        <strong>❌ Erreur réseau</strong>
-        <p>Impossible de contacter le Coach. Vérifie ta connexion.</p>
-      </div>
-    `;
-  } finally {
     btn.disabled = false;
     btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Analyser`;
+  }, 900);
+}
+
+// ── Moteur d'analyse locale ───────────────────────────────────────────────────
+function buildLocalCoachReport() {
+  const runs      = state.runs || [];
+  const dogs      = state.dogs || [];
+  const raceKm    = Number(state.raceKm)  || 100;
+  const raceName  = state.raceName || state.raceType || "Course objectif";
+  const raceDate  = state.raceDate || "";
+  const daysLeft  = raceDate ? daysUntil(raceDate) : null;
+  const level     = state.profile?.level || "Amateur";
+
+  // ── Statistiques de base ──
+  const totalKm     = runs.reduce((s, r) => s + Number(r.km || 0), 0);
+  const runCount    = runs.length;
+  const avgSpeed    = runCount > 0
+    ? runs.reduce((s, r) => s + Number(r.avgSpeed || 0), 0) / runCount
+    : 0;
+  const avgEnergy   = runs.filter((r) => r.energy).length > 0
+    ? runs.filter((r) => r.energy).reduce((s, r) => s + Number(r.energy), 0) / runs.filter((r) => r.energy).length
+    : null;
+
+  // Dernières 4 semaines
+  const now4w = new Date(); now4w.setDate(now4w.getDate() - 28);
+  const runs4w = runs.filter((r) => r.date && new Date(r.date) >= now4w);
+  const km4w   = runs4w.reduce((s, r) => s + Number(r.km || 0), 0);
+
+  // Dernière semaine
+  const now1w = new Date(); now1w.setDate(now1w.getDate() - 7);
+  const runs1w = runs.filter((r) => r.date && new Date(r.date) >= now1w);
+  const km1w   = runs1w.reduce((s, r) => s + Number(r.km || 0), 0);
+
+  // Volume hebdo recommandé selon objectif
+  const weeklyTarget = daysLeft !== null
+    ? (daysLeft > 60 ? raceKm * 0.25 : daysLeft > 28 ? raceKm * 0.35 : daysLeft > 10 ? raceKm * 0.20 : raceKm * 0.10)
+    : raceKm * 0.25;
+  const weeklyRatio  = weeklyTarget > 0 ? km1w / weeklyTarget : 0;
+
+  // ── Section 1 : Évaluation actuelle ──
+  let evalNote, evalColor;
+  if (runCount === 0) {
+    evalNote = "Aucune sortie enregistrée. Il est impossible d'évaluer la condition. Commence à enregistrer tes sorties pour obtenir une analyse.";
+    evalColor = "⚪";
+  } else if (weeklyRatio >= 0.85 && weeklyRatio <= 1.25) {
+    evalNote = `Tu es dans la bonne zone de volume (${km1w.toFixed(0)} km cette semaine, cible ${weeklyTarget.toFixed(0)} km). Continue sur cette lancée.`;
+    evalColor = "🟢";
+  } else if (weeklyRatio < 0.85) {
+    evalNote = `Volume insuffisant cette semaine : ${km1w.toFixed(0)} km pour un objectif de ${weeklyTarget.toFixed(0)} km. Tu es à ${Math.round(weeklyRatio * 100)}% de la cible.`;
+    evalColor = "🟡";
+  } else {
+    evalNote = `Volume élevé cette semaine : ${km1w.toFixed(0)} km — soit ${Math.round(weeklyRatio * 100)}% de la cible. Surveille la récupération des chiens.`;
+    evalColor = "🟠";
   }
+
+  // ── Section 2 : Tendances ──
+  const trends = [];
+  if (runCount >= 3) {
+    const recent3  = [...runs].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
+    const avgRec   = recent3.reduce((s, r) => s + Number(r.km || 0), 0) / 3;
+    const older3   = [...runs].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(3, 6);
+    if (older3.length > 0) {
+      const avgOld = older3.reduce((s, r) => s + Number(r.km || 0), 0) / older3.length;
+      if (avgRec > avgOld * 1.15) trends.push("📈 Le volume par sortie progresse — bonne dynamique.");
+      else if (avgRec < avgOld * 0.85) trends.push("📉 Le volume par sortie diminue — vérifie la fatigue ou la météo.");
+    }
+  }
+  if (avgSpeed > 0) {
+    if (avgSpeed < 12) trends.push("🐢 Vitesse moyenne basse (" + avgSpeed.toFixed(1) + " km/h) — normal en endurance, mais veille à intégrer des sorties plus dynamiques.");
+    else if (avgSpeed >= 16) trends.push("⚡ Bonne vitesse moyenne (" + avgSpeed.toFixed(1) + " km/h) — pense à équilibrer avec des sorties longues et lentes.");
+    else trends.push("✅ Vitesse moyenne correcte : " + avgSpeed.toFixed(1) + " km/h.");
+  }
+  if (avgEnergy !== null) {
+    if (avgEnergy < 3) trends.push("😴 Énergie moyenne faible (" + avgEnergy.toFixed(1) + "/5) — les chiens donnent des signes de fatigue. Augmente les jours de repos.");
+    else if (avgEnergy >= 4) trends.push("💪 Énergie des chiens au beau fixe (" + avgEnergy.toFixed(1) + "/5) — attelage en forme.");
+  }
+  if (runs4w.length < 3) trends.push("📅 Moins de 3 sorties sur 4 semaines — la régularité est la clé pour progresser.");
+  if (trends.length === 0) trends.push("Pas encore assez de données pour analyser les tendances.");
+
+  // ── Section 3 : Plan 4 semaines ──
+  const planWeeks = buildLocalPlan(raceKm, daysLeft, weeklyTarget, level);
+
+  // ── Section 4 : Chiens ──
+  const dogAdvice = [];
+  if (dogs.length === 0) {
+    dogAdvice.push("Aucun chien enregistré. Ajoute tes chiens dans l'onglet Chiens pour des conseils personnalisés.");
+  } else {
+    dogs.forEach((dog) => {
+      const age = Number(dog.age || 0);
+      const sig = dog.healthSignal || "ok";
+      if (age >= 8) dogAdvice.push(`🐕 ${dog.name} (${age} ans) : chien sénior — réduis les sorties longues, surveille les articulations et augmente la récupération.`);
+      else if (age <= 1) dogAdvice.push(`🐕 ${dog.name} (${age} an) : jeune chien — limite à 20-30 min par sortie, pas de longue distance avant 18 mois.`);
+      if (sig === "fatigue" || sig === "blessure") dogAdvice.push(`⚠️ ${dog.name} signalé en ${sig} — repos obligatoire, consulte un vétérinaire si ça dure.`);
+    });
+    if (dogAdvice.length === 0) dogAdvice.push("Chiens dans de bonnes conditions. Continue à surveiller leur énergie et leur appétit après chaque sortie.");
+  }
+
+  // ── Section 5 : Actions prioritaires ──
+  const actions = [];
+  if (runCount === 0) {
+    actions.push("Enregistre ta première sortie pour débloquer l'analyse complète.");
+  } else {
+    if (km1w < weeklyTarget * 0.7) actions.push(`Planifie une sortie de ${Math.round(weeklyTarget * 0.4)} km cette semaine pour rattraper le volume cible.`);
+    if (runs1w.length === 0) actions.push("Aucune sortie cette semaine — reprends dès que possible avec une sortie facile.");
+    if (daysLeft !== null && daysLeft <= 14 && daysLeft > 0) actions.push(`Course dans ${daysLeft} jours — réduction du volume à 50%, sorties courtes et vives uniquement.`);
+    if (dogs.some((d) => d.healthSignal === "fatigue" || d.healthSignal === "blessure")) actions.push("Mettre au repos les chiens signalés fatigués ou blessés avant toute prochaine sortie.");
+    if (actions.length < 3 && avgSpeed > 0 && avgSpeed < 12) actions.push("Intègre une sortie avec des intervals courts (3 × 3 min rapides) pour améliorer la vitesse.");
+    if (actions.length < 3) actions.push("Maintiens la régularité : 3 à 4 sorties par semaine est plus efficace que 1 longue sortie par semaine.");
+  }
+
+  // ── Section 6 : Alerte ──
+  const alerts = [];
+  if (daysLeft !== null && daysLeft < 0) alerts.push(`La date de course ${raceName} est dépassée. Mets à jour ta course objectif dans les Paramètres.`);
+  if (weeklyRatio > 1.5) alerts.push(`Volume très élevé cette semaine (${km1w.toFixed(0)} km). Risque de surcharge — insère 2 jours de repos complets.`);
+  if (runCount > 0 && runs.every((r) => !r.energy)) alerts.push("Pense à noter l'énergie de tes chiens après chaque sortie — ça permet de détecter la fatigue tôt.");
+
+  // ── Rendu HTML ──
+  return `
+    <h4>🎯 Évaluation actuelle</h4>
+    <p>${evalColor} ${evalNote}</p>
+    <p><strong>${totalKm.toFixed(0)} km</strong> totaux · <strong>${runCount}</strong> sortie(s) · vitesse moy. <strong>${avgSpeed > 0 ? avgSpeed.toFixed(1) + " km/h" : "—"}</strong>${daysLeft !== null ? ` · <strong>${daysLeft > 0 ? "J-" + daysLeft : "Course passée"}</strong> avant ${raceName}` : ""}</p>
+
+    <h4>📊 Analyse des tendances</h4>
+    <ul>${trends.map((t) => `<li>${t}</li>`).join("")}</ul>
+
+    <h4>🗓️ Plan 4 semaines recommandé</h4>
+    ${planWeeks}
+
+    <h4>🐕 Points d'attention sur les chiens</h4>
+    <ul>${dogAdvice.map((d) => `<li>${d}</li>`).join("")}</ul>
+
+    <h4>⚡ Actions prioritaires cette semaine</h4>
+    <ul>${actions.map((a) => `<li>${a}</li>`).join("")}</ul>
+
+    ${alerts.length > 0 ? `<h4>⚠️ Alertes</h4><ul>${alerts.map((a) => `<li>${a}</li>`).join("")}</ul>` : ""}
+  `;
+}
+
+function buildLocalPlan(raceKm, daysLeft, weeklyTarget, level) {
+  const phase = daysLeft === null ? "Base"
+    : daysLeft > 60 ? "Base"
+    : daysLeft > 28 ? "Construction"
+    : daysLeft > 10 ? "Pic"
+    : "Affûtage";
+
+  const weeks = [
+    { label: "Semaine 1 (cette semaine)", pct: 1.00 },
+    { label: "Semaine 2",                 pct: 1.10 },
+    { label: "Semaine 3",                 pct: 1.20 },
+    { label: "Semaine 4",                 pct: phase === "Affûtage" ? 0.50 : 0.80 }
+  ];
+
+  return `<ul>${weeks.map(({ label, pct }) => {
+    const km = (weeklyTarget * pct).toFixed(0);
+    const sessions = level === "Compétition" ? "4–5 sorties" : "3–4 sorties";
+    const focus = phase === "Base"         ? "endurance, rythme calme"
+                : phase === "Construction" ? "volume + 1 sortie soutenue"
+                : phase === "Pic"          ? "intensité courte + repos"
+                : "sorties légères, récupération";
+    return `<li><strong>${label}</strong> — ${km} km · ${sessions} · ${focus} (phase ${phase})</li>`;
+  }).join("")}</ul>`;
 }
 
 // Convertit le markdown simple (gras, listes, titres) en HTML
