@@ -90,6 +90,8 @@ function onAuthSuccess(user) {
   saveState();
   hideAuthOverlay();
   addUserBar(user.email);
+  // Réaffiche le panel admin maintenant qu'on connaît l'utilisateur
+  renderAdminPanel();
 }
 
 function addUserBar(email) {
@@ -1858,40 +1860,70 @@ function renderAdminPanel() {
   if (!isAdmin) { panel.hidden = true; return; }
   panel.hidden = false;
 
-  if (!supabase) { panel.innerHTML = `<p class="empty-state">Supabase non disponible.</p>`; return; }
+  if (!supabase) {
+    panel.innerHTML = `<div class="admin-panel-box"><p class="empty-state">Supabase non disponible.</p></div>`;
+    return;
+  }
+
+  panel.innerHTML = `<div class="admin-panel-box"><p style="color:#888;font-size:0.82rem">Chargement des courses en attente…</p></div>`;
 
   supabase.from("mushtrack_races").select("*").eq("status", "pending").order("created_at", { ascending: false })
     .then(({ data, error }) => {
-      if (error || !data || data.length === 0) {
-        panel.innerHTML = `<p class="empty-state">Aucune course en attente de validation. ✅</p>`;
+      if (error) {
+        panel.innerHTML = `<div class="admin-panel-box"><p class="empty-state" style="color:#e53e3e">Erreur Supabase : ${error.message}<br><small>Vérifie que la colonne <b>status</b> existe et que les politiques RLS sont actives.</small></p></div>`;
         return;
       }
-      panel.innerHTML = data.map((race) => `
-        <article class="race-result" style="border-left:4px solid #f59e0b">
-          <div>
-            <span style="color:#f59e0b;font-weight:900">EN ATTENTE</span>
-            <h3>${race.name}</h3>
-            <p>${race.date || "Date inconnue"} — ${race.location || ""}</p>
-          </div>
-          <strong>${race.type || ""}</strong>
-          <p style="font-size:0.82rem;color:#888">${race.notes || ""}</p>
-          <div class="race-result-actions">
-            <button class="primary-button" data-approve="${race.id}" type="button">✅ Approuver</button>
-            <button class="danger-button" data-reject="${race.id}" type="button">❌ Rejeter</button>
-          </div>
-        </article>
-      `).join("");
+      if (!data || data.length === 0) {
+        panel.innerHTML = `<div class="admin-panel-box"><span class="admin-panel-title">✅ Aucune course en attente</span></div>`;
+        return;
+      }
+      panel.innerHTML = `
+        <div class="admin-panel-box">
+          <span class="admin-panel-title">🔐 Admin — ${data.length} course(s) en attente</span>
+          ${data.map((race) => `
+            <article class="admin-race-card">
+              <div class="admin-race-info">
+                <strong>${race.name}</strong>
+                <span>${race.date || "Date inconnue"} · ${race.location || ""} · ${race.type || ""}</span>
+                ${race.notes ? `<small>${race.notes}</small>` : ""}
+              </div>
+              <div class="admin-race-actions">
+                <button class="primary-button admin-approve-btn" data-approve="${race.id}" type="button">✅ Approuver</button>
+                <button class="danger-button admin-reject-btn" data-reject="${race.id}" type="button">❌ Rejeter</button>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      `;
 
       panel.querySelectorAll("[data-approve]").forEach((btn) => {
         btn.addEventListener("click", async () => {
-          await supabase.from("mushtrack_races").update({ status: "approved" }).eq("id", btn.dataset.approve);
+          btn.disabled = true;
+          btn.textContent = "En cours…";
+          const { error } = await supabase.from("mushtrack_races").update({ status: "approved" }).eq("id", btn.dataset.approve);
+          if (error) {
+            alert("Erreur lors de l'approbation : " + error.message + "\n\nVérifie les politiques RLS dans Supabase (UPDATE doit être autorisé).");
+            btn.disabled = false;
+            btn.textContent = "✅ Approuver";
+            return;
+          }
           renderAdminPanel();
           renderRaceSearch();
         });
       });
+
       panel.querySelectorAll("[data-reject]").forEach((btn) => {
         btn.addEventListener("click", async () => {
-          await supabase.from("mushtrack_races").delete().eq("id", btn.dataset.reject);
+          if (!confirm(`Rejeter et supprimer cette course ?`)) return;
+          btn.disabled = true;
+          btn.textContent = "En cours…";
+          const { error } = await supabase.from("mushtrack_races").delete().eq("id", btn.dataset.reject);
+          if (error) {
+            alert("Erreur lors du rejet : " + error.message + "\n\nVérifie les politiques RLS dans Supabase (DELETE doit être autorisé).");
+            btn.disabled = false;
+            btn.textContent = "❌ Rejeter";
+            return;
+          }
           renderAdminPanel();
         });
       });

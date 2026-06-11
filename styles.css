@@ -2066,6 +2066,70 @@ textarea {
   color: #fc4c02;
 }
 
+/* ── Panel Admin ─────────────────────────────────── */
+.admin-panel-box {
+  margin: 16px 0;
+  background: #fffbf7;
+  border: 2px solid #f59e0b;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-panel-title {
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #f59e0b;
+}
+
+.admin-race-card {
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-race-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.admin-race-info strong {
+  font-size: 0.95rem;
+  color: #111111;
+}
+
+.admin-race-info span {
+  font-size: 0.78rem;
+  color: #888888;
+}
+
+.admin-race-info small {
+  font-size: 0.72rem;
+  color: #aaaaaa;
+  font-style: italic;
+}
+
+.admin-race-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.admin-approve-btn,
+.admin-reject-btn {
+  font-size: 0.82rem;
+  padding: 10px;
+}
+
 .season-btn svg {
   stroke: currentColor;
 }
