@@ -3375,27 +3375,103 @@ function renderAgenda() {
         </div>
         <p>${race.notes || "Aucune note."}</p>
         <div class="agenda-card-actions">
+          <button class="text-button agenda-edit-btn" data-edit-race="${race.id}" type="button">✏️ Modifier</button>
           <button class="text-button agenda-delete-btn" data-delete-race="${race.id}" type="button">🗑 Supprimer</button>
         </div>
+        <form class="agenda-edit-form" data-edit-form="${race.id}" style="display:none">
+          <input name="name" type="text" value="${race.name || ""}" placeholder="Nom de la course" required />
+          <input name="date" type="date" value="${race.date || ""}" required />
+          <input name="location" type="text" value="${race.location || ""}" placeholder="Lieu" />
+          <input name="distance" type="number" value="${race.distance || ""}" placeholder="Distance km" min="1" />
+          <select name="type">
+            <option value="Canicross" ${race.type === "Canicross" ? "selected" : ""}>Canicross</option>
+            <option value="Bikejoring" ${race.type === "Bikejoring" ? "selected" : ""}>Bikejoring</option>
+            <option value="Cani-VTT" ${race.type === "Cani-VTT" ? "selected" : ""}>Cani-VTT</option>
+            <option value="Sprint" ${race.type === "Sprint" ? "selected" : ""}>Sprint</option>
+            <option value="Mid-distance" ${race.type === "Mid-distance" ? "selected" : ""}>Mid-distance</option>
+            <option value="Longue distance" ${race.type === "Longue distance" ? "selected" : ""}>Longue distance</option>
+            <option value="Skijoring" ${race.type === "Skijoring" ? "selected" : ""}>Skijoring</option>
+            <option value="Pulka" ${race.type === "Pulka" ? "selected" : ""}>Pulka</option>
+          </select>
+          <select name="priority">
+            <option value="A" ${race.priority === "A" ? "selected" : ""}>A — Prioritaire</option>
+            <option value="B" ${race.priority === "B" ? "selected" : ""}>B — Secondaire</option>
+            <option value="C" ${race.priority === "C" ? "selected" : ""}>C — Découverte</option>
+          </select>
+          <textarea name="notes" placeholder="Notes...">${race.notes || ""}</textarea>
+          <div class="agenda-edit-actions">
+            <button type="submit" class="primary-button">💾 Enregistrer</button>
+            <button type="button" class="text-button agenda-edit-cancel" data-cancel-edit="${race.id}">Annuler</button>
+          </div>
+        </form>
       </article>
     `;
   }).join("") || `<p class="empty-state">Aucune course prevue.</p>`;
+
+  // Bouton modifier — affiche le formulaire inline
+  list.querySelectorAll(".agenda-edit-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.editRace;
+      const form = list.querySelector(`[data-edit-form="${id}"]`);
+      const isOpen = form.style.display !== "none";
+      // Ferme tous les autres formulaires
+      list.querySelectorAll(".agenda-edit-form").forEach((f) => { f.style.display = "none"; });
+      list.querySelectorAll(".agenda-edit-btn").forEach((b) => { b.textContent = "✏️ Modifier"; });
+      if (!isOpen) {
+        form.style.display = "flex";
+        btn.textContent = "✖ Fermer";
+      }
+    });
+  });
+
+  // Bouton annuler
+  list.querySelectorAll(".agenda-edit-cancel").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.cancelEdit;
+      const form = list.querySelector(`[data-edit-form="${id}"]`);
+      if (form) form.style.display = "none";
+      const editBtn = list.querySelector(`[data-edit-race="${id}"]`);
+      if (editBtn) editBtn.textContent = "✏️ Modifier";
+    });
+  });
+
+  // Soumission du formulaire d'édition
+  list.querySelectorAll(".agenda-edit-form").forEach((form) => {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const id = form.dataset.editForm;
+      const data = new FormData(form);
+      const idx = state.agenda.findIndex((r) => r.id === id);
+      if (idx !== -1) {
+        state.agenda[idx] = {
+          ...state.agenda[idx],
+          name: data.get("name").trim(),
+          date: data.get("date"),
+          location: data.get("location").trim(),
+          distance: Number(data.get("distance")) || state.agenda[idx].distance,
+          type: data.get("type"),
+          priority: data.get("priority"),
+          notes: data.get("notes").trim()
+        };
+        saveState();
+        showSyncBadge("✏️ Course modifiée");
+      }
+      renderAgenda();
+    });
+  });
 
   // Suppression avec confirmation inline (double clic)
   list.querySelectorAll(".agenda-delete-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       if (btn.dataset.confirming === "1") {
-        // 2e clic — suppression confirmée
         const id = btn.dataset.deleteRace;
         state.agenda = state.agenda.filter((r) => r.id !== id);
         saveState();
         renderAgenda();
       } else {
-        // 1er clic — demande confirmation
         btn.dataset.confirming = "1";
-        btn.textContent = "⚠️ Confirmer la suppression ?";
+        btn.textContent = "⚠️ Confirmer ?";
         btn.classList.add("agenda-delete-confirm");
-        // Annule si pas de 2e clic dans 4 secondes
         setTimeout(() => {
           if (btn.dataset.confirming === "1") {
             btn.dataset.confirming = "0";
