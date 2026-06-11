@@ -3376,8 +3376,8 @@ function renderAgenda() {
         </div>
         <p>${race.notes || "Aucune note."}</p>
         <div class="agenda-card-actions">
-          <button class="text-button agenda-edit-btn" data-edit-race="${race.id}" type="button">✏️ Modifier</button>
-          <button class="text-button agenda-delete-btn" data-delete-race="${race.id}" type="button">🗑 Supprimer</button>
+          <button class="agenda-edit-btn" data-edit-race="${race.id}" type="button">✏️ Modifier</button>
+          <button class="agenda-delete-btn" data-delete-race="${race.id}" type="button">🗑 Supprimer</button>
         </div>
         <form class="agenda-edit-form" data-edit-form="${race.id}" style="display:none">
           <input name="name" type="text" value="${race.name || ""}" placeholder="Nom de la course" required />

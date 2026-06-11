@@ -1569,32 +1569,49 @@ textarea {
 
 /* Boutons d'action agenda */
 .agenda-card-actions {
-  margin-top: 10px;
+  margin-top: 12px;
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+}
+.agenda-edit-btn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1.5px solid #fc4c02;
+  border-radius: 8px;
+  background: #fff;
+  color: #fc4c02;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.agenda-edit-btn:hover, .agenda-edit-btn:active {
+  background: #fc4c02;
+  color: #fff;
 }
 .agenda-delete-btn {
-  font-size: 0.78rem;
-  color: #888;
-  padding: 4px 8px;
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1.5px solid #ccc;
   border-radius: 8px;
+  background: #fff;
+  color: #888;
+  cursor: pointer;
   transition: background 0.15s, color 0.15s;
+}
+.agenda-delete-btn:hover, .agenda-delete-btn:active {
+  background: #fff0ed;
+  color: #fc4c02;
+  border-color: #fc4c02;
 }
 .agenda-delete-btn.agenda-delete-confirm {
   background: #fff0ed;
   color: #fc4c02;
+  border-color: #fc4c02;
   font-weight: 700;
-}
-.agenda-edit-btn {
-  font-size: 0.78rem;
-  color: #888;
-  padding: 4px 8px;
-  border-radius: 8px;
-  transition: background 0.15s, color 0.15s;
-}
-.agenda-edit-btn:hover {
-  background: #f0f0f0;
-  color: #333;
 }
 .agenda-edit-form {
   flex-direction: column;
