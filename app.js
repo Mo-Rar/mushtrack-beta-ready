@@ -2811,14 +2811,7 @@ function renderRaceSearch() {
     return typeMatch && regionMatch && surfaceMatch && reliabilityMatch && distanceMatch && periodMatch;
   }).sort((a, b) => getReliabilityRank(a.reliability) - getReliabilityRank(b.reliability));
 
-  const radarMeta = `
-    <article class="radar-status ${raceRadarLoading ? "loading" : ""}">
-      <span>${raceRadarStatus}</span>
-      <b>${results.length} resultat(s)</b>
-      <p>${raceRadarUpdatedAt ? `Derniere mise a jour API: ${formatDateTime(raceRadarUpdatedAt)}` : "Le radar utilise le catalogue local tant que l'API Vercel n'a pas repondu."}</p>
-      <p>${communityStatus}</p>
-    </article>
-  `;
+  const radarMeta = ""; // radar supprimé
 
   // Helper : construit la carte HTML d'une course
   function buildRaceCard(race, pinned = false) {
