@@ -300,24 +300,8 @@
           <button class="round-button" data-go="record" aria-label="Retour">OK</button>
         </header>
 
-        <section class="team-layout">
-          <article>
-            <span>Leader</span>
-            <div data-team-slot="Leader"></div>
-          </article>
-          <article>
-            <span>Swing</span>
-            <div data-team-slot="Swing"></div>
-          </article>
-          <article>
-            <span>Team</span>
-            <div data-team-slot="Team"></div>
-          </article>
-          <article>
-            <span>Wheel</span>
-            <div data-team-slot="Wheel"></div>
-          </article>
-        </section>
+        <p style="font-size:0.75rem;color:#aaa;text-align:center;margin:4px 0 8px">Glisse un chien sur une position</p>
+        <section class="sled-diagram" id="sled-diagram"></section>
 
         <section class="section-heading spaced">
           <h2>Chiens disponibles</h2>
@@ -381,27 +365,11 @@
         </form>
 
         <section class="section-heading spaced">
-          <h2>Team active</h2>
+          <h2>Attelage</h2>
           <span data-bind="selectedCount">0 selectionnes</span>
         </section>
-        <section class="team-layout">
-          <article>
-            <span>Leader</span>
-            <div data-team-slot="Leader"></div>
-          </article>
-          <article>
-            <span>Swing</span>
-            <div data-team-slot="Swing"></div>
-          </article>
-          <article>
-            <span>Team</span>
-            <div data-team-slot="Team"></div>
-          </article>
-          <article>
-            <span>Wheel</span>
-            <div data-team-slot="Wheel"></div>
-          </article>
-        </section>
+        <p style="font-size:0.75rem;color:#aaa;text-align:center;margin:4px 0 8px">Glisse un chien sur une position</p>
+        <section class="sled-diagram" id="sled-diagram-record"></section>
 
         <section class="section-heading spaced">
           <h2>Selection attelage</h2>
@@ -472,6 +440,8 @@
         </section>
 
         <section class="plan-insights" data-list="planInsights"></section>
+
+        <section class="prep-score-section" data-list="prepScore"></section>
       </section>
 
       <section class="screen" id="race">

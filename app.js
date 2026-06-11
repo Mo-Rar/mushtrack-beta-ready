@@ -768,6 +768,7 @@ const defaultState = {
     }
   ],
   openRunJoins: {},
+  teamPositions: {},
   agenda: [],
   missingRaceReports: [],
   dogs: [],
@@ -1342,56 +1343,166 @@ function renderDogProfile() {
     .map((run) => `${formatDate(run.date)} : ${run.notes}`)
     .join("<br>") || "Aucune note recente.";
 
+  const km30 = getDogRecentKm(dog.id, 30);
+  const fatigue = getDogFatigueIndex(dog.id);
+  const form = getDogFormIndicator(dog, dog.id);
+  const daysSinceRest = getDogDaysSinceRest(dog.id);
+  const healthHistory = dog.healthHistory || [];
+
+  const fatigueLabel = fatigue < 0.6 ? "Faible" : fatigue < 1.0 ? "Normal" : fatigue < 1.4 ? "Élevé" : "Très élevé";
+  const fatigueColor = fatigue < 0.6 ? "#888" : fatigue < 1.0 ? "#2f8f46" : fatigue < 1.4 ? "#e8a020" : "#d94040";
+
   list.innerHTML = `
     <article class="profile-hero">
-      <span>${dog.role}</span>
-      <strong>${Math.round(dog.km)} km saison</strong>
-      <p>${dog.note || "Aucune note pour ce chien."}</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div>
+          <span>${dog.role}</span>
+          <strong>${Math.round(dog.km)} km saison</strong>
+          <p>${dog.note || "Aucune note pour ce chien."}</p>
+        </div>
+        <div style="text-align:center;flex-shrink:0">
+          <div style="font-size:2rem;line-height:1">${form.emoji}</div>
+          <div style="font-size:0.72rem;font-weight:700;color:#fff;opacity:0.85;margin-top:4px">${form.label}</div>
+        </div>
+      </div>
     </article>
+
+    <!-- Charge individuelle -->
+    <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:10px;border:1px solid #f0f0f0;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
+      <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0 0 12px">Charge individuelle</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
+        <div>
+          <div style="font-size:1.1rem;font-weight:800;color:#1a1a1a">${recentKm.toFixed(0)} km</div>
+          <div style="font-size:0.7rem;color:#999">7 jours</div>
+        </div>
+        <div>
+          <div style="font-size:1.1rem;font-weight:800;color:#1a1a1a">${km30.toFixed(0)} km</div>
+          <div style="font-size:0.7rem;color:#999">30 jours</div>
+        </div>
+        <div>
+          <div style="font-size:1.1rem;font-weight:800;color:${fatigueColor}">${fatigueLabel}</div>
+          <div style="font-size:0.7rem;color:#999">Fatigue</div>
+        </div>
+      </div>
+      ${daysSinceRest !== null ? `<p style="font-size:0.78rem;color:#888;margin:10px 0 0;text-align:center">Dernière bonne récupération il y a ${daysSinceRest} jour${daysSinceRest > 1 ? "s" : ""}</p>` : ""}
+    </div>
+
     <section class="profile-grid">
       <article><span>Naissance</span><b>${formatDogBirthdate(dog.birthdate)}</b></article>
-      <article><span>Age calcule</span><b>${getDogAge(dog)} ans</b></article>
+      <article><span>Âge</span><b>${getDogAge(dog)} ans</b></article>
       <article>${buildWeightSparkline(dog)}</article>
-      <article><span>7 jours</span><b>${recentKm.toFixed(1)} km</b></article>
-      <article><span>Energie moy.</span><b>${avgEnergy ? avgEnergy.toFixed(1) : "-"}/5</b></article>
-      <article><span>Recuperation</span><b>${lastRecovery}</b></article>
-      <article><span>Harnais</span><b>${dog.harness || "A noter"}</b></article>
-      <article><span>Statut</span><b>${readiness.title}</b></article>
+      <article><span>Énergie moy.</span><b>${avgEnergy ? avgEnergy.toFixed(1) : "—"}/5</b></article>
+      <article><span>Récupération</span><b>${lastRecovery}</b></article>
+      <article><span>Harnais</span><b>${dog.harness || "À noter"}</b></article>
     </section>
+
     <section class="dog-health-grid">
       <article class="dog-health ${health.level}">
-        <span>Etat du jour</span>
+        <span>État du jour</span>
         <b>${health.title}</b>
         <p>${health.text}</p>
-      </article>
-      <article>
-        <span>Carnet sante</span>
-        <b>Pattes ${pawStatus} - Hydratation ${hydrationStatus}</b>
-        <p>${recentNotes}</p>
       </article>
       <article class="${dog.limitation ? "danger" : ""}">
         <span>Point de vigilance</span>
         <b>${dog.limitation || "Rien de particulier"}</b>
-        <p>${dog.vet ? `Suivi veto : ${dog.vet}` : "Ajoute ici les infos veto, blessures, sensibilites ou repos impose."}</p>
+        <p>${dog.vet ? `Suivi véto : ${dog.vet}` : "Ajoute ici les infos véto, blessures ou repos."}</p>
       </article>
     </section>
+
+    <!-- Historique santé -->
+    <div style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0">Historique santé</p>
+        <button type="button" id="add-health-event-btn" style="font-size:0.78rem;color:#fc4c02;background:none;border:none;font-weight:700;cursor:pointer">+ Ajouter</button>
+      </div>
+      <form id="health-event-form" style="display:none;flex-direction:column;gap:8px;background:#fff;border-radius:12px;padding:14px;border:1px solid #f0f0f0;margin-bottom:8px">
+        <select id="health-event-type" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem">
+          <option value="blessure">🤕 Blessure</option>
+          <option value="veto">🏥 Visite vétérinaire</option>
+          <option value="traitement">💊 Traitement</option>
+          <option value="repos">😴 Période de repos</option>
+          <option value="autre">📌 Autre</option>
+        </select>
+        <input id="health-event-date" type="date" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem" />
+        <textarea id="health-event-notes" placeholder="Description..." rows="2" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem"></textarea>
+        <div style="display:flex;gap:8px">
+          <button type="submit" style="flex:1;padding:9px;background:#fc4c02;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">Enregistrer</button>
+          <button type="button" id="health-event-cancel" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;cursor:pointer">Annuler</button>
+        </div>
+      </form>
+      <div id="health-history-list">
+        ${healthHistory.length === 0
+          ? `<p style="font-size:0.82rem;color:#aaa;text-align:center;padding:12px">Aucun événement enregistré.</p>`
+          : healthHistory.slice().reverse().map((evt, i) => {
+            const icons = {blessure:"🤕",veto:"🏥",traitement:"💊",repos:"😴",autre:"📌"};
+            return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:#fff;border-radius:10px;border:1px solid #f0f0f0;margin-bottom:6px">
+              <span style="font-size:1.2rem">${icons[evt.type]||"📌"}</span>
+              <div style="flex:1">
+                <div style="font-size:0.8rem;color:#999">${evt.date ? formatFullDate(evt.date) : "—"}</div>
+                <div style="font-size:0.88rem;font-weight:600;color:#333">${evt.notes || evt.type}</div>
+              </div>
+              <button type="button" data-delete-health="${healthHistory.length - 1 - i}" style="background:none;border:none;color:#ccc;font-size:0.9rem;cursor:pointer;padding:2px">✕</button>
+            </div>`;
+          }).join("")
+        }
+      </div>
+    </div>
+
     <article class="advice-card ${recentKm > 45 ? "important" : ""}">
       <span>Coach</span>
       <h2>${recentKm > 45 ? "Charge haute" : "Charge correcte"}</h2>
       <p>${getDogAdvice(dog, recentKm, lastRun)}</p>
     </article>
+
     <section class="run-list">
       ${runs.slice(0, 4).map((run) => `
         <article>
           <div>
             <b>${run.type}</b>
-            <span>${formatDate(run.date)} - ${run.recovery} - energie ${run.energy}/5</span>
+            <span>${formatDate(run.date)} · ${run.recovery} · énergie ${run.energy}/5</span>
           </div>
           <strong>${Number(run.km).toFixed(1)} km</strong>
         </article>
       `).join("") || `<p class="empty-state">Pas encore de sortie pour ${dog.name}.</p>`}
     </section>
   `;
+
+  // Bouton + Ajouter événement santé
+  const addBtn = list.querySelector("#add-health-event-btn");
+  const form = list.querySelector("#health-event-form");
+  addBtn?.addEventListener("click", () => {
+    form.style.display = form.style.display === "none" ? "flex" : "none";
+    if (form.style.display !== "none") {
+      list.querySelector("#health-event-date").value = new Date().toISOString().slice(0, 10);
+    }
+  });
+  list.querySelector("#health-event-cancel")?.addEventListener("click", () => { form.style.display = "none"; });
+  form?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const dogIdx = state.dogs.findIndex(d => d.id === dog.id);
+    if (dogIdx === -1) return;
+    state.dogs[dogIdx].healthHistory = state.dogs[dogIdx].healthHistory || [];
+    state.dogs[dogIdx].healthHistory.push({
+      type: list.querySelector("#health-event-type").value,
+      date: list.querySelector("#health-event-date").value,
+      notes: list.querySelector("#health-event-notes").value.trim()
+    });
+    saveState();
+    showSyncBadge("🏥 Événement santé enregistré");
+    renderDogProfile();
+  });
+
+  // Supprimer événement santé
+  list.querySelectorAll("[data-delete-health]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = Number(btn.dataset.deleteHealth);
+      const dogIdx = state.dogs.findIndex(d => d.id === dog.id);
+      if (dogIdx === -1) return;
+      state.dogs[dogIdx].healthHistory = (state.dogs[dogIdx].healthHistory || []).filter((_, i) => i !== idx);
+      saveState();
+      renderDogProfile();
+    });
+  });
 }
 
 function renderDogPicker() {
@@ -1400,11 +1511,17 @@ function renderDogPicker() {
 
   list.innerHTML = state.dogs.map((dog) => {
     const selected = state.selectedDogIds.includes(dog.id);
-    return `<button class="${selected ? "selected" : ""}" data-dog-id="${dog.id}">${dog.name}</button>`;
+    const form = getDogFormIndicator(dog, dog.id);
+    return `<button class="chip ${selected ? "selected" : ""}" data-dog-id="${dog.id}" draggable="true">${form.emoji} ${dog.name}</button>`;
   }).join("");
 
   list.querySelectorAll("button").forEach((button) => {
     button.addEventListener("click", () => toggleDogSelection(button.dataset.dogId));
+    button.addEventListener("dragstart", e => {
+      _dragDogId = button.dataset.dogId;
+      _dragFromSlot = null;
+      e.dataTransfer.setData("text/plain", button.dataset.dogId);
+    });
   });
 }
 
@@ -1455,11 +1572,153 @@ function renderSelectedTeam() {
     : `<p class="empty-state">Aucun chien selectionne.</p>`;
 }
 
-function renderTeamSlots() {
-  document.querySelectorAll("[data-team-slot]").forEach((slot) => {
-    const role = slot.dataset.teamSlot;
-    const dogs = state.dogs.filter((dog) => state.selectedDogIds.includes(dog.id) && dog.role === role);
-    slot.innerHTML = `<div class="slot-row">${dogs.map((dog) => `<span class="chip">${dog.name}</span>`).join("") || `<span class="chip">Vide</span>`}</div>`;
+function renderTeamSlots() { renderSledDiagram(); }
+
+function renderSledDiagram() {
+  const containers = document.querySelectorAll(".sled-diagram");
+  if (!containers.length) return;
+
+  const positions = ["Leader","Swing","Team","Wheel"];
+  const selectedDogs = state.dogs.filter(d => state.selectedDogIds.includes(d.id));
+
+  // Initialise teamPositions dans state si absent
+  if (!state.teamPositions) state.teamPositions = {};
+
+  function dogInSlot(pos, side) {
+    const key = `${pos.toLowerCase()}-${side}`;
+    const id = state.teamPositions[key];
+    return id ? state.dogs.find(d => d.id === id) : null;
+  }
+
+  function buildDiagramHTML() {
+    const rows = positions.map(pos => {
+      const left  = dogInSlot(pos, "l");
+      const right = dogInSlot(pos, "r");
+      const posLow = pos.toLowerCase();
+      return `
+        <div class="sled-row">
+          <div class="sled-slot ${left ? "filled" : "empty"}" data-slot="${posLow}-l"
+               draggable="false"
+               ondragover="event.preventDefault();this.classList.add('drag-over')"
+               ondragleave="this.classList.remove('drag-over')"
+               ondrop="handleSlotDrop(event,'${posLow}-l')">
+            ${left
+              ? `<span class="sled-dog" draggable="true" ondragstart="handleDogDragStart(event,'${left.id}','${posLow}-l')">${getDogFormIndicator(left, left.id).emoji} ${left.name}<button type="button" class="sled-remove" onclick="removeFromSlot('${posLow}-l')">✕</button></span>`
+              : `<span class="sled-empty-label">+</span>`}
+          </div>
+          <div class="sled-position-label">${pos}</div>
+          <div class="sled-slot ${right ? "filled" : "empty"}" data-slot="${posLow}-r"
+               draggable="false"
+               ondragover="event.preventDefault();this.classList.add('drag-over')"
+               ondragleave="this.classList.remove('drag-over')"
+               ondrop="handleSlotDrop(event,'${posLow}-r')">
+            ${right
+              ? `<span class="sled-dog" draggable="true" ondragstart="handleDogDragStart(event,'${right.id}','${posLow}-r')">${getDogFormIndicator(right, right.id).emoji} ${right.name}<button type="button" class="sled-remove" onclick="removeFromSlot('${posLow}-r')">✕</button></span>`
+              : `<span class="sled-empty-label">+</span>`}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    const traineLine = `<div class="sled-trait"></div>`;
+    const sledIcon = `<div class="sled-icon">🛷</div>`;
+    return `<div class="sled-schema">${rows}${traineLine}${sledIcon}</div>`;
+  }
+
+  containers.forEach(container => {
+    container.innerHTML = buildDiagramHTML();
+
+    // Touch drag & drop (mobile)
+    let dragTouchDogId = null;
+    let dragTouchFromSlot = null;
+    let touchClone = null;
+
+    container.querySelectorAll(".sled-dog[draggable='true']").forEach(el => {
+      el.addEventListener("touchstart", e => {
+        const dogId   = el.closest("[data-slot]") ? null : null; // resolved below
+        const slot    = el.closest("[data-slot]");
+        dragTouchFromSlot = slot ? slot.dataset.slot : null;
+        // find dogId from slot
+        if (dragTouchFromSlot) dragTouchDogId = state.teamPositions[dragTouchFromSlot];
+        touchClone = el.cloneNode(true);
+        touchClone.style.cssText = "position:fixed;opacity:.7;pointer-events:none;z-index:9999;font-size:0.85rem;background:#fc4c02;color:#fff;padding:6px 10px;border-radius:8px;transform:translate(-50%,-50%)";
+        document.body.appendChild(touchClone);
+      }, { passive: true });
+
+      el.addEventListener("touchmove", e => {
+        if (!touchClone) return;
+        const t = e.touches[0];
+        touchClone.style.left = t.clientX + "px";
+        touchClone.style.top  = t.clientY + "px";
+        e.preventDefault();
+      }, { passive: false });
+
+      el.addEventListener("touchend", e => {
+        if (touchClone) { touchClone.remove(); touchClone = null; }
+        const t = e.changedTouches[0];
+        const target = document.elementFromPoint(t.clientX, t.clientY)?.closest("[data-slot]");
+        if (target && dragTouchDogId) {
+          const toSlot = target.dataset.slot;
+          if (dragTouchFromSlot) delete state.teamPositions[dragTouchFromSlot];
+          const existing = Object.entries(state.teamPositions).find(([,v]) => v === dragTouchDogId);
+          if (existing) delete state.teamPositions[existing[0]];
+          state.teamPositions[toSlot] = dragTouchDogId;
+          saveState();
+          renderSledDiagram();
+        }
+        dragTouchDogId = null; dragTouchFromSlot = null;
+      });
+    });
+  });
+}
+
+// Variables globales pour drag desktop
+let _dragDogId = null;
+let _dragFromSlot = null;
+
+function handleDogDragStart(event, dogId, fromSlot) {
+  _dragDogId   = dogId;
+  _dragFromSlot = fromSlot || null;
+  event.dataTransfer.setData("text/plain", dogId);
+}
+
+function handleSlotDrop(event, toSlot) {
+  event.preventDefault();
+  document.querySelectorAll(".sled-slot").forEach(s => s.classList.remove("drag-over"));
+  const dogId = _dragDogId || event.dataTransfer.getData("text/plain");
+  if (!dogId) return;
+  if (!state.teamPositions) state.teamPositions = {};
+  if (_dragFromSlot) delete state.teamPositions[_dragFromSlot];
+  // Éjecte si ce chien est déjà ailleurs
+  const prev = Object.entries(state.teamPositions).find(([,v]) => v === dogId);
+  if (prev) delete state.teamPositions[prev[0]];
+  state.teamPositions[toSlot] = dogId;
+  _dragDogId = null; _dragFromSlot = null;
+  // Met à jour le rôle du chien selon la position
+  const roleMap = { leader:"Leader", swing:"Swing", team:"Team", wheel:"Wheel" };
+  const posKey  = toSlot.split("-")[0];
+  const dogIdx  = state.dogs.findIndex(d => d.id === dogId);
+  if (dogIdx !== -1) state.dogs[dogIdx].role = roleMap[posKey] || state.dogs[dogIdx].role;
+  saveState();
+  renderSledDiagram();
+}
+
+function removeFromSlot(slot) {
+  if (!state.teamPositions) return;
+  delete state.teamPositions[slot];
+  saveState();
+  renderSledDiagram();
+}
+
+// Rend les chiens disponibles draggables vers le schéma
+function makeDogsDraggable() {
+  document.querySelectorAll(".dog-picker .chip[data-dog-id]").forEach(chip => {
+    chip.setAttribute("draggable","true");
+    chip.addEventListener("dragstart", e => {
+      _dragDogId   = chip.dataset.dogId;
+      _dragFromSlot = null;
+      e.dataTransfer.setData("text/plain", chip.dataset.dogId);
+    });
   });
 }
 
@@ -2462,6 +2721,7 @@ function renderWebAdvice() {
 
 function renderPlan() {
   renderPlanInsights();
+  renderPrepScore();
 }
 
 function buildPlan() {
@@ -2590,6 +2850,111 @@ function renderPlanInsights() {
       <b>${weekActions.title}</b>
       <small>${weekActions.text}</small>
     </article>
+  `;
+}
+
+function calcPrepScore() {
+  const runs = state.runs || [];
+  const dogs = state.dogs || [];
+  const raceKm = Number(state.raceKm) || 80;
+  const targetWeekly = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
+  const now = Date.now();
+  const d7  = 7  * 86400000;
+  const d30 = 30 * 86400000;
+
+  const runs7  = runs.filter(r => r.date && (now - new Date(r.date+"T12:00:00").getTime()) <= d7);
+  const runs30 = runs.filter(r => r.date && (now - new Date(r.date+"T12:00:00").getTime()) <= d30);
+
+  // 1. Endurance — longest run in 30 days vs 70% of race distance
+  const longestRun30 = runs30.reduce((max, r) => Math.max(max, Number(r.km) || 0), 0);
+  const enduranceTarget = raceKm * 0.7;
+  const endurance = Math.min(100, enduranceTarget > 0 ? Math.round((longestRun30 / enduranceTarget) * 100) : 0);
+
+  // 2. Volume — weekly km (avg last 4 weeks) vs target
+  const km4w = runs.filter(r => r.date && (now - new Date(r.date+"T12:00:00").getTime()) <= 28*86400000)
+    .reduce((s, r) => s + Number(r.km || 0), 0);
+  const avgWeekly4w = km4w / 4;
+  const volume = Math.min(100, targetWeekly > 0 ? Math.round((avgWeekly4w / targetWeekly) * 100) : 0);
+
+  // 3. Régularité — sorties/semaine sur 4 semaines (cible = 3)
+  const runsPerWeek = runs4wGroups(runs);
+  const regularite = Math.min(100, Math.round((runsPerWeek / 3) * 100));
+
+  // 4. Santé des chiens — % chiens sans alerte
+  const healthyDogs = dogs.length > 0
+    ? dogs.filter(d => d.healthSignal !== "Attention" && d.healthSignal !== "Repos").length / dogs.length
+    : 0;
+  const sante = dogs.length === 0 ? 0 : Math.round(healthyDogs * 100);
+
+  // 5. Récupération — score moyen sur les 5 dernières sorties
+  const last5 = runs.slice(0, 5);
+  const recovMap = { "Excellente": 100, "Bonne": 80, "Normale": 60, "A surveiller": 30, "Difficile": 10 };
+  const avgRecov = last5.length > 0
+    ? last5.reduce((s, r) => s + (recovMap[r.recovery] || 60), 0) / last5.length
+    : 0;
+  const recuperation = Math.round(avgRecov);
+
+  const global = Math.round(endurance * 0.25 + volume * 0.25 + regularite * 0.20 + sante * 0.20 + recuperation * 0.10);
+
+  return { global, endurance, volume, regularite, sante, recuperation };
+}
+
+function runs4wGroups(runs) {
+  const now = Date.now();
+  const counts = [0, 0, 0, 0];
+  runs.forEach(r => {
+    if (!r.date) return;
+    const age = (now - new Date(r.date+"T12:00:00").getTime()) / 86400000;
+    if (age <= 7)  counts[0]++;
+    else if (age <= 14) counts[1]++;
+    else if (age <= 21) counts[2]++;
+    else if (age <= 28) counts[3]++;
+  });
+  return counts.reduce((s, c) => s + c, 0) / 4;
+}
+
+function scoreColor(pct) {
+  if (pct >= 80) return "#2f8f46";
+  if (pct >= 55) return "#e8a020";
+  return "#d94040";
+}
+
+function renderPrepScore() {
+  const el = document.querySelector('[data-list="prepScore"]');
+  if (!el) return;
+  const s = calcPrepScore();
+  const items = [
+    { label: "Endurance",       icon: "🏔️", pct: s.endurance,    tip: "Sortie la plus longue / 70% distance course" },
+    { label: "Volume",          icon: "📊", pct: s.volume,       tip: "Km hebdo moyen (4 sem) / objectif" },
+    { label: "Régularité",      icon: "📅", pct: s.regularite,   tip: "Sorties par semaine sur 4 semaines" },
+    { label: "Santé des chiens",icon: "🐕", pct: s.sante,        tip: "% chiens sans alerte de santé" },
+    { label: "Récupération",    icon: "😴", pct: s.recuperation, tip: "Score moyen de récupération (5 dernières sorties)" }
+  ];
+  const globalColor = scoreColor(s.global);
+  el.innerHTML = `
+    <div class="prep-score-card">
+      <div class="prep-score-header">
+        <div>
+          <p class="prep-score-label">Score de préparation</p>
+          <p class="prep-score-sub">${state.raceName || state.raceType || "Course objectif"} · ${state.raceKm} km</p>
+        </div>
+        <div class="prep-score-global" style="color:${globalColor};border-color:${globalColor}">${s.global}<span>%</span></div>
+      </div>
+      <div class="prep-score-items">
+        ${items.map(item => `
+          <div class="prep-score-item">
+            <div class="prep-score-item-top">
+              <span class="prep-score-item-name">${item.icon} ${item.label}</span>
+              <span class="prep-score-item-pct" style="color:${scoreColor(item.pct)}">${item.pct} %</span>
+            </div>
+            <div class="prep-score-bar">
+              <div class="prep-score-fill" style="width:${item.pct}%;background:${scoreColor(item.pct)}"></div>
+            </div>
+            <p class="prep-score-tip">${item.tip}</p>
+          </div>
+        `).join("")}
+      </div>
+    </div>
   `;
 }
 
@@ -2760,12 +3125,40 @@ function buildAlerts() {
   return alerts.slice(0, 7);
 }
 
-function getDogRecentKm(id) {
+function getDogRecentKm(id, days = 7) {
   const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 7);
+  cutoff.setDate(cutoff.getDate() - days);
   return state.runs
     .filter((run) => new Date(`${run.date}T12:00:00`) >= cutoff && run.team.includes(id))
     .reduce((sum, run) => sum + Number(run.km), 0);
+}
+
+function getDogDaysSinceRest(id) {
+  const runsForDog = state.runs.filter(r => r.team && r.team.includes(id));
+  if (runsForDog.length === 0) return null;
+  const sorted = [...runsForDog].sort((a,b) => new Date(b.date) - new Date(a.date));
+  // Cherche la dernière sortie où il n'était PAS dans l'équipe = jour de repos
+  // Approximation : jours consécutifs depuis la dernière "récupération excellente"
+  const lastGoodRecov = sorted.find(r => r.recovery === "Excellente" || r.recovery === "Bonne");
+  if (!lastGoodRecov) return null;
+  return Math.abs(daysUntil(lastGoodRecov.date));
+}
+
+function getDogFatigueIndex(id) {
+  const km7 = getDogRecentKm(id, 7);
+  const target = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
+  const perDog = target / Math.max(1, state.dogs.length);
+  return target > 0 ? Math.min(2, km7 / (perDog * 0.8)) : 0;
+}
+
+function getDogFormIndicator(dog, id) {
+  const fatigue = getDogFatigueIndex(id);
+  const runs = state.runs.filter(r => r.team && r.team.includes(id));
+  const lastRun = runs[0];
+  if (dog.healthSignal === "Attention" || dog.healthSignal === "Repos") return { emoji: "🔴", label: "Repos conseillé" };
+  if (lastRun && (lastRun.recovery === "Difficile" || !lastRun.paws)) return { emoji: "🔴", label: "Repos conseillé" };
+  if (fatigue > 1.3 || (lastRun && lastRun.recovery === "A surveiller")) return { emoji: "🟡", label: "À surveiller" };
+  return { emoji: "🟢", label: "Prêt" };
 }
 
 function getWeeklyTotals() {
