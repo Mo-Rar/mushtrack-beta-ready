@@ -105,6 +105,8 @@
           </article>
         </section>
 
+        <p class="last-run-label" data-bind="lastRunLabel"></p>
+
         <section class="insight-panel">
           <div>
             <span>Coach MushTrack IA</span>
@@ -681,6 +683,16 @@
             <p>Stoppe immédiatement si un chien boite, respire difficilement, devient faible, confus, vomit, bave excessivement ou présente des gencives sèches/collantes. En cas de doute : vétérinaire. Ces conseils ne remplacent pas un avis médical.</p>
           </article>
 
+          <div class="advice-filter-bar">
+            <button class="advice-filter-btn active" data-advice-cat="">📋 Tous</button>
+            <button class="advice-filter-btn" data-advice-cat="Nutrition">🍖 Nutrition</button>
+            <button class="advice-filter-btn" data-advice-cat="Santé">🩺 Santé</button>
+            <button class="advice-filter-btn" data-advice-cat="Conditions">❄️ Conditions</button>
+            <button class="advice-filter-btn" data-advice-cat="Entraînement">🏋️ Entraînement</button>
+            <button class="advice-filter-btn" data-advice-cat="Équipement">🎽 Équipement</button>
+            <button class="advice-filter-btn" data-advice-cat="Compétition">🏁 Compétition</button>
+            <button class="advice-filter-btn" data-advice-cat="Comportement">🐕 Comportement</button>
+          </div>
           <section class="web-advice-list" data-list="webAdvice"></section>
         </section>
       </section>
@@ -744,6 +756,15 @@
             Date limite
             <input id="goal-date" type="date" />
           </label>
+          <div class="preset-section">
+            <p class="preset-label">Présets rapides</p>
+            <div class="preset-buttons">
+              <button class="preset-btn" type="button" data-preset="sprint">🚀 Sprint 12 km</button>
+              <button class="preset-btn" type="button" data-preset="mid">🏔️ Mid 80 km</button>
+              <button class="preset-btn" type="button" data-preset="long">🐺 Long 250 km</button>
+              <button class="preset-btn" type="button" data-preset="canicross">🏃 Canicross 10 km</button>
+            </div>
+          </div>
           <label>
             Nom de la course objectif
             <input id="race-name" placeholder="Ex: Amundsen Race 250, La Grande Odyssée..." />

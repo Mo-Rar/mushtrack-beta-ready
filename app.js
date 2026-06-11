@@ -597,6 +597,17 @@ function render() {
   bindText("selectedCount", `${state.selectedDogIds.length} selectionnes`);
   bindText("coachTitle", getCoachInsight().title);
   bindText("coachText", getCoachInsight().text);
+  // Compteur "Dernière sortie il y a X jours"
+  const lastRunDate = state.runs.length > 0
+    ? [...state.runs].sort((a, b) => new Date(b.date) - new Date(a.date))[0].date
+    : null;
+  const lastRunDaysAgo = lastRunDate ? daysUntil(lastRunDate) * -1 : null;
+  const lastRunLabel = lastRunDate === null ? "Aucune sortie enregistrée"
+    : lastRunDaysAgo === 0 ? "Dernière sortie : aujourd'hui 🟢"
+    : lastRunDaysAgo === 1 ? "Dernière sortie : hier 🟢"
+    : lastRunDaysAgo <= 4  ? `Dernière sortie il y a ${lastRunDaysAgo} jours 🟡`
+    : `Dernière sortie il y a ${lastRunDaysAgo} jours 🔴`;
+  bindText("lastRunLabel", lastRunLabel);
   bindText("raceReadiness", getRaceReadiness());
 
   const progressBar = document.querySelector('[data-bind-style="progress"]');
@@ -705,6 +716,40 @@ function renderDogs() {
   });
 }
 
+function buildWeightSparkline(dog) {
+  const history = (dog.weightHistory || []).slice(-12); // 12 derniers points max
+  const current = dog.weight || 0;
+  if (history.length < 2) {
+    return `<span>Poids</span><b>${current} kg</b><small style="color:#aaa;font-size:0.72rem;display:block">Modifie le poids pour voir l'évolution</small>`;
+  }
+  const weights = history.map((h) => h.weight);
+  const min = Math.min(...weights);
+  const max = Math.max(...weights);
+  const range = max - min || 1;
+  const W = 100; const H = 32; const pad = 4;
+  const points = weights.map((w, i) => {
+    const x = pad + (i / (weights.length - 1)) * (W - pad * 2);
+    const y = H - pad - ((w - min) / range) * (H - pad * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+  const trend = weights[weights.length - 1] - weights[0];
+  const trendIcon = trend > 0.5 ? "↑" : trend < -0.5 ? "↓" : "→";
+  const trendColor = trend > 0.5 ? "#fc4c02" : trend < -0.5 ? "#3b82f6" : "#888";
+  return `
+    <span>Poids</span>
+    <b>${current} kg <span style="color:${trendColor};font-size:0.8em">${trendIcon} ${Math.abs(trend).toFixed(1)} kg</span></b>
+    <svg viewBox="0 0 ${W} ${H}" width="100" height="32" style="display:block;margin-top:4px">
+      <polyline points="${points}" fill="none" stroke="#fc4c02" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      ${weights.map((w, i) => {
+        const x = pad + (i / (weights.length - 1)) * (W - pad * 2);
+        const y = H - pad - ((w - min) / range) * (H - pad * 2);
+        return i === weights.length - 1 ? `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.5" fill="#fc4c02"/>` : "";
+      }).join("")}
+    </svg>
+    <small style="color:#aaa;font-size:0.68rem">${history[0].date} → ${history[history.length-1].date}</small>
+  `;
+}
+
 function renderDogProfile() {
   const list = document.querySelector('[data-list="dogProfile"]');
   if (!list) return;
@@ -736,7 +781,7 @@ function renderDogProfile() {
     <section class="profile-grid">
       <article><span>Naissance</span><b>${formatDogBirthdate(dog.birthdate)}</b></article>
       <article><span>Age calcule</span><b>${getDogAge(dog)} ans</b></article>
-      <article><span>Poids</span><b>${dog.weight} kg</b></article>
+      <article>${buildWeightSparkline(dog)}</article>
       <article><span>7 jours</span><b>${recentKm.toFixed(1)} km</b></article>
       <article><span>Energie moy.</span><b>${avgEnergy ? avgEnergy.toFixed(1) : "-"}/5</b></article>
       <article><span>Recuperation</span><b>${lastRecovery}</b></article>
@@ -1785,39 +1830,64 @@ const ADVICE_BANK = [
   }
 ];
 
+function getAdviceCategory(label) {
+  const l = (label || "").toLowerCase();
+  if (/nutrition|alimentation|hydrat|eau|electro|omega|nourriture|poids|calcium|microbiote/.test(l)) return "Nutrition";
+  if (/blessure|tendin|hernie|pattes|coussin|genciv|veter|premiers secours|bilan|boiter|santé|os|dent|griff|oreill|massage|antidoul|inflam|truffe|fourrure|mue|parasite|vaccin|vermif/.test(l)) return "Santé";
+  if (/froid|chaleur|altitude|neige|boue|meteo|gel|temperat|soleil|canicul|hiver|trail|eau froide/.test(l)) return "Conditions";
+  if (/echauf|recuper|cardio|foulee|progressiv|repos|endur|effort|sommeil|surentra|charge|lombes|muscu|respir|raideur|stress|acide|lactique/.test(l)) return "Entraînement";
+  if (/attelage|harnais|ligne|crochet|ceinture|securit|materiel|transport|botte|laisse|crochets/.test(l)) return "Équipement";
+  if (/course|competition|sprint|bikejor|canicross|ski|dryland|bivouac|nuit|acclimat|nourriture en course|controle veter/.test(l)) return "Compétition";
+  if (/comportement|education|jeune|communicat|meute|psycholog|plaisir|forge|apprentissage|commande|chien de tête|langue corporel|objectif|evaluat|equipe/.test(l)) return "Comportement";
+  return "Général";
+}
+
+let activeAdviceCategory = "";
+
 function renderWebAdvice() {
   const list = document.querySelector('[data-list="webAdvice"]');
   if (!list) return;
 
-  // Calcul de la "période" : change tous les 2 jours
   const daysSinceEpoch = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
   const periodIndex = Math.floor(daysSinceEpoch / 2);
   const total = ADVICE_BANK.length;
 
-  // 2 conseils différents tirés de la banque selon la période
-  const idx1 = periodIndex % total;
-  const idx2 = (periodIndex + 1) % total;
-  const todayTips = [ADVICE_BANK[idx1], ADVICE_BANK[idx2]];
-
-  // Calcul du prochain changement (combien de jours restants)
-  const nextChangeDay = (periodIndex + 1) * 2;
-  const daysLeft = nextChangeDay - daysSinceEpoch;
-  const nextLabel = daysLeft <= 1 ? "Demain" : `Dans ${daysLeft} jours`;
-
-  list.innerHTML = `
-    <div class="advice-rotation-info">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
-      Nouveau conseil : ${nextLabel} · ${periodIndex % total + 1}/${total}
-    </div>
-    ${todayTips.map((tip) => `
-      <article class="advice-card web-tip">
-        <span>${tip.label}</span>
-        <h2>${tip.title}</h2>
-        <p>${tip.text}</p>
-        <a href="${tip.url}" target="_blank" rel="noopener noreferrer">${tip.source} ↗</a>
-      </article>
-    `).join("")}
-  `;
+  if (activeAdviceCategory) {
+    // Mode filtre : affiche tous les conseils de la catégorie
+    const filtered = ADVICE_BANK.filter((t) => getAdviceCategory(t.label) === activeAdviceCategory);
+    list.innerHTML = filtered.length === 0
+      ? `<p class="empty-state">Aucun conseil dans cette catégorie.</p>`
+      : filtered.map((tip) => `
+          <article class="advice-card web-tip">
+            <span>${tip.label}</span>
+            <h2>${tip.title}</h2>
+            <p>${tip.text}</p>
+            <a href="${tip.url}" target="_blank" rel="noopener noreferrer">${tip.source} ↗</a>
+          </article>
+        `).join("");
+  } else {
+    // Mode rotation : 2 conseils qui changent tous les 2 jours
+    const idx1 = periodIndex % total;
+    const idx2 = (periodIndex + 1) % total;
+    const todayTips = [ADVICE_BANK[idx1], ADVICE_BANK[idx2]];
+    const nextChangeDay = (periodIndex + 1) * 2;
+    const daysLeft = nextChangeDay - daysSinceEpoch;
+    const nextLabel = daysLeft <= 1 ? "Demain" : `Dans ${daysLeft} jours`;
+    list.innerHTML = `
+      <div class="advice-rotation-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+        Nouveau conseil : ${nextLabel} · ${periodIndex % total + 1}/${total}
+      </div>
+      ${todayTips.map((tip) => `
+        <article class="advice-card web-tip">
+          <span>${tip.label}</span>
+          <h2>${tip.title}</h2>
+          <p>${tip.text}</p>
+          <a href="${tip.url}" target="_blank" rel="noopener noreferrer">${tip.source} ↗</a>
+        </article>
+      `).join("")}
+    `;
+  }
 }
 
 function renderPlan() {
@@ -3353,7 +3423,14 @@ dogForm.addEventListener("submit", (event) => {
     dog.role = document.querySelector("#dog-role").value;
     dog.birthdate = document.querySelector("#dog-birthdate").value || dog.birthdate || getApproxBirthdate(3);
     dog.age = getDogAge(dog);
-    dog.weight = Number(document.querySelector("#dog-weight").value || dog.weight || 22);
+    const newWeight = Number(document.querySelector("#dog-weight").value || dog.weight || 22);
+    if (newWeight !== dog.weight) {
+      // Enregistre dans l'historique si le poids a changé
+      dog.weightHistory = dog.weightHistory || [];
+      dog.weightHistory.push({ date: new Date().toISOString().slice(0, 10), weight: newWeight });
+      if (dog.weightHistory.length > 52) dog.weightHistory = dog.weightHistory.slice(-52); // max 52 entrées
+      dog.weight = newWeight;
+    }
     dog.harness = document.querySelector("#dog-harness").value.trim();
     dog.vet = document.querySelector("#dog-vet").value.trim();
     dog.limitation = document.querySelector("#dog-limitation").value.trim();
@@ -3372,6 +3449,7 @@ dogForm.addEventListener("submit", (event) => {
     birthdate: document.querySelector("#dog-birthdate").value || getApproxBirthdate(3),
     age: getDogAge({ birthdate: document.querySelector("#dog-birthdate").value || getApproxBirthdate(3) }),
     weight: Number(document.querySelector("#dog-weight").value || 22),
+    weightHistory: [{ date: new Date().toISOString().slice(0, 10), weight: Number(document.querySelector("#dog-weight").value || 22) }],
     harness: document.querySelector("#dog-harness").value.trim(),
     vet: document.querySelector("#dog-vet").value.trim(),
     limitation: document.querySelector("#dog-limitation").value.trim(),
@@ -3748,6 +3826,41 @@ function formatCoachMarkdown(text) {
 });
 
 document.querySelector("#missing-race-button")?.addEventListener("click", reportMissingRace);
+
+// Présets paramètres course
+const RACE_PRESETS = {
+  sprint:   { name: "Sprint hivernal", type: "Sprint",          km: 12,  months: 3 },
+  mid:      { name: "Mid-distance",    type: "Mid-distance",    km: 80,  months: 5 },
+  long:     { name: "Longue distance", type: "Longue distance", km: 250, months: 8 },
+  canicross:{ name: "Canicross race",  type: "Canicross",       km: 10,  months: 2 }
+};
+document.querySelectorAll(".preset-btn[data-preset]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const preset = RACE_PRESETS[btn.dataset.preset];
+    if (!preset) return;
+    const raceDate = new Date();
+    raceDate.setMonth(raceDate.getMonth() + preset.months);
+    document.querySelector("#race-name").value = preset.name;
+    document.querySelector("#race-type").value = preset.type;
+    document.querySelector("#race-km").value   = preset.km;
+    document.querySelector("#race-date").value = raceDate.toISOString().slice(0, 10);
+    // Surligne visuellement les champs remplis
+    ["#race-name","#race-type","#race-km","#race-date"].forEach((sel) => {
+      const el = document.querySelector(sel);
+      if (el) { el.style.outline = "2px solid #fc4c02"; setTimeout(() => el.style.outline = "", 1500); }
+    });
+  });
+});
+
+// Filtres conseils par catégorie
+document.querySelectorAll(".advice-filter-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    activeAdviceCategory = btn.dataset.adviceCat;
+    document.querySelectorAll(".advice-filter-btn").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    renderWebAdvice();
+  });
+});
 
 // Filtres sorties ouvertes
 ["open-run-filter-type", "open-run-filter-level", "open-run-filter-distance", "open-run-filter-region"].forEach((id) => {
