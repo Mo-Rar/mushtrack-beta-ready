@@ -2526,3 +2526,26 @@ textarea {
   font-size: 0.78rem;
   font-weight: 850;
 }
+
+/* ── Badge de synchronisation cloud ─────────────────────────────────── */
+.sync-badge {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #111;
+  color: #fff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 999px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+  z-index: 999;
+}
+.sync-badge.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
