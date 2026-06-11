@@ -3361,10 +3361,11 @@ function renderAgenda() {
     const days = daysUntil(race.date);
     const status = days < 0 ? "Terminee" : days === 0 ? "Aujourd'hui" : `J-${days}`;
     const readiness = getAgendaReadiness(race);
+    const priority = (race.priority || "B").toUpperCase();
     return `
-      <article class="agenda-card priority-${race.priority.toLowerCase()}" data-race-id="${race.id}">
+      <article class="agenda-card priority-${priority.toLowerCase()}" data-race-id="${race.id}">
         <div>
-          <span>${status} - Priorite ${race.priority}</span>
+          <span>${status} - Priorite ${priority}</span>
           <h2>${race.name}</h2>
           <p>${formatFullDate(race.date)} - ${race.location || "Lieu a definir"}</p>
         </div>
