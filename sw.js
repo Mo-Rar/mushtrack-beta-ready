@@ -1,4 +1,4 @@
-const CACHE_NAME = "mushtrack-beta-v18";
+const CACHE_NAME = "mushtrack-beta-v19";
 const APP_FILES = [
   "./",
   "./index.html",

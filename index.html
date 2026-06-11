@@ -464,144 +464,59 @@
       <section class="screen" id="agenda">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Courses & sorties</p>
-            <h1 style="color:#fc4c02;display:flex;align-items:center;gap:10px">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#fc4c02" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><rect x="7" y="14" width="3" height="3" rx="0.5" fill="#fc4c02" stroke="none"/></svg>
-              Agenda
-            </h1>
+            <p class="eyebrow">Planning personnel</p>
+            <h1>Agenda</h1>
           </div>
-          <button class="round-button" data-action="toggleRaceForm" aria-label="Ajouter">+</button>
+          <button class="round-button" data-action="toggleEventForm" aria-label="Ajouter">+</button>
         </header>
 
-        <form class="add-form hidden" id="race-form">
+        <form class="add-form hidden" id="event-form">
           <label>
-            Nom de la course
-            <input id="agenda-name" placeholder="Ex: Trophee des Neiges" />
+            Titre
+            <input id="event-title" placeholder="Ex: Véto Cléo, Ostéo Max, Sortie copains..." />
           </label>
           <div class="form-grid">
             <label>
               Date
-              <input id="agenda-date" type="date" />
+              <input id="event-date" type="date" />
             </label>
             <label>
-              Distance
-              <input id="agenda-distance" type="number" min="1" step="1" placeholder="80" />
-            </label>
-          </div>
-          <div class="form-grid">
-            <label>
-              Type
-              <select id="agenda-type">
-                <option>Sprint</option>
-                <option>Mid-distance</option>
-                <option>Longue distance</option>
-                <option>Canicross</option>
-                <option>Dryland</option>
-              </select>
-            </label>
-            <label>
-              Priorite
-              <select id="agenda-priority">
-                <option>A</option>
-                <option>B</option>
-                <option>C</option>
+              Catégorie
+              <select id="event-category">
+                <option value="veto">🏥 Vétérinaire</option>
+                <option value="osteo">💆 Ostéopathie</option>
+                <option value="sortie">🐕 Sortie amis</option>
+                <option value="entrainement">🏃 Entraînement</option>
+                <option value="materiel">🛒 Matériel</option>
+                <option value="course">🏁 Course</option>
+                <option value="autre">📌 Autre</option>
               </select>
             </label>
           </div>
-          <label>
-            Lieu
-            <input id="agenda-location" placeholder="Village, station, pays" />
-          </label>
           <label>
             Notes
-            <textarea id="agenda-notes" rows="3" placeholder="Objectif, team prevue, logistique..."></textarea>
+            <textarea id="event-notes" rows="2" placeholder="Détails, rappels..."></textarea>
           </label>
-          <button class="primary-button" type="submit">Ajouter la course</button>
+          <button class="primary-button" type="submit">Ajouter</button>
         </form>
 
         <section class="agenda-list" data-list="agenda"></section>
 
-        <section class="section-heading spaced">
-          <h2>Sorties ouvertes</h2>
-          <button class="text-button" data-action="toggleOpenRunForm" type="button">Creer</button>
-        </section>
-
-        <form class="add-form hidden" id="open-run-form">
-          <label>
-            Titre
-            <input id="open-run-title" placeholder="Ex: Canicross tranquille Jura" />
-          </label>
-          <div class="form-grid">
-            <label>
-              Date
-              <input id="open-run-date" type="date" />
-            </label>
-            <label>
-              Distance
-              <input id="open-run-distance" type="number" min="1" step="1" placeholder="8" />
-            </label>
-          </div>
-          <div class="form-grid">
-            <label>
-              Discipline
-              <select id="open-run-type">
-                <option>Canicross</option>
-                <option>Marche</option>
-                <option>Cani-rando</option>
-                <option>Dryland</option>
-                <option>Traineau</option>
-                <option>Skijoring</option>
-              </select>
-            </label>
-            <label>
-              Niveau
-              <select id="open-run-level">
-                <option>Tranquille</option>
-                <option>Debutant</option>
-                <option>Intermediaire</option>
-                <option>Sportif</option>
-                <option>Competition</option>
-              </select>
-            </label>
-          </div>
-          <label>
-            Lieu
-            <input id="open-run-location" placeholder="Village, parking, region" />
-          </label>
-          <label>
-            Notes
-            <textarea id="open-run-notes" rows="3" placeholder="Chien debutant accepte, rythme calme, frontale..."></textarea>
-          </label>
-          <button class="primary-button" type="submit">Publier la sortie</button>
-        </form>
-
-        <div class="open-run-filters">
-          <select id="open-run-filter-type">
-            <option value="">Toutes disciplines</option>
-            <option>Canicross</option>
-            <option>Marche</option>
-            <option>Cani-rando</option>
-            <option>Dryland</option>
-            <option>Traineau</option>
-            <option>Skijoring</option>
-          </select>
-          <select id="open-run-filter-level">
-            <option value="">Tous niveaux</option>
-            <option>Tranquille</option>
-            <option>Debutant</option>
-            <option>Intermediaire</option>
-            <option>Sportif</option>
-            <option>Competition</option>
-          </select>
-          <select id="open-run-filter-distance">
-            <option value="">Toutes distances</option>
-            <option value="short">Courte (&lt;10 km)</option>
-            <option value="medium">Moyenne (10-30 km)</option>
-            <option value="long">Longue (&gt;30 km)</option>
-          </select>
-          <input id="open-run-filter-region" placeholder="Région / lieu…" style="flex:1;min-width:100px" />
+        <!-- éléments conservés pour compatibilité JS (cachés) -->
+        <div hidden>
+          <form id="race-form"></form>
+          <form id="open-run-form">
+            <select id="open-run-type"></select>
+            <select id="open-run-level"><option>Tranquille</option></select>
+            <input id="open-run-location" /><input id="open-run-title" /><input id="open-run-date" /><input id="open-run-distance" />
+            <textarea id="open-run-notes"></textarea>
+            <select id="open-run-filter-type"></select>
+            <select id="open-run-filter-level"></select>
+            <select id="open-run-filter-distance"></select>
+            <input id="open-run-filter-region" />
+          </form>
         </div>
-        <section class="open-run-list" data-list="openRuns"></section>
+        <section class="open-run-list" data-list="openRuns" hidden></section>
       </section>
 
       <section class="screen" id="advice">
