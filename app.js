@@ -1820,32 +1820,260 @@ function renderWebAdvice() {
   `;
 }
 
+// ── Plan d'entraînement — rendu complet ────────────────────────────────
 function renderPlan() {
-  const list = document.querySelector('[data-list="planWeeks"]');
-  if (!list) return;
+  const context = getPlanContext();
+  const weeks = buildPlan();
 
-  list.innerHTML = buildPlan().map((week) => `
-    <article class="${week.level || ""}">
-      <span>${week.label}</span>
-      <b>${week.km} km</b>
-      <small>${week.focus}</small>
-    </article>
-  `).join("");
-
+  renderPlanHero(context, weeks);
+  renderPlanBars(weeks);
+  renderPlanCurrentWeek(weeks[0], context);
+  renderPlanWeeksList(weeks.slice(1));
   renderPlanInsights();
+}
+
+// Hero : compte à rebours + phase + objectif
+function renderPlanHero(context, weeks) {
+  const el = document.querySelector('[data-list="planHero"]');
+  if (!el) return;
+
+  const raceName = state.raceName || state.raceType || "Course objectif";
+  const raceKm = state.raceKm || 100;
+  const days = Math.max(0, context.daysToRace);
+  const phase = getPlanPhase(context);
+  const totalKm = state.runs.reduce((s, r) => s + Number(r.km || 0), 0).toFixed(0);
+  const peakWeek = Math.max(...weeks.map((w) => w.km));
+
+  el.innerHTML = `
+    <div class="plan-hero">
+      <div class="plan-hero-race">
+        <div class="plan-hero-countdown">
+          <span class="plan-countdown-num">${days}</span>
+          <span class="plan-countdown-label">jours</span>
+        </div>
+        <div class="plan-hero-info">
+          <span class="plan-hero-eyebrow">Objectif course</span>
+          <strong class="plan-hero-name">${raceName}</strong>
+          <span class="plan-hero-sub">${raceKm} km · ${state.raceDate ? formatDate(state.raceDate) : "date non définie"}</span>
+        </div>
+      </div>
+      <div class="plan-phase-row">
+        <div class="plan-phase-badge phase-${phase.key}">
+          ${phase.icon} ${phase.label}
+        </div>
+        <span class="plan-phase-desc">${phase.desc}</span>
+      </div>
+      <div class="plan-hero-stats">
+        <div class="plan-hero-stat">
+          <span>${totalKm} km</span>
+          <small>enregistrés</small>
+        </div>
+        <div class="plan-hero-stat">
+          <span>${context.weekKm.toFixed(0)} km</span>
+          <small>cette semaine</small>
+        </div>
+        <div class="plan-hero-stat">
+          <span>${peakWeek} km</span>
+          <small>pic planifié</small>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Phase de préparation selon les jours restants
+function getPlanPhase(context) {
+  const days = context.daysToRace;
+  if (days <= 10) return { key: "taper",  icon: "🏁", label: "Affûtage",  desc: "Volume réduit, fraîcheur maximale avant la course." };
+  if (days <= 28) return { key: "peak",   icon: "⚡", label: "Peak",      desc: "Intensité haute, séances clés, affûtage proche." };
+  if (days <= 70) return { key: "build",  icon: "📈", label: "Build",     desc: "Montée en charge progressive et travail spécifique." };
+  return               { key: "base",   icon: "🏗️", label: "Base",      desc: "Construction du fond, endurance et habitudes." };
+}
+
+// Barres de progression 8 semaines
+function renderPlanBars(weeks) {
+  const el = document.querySelector('[data-list="planBars"]');
+  if (!el) return;
+
+  const max = Math.max(1, ...weeks.map((w) => w.km));
+  const actualKm = getWeekKm();
+
+  el.innerHTML = weeks.map((week, i) => {
+    const pct = Math.round((week.km / max) * 100);
+    const isNow = i === 0;
+    const isRest = week.isRest;
+    const actualPct = isNow ? Math.min(100, Math.round((actualKm / week.km) * 100)) : 0;
+
+    return `
+      <div class="plan-bar-col ${isNow ? "now" : ""}" title="${week.label} — ${week.km} km ${isRest ? "(récup)" : ""}">
+        <div class="plan-bar-track">
+          <div class="plan-bar-fill ${isRest ? "rest" : week.level}" style="height:${pct}%"></div>
+          ${isNow ? `<div class="plan-bar-actual" style="height:${actualPct}%"></div>` : ""}
+        </div>
+        <span class="plan-bar-km">${week.km}</span>
+        <span class="plan-bar-label">${isNow ? "●" : `S${i + 1}`}</span>
+      </div>
+    `;
+  }).join("");
+}
+
+// Semaine en cours : vue calendrier Lun-Dim avec séances
+function renderPlanCurrentWeek(week, context) {
+  const el = document.querySelector('[data-list="planCurrentWeek"]');
+  if (!el) return;
+
+  const sessions = buildWeekSessions(week, context);
+  const today = new Date().getDay(); // 0=dim, 1=lun...
+  const dayLabels = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+
+  el.innerHTML = `
+    <div class="plan-section-title">
+      <span>Cette semaine</span>
+      <strong>${week.km} km planifiés</strong>
+    </div>
+    <div class="plan-week-calendar">
+      ${sessions.map((s, i) => {
+        const dayIdx = (i + 1) % 7; // Lun=1..Sam=6..Dim=0
+        const isToday = dayIdx === today;
+        return `
+          <div class="plan-day ${s.type} ${isToday ? "today" : ""}">
+            <span class="plan-day-label">${dayLabels[dayIdx]}</span>
+            <div class="plan-day-icon">${s.icon}</div>
+            <span class="plan-day-km">${s.km > 0 ? s.km + " km" : ""}</span>
+            <span class="plan-day-desc">${s.short}</span>
+          </div>
+        `;
+      }).join("")}
+    </div>
+    <div class="plan-week-focus">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fc4c02" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      ${week.focus}
+    </div>
+  `;
+}
+
+// Générer les 7 séances de la semaine
+function buildWeekSessions(week, context) {
+  const km = week.km;
+  const summer = state.seasonMode === "summer";
+  const isSprint = state.raceType === "Sprint";
+  const isLong = state.raceType === "Longue distance";
+  const isRest = week.isRest;
+
+  if (isRest) {
+    return [
+      { type: "easy",  icon: "🚶", km: Math.round(km * 0.25), short: "Marche" },
+      { type: "rest",  icon: "😴", km: 0,                      short: "Repos" },
+      { type: "easy",  icon: "🐕", km: Math.round(km * 0.35), short: "Trot léger" },
+      { type: "rest",  icon: "😴", km: 0,                      short: "Repos" },
+      { type: "easy",  icon: "💧", km: Math.round(km * 0.25), short: "Récup active" },
+      { type: "rest",  icon: "😴", km: 0,                      short: "Repos" },
+      { type: "easy",  icon: "🏊", km: Math.round(km * 0.15), short: "Natation/jeu" },
+    ];
+  }
+
+  if (isSprint) {
+    return [
+      { type: "rest",   icon: "😴", km: 0,                      short: "Repos" },
+      { type: "quality",icon: "⚡", km: Math.round(km * 0.20), short: "Intervalles" },
+      { type: "easy",   icon: "🐕", km: Math.round(km * 0.15), short: "Récup" },
+      { type: "quality",icon: "🏁", km: Math.round(km * 0.22), short: "Départs" },
+      { type: "rest",   icon: "😴", km: 0,                      short: "Repos" },
+      { type: "easy",   icon: "🐾", km: Math.round(km * 0.18), short: "Endurance" },
+      { type: "quality",icon: "🎯", km: Math.round(km * 0.25), short: summer ? "Matinal" : "Long" },
+    ];
+  }
+
+  if (isLong) {
+    return [
+      { type: "rest",  icon: "😴", km: 0,                      short: "Repos" },
+      { type: "easy",  icon: "🐾", km: Math.round(km * 0.18), short: "Endurance" },
+      { type: "easy",  icon: "🐕", km: Math.round(km * 0.14), short: "Récup" },
+      { type: "quality",icon: "📦", km: Math.round(km * 0.22), short: "Back-to-back" },
+      { type: "easy",  icon: "🐾", km: Math.round(km * 0.16), short: "Alimentation" },
+      { type: "rest",  icon: "😴", km: 0,                      short: "Repos" },
+      { type: "quality",icon: "🏔️", km: Math.round(km * 0.30), short: "Sortie longue" },
+    ];
+  }
+
+  // Mid-distance (défaut)
+  return [
+    { type: "rest",   icon: "😴", km: 0,                      short: "Repos" },
+    { type: "easy",   icon: "🐾", km: Math.round(km * 0.18), short: "Endurance" },
+    { type: "quality",icon: "📈", km: Math.round(km * 0.20), short: "Progressif" },
+    { type: "easy",   icon: "🐕", km: Math.round(km * 0.14), short: "Récup active" },
+    { type: "rest",   icon: "😴", km: 0,                      short: "Repos" },
+    { type: "easy",   icon: "⛰️", km: Math.round(km * 0.18), short: "Côtes" },
+    { type: "quality",icon: "🎯", km: Math.round(km * 0.30), short: "Sortie longue" },
+  ];
+}
+
+// Liste des semaines 2 à 8 — cartes cliquables
+function renderPlanWeeksList(weeks) {
+  const el = document.querySelector('[data-list="planWeeksList"]');
+  if (!el) return;
+
+  el.innerHTML = `
+    <div class="plan-section-title" style="margin-top:18px">
+      <span>Semaines suivantes</span>
+      <small>Appuie pour détails</small>
+    </div>
+    ${weeks.map((week, i) => `
+      <details class="plan-week-card ${week.level} ${week.isRest ? "rest" : ""}">
+        <summary class="plan-week-summary">
+          <div class="plan-week-summary-left">
+            <span class="plan-week-badge ${week.isRest ? "rest" : week.level}">S${i + 2}</span>
+            <div>
+              <strong>${week.km} km</strong>
+              <span>${week.phase}</span>
+            </div>
+          </div>
+          <div class="plan-week-summary-right">
+            <div class="plan-week-minibar">
+              <div style="width:${week.pct}%;background:${week.isRest ? "#e5e7eb" : "#fc4c02"};height:100%;border-radius:3px"></div>
+            </div>
+            <svg class="plan-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </summary>
+        <div class="plan-week-detail">
+          <p>${week.focus}</p>
+          <div class="plan-week-sessions">
+            ${buildWeekSessions(week, getPlanContext()).map((s, d) => `
+              <div class="plan-session-row ${s.type}">
+                <span>${["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"][d]}</span>
+                <span>${s.icon}</span>
+                <span>${s.short}</span>
+                <span>${s.km > 0 ? s.km + " km" : "—"}</span>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      </details>
+    `).join("")}
+  `;
 }
 
 function buildPlan() {
   const context = getPlanContext();
-  const base = Math.round((state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38) * context.volumeFactor);
-  const peak = Math.max(base + 16, Math.round(state.raceKm * (state.raceType === "Sprint" ? 0.9 : 1.15) * context.volumeFactor));
+  const baseKm = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
+  const base = Math.round(baseKm * context.volumeFactor);
+  const peak = Math.max(base + 14, Math.round(state.raceKm * (state.raceType === "Sprint" ? 0.85 : 1.1) * context.volumeFactor));
+  const maxAll = peak;
 
-  return Array.from({ length: 8 }, (_, index) => {
-    const isRest = (index + 1) % 4 === 0 || (context.daysToRace <= 10 && index === 0);
-    const rawKm = isRest ? Math.round(base * 0.72 + index * 2) : Math.round(base + ((peak - base) / 7) * index);
+  return Array.from({ length: 8 }, (_, i) => {
+    const isRest = (i + 1) % 4 === 0 || (context.daysToRace <= 10 && i === 0);
+    const rawKm = isRest
+      ? Math.round(base * 0.65 + i * 1.5)
+      : Math.round(base + ((peak - base) / 6) * Math.min(i, 6));
     const km = Math.max(4, rawKm);
-    const focus = getWeekFocus(index, isRest, context);
-    return { label: index === 0 ? "Cette semaine" : `Semaine ${index + 1}`, km, focus, level: isRest ? "light" : context.riskLevel };
+    const focus = getWeekFocus(i, isRest, context);
+    const phase = getPlanPhase({ daysToRace: Math.max(0, context.daysToRace - i * 7) }).label;
+    const pct = Math.round((km / maxAll) * 100);
+    return {
+      label: i === 0 ? "Cette semaine" : `Semaine ${i + 1}`,
+      km, focus, phase, pct, isRest,
+      level: isRest ? "light" : context.riskLevel
+    };
   });
 }
 

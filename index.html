@@ -422,21 +422,28 @@
       <section class="screen" id="plan">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Preparation</p>
+            <p class="eyebrow">Préparation</p>
             <h1>Plan</h1>
           </div>
-          <button class="round-button" data-go="settings" aria-label="Objectif">Edit</button>
+          <button class="round-button" data-go="settings" aria-label="Objectif">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
         </header>
 
-        <section class="plan-summary">
-          <span>Course preparee</span>
-          <strong><span data-bind="raceType">Mid-distance</span> - <span data-bind="raceKm">80</span> km</strong>
-          <p data-bind="planIntro">Le plan augmente doucement le volume, avec une semaine legere toutes les 4 semaines.</p>
-        </section>
+        <!-- Compte à rebours + phase -->
+        <div data-list="planHero"></div>
 
-        <section class="plan-insights" data-list="planInsights"></section>
+        <!-- Barres de progression 8 semaines -->
+        <div class="plan-chart-wrap">
+          <div class="plan-chart-label">Volume hebdomadaire (km)</div>
+          <div class="plan-bars" data-list="planBars"></div>
+        </div>
 
-        <section class="week-list" data-list="planWeeks"></section>
+        <!-- Semaine en cours : calendrier détaillé -->
+        <div data-list="planCurrentWeek"></div>
+
+        <!-- Les 7 semaines suivantes -->
+        <div data-list="planWeeksList"></div>
       </section>
 
       <section class="screen" id="race">

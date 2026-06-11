@@ -2000,6 +2000,429 @@ textarea {
   color: #6f5d53;
 }
 
+/* ── Plan — nouvelle interface ──────────────────────────────────── */
+
+/* Hero compte à rebours */
+.plan-hero {
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.plan-hero-race {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.plan-hero-countdown {
+  background: #fc4c02;
+  border-radius: 14px;
+  padding: 10px 14px;
+  text-align: center;
+  min-width: 62px;
+  flex-shrink: 0;
+}
+
+.plan-countdown-num {
+  display: block;
+  font-size: 1.9rem;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.plan-countdown-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.plan-hero-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.plan-hero-eyebrow {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #aaaaaa;
+}
+
+.plan-hero-name {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #111111;
+  line-height: 1.2;
+}
+
+.plan-hero-sub {
+  font-size: 0.78rem;
+  color: #888888;
+}
+
+/* Phase badge */
+.plan-phase-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid #f5f5f5;
+}
+
+.plan-phase-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.plan-phase-badge.phase-base  { background: #e0f2fe; color: #0369a1; }
+.plan-phase-badge.phase-build { background: #fef9c3; color: #854d0e; }
+.plan-phase-badge.phase-peak  { background: #fce7f3; color: #9d174d; }
+.plan-phase-badge.phase-taper { background: #dcfce7; color: #166534; }
+
+.plan-phase-desc {
+  font-size: 0.78rem;
+  color: #888888;
+  line-height: 1.3;
+}
+
+/* Stats trio */
+.plan-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-top: 1px solid #f5f5f5;
+  padding-top: 10px;
+}
+
+.plan-hero-stat {
+  text-align: center;
+}
+
+.plan-hero-stat:not(:last-child) {
+  border-right: 1px solid #f0f0f0;
+}
+
+.plan-hero-stat span {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #111111;
+}
+
+.plan-hero-stat small {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #aaaaaa;
+}
+
+/* Graphique barres */
+.plan-chart-wrap {
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 16px;
+  padding: 14px 10px 10px;
+  margin-bottom: 14px;
+}
+
+.plan-chart-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #aaaaaa;
+  margin-bottom: 10px;
+  padding-left: 4px;
+}
+
+.plan-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 80px;
+}
+
+.plan-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  height: 100%;
+}
+
+.plan-bar-track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: relative;
+  background: #f8f8f8;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.plan-bar-fill {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s ease;
+}
+
+.plan-bar-fill.ok     { background: #fc4c02; }
+.plan-bar-fill.light  { background: #fbbf24; }
+.plan-bar-fill.danger { background: #ef4444; }
+.plan-bar-fill.rest   { background: #d1d5db; }
+
+.plan-bar-actual {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(252,76,2,0.25);
+  border: 2px solid #fc4c02;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s ease;
+}
+
+.plan-bar-col.now .plan-bar-fill { background: #fc4c02; }
+
+.plan-bar-km {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #888888;
+}
+
+.plan-bar-label {
+  font-size: 0.6rem;
+  color: #aaaaaa;
+}
+
+.plan-bar-col.now .plan-bar-label { color: #fc4c02; font-weight: 800; font-size: 0.7rem; }
+
+/* Titre de section plan */
+.plan-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.plan-section-title span {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #aaaaaa;
+}
+
+.plan-section-title strong {
+  font-size: 0.85rem;
+  color: #fc4c02;
+  font-weight: 800;
+}
+
+/* Calendrier semaine en cours */
+.plan-week-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.plan-day {
+  background: #f8f8f8;
+  border-radius: 10px;
+  padding: 6px 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-height: 78px;
+  border: 1.5px solid transparent;
+}
+
+.plan-day.today {
+  background: #fff4ef;
+  border-color: #fc4c02;
+}
+
+.plan-day.quality { background: #fff9f5; }
+.plan-day.rest    { background: #f8f8f8; opacity: 0.7; }
+.plan-day.easy    { background: #f0fdf4; }
+
+.plan-day-label {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #aaaaaa;
+  letter-spacing: 0.04em;
+}
+
+.plan-day.today .plan-day-label { color: #fc4c02; }
+
+.plan-day-icon { font-size: 1.1rem; }
+
+.plan-day-km {
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #fc4c02;
+}
+
+.plan-day-desc {
+  font-size: 0.55rem;
+  color: #888888;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.plan-week-focus {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: #555555;
+  line-height: 1.45;
+  background: #fff9f5;
+  border-left: 3px solid #fc4c02;
+  padding: 9px 11px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 6px;
+}
+
+/* Cartes semaines suivantes */
+.plan-week-card {
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.plan-week-card.rest { border-color: #e5e7eb; }
+.plan-week-card.light { border-left: 3px solid #fbbf24; }
+.plan-week-card.danger { border-left: 3px solid #ef4444; }
+
+.plan-week-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+  gap: 10px;
+}
+
+.plan-week-summary::-webkit-details-marker { display: none; }
+
+.plan-week-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.plan-week-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.plan-week-badge.ok     { background: rgba(252,76,2,0.1); color: #fc4c02; }
+.plan-week-badge.light  { background: #fef9c3; color: #854d0e; }
+.plan-week-badge.rest   { background: #f3f4f6; color: #6b7280; }
+.plan-week-badge.danger { background: #fee2e2; color: #dc2626; }
+
+.plan-week-summary-left strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #111111;
+}
+
+.plan-week-summary-left span {
+  font-size: 0.72rem;
+  color: #aaaaaa;
+}
+
+.plan-week-summary-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-week-minibar {
+  width: 50px;
+  height: 5px;
+  background: #f0f0f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.plan-chevron {
+  color: #aaaaaa;
+  transition: transform 0.2s;
+}
+
+details[open] .plan-chevron { transform: rotate(180deg); }
+
+.plan-week-detail {
+  padding: 0 14px 14px;
+  border-top: 1px solid #f5f5f5;
+}
+
+.plan-week-detail p {
+  font-size: 0.82rem;
+  color: #555555;
+  line-height: 1.45;
+  margin: 10px 0 10px;
+  padding-left: 8px;
+  border-left: 3px solid #fc4c02;
+}
+
+.plan-week-sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.plan-session-row {
+  display: grid;
+  grid-template-columns: 32px 24px 1fr 40px;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+
+.plan-session-row.rest    { background: #f8f8f8; color: #aaaaaa; }
+.plan-session-row.easy    { background: #f0fdf4; color: #166534; }
+.plan-session-row.quality { background: #fff4ef; color: #9a3412; }
+
+.plan-session-row span:first-child { font-weight: 700; font-size: 0.72rem; color: #888888; }
+.plan-session-row span:last-child  { text-align: right; font-weight: 700; color: #fc4c02; }
+
 .record-actions {
   margin-top: 12px;
 }
