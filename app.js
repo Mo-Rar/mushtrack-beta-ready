@@ -1282,6 +1282,506 @@ const ADVICE_BANK = [
     text: "Les chiens habitués à courir sur neige souple ont des coussinets plus sensibles aux terrains durs. En début de saison dryland ou lors du passage hiver → printemps, réduis les distances sur asphalte et observe les coussinets quotidiennement pendant 2 semaines.",
     source: "FFSLC / Canicross France",
     url: "https://ffslc.fr/"
+  },
+
+  // ── Conseils 31–100 ──────────────────────────────────────────────
+
+  {
+    label: "Cire coussinets",
+    title: "La cire protège, elle ne remplace pas l'endurance",
+    text: "La cire pour coussinets (Musher's Secret, Pawz, etc.) protège contre la neige collante, le sel de déneigement et les terrains abrasifs. Elle ne remplace pas un durcissement progressif. Applique avant la sortie sur des coussinets propres et secs. Idéal aussi après la sortie pour hydrater.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Alimentation hiver",
+    title: "En grand froid, doubler la ration peut être nécessaire",
+    text: "Par températures très négatives (en dessous de -20°C), un chien de traîneau peut brûler 2 à 3 fois plus de calories que d'habitude pour maintenir sa température. Les mushers de longue distance augmentent la ration de graisse (suif, huile de saumon) plutôt que de glucides.",
+    source: "Iditarod Vet Guidelines",
+    url: "https://iditarod.com/race/veterinary/"
+  },
+  {
+    label: "Bottes chien",
+    title: "Les bottes : à utiliser avec précaution",
+    text: "Les bottes protègent les coussinets lors de sorties sur neige croûtée, glace ou sel. Mais elles modifient la proprioception du chien et peuvent créer des irritations si mal ajustées. Habitue le chien progressivement, commence par 2 pattes, et vérifie après chaque sortie.",
+    source: "Canicross UK",
+    url: "https://canicrossuk.com/"
+  },
+  {
+    label: "Foulée",
+    title: "Observer la foulée permet de détecter une douleur précoce",
+    text: "Filme tes chiens de profil et de derrière pendant l'effort. Une légère asymétrie de foulée, un manque d'amplitude ou une tête qui monte à chaque appui sont souvent visibles sur vidéo avant d'être perceptibles à l'œil en courant avec eux.",
+    source: "ISDVMA / Physio canine",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Chien vieillissant",
+    title: "À partir de 7 ans, adapter la charge progressivement",
+    text: "Les chiens nordiques restent performants jusqu'à 10-12 ans, mais leur récupération ralentit à partir de 7-8 ans. Réduis les intensités élevées, augmente les jours de récupération et sois plus attentif aux signes de raideur matinale. La qualité prime sur la quantité.",
+    source: "VCA Animal Hospitals",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Jeune chien",
+    title: "Avant 18 mois : pas de course à impact répété",
+    text: "Les plaques de croissance des chiens ne sont pas fermées avant 12 à 18 mois selon la race. Les efforts répétés à haute intensité avant cet âge peuvent créer des lésions définitives. Favorise le jeu, la marche, la natation et le travail léger jusqu'à la maturité osseuse.",
+    source: "Cornell Canine Health",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Vaccination",
+    title: "Vaccins à jour avant les regroupements de chiens",
+    text: "En compétition ou stage, tes chiens côtoient des dizaines d'autres chiens. Leptospirose, toux du chenil, parvovirose, rage (si international) : vérifie que les rappels sont à jour 3 semaines avant tout événement pour que l'immunité soit maximale.",
+    source: "ESCCAP Guidelines",
+    url: "https://www.esccap.org/"
+  },
+  {
+    label: "Vermifuge",
+    title: "Vermifuger tous les 3 mois chez le chien sportif",
+    text: "Les chiens actifs en milieu naturel sont plus exposés aux parasites internes. Un vermifuge large spectre tous les 3 mois est recommandé. Certains parasites (ténia, giardia) peuvent affecter l'absorption des nutriments et donc les performances.",
+    source: "ESCCAP Guidelines",
+    url: "https://www.esccap.org/"
+  },
+  {
+    label: "Musculature dorsale",
+    title: "Renforcer le dos pour prévenir les blessures de traction",
+    text: "Les chiens qui tirent (traîneau, bikejoring, canicross) sollicitent fortement les muscles du dos et des épaules. Des exercices de proprioception (marcher sur surfaces instables, cavalettis, natation) renforcent ces muscles et réduisent le risque de hernies discales.",
+    source: "Physiothérapie vétérinaire / CCRP",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Lombes",
+    title: "Surveiller la sensibilité lombaire après effort intense",
+    text: "Après une grosse semaine, passe tes mains le long de la colonne vertébrale du chien. Un tressautement des muscles ou une raideur à la palpation lombaire peut indiquer un début de tension musculaire. 2 jours de repos et massage doux suffisent souvent.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Nettoyage oreilles",
+    title: "Les chiens actifs en forêt accumulent plus de débris",
+    text: "Après chaque sortie en terrain boisé ou humide, vérifie les oreilles. Les chiens aux oreilles tombantes sont plus sujets aux otites. Un coton légèrement imbibé de lotion auriculaire et un contrôle visuel hebdomadaire suffisent à prévenir la plupart des problèmes.",
+    source: "VCA Animal Hospitals",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Griffes",
+    title: "Des griffes trop longues modifient l'appui et fatiguent les tendons",
+    text: "Des griffes qui touchent le sol en position debout forcent les doigts en hyperextension, créant une tension sur les tendons fléchisseurs. Coupe-les toutes les 3 à 4 semaines ou après chaque longue course sur terrain dur qui les lime naturellement.",
+    source: "Cornell Canine Health",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Eau froide",
+    title: "Laisser boire de l'eau froide n'est pas dangereux",
+    text: "Contrairement à une idée reçue, l'eau froide après l'effort ne provoque pas de crampes chez le chien. Ce qui compte c'est la quantité : laisser boire par petites prises pour ne pas provoquer de dilatation gastrique, surtout chez les grandes races.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Alimentation post-effort",
+    title: "La fenêtre métabolique : 30 à 90 minutes après l'effort",
+    text: "Les muscles sont particulièrement réceptifs aux nutriments dans l'heure qui suit l'effort. Un repas riche en protéines et graisses dans cette fenêtre accélère la récupération musculaire. Pour les courses longues, une collation de récupération (viande, fromage) avant le repas principal est utile.",
+    source: "Purina Pro Plan Veterinary",
+    url: "https://www.purina.com/"
+  },
+  {
+    label: "Canicross débutant",
+    title: "Débuter par la marche active, pas la course",
+    text: "Pour un chien débutant en canicross, commence par des marches énergiques en laisse classique avant d'introduire la ligne élastique. Il doit d'abord comprendre le concept de tirer vers l'avant sans distraction. La course vient après la confiance.",
+    source: "FFSLC / Canicross France",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Ligne de trait",
+    title: "Vérifier régulièrement l'état du matériel de traction",
+    text: "Les lignes de trait, traits d'attelage et connecteurs en caoutchouc se fragilisent avec le temps et le froid. Une ligne qui lâche en pleine descente peut provoquer une chute grave. Inspecte coutures, mousquetons et élastiques avant chaque sortie sérieuse.",
+    source: "ESDRA",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Forge mentale",
+    title: "Habituer le chien aux imprévus de course",
+    text: "En compétition, les chiens sont confrontés à d'autres chiens, foules, véhicules, bruits inhabituels. Intègre ces expositions progressivement à l'entraînement : cours dans des environnements variés, habitue ton chien à croiser d'autres équipes au départ.",
+    source: "Comportement canin / FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Gestion de meute",
+    title: "La hiérarchie sociale influence les performances",
+    text: "Des tensions entre chiens de l'attelage réduisent les performances et augmentent le stress de tous. Identifie les affinités et les incompatibilités. Les paires qui s'entendent bien tirent mieux ensemble. Évite de forcer des chiens incompatibles en tandem.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Bivouac",
+    title: "En longue distance : l'arrêt est une partie de la course",
+    text: "Pour les mid-distance et longues distances, les pauses obligatoires sont une opportunité de récupération. Maîtriser l'art du bivouac (alimentation rapide, massage des chiens, remplacement des bottes) peut faire gagner autant de temps qu'une belle allure.",
+    source: "Iditarod Vet Guidelines",
+    url: "https://iditarod.com/race/veterinary/"
+  },
+  {
+    label: "Massage sportif",
+    title: "5 minutes de massage après l'effort = moins de courbatures",
+    text: "Un effleurage léger des masses musculaires principales (épaules, cuisses, dos) après la sortie améliore la circulation et accélère l'élimination des déchets métaboliques. Commence toujours par des mouvements doux dans le sens du poil, en observant les réactions du chien.",
+    source: "Physiothérapie vétérinaire / CCRP",
+    url: "https://www.akcchf.org/"
+  },
+  {
+    label: "Crochets d'attelage",
+    title: "Apprendre les commandes de base avant l'attelage",
+    text: "Avant de harnacher un chien pour la première fois, il doit répondre à : son nom, arrêt, allons-y (ou hike), et gauche/droite pour les leaders. Ces bases facilitent la sécurité et la communication pendant la sortie, surtout sur des carrefours.",
+    source: "FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Surentraînement",
+    title: "Le surentraînement se détecte sur le comportement, pas seulement la performance",
+    text: "Un chien surentraîné ne montre pas toujours de baisse de performance immédiate. Les premiers signes sont comportementaux : moins d'enthousiasme au départ, irritabilité, mauvais appétit, sommeil agité. Prends ces signaux au sérieux avant qu'une blessure ne s'installe.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Fréquence cardiaque",
+    title: "Apprendre à prendre le pouls de son chien",
+    text: "Le pouls se prend à l'intérieur de la cuisse (artère fémorale) ou sur le thorax derrière le coude gauche. Au repos : 60–100 bpm. Après effort intense : jusqu'à 200–220 bpm. Il doit revenir sous 100 bpm dans les 5 minutes suivant l'arrêt de l'effort.",
+    source: "Cornell Canine Health",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Respiration",
+    title: "Le halètement anormal : 3 critères à surveiller",
+    text: "Un halètement est préoccupant s'il est : 1) disproportionné à l'effort fourni, 2) accompagné de bruits inhabituels (sifflement, ronflement), 3) toujours présent 10 minutes après l'arrêt. Ces signes peuvent indiquer une hyperthermie, une douleur ou un problème respiratoire.",
+    source: "American Red Cross / VCA",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Gencives",
+    title: "La couleur des gencives est un indicateur vital",
+    text: "Des gencives roses et humides = chien bien hydraté et oxygéné. Des gencives pâles (anémie possible), blanches (choc), bleues (manque d'oxygène) ou brun-gris (intoxication) sont des urgences vétérinaires. Test de remplissage capillaire : appuie 2 secondes, les gencives doivent redevenir roses en moins de 2 secondes.",
+    source: "American Red Cross",
+    url: "https://www.redcross.org/"
+  },
+  {
+    label: "Course de nuit",
+    title: "Préparer les chiens aux sorties nocturnes",
+    text: "En compétition hivernale, une partie du parcours se fait souvent de nuit. Habilitue tes chiens aux sorties avec frontale pendant l'entraînement. Les lumières des véhicules ou les ombres peuvent perturber certains chiens. La familiarisation progressive évite les blocages en course.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Chaleur et races",
+    title: "Certaines races supportent mieux la chaleur que d'autres",
+    text: "Les races brachycéphales (Boxer, Bouledogue) et les nordiques à double manteau (Husky, Malamute) surchauffent plus vite. Les races à pelage court et fin ou d'origine méditerranéenne (Greyhound, Vizsla, Braque) tolèrent mieux la chaleur mais sont moins isolées en hiver.",
+    source: "Cornell Canine Health",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Poids de course",
+    title: "En compétition, un chien légèrement plus sec court mieux",
+    text: "Un excès de poids de 5 à 10 % au-dessus du poids de course idéal augmente significativement la dépense énergétique. À l'inverse, un chien trop maigre manque de réserves. L'objectif est de sentir les côtes facilement sans les voir, avec une légère silhouette athlétique.",
+    source: "Purina / ISDVMA",
+    url: "https://www.purina.com/"
+  },
+  {
+    label: "Dryland",
+    title: "L'entraînement dryland doit précéder la saison neige",
+    text: "4 à 8 semaines de dryland (vélo, trottinette, quad) avant la neige permet de bâtir une base cardio-vasculaire et musculaire. Les chiens arrivent plus en forme et récupèrent mieux lors des premières sorties sur neige, souvent intenses à cause de leur enthousiasme.",
+    source: "ESDRA / FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Boue et pistes détrempées",
+    title: "Le terrain glissant fatigue 3 fois plus vite",
+    text: "Sur terrain boueux ou glissant, les chiens dépensent beaucoup plus d'énergie musculaire pour maintenir leur équilibre. Réduis le volume de 30 à 40 % par rapport à une piste normale. Les coussinets s'abîment aussi plus vite sur terrain abrasif mouillé.",
+    source: "Canicross UK",
+    url: "https://canicrossuk.com/"
+  },
+  {
+    label: "Gestion de l'eau",
+    title: "Toujours prévoir plus d'eau qu'on ne pense nécessaire",
+    text: "En sortie longue, prévoir au minimum 500 ml par chien par heure en conditions tempérées, et le double par chaleur. En hiver, l'eau doit être tiède pour encourager la consommation : les chiens boivent moins volontiers l'eau froide ou glacée.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Alimentation race longue",
+    title: "En longue distance, alimenter pendant l'effort",
+    text: "Pour les courses de plus de 4 heures (ou 6h de trajet pour les traîneaux), des collations pendant les pauses (viande, fromage, flocons d'avoine gras) maintiennent la glycémie et retardent la fatigue. La capacité à manger pendant l'effort s'entraîne aussi.",
+    source: "Iditarod Vet Guidelines",
+    url: "https://iditarod.com/race/veterinary/"
+  },
+  {
+    label: "Santé des os",
+    title: "Calcium et phosphore : l'équilibre compte plus que la quantité",
+    text: "Un déséquilibre Ca/P dans la ration peut causer des problèmes osseux et articulaires à long terme. Les croquettes premium maintiennent cet équilibre. Si tu donnes de la viande fraîche, ajoute des os à mâcher (riches en calcium) ou un complément minéral adapté.",
+    source: "AVMA Nutritional Guidelines",
+    url: "https://www.avma.org/"
+  },
+  {
+    label: "Oméga-3",
+    title: "L'huile de saumon : un complément simple et efficace",
+    text: "Les oméga-3 (EPA et DHA) réduisent l'inflammation, améliorent la récupération musculaire et la qualité du pelage. 1 à 2 cuillères à café d'huile de saumon par jour pour un chien de 25 kg est une dose courante. Stocke-la au frais et jette-la si elle sent le rance.",
+    source: "Purina Pro Plan Veterinary",
+    url: "https://www.purina.com/"
+  },
+  {
+    label: "Chaleur du sol",
+    title: "Test de la paume : 5 secondes sur le sol = coussinets",
+    text: "Pose ta paume sur l'asphalte 5 secondes. Si tu ne peux pas tenir, tes chiens non plus. En été, même à 20°C ambiants, l'asphalte peut dépasser 50°C. Privilégie les zones ombragées, l'herbe ou les pistes forestières pour protéger les coussinets.",
+    source: "Cornell / Canicross UK",
+    url: "https://canicrossuk.com/"
+  },
+  {
+    label: "Compétition : acclimatation",
+    title: "Arriver tôt pour laisser les chiens se familiariser",
+    text: "Les chiens stressés par l'environnement de course (odeurs, bruits, autres chiens) dépensent de l'énergie avant même le départ. Arriver la veille ou plusieurs heures avant, laisser les chiens explorer en laisse calme et maintenir leur routine alimentaire habituelle.",
+    source: "FFSLC / ESDRA",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Transport",
+    title: "Un trajet de plusieurs heures compte dans la récupération",
+    text: "Un long trajet en voiture avant une course stresse les chiens et réduit leur récupération. Prévois des arrêts toutes les 2h pour qu'ils bougent, urinent et boivent. En caisse, la ventilation est cruciale. Un chien qui arrive stressé et déshydraté court moins bien.",
+    source: "FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Hygiène post-course",
+    title: "Nettoyer les pattes après chaque sortie hivernale",
+    text: "Le sel de déneigement est agressif pour les coussinets et peut provoquer des brûlures chimiques si non rincé. Après chaque sortie en zone traitée, trempe les pattes dans de l'eau tiède propre et sèche-les. Applique de la cire après séchage complet.",
+    source: "VCA Animal Hospitals",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Chien de tête",
+    title: "Un bon leader se forme en plusieurs saisons",
+    text: "Le chien de tête (lead dog) doit répondre aux commandes directionnelles (gee/haw ou droite/gauche), maintenir l'allure et gérer le stress de la tête de meute. Ce rôle s'apprend progressivement : commence à 2 en tête avec un chien expérimenté comme mentor.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Déshydratation légère",
+    title: "Test de la peau pour détecter une déshydratation",
+    text: "Pince doucement la peau du cou ou entre les épaules et relâche. Elle doit revenir à sa position en moins d'une seconde. Un retour plus lent indique une déshydratation légère à modérée. Dans ce cas, offre de l'eau immédiatement et surveille dans les heures suivantes.",
+    source: "American Red Cross / VCA",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Raideur matinale",
+    title: "La raideur au réveil dure combien de temps ?",
+    text: "Une légère raideur après une grosse sortie qui disparaît en moins de 10 minutes après le lever est normale. Si elle persiste plus de 15 minutes, si elle empire ou si elle revient chaque matin, c'est un signal que la charge est trop élevée ou qu'une blessure s'installe.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Nutrition croquettes",
+    title: "Lire l'étiquette : la protéine animale doit être en premier",
+    text: "Sur une étiquette de croquettes, les ingrédients sont listés par ordre de poids. Pour un chien sportif, la viande ou le poisson (poulet, bœuf, saumon) doit être le premier ingrédient. Les croquettes 'all-life-stages' à haute teneur en protéines (30%+) conviennent bien aux chiens actifs.",
+    source: "Purina / AVMA",
+    url: "https://www.purina.com/"
+  },
+  {
+    label: "Antidouleur naturel",
+    title: "Le curcuma : intérêt et limites pour le chien sportif",
+    text: "Le curcuma a des propriétés anti-inflammatoires documentées. Certains mushers l'utilisent en complément (pâte d'or : curcuma + huile de coco + poivre noir). Les effets sont modérés et non immédiats. Il ne remplace pas les anti-inflammatoires vétérinaires lors d'une vraie blessure.",
+    source: "AKC Canine Health Foundation",
+    url: "https://www.akcchf.org/"
+  },
+  {
+    label: "Acide lactique",
+    title: "Les chiens éliminent l'acide lactique plus vite que les humains",
+    text: "Contrairement aux humains, les chiens nordiques entraînés oxydent très efficacement l'acide lactique. Leur principal facteur limitant en endurance n'est pas l'acide lactique mais la déplétion des réserves glycogéniques et la déshydratation. C'est pourquoi nutrition et hydratation sont primordiales.",
+    source: "ISDVMA / Exercise Physiology",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Laisse élastique",
+    title: "Régler correctement l'amortisseur de canicross",
+    text: "La longueur idéale de la ligne de canicross est de 1,5 à 2 mètres (plus l'amortisseur). L'amortisseur doit avoir une extension de 30 à 40 % de sa longueur au repos. Trop court : coups brusques sur les hanches. Trop long : le chien part dans les jambes. Teste à allure stable.",
+    source: "FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Bilan sanguin",
+    title: "Un bilan annuel révèle ce que l'œil ne voit pas",
+    text: "Un bilan sanguin annuel (NFS, biochimie, thyroïde) chez un chien sportif permet de détecter une anémie, une insuffisance rénale débutante ou une hypothyroïdie qui peut expliquer une baisse de performance. Le coût est faible par rapport à une saison perdue.",
+    source: "ISDVMA / Cornell",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Photosensibilité",
+    title: "Les chiens à robe claire sont sensibles aux UV en neige",
+    text: "La réflexion des UV sur la neige peut provoquer des coups de soleil sur la truffe, les oreilles et les zones peu poilues des chiens à robe claire. En haute montagne ou en longue sortie par beau temps hivernal, un écran solaire spécial chien (sans zinc) peut être appliqué.",
+    source: "VCA / Cornell",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Repos actif",
+    title: "Les jours de repos n'ont pas à être passifs",
+    text: "Un jour de repos actif (marche de 20 minutes, natation douce, jeu libre dans un espace clôturé) vaut mieux qu'une journée totalement sédentaire. Le mouvement léger maintient la circulation, réduit les raideurs et garde le chien mentalement stimulé.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Entraînement par temps chaud",
+    title: "Réduire l'allure de 20 % dès 18°C",
+    text: "À partir de 18°C, réduis l'allure de 20 % et la distance de 30 %. À partir de 22°C, envisage de reporter la sortie à tôt le matin ou annuler. Ces seuils sont abaissés pour les races nordiques et les chiens à double manteau.",
+    source: "FFSLC / Canicross UK",
+    url: "https://canicrossuk.com/"
+  },
+  {
+    label: "Sécurité attelage",
+    title: "Toujours sécuriser le sled/vélo avant de harnacher",
+    text: "Un traîneau ou vélo non fixé peut partir seul dès que les premiers chiens sont harnachés. Accroche toujours le frein, le snow hook ou enchaîne le vélo avant de toucher au premier harnais. Un accident à ce moment peut blesser des chiens ou d'autres personnes.",
+    source: "ESDRA",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Ski-joering",
+    title: "La ligne de ski-joering doit avoir un amortisseur obligatoire",
+    text: "En ski-joering, une traction brutale sans amortisseur peut provoquer des chutes dangereuses. La ligne doit comporter un ou deux amortisseurs élastiques et avoir une longueur d'au moins 2,5 mètres entre le harnais et la ceinture. Assure-toi que le chien connaît la commande stop avant de commencer.",
+    source: "ESDRA / FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Bikejoring",
+    title: "Apprendre la commande 'On by' avant tout",
+    text: "En bikejoring, la commande 'On by' (continuer sans s'intéresser à une distraction) est cruciale pour la sécurité. Un chien qui part sur le côté en pleine descente peut faire tomber le cycliste. Travaille cette commande à pied avant de l'utiliser en vélo.",
+    source: "FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Chien Husky",
+    title: "Le Husky sibérien : faible drive alimentaire, fort drive de mouvement",
+    text: "Contrairement à d'autres races, le Husky s'entraîne principalement pour le plaisir de courir, pas pour la nourriture. Son alimentation doit être calculée avec précision car il mange souvent moins qu'on ne l'attend. En revanche, il exprime clairement sa motivation à l'effort par son comportement.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Sécurité route",
+    title: "En canicross, rester visible sur route",
+    text: "Si ton parcours croise des routes, équipe-toi de vêtements réfléchissants et ton chien d'un harnais ou collier avec bande réfléchissante. Le soir ou par mauvaise visibilité, ajoute une lumière clignotante sur le harnais. Un chien sombre est invisible pour un conducteur.",
+    source: "Canicross UK",
+    url: "https://canicrossuk.com/"
+  },
+  {
+    label: "Hernie discale",
+    title: "La prévention passe par le renforcement musculaire",
+    text: "Les hernies discales sont plus fréquentes chez les chiens de grande taille soumis à des efforts répétés. Le renforcement des muscles du tronc (core) par des exercices de proprioception et natation protège la colonne. Évite aussi les sauts répétés à la descente de véhicule pour les grandes races.",
+    source: "Physiothérapie vétérinaire / CCRP",
+    url: "https://www.akcchf.org/"
+  },
+  {
+    label: "Gestion de la douleur",
+    title: "Les chiens masquent la douleur : chercher les signes indirects",
+    text: "Un chien en douleur ne gémit pas toujours. Les signes indirects : réticence à se lever le matin, changement de comportement social, appétit diminué, griffes d'un seul côté plus usées (appui déporté), position de repos inhabituelle. Filme ton chien qui se lève pour détecter une asymétrie.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Contrôle vétérinaire en course",
+    title: "Les checks vétérinaires en compétition sont des opportunités",
+    text: "Dans les courses IFSS et longues distances, des vétérinaires officiels examinent les chiens aux checkpoints. Prépare tes chiens à être manipulés par des inconnus : toucher les pattes, les gencives, les muscles. Un chien qui refuse l'examen peut être retiré de la course.",
+    source: "IFSS Vet Guidelines",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Plaisir avant performance",
+    title: "Un chien qui adore ce qu'il fait s'entraîne mieux",
+    text: "La motivation intrinsèque du chien est le meilleur prédicteur de performance à long terme. Si ton chien montre régulièrement de l'enthousiasme au départ (hurle, saute, tire) c'est bon signe. Si ce drive diminue sans raison physique apparente, examine les conditions d'entraînement et le stress global.",
+    source: "Comportement canin / Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Fourrure",
+    title: "Ne pas tondre un chien nordique en été",
+    text: "Tondre un chien à double manteau (Husky, Malamute, Samoyède) ne le rafraîchit pas, au contraire. Le sous-poil joue un rôle isolant dans les deux sens (froid et chaud). Une coupe courte peut perturber sa repousse pour des mois et augmenter le risque de coup de soleil.",
+    source: "Cornell Canine Health",
+    url: "https://www.vet.cornell.edu/"
+  },
+  {
+    label: "Brossage",
+    title: "Le brossage régulier améliore la thermorégulation",
+    text: "Un pelage non brossé et emmêlé réduit la ventilation de la peau et peut provoquer des irritations et une surchauffe. En période de mue (printemps et automne), brosse quotidiennement. Un chien bien brossé régule mieux sa température pendant l'effort.",
+    source: "VCA Animal Hospitals",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Nourriture humide",
+    title: "La pâtée contribue à l'hydratation en hiver",
+    text: "En hiver, les chiens boivent naturellement moins. Ajouter de la pâtée ou de la viande cuite à leur ration augmente leur apport en eau de 70 à 80 %. C'est une stratégie simple et efficace pour maintenir une bonne hydratation en saison froide, surtout lors de longues sorties.",
+    source: "Mush with P.R.I.D.E.",
+    url: "https://vdsv.de/documents/2021/11/mush-with-pride-guidelines.pdf"
+  },
+  {
+    label: "Génétique",
+    title: "La sélection sur les performances : une responsabilité",
+    text: "Les mushers de haut niveau qui font reproduire leurs chiens sélectionnent sur la santé, le tempérament, la conformation et la performance. Reproduire uniquement sur les performances athlétiques sans tenir compte de la santé articulaire et cardiaque peut propager des problèmes génétiques.",
+    source: "AKC Canine Health Foundation",
+    url: "https://www.akcchf.org/"
+  },
+  {
+    label: "Premiers secours",
+    title: "Avoir une trousse de premiers secours canine sur soi",
+    text: "En course ou entraînement éloigné, une trousse de base peut sauver la situation : bandages, bandes cohésives, désinfectant, ciseaux, cire coussinets, couverture de survie, anti-douleur prescrit par ton vétérinaire. Un cours de premiers secours canins (Croix-Rouge) est un investissement précieux.",
+    source: "American Red Cross",
+    url: "https://www.redcross.org/"
+  },
+  {
+    label: "Mue",
+    title: "La mue coïncide souvent avec une baisse de forme",
+    text: "Pendant la grande mue de printemps, certains chiens montrent une légère baisse d'énergie et d'appétit. C'est normal : le corps mobilise des ressources pour le renouvellement du pelage. Augmente légèrement les protéines et réduisez l'intensité pendant 2 à 3 semaines.",
+    source: "VCA / Cornell",
+    url: "https://vcahospitals.com/"
+  },
+  {
+    label: "Microbiote intestinal",
+    title: "L'intestin du chien sportif mérite attention",
+    text: "L'effort intense peut temporairement perturber le microbiote intestinal, causant des diarrhées de stress post-compétition. Des probiotiques spécifiques pour chiens (Lactobacillus, Bifidobacterium) peuvent aider à stabiliser le microbiote en période intense. Commence 2 semaines avant une course importante.",
+    source: "Purina Pro Plan Veterinary",
+    url: "https://www.purina.com/"
+  },
+  {
+    label: "Ceinture canicross",
+    title: "Une ceinture bien ajustée protège le dos du coureur",
+    text: "La ceinture de canicross doit se positionner sur les hanches (os iliaques), pas sur les lombaires. Trop haute, elle peut créer des douleurs lombaires au fil des sorties. Un modèle avec rembourrage latéral et attache centrale est plus stable qu'une simple ceinture de trail.",
+    source: "FFSLC",
+    url: "https://ffslc.fr/"
+  },
+  {
+    label: "Objectif réaliste",
+    title: "Calculer son délai de préparation pour une longue distance",
+    text: "Un chien non entraîné a besoin de 12 à 18 mois de préparation progressive pour courir une mid-distance (80-200 km) dans de bonnes conditions. Pour une longue distance (300 km+), comptez 2 à 3 saisons. Se précipiter est la principale cause d'abandon et de blessures en compétition.",
+    source: "IFSS / Mush with P.R.I.D.E.",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Chiens et chaleur mentale",
+    title: "Le stress pré-compétition augmente la température interne",
+    text: "L'excitation et le stress du départ élèvent la température interne du chien avant même l'effort. Un chien qui démarre déjà 'chaud mentalement' surchauffera plus vite. La gestion du stress pré-départ (lieu calme, routine stable, contact rassurant) fait partie de la préparation.",
+    source: "ISDVMA",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Nourriture en course",
+    title: "La viande de bœuf + suif : ration classique des mushers",
+    text: "De nombreux mushers de longue distance nourrissent leurs chiens avec un mélange de viande hachée (bœuf, mouton, saumon), de suif et de croquettes trempées pendant la course. Ce mélange est dense en énergie, appétent même par grand froid et facilement réchauffé avec de l'eau chaude.",
+    source: "Iditarod Vet Guidelines",
+    url: "https://iditarod.com/race/veterinary/"
+  },
+  {
+    label: "Après une blessure",
+    title: "La reprise après blessure : plus progressive que la montée en charge",
+    text: "Après une blessure de tendon ou ligament, la reprise doit être 2 à 3 fois plus lente que la montée en charge initiale. Le tissu cicatriciel est moins élastique que le tissu original. Une reprise trop rapide donne une récidive presque assurée dans les 3 mois.",
+    source: "ISDVMA / Physiothérapie vétérinaire",
+    url: "https://sleddogsport.net/"
+  },
+  {
+    label: "Évaluation régulière",
+    title: "Réévaluer son plan toutes les 4 semaines",
+    text: "Un plan d'entraînement n'est pas gravé dans le marbre. Évalue les progrès (vitesse, récupération, comportement) toutes les 4 semaines et ajuste. Un chien qui progresse vite peut monter la charge plus rapidement. Un chien qui stagne ou régresse nécessite une pause ou un changement d'approche.",
+    source: "IFSS Athlete Guidelines",
+    url: "https://sleddogsport.net/"
   }
 ];
 
