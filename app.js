@@ -1036,7 +1036,7 @@ function showScreen(id) {
     button.classList.toggle("active", button.dataset.go === id);
   });
 
-  render();
+  try { render(); } catch(e) { console.error("[MushTrack] showScreen render error:", e); }
 
   if (id === "record") {
     setTimeout(() => {
@@ -1133,6 +1133,10 @@ function buildHeroSentence(daysLeft, teamPct, workout) {
 }
 
 function render() {
+  try { _render(); } catch(e) { console.error("[MushTrack] render() error:", e); }
+}
+
+function _render() {
   const seasonKm = getSeasonKm();
   const remainingKm = Math.max(0, state.goalKm - seasonKm);
   const weeksLeft = Math.max(1, Math.ceil(daysUntilGoal() / 7));
