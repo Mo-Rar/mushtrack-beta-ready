@@ -1076,17 +1076,91 @@ function daysUntilGoal() {
   return Math.max(1, Math.ceil((goal - today) / 86400000));
 }
 
+function getTeamReadinessPct() {
+  if (state.dogs.length === 0) return null;
+  const healthyDogs = state.dogs.filter(d => d.healthSignal !== "Attention" && d.healthSignal !== "Repos").length;
+  const healthScore = healthyDogs / state.dogs.length;
+  const weekKm = getWeekKm();
+  const targetKm = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
+  const volumeScore = Math.min(1, targetKm > 0 ? weekKm / targetKm : 0);
+  return Math.round((healthScore * 0.65 + volumeScore * 0.35) * 100);
+}
+
+function buildHeroSentence(daysLeft, teamPct, workout) {
+  const raceName = state.raceName || state.raceType || "ta course";
+  const raceKm   = state.raceKm  || "—";
+  const parts = [];
+
+  if (daysLeft !== null && daysLeft > 0) {
+    parts.push(`Tu prépares ${raceName} (${raceKm} km) dans <strong>${daysLeft} jour${daysLeft > 1 ? "s" : ""}</strong>.`);
+  } else if (daysLeft !== null && daysLeft <= 0) {
+    parts.push(`La course ${raceName} est passée — mets à jour ton objectif dans Paramètres.`);
+  } else {
+    parts.push(`Configure ta course objectif dans Paramètres pour personnaliser ton plan.`);
+  }
+
+  if (teamPct !== null) {
+    const emoji = teamPct >= 80 ? "🟢" : teamPct >= 50 ? "🟡" : "🔴";
+    parts.push(`Ton attelage est prêt à <strong>${teamPct} %</strong> ${emoji}.`);
+  }
+
+  const sessionLabel = workout?.title || "endurance";
+  parts.push(`Séance recommandée aujourd'hui : <strong>${sessionLabel}</strong>.`);
+
+  return parts.join(" ");
+}
+
 function render() {
   const seasonKm = getSeasonKm();
   const remainingKm = Math.max(0, state.goalKm - seasonKm);
   const weeksLeft = Math.max(1, Math.ceil(daysUntilGoal() / 7));
   const weeklyNeed = Math.ceil(remainingKm / weeksLeft);
   const progress = Math.min(100, Math.round((seasonKm / state.goalKm) * 100));
+  const weekKm = getWeekKm();
+  const targetKm = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
+  const workout = getNextWorkout();
 
+  // ── KPIs dashboard ──────────────────────────────────────────
+  // Progression saison
+  bindText("kpiProgress", `${progress} %`);
+  const kpiBar = document.querySelector('[data-bind-style="kpiProgressBar"]');
+  if (kpiBar) kpiBar.style.width = `${progress}%`;
+
+  // Course objectif
+  const daysLeft = state.raceDate ? daysUntil(state.raceDate) : null;
+  if (daysLeft !== null && daysLeft > 0) {
+    bindText("kpiDays", `J−${daysLeft}`);
+  } else if (daysLeft !== null && daysLeft === 0) {
+    bindText("kpiDays", "Aujourd'hui !");
+  } else {
+    bindText("kpiDays", "—");
+  }
+  bindText("kpiRaceName", state.raceName || state.raceType || "—");
+
+  // Attelage
+  const teamPct = getTeamReadinessPct();
+  if (teamPct !== null) {
+    bindText("kpiTeam", `${teamPct} %`);
+    bindText("kpiTeamSub", `${state.dogs.length} chien${state.dogs.length > 1 ? "s" : ""} · ${teamPct >= 80 ? "Prêts ✅" : teamPct >= 50 ? "En forme 🟡" : "Surveiller 🔴"}`);
+  } else {
+    bindText("kpiTeam", "—");
+    bindText("kpiTeamSub", "Ajoute tes chiens");
+  }
+
+  // Cette semaine
+  bindText("kpiWeek", `${weekKm.toFixed(1)} km`);
+  const weekRatio = targetKm > 0 ? weekKm / targetKm : 0;
+  bindText("kpiWeekSub", weekRatio >= 0.8 ? "Objectif atteint ✅" : `Cible : ${targetKm} km`);
+
+  // Phrase hero
+  const heroEl = document.querySelector('[data-bind="heroSentence"]');
+  if (heroEl) heroEl.innerHTML = buildHeroSentence(daysLeft, teamPct, workout);
+
+  // ── Bindings existants ───────────────────────────────────────
   bindText("seasonKm", Math.round(seasonKm));
   bindText("goalKm", state.goalKm);
   bindText("goalMessage", `${remainingKm.toFixed(0)} km restants, environ ${weeklyNeed} km par semaine.`);
-  bindText("weekKm", getWeekKm().toFixed(1));
+  bindText("weekKm", weekKm.toFixed(1));
   bindText("avgSpeed", getAvgSpeed().toFixed(1));
   bindText("runCount", state.runs.length);
   bindText("dogCount", state.dogs.length);
@@ -1095,7 +1169,6 @@ function render() {
   bindText("selectedCount", `${state.selectedDogIds.length} selectionnes`);
   bindText("coachTitle", getCoachInsight().title);
   bindText("coachText", getCoachInsight().text);
-  // Compteur "Dernière sortie il y a X jours"
   const lastRunDate = state.runs.length > 0
     ? [...state.runs].sort((a, b) => new Date(b.date) - new Date(a.date))[0].date
     : null;
@@ -1111,7 +1184,6 @@ function render() {
   const progressBar = document.querySelector('[data-bind-style="progress"]');
   if (progressBar) progressBar.style.width = `${progress}%`;
 
-  const workout = getNextWorkout();
   document.body.classList.toggle("mode-summer", state.seasonMode === "summer");
   document.body.classList.toggle("mode-winter", state.seasonMode !== "summer");
   document.querySelectorAll("[data-mode]").forEach((button) => {

@@ -378,6 +378,68 @@ h2 {
   font-weight: 900;
 }
 
+/* ── Hero card & KPI grid ────────────────────────────── */
+.hero-card {
+  background: linear-gradient(135deg, #1a0800 0%, #3d1500 50%, #fc4c02 100%);
+  border-radius: 20px;
+  padding: 22px 20px 18px;
+  color: #fff;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 24px rgba(252,76,2,0.25);
+}
+.hero-eyebrow {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: rgba(255,255,255,0.6);
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+.hero-sentence {
+  font-size: 1rem;
+  line-height: 1.55;
+  margin: 0 0 16px;
+  color: rgba(255,255,255,0.92);
+}
+.hero-sentence strong { color: #fff; font-weight: 800; }
+.hero-cta {
+  display: inline-block;
+  padding: 10px 22px;
+  background: #fff;
+  color: #fc4c02;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+}
+.hero-cta:hover { opacity: .9; transform: scale(1.03); }
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.kpi-card {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 14px;
+  padding: 14px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.kpi-icon { font-size: 1.4rem; line-height: 1; margin-top: 2px; }
+.kpi-body { flex: 1; min-width: 0; }
+.kpi-label { display: block; font-size: 0.7rem; color: #999; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; margin-bottom: 2px; }
+.kpi-value { display: block; font-size: 1.15rem; font-weight: 800; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi-sub { display: block; font-size: 0.72rem; color: #888; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi-bar { margin-top: 6px; height: 4px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+.kpi-bar span { display: block; height: 100%; background: linear-gradient(90deg, #fc4c02, #ff8c42); border-radius: 4px; transition: width .6s ease; width: 0; }
+
 .season-hero {
   min-height: 230px;
   display: flex;

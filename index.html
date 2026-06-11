@@ -105,90 +105,71 @@
           <button class="round-button" data-go="settings" aria-label="Reglages">MT</button>
         </header>
 
-        <section class="season-hero">
-          <div class="hero-text">
-            <span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-1px;opacity:.7"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0"/><path d="M12 8v4l3 3"/></svg>
-              Objectif saison
-            </span>
-            <strong><span data-bind="seasonKm">0</span> / <span data-bind="goalKm">1000</span> km</strong>
-            <small data-bind="goalMessage">Plan en cours de calcul</small>
-            <p class="brand-slogan"><svg viewBox="0 0 24 24" fill="#fc4c02" width="15" height="15" style="vertical-align:-2px;margin-right:5px"><circle cx="9" cy="4.5" r="2.2"/><circle cx="15" cy="4.5" r="2.2"/><circle cx="5.5" cy="9" r="2.2"/><circle cx="18.5" cy="9" r="2.2"/><path d="M12 22C8.5 22 5.5 19.5 5.5 16.5C5.5 14 7 12 9.5 11.5L11 9.5a1.4 1.4 0 0 1 2 0L14.5 11.5C17 12 18.5 14 18.5 16.5C18.5 19.5 15.5 22 12 22Z"/></svg>Mush / Marche avec ton chien</p>
-          </div>
-          <div class="progress-track">
-            <span data-bind-style="progress"></span>
-          </div>
+        <!-- Carte hero dynamique -->
+        <section class="hero-card">
+          <p class="hero-eyebrow">🤖 Recommandation du jour</p>
+          <p class="hero-sentence" data-bind="heroSentence">Analyse en cours…</p>
+          <button class="hero-cta" data-go="record">▶ Démarrer la séance</button>
         </section>
 
-        <section class="quick-stats">
-          <article>
-            <div class="stat-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#fc4c02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-            </div>
-            <div class="stat-body">
-              <span>Semaine</span>
-              <strong><span data-bind="weekKm">0</span> km</strong>
-            </div>
-          </article>
-          <article>
-            <div class="stat-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#fc4c02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20"/><path d="M12 12 8.5 8.5"/><path d="M16.5 7.5 12 12"/></svg>
-            </div>
-            <div class="stat-body">
-              <span>Moyenne</span>
-              <strong><span data-bind="avgSpeed">0.0</span> km/h</strong>
+        <!-- 4 métriques clés -->
+        <div class="kpi-grid">
+          <article class="kpi-card">
+            <span class="kpi-icon">📈</span>
+            <div class="kpi-body">
+              <span class="kpi-label">Progression saison</span>
+              <strong class="kpi-value" data-bind="kpiProgress">0 %</strong>
+              <div class="kpi-bar"><span data-bind-style="kpiProgressBar"></span></div>
             </div>
           </article>
-          <article>
-            <div class="stat-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#fc4c02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/><path d="M7 20 10 11l3 3 2-5"/><path d="M17 20l-1-6"/></svg>
-            </div>
-            <div class="stat-body">
-              <span>Sorties</span>
-              <strong data-bind="runCount">0</strong>
-            </div>
-          </article>
-          <article>
-            <div class="stat-icon">
-              <svg viewBox="0 0 24 24" fill="#fc4c02" width="26" height="26"><circle cx="9" cy="4.5" r="2.2"/><circle cx="15" cy="4.5" r="2.2"/><circle cx="5.5" cy="9" r="2.2"/><circle cx="18.5" cy="9" r="2.2"/><path d="M12 22C8.5 22 5.5 19.5 5.5 16.5C5.5 14 7 12 9.5 11.5L11 9.5a1.4 1.4 0 0 1 2 0L14.5 11.5C17 12 18.5 14 18.5 16.5C18.5 19.5 15.5 22 12 22Z"/></svg>
-            </div>
-            <div class="stat-body">
-              <span>Chiens</span>
-              <strong data-bind="dogCount">0</strong>
+          <article class="kpi-card">
+            <span class="kpi-icon">🎯</span>
+            <div class="kpi-body">
+              <span class="kpi-label">Course objectif</span>
+              <strong class="kpi-value" data-bind="kpiDays">— j</strong>
+              <small class="kpi-sub" data-bind="kpiRaceName">—</small>
             </div>
           </article>
-        </section>
+          <article class="kpi-card">
+            <span class="kpi-icon">🐕</span>
+            <div class="kpi-body">
+              <span class="kpi-label">Attelage</span>
+              <strong class="kpi-value" data-bind="kpiTeam">—</strong>
+              <small class="kpi-sub" data-bind="kpiTeamSub">—</small>
+            </div>
+          </article>
+          <article class="kpi-card">
+            <span class="kpi-icon">🏃</span>
+            <div class="kpi-body">
+              <span class="kpi-label">Cette semaine</span>
+              <strong class="kpi-value" data-bind="kpiWeek">0 km</strong>
+              <small class="kpi-sub" data-bind="kpiWeekSub">—</small>
+            </div>
+          </article>
+        </div>
+
+        <!-- Prochaine séance -->
+        <article class="training-card">
+          <div>
+            <span style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:#fc4c02;font-weight:700">Prochaine séance · <span data-bind="raceType">—</span></span>
+            <strong data-bind="nextWorkoutTitle">Endurance progressive</strong>
+            <p data-bind="nextWorkoutText">18 km faciles, allure stable.</p>
+          </div>
+          <button class="primary-button" data-go="record">▶ Start</button>
+        </article>
 
         <p class="last-run-label" data-bind="lastRunLabel"></p>
+        <section class="next-race-card" data-list="nextRace"></section>
 
+        <!-- Coach IA (compact) -->
         <section class="insight-panel">
           <div>
             <span>Coach MushTrack IA</span>
             <strong data-bind="coachTitle">Prêt pour l'analyse</strong>
-            <p data-bind="coachText">Analyse IA de tes entraînements et de ton objectif de course.</p>
+            <p data-bind="coachText">Analyse complète de ton entraînement.</p>
           </div>
-          <button class="primary-button" id="open-coach-btn" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15" style="vertical-align:-2px;margin-right:5px"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-1-5h2v2h-2zm0-8h2v6h-2z"/></svg>
-            Analyser
-          </button>
+          <button class="primary-button" id="open-coach-btn" type="button">Analyser</button>
         </section>
-
-        <section class="next-race-card" data-list="nextRace"></section>
-
-        <section class="section-heading">
-          <h2>Prochaine seance</h2>
-          <span data-bind="raceType">Mid-distance</span>
-        </section>
-        <article class="training-card">
-          <div>
-            <strong data-bind="nextWorkoutTitle">Endurance progressive</strong>
-            <p data-bind="nextWorkoutText">18 km faciles, allure stable.</p>
-          </div>
-          <button class="primary-button" data-go="record">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="vertical-align:-1px;margin-right:5px"><path d="M4.5 16.5c-1.5 1.5-1 5 3 5s5-5 5-5"/><path d="M12 2C8 2 4 5 4 12c0 2.5 1 4.5 2.5 6L12 22l5.5-4C19 16.5 20 14.5 20 12c0-7-4-10-8-10z"/><circle cx="12" cy="10" r="2" fill="currentColor" stroke="none"/></svg>
-            Start
-          </button>
-        </article>
 
       </section>
 
