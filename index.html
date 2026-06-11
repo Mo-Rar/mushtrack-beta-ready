@@ -505,6 +505,16 @@
                 <option value="user">Signalee</option>
               </select>
             </label>
+            <label>
+              Période
+              <select id="race-search-period">
+                <option value="">Toutes dates</option>
+                <option value="future">Courses à venir</option>
+                <option value="3months">3 prochains mois</option>
+                <option value="6months">6 prochains mois</option>
+                <option value="past">Archives</option>
+              </select>
+            </label>
           </div>
           <button class="secondary-button" id="missing-race-button" type="button">Signaler une course manquante</button>
           <section class="race-search-results" data-list="raceSearchResults"></section>
@@ -626,6 +636,32 @@
           <button class="primary-button" type="submit">Publier la sortie</button>
         </form>
 
+        <div class="open-run-filters">
+          <select id="open-run-filter-type">
+            <option value="">Toutes disciplines</option>
+            <option>Canicross</option>
+            <option>Marche</option>
+            <option>Cani-rando</option>
+            <option>Dryland</option>
+            <option>Traineau</option>
+            <option>Skijoring</option>
+          </select>
+          <select id="open-run-filter-level">
+            <option value="">Tous niveaux</option>
+            <option>Tranquille</option>
+            <option>Debutant</option>
+            <option>Intermediaire</option>
+            <option>Sportif</option>
+            <option>Competition</option>
+          </select>
+          <select id="open-run-filter-distance">
+            <option value="">Toutes distances</option>
+            <option value="short">Courte (&lt;10 km)</option>
+            <option value="medium">Moyenne (10-30 km)</option>
+            <option value="long">Longue (&gt;30 km)</option>
+          </select>
+          <input id="open-run-filter-region" placeholder="Région / lieu…" style="flex:1;min-width:100px" />
+        </div>
         <section class="open-run-list" data-list="openRuns"></section>
       </section>
 

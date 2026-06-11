@@ -2201,6 +2201,8 @@ function renderRaceSearch() {
   const distance = document.querySelector("#race-search-distance")?.value || "";
   const surface = document.querySelector("#race-search-surface")?.value || "";
   const reliability = document.querySelector("#race-search-reliability")?.value || "";
+  const period = document.querySelector("#race-search-period")?.value || "";
+  const now = new Date(); now.setHours(0, 0, 0, 0);
   // Exclure les courses en attente de validation admin
   const reports = state.missingRaceReports
     .filter((r) => r.status !== "pending")
@@ -2227,7 +2229,19 @@ function renderRaceSearch() {
       (distance === "short" && Number(race.distance || 0) <= 15) ||
       (distance === "medium" && Number(race.distance || 0) > 15 && Number(race.distance || 0) <= 80) ||
       (distance === "long" && Number(race.distance || 0) > 80);
-    return typeMatch && regionMatch && surfaceMatch && reliabilityMatch && distanceMatch;
+    let periodMatch = true;
+    if (period && race.date) {
+      const raceDay = new Date(race.date); raceDay.setHours(0, 0, 0, 0);
+      const ms90  = 90  * 24 * 3600 * 1000;
+      const ms180 = 180 * 24 * 3600 * 1000;
+      if (period === "future")   periodMatch = raceDay >= now;
+      else if (period === "3months") periodMatch = raceDay >= now && raceDay <= new Date(now.getTime() + ms90);
+      else if (period === "6months") periodMatch = raceDay >= now && raceDay <= new Date(now.getTime() + ms180);
+      else if (period === "past")    periodMatch = raceDay < now;
+    } else if (period === "past" && !race.date) {
+      periodMatch = false; // pas de date = pas une archive
+    }
+    return typeMatch && regionMatch && surfaceMatch && reliabilityMatch && distanceMatch && periodMatch;
   }).sort((a, b) => getReliabilityRank(a.reliability) - getReliabilityRank(b.reliability));
 
   const radarMeta = `
@@ -2671,7 +2685,7 @@ function renderAgenda() {
     const status = days < 0 ? "Terminee" : days === 0 ? "Aujourd'hui" : `J-${days}`;
     const readiness = getAgendaReadiness(race);
     return `
-      <article class="agenda-card priority-${race.priority.toLowerCase()}">
+      <article class="agenda-card priority-${race.priority.toLowerCase()}" data-race-id="${race.id}">
         <div>
           <span>${status} - Priorite ${race.priority}</span>
           <h2>${race.name}</h2>
@@ -2683,50 +2697,61 @@ function renderAgenda() {
           <span>${readiness}</span>
         </div>
         <p>${race.notes || "Aucune note."}</p>
+        <div class="agenda-card-actions">
+          <button class="text-button agenda-delete-btn" data-delete-race="${race.id}" type="button">🗑 Supprimer</button>
+        </div>
       </article>
     `;
   }).join("") || `<p class="empty-state">Aucune course prevue.</p>`;
-  list.querySelectorAll(".agenda-card").forEach((card, index) => {
-  card.addEventListener("contextmenu", (event) => {
-    event.preventDefault();
 
-    const race = [...state.agenda]
-      .sort((a, b) => new Date(a.date) - new Date(b.date))[index];
-
-    const action = prompt(
-      `Que faire avec ${race.name} ?\n\nTape:\nedit\nou\ndelete`
-    );
-
-    if (action === "delete") {
-      if (confirm(`Supprimer ${race.name} ?`)) {
-        state.agenda =
-          state.agenda.filter(r => r.id !== race.id);
-
+  // Suppression avec confirmation inline (double clic)
+  list.querySelectorAll(".agenda-delete-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (btn.dataset.confirming === "1") {
+        // 2e clic — suppression confirmée
+        const id = btn.dataset.deleteRace;
+        state.agenda = state.agenda.filter((r) => r.id !== id);
         saveState();
-        render();
+        renderAgenda();
+      } else {
+        // 1er clic — demande confirmation
+        btn.dataset.confirming = "1";
+        btn.textContent = "⚠️ Confirmer la suppression ?";
+        btn.classList.add("agenda-delete-confirm");
+        // Annule si pas de 2e clic dans 4 secondes
+        setTimeout(() => {
+          if (btn.dataset.confirming === "1") {
+            btn.dataset.confirming = "0";
+            btn.textContent = "🗑 Supprimer";
+            btn.classList.remove("agenda-delete-confirm");
+          }
+        }, 4000);
       }
-    }
-
-    if (action === "edit") {
-      const newName =
-        prompt("Nom de la course", race.name);
-
-      if (newName) {
-        race.name = newName;
-
-        saveState();
-        render();
-      }
-    }
+    });
   });
-});
 }
 
 function renderOpenRuns() {
   const list = document.querySelector('[data-list="openRuns"]');
   if (!list) return;
 
+  const filterType     = document.querySelector("#open-run-filter-type")?.value || "";
+  const filterLevel    = document.querySelector("#open-run-filter-level")?.value || "";
+  const filterDistance = document.querySelector("#open-run-filter-distance")?.value || "";
+  const filterRegion   = document.querySelector("#open-run-filter-region")?.value.trim().toLowerCase() || "";
+
   const openRuns = mergeOpenRuns([...remoteOpenRuns, ...state.openRuns])
+    .filter((run) => {
+      const typeOk     = !filterType  || run.type  === filterType;
+      const levelOk    = !filterLevel || run.level === filterLevel;
+      const regionOk   = !filterRegion || `${run.location || ""} ${run.region || ""}`.toLowerCase().includes(filterRegion);
+      const dist = Number(run.distance || 0);
+      const distOk = !filterDistance ||
+        (filterDistance === "short"  && dist < 10) ||
+        (filterDistance === "medium" && dist >= 10 && dist <= 30) ||
+        (filterDistance === "long"   && dist > 30);
+      return typeOk && levelOk && regionOk && distOk;
+    })
     .sort((a, b) => new Date(a.date) - new Date(b.date));
   const statusCard = `
     <article class="open-run-status ${openRunLoading ? "loading" : ""}">
@@ -3448,6 +3473,7 @@ settingsForm.addEventListener("submit", (event) => {
   state.raceType = document.querySelector("#race-type").value;
   state.raceKm = Number(document.querySelector("#race-km").value);
   saveState();
+  renderPlan(); // recalcule le plan si la date de course a changé
   showScreen("dashboard");
 });
 
@@ -3506,10 +3532,28 @@ function buildCoachWelcome() {
   `;
 }
 
+let lastCoachCallTime = 0;
+const COACH_COOLDOWN_MS = 30000; // 30 secondes entre chaque analyse
+
 async function requestCoachAnalysis() {
   const btn = document.querySelector("#coach-analyze-btn");
   const question = coachQuestion?.value?.trim() || "";
 
+  // Rate limit : cooldown 30 s
+  const elapsed = Date.now() - lastCoachCallTime;
+  if (lastCoachCallTime > 0 && elapsed < COACH_COOLDOWN_MS) {
+    const wait = Math.ceil((COACH_COOLDOWN_MS - elapsed) / 1000);
+    coachResult.innerHTML = `
+      <div class="coach-error">
+        <strong>⏳ Patiente encore ${wait} seconde${wait > 1 ? "s" : ""}</strong>
+        <p>Pour éviter des appels inutiles, une nouvelle analyse sera disponible dans ${wait}s.</p>
+      </div>
+    `;
+    coachResult.dataset.hasResult = "1";
+    return;
+  }
+
+  lastCoachCallTime = Date.now();
   btn.disabled = true;
   btn.textContent = "Analyse en cours…";
 
@@ -3610,7 +3654,7 @@ function formatCoachMarkdown(text) {
     .replace(/<p><\/p>/g, "");
 }
 
-["race-search-region", "race-search-type", "race-search-distance", "race-search-surface", "race-search-reliability"].forEach((id) => {
+["race-search-region", "race-search-type", "race-search-distance", "race-search-surface", "race-search-reliability", "race-search-period"].forEach((id) => {
   document.querySelector(`#${id}`)?.addEventListener("input", () => {
     renderRaceSearch();
     fetchRaceRadar();
@@ -3622,6 +3666,12 @@ function formatCoachMarkdown(text) {
 });
 
 document.querySelector("#missing-race-button")?.addEventListener("click", reportMissingRace);
+
+// Filtres sorties ouvertes
+["open-run-filter-type", "open-run-filter-level", "open-run-filter-distance", "open-run-filter-region"].forEach((id) => {
+  document.querySelector(`#${id}`)?.addEventListener("input",  () => renderOpenRuns());
+  document.querySelector(`#${id}`)?.addEventListener("change", () => renderOpenRuns());
+});
 
 render();
 
