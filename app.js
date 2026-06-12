@@ -4382,8 +4382,11 @@ navButtons.forEach((button) => {
 // Bouton "Modifier" attelage dans l'écran GPS
 document.querySelector("#toggle-dog-picker-record")?.addEventListener("click", () => {
   const picker = document.querySelector("#dog-picker-record");
+  const strip  = document.querySelector('[data-list="selectedTeam"]');
   if (!picker) return;
-  picker.classList.toggle("hidden");
+  const opening = picker.classList.contains("hidden");
+  picker.classList.toggle("hidden", !opening);
+  if (strip) strip.classList.toggle("hidden", opening);
 });
 
 document.querySelectorAll("[data-mode]").forEach((button) => {
