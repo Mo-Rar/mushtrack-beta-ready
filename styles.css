@@ -1208,7 +1208,12 @@ textarea {
   margin-top: 8px;
 }
 
-.dog-list,
+.dog-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
 .run-list,
 .mini-history,
 .week-list {
@@ -1227,7 +1232,12 @@ textarea {
   padding: 14px;
 }
 
-.dog-list article,
+.dog-list article {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .run-list article,
 .mini-history article {
   display: grid;
