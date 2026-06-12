@@ -3179,8 +3179,8 @@ function renderRaceSearch() {
         ${race.notes ? `<p>${race.notes}</p>` : ""}
         <div class="race-result-actions">
           <button class="secondary-button" data-open-race-source="${race.id}" type="button">Source</button>
-          <button class="secondary-button" data-race-interest="${race.id}" type="button">${state.raceInterests[race.id] ? "✓ Interesse" : "Je suis interesse"}</button>
-          <button class="primary-button" data-import-race="${race.id}" type="button">Ajouter</button>
+          <button class="secondary-button${state.raceInterests[race.id] ? " btn-interested" : ""}" data-race-interest="${race.id}" type="button">${state.raceInterests[race.id] ? "⭐ Interesse" : "Je suis interesse"}</button>
+          <button class="${state.agenda.some(a => a.sourceId === race.id) ? "btn-participe" : "primary-button"}" data-import-race="${race.id}" type="button">${state.agenda.some(a => a.sourceId === race.id) ? "✓ Participe" : "Ajouter"}</button>
         </div>
         ${renderRaceInterestSummary(race)}
         <div class="admin-edit-form hidden" data-edit-form="${race.id}">
@@ -3543,12 +3543,19 @@ function importRaceToAgenda(id) {
   const race = mergeRaceSources([...remoteRaceCatalog, ...raceCatalog, ...state.missingRaceReports])
     .find((item) => item.id === id);
   if (!race || !race.date) return;
-  const exists = state.agenda.some((item) => item.sourceId === race.id);
-  if (exists) {
-    alert("Cette course est deja dans ton agenda.");
+
+  const existingIndex = state.agenda.findIndex((item) => item.sourceId === race.id);
+  if (existingIndex !== -1) {
+    // Déjà inscrit → retirer la participation
+    state.agenda.splice(existingIndex, 1);
+    saveState();
+    renderAgenda();
+    renderRaceSearch();
+    showSyncBadge("🗑️ Participation annulée");
     return;
   }
 
+  // Pas encore inscrit → ajouter comme participant
   state.agenda.push({
     id: `race-${Date.now()}`,
     kind: "race",
@@ -3563,7 +3570,8 @@ function importRaceToAgenda(id) {
   });
   saveState();
   renderAgenda();
-  showSyncBadge("🏁 Course ajoutée à l'agenda");
+  renderRaceSearch();
+  showSyncBadge("🏁 Participation confirmée !");
 }
 
 // Email de l'admin (toi) — seul ce compte peut approuver les courses

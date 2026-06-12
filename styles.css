@@ -2004,6 +2004,32 @@ textarea {
   opacity: 0.45;
 }
 
+/* Bouton "Intéressé" actif */
+.race-result-actions .btn-interested {
+  background: #fff8f5;
+  color: #fc4c02;
+  border: 1.5px solid #fc4c02;
+  font-weight: 600;
+}
+
+/* Bouton "Participe" actif */
+.race-result-actions .btn-participe {
+  background: #1a7a4a;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s;
+  box-shadow: 0 2px 8px rgba(26,122,74,0.25);
+}
+
+.race-result-actions .btn-participe:active {
+  transform: scale(0.97);
+}
+
 .race-interest {
   margin-top: 10px;
   padding: 10px;
