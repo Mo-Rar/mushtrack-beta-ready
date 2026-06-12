@@ -2672,18 +2672,24 @@ textarea {
 
 /* ── Hero card tableau de bord ──────────────────────────────── */
 .hero-card {
+  min-height: 230px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 10px;
   background:
-    linear-gradient(to bottom, rgba(10,4,0,0.55) 0%, rgba(20,6,0,0.75) 100%),
+    linear-gradient(180deg, rgba(10,28,24,0.05) 0%, rgba(10,28,24,0.88) 100%),
     url("./assets/mode-hiver.jpg") center/cover no-repeat;
   border-radius: 20px;
-  padding: 22px 20px 18px;
+  padding: 20px;
   color: #fff;
   margin-bottom: 14px;
-  box-shadow: 0 6px 24px rgba(252,76,2,0.25);
+  box-shadow: 0 8px 32px rgba(10,28,24,0.2);
+  overflow: hidden;
 }
 .hero-card.summer {
   background:
-    linear-gradient(to bottom, rgba(10,4,0,0.55) 0%, rgba(20,6,0,0.75) 100%),
+    linear-gradient(180deg, rgba(18,38,24,0.08) 0%, rgba(18,38,24,0.90) 100%),
     url("./assets/mode-ete.jpg") center/cover no-repeat;
 }
 .hero-eyebrow {
