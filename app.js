@@ -1496,16 +1496,15 @@ function renderDogProfile() {
 }
 
 function renderDogPicker() {
-  const list = document.querySelector('[data-list="dogPicker"]');
-  if (!list) return;
+  document.querySelectorAll('[data-list="dogPicker"]').forEach(list => {
+    list.innerHTML = state.dogs.map((dog) => {
+      const selected = state.selectedDogIds.includes(dog.id);
+      return `<button class="${selected ? "selected" : ""}" data-dog-id="${dog.id}">${dog.name}</button>`;
+    }).join("");
 
-  list.innerHTML = state.dogs.map((dog) => {
-    const selected = state.selectedDogIds.includes(dog.id);
-    return `<button class="${selected ? "selected" : ""}" data-dog-id="${dog.id}">${dog.name}</button>`;
-  }).join("");
-
-  list.querySelectorAll("button").forEach((button) => {
-    button.addEventListener("click", () => toggleDogSelection(button.dataset.dogId));
+    list.querySelectorAll("button").forEach((button) => {
+      button.addEventListener("click", () => toggleDogSelection(button.dataset.dogId));
+    });
   });
 }
 
@@ -1553,7 +1552,7 @@ function renderSelectedTeam() {
   const dogs = state.dogs.filter((dog) => state.selectedDogIds.includes(dog.id));
   list.innerHTML = dogs.length
     ? dogs.map((dog) => `<span class="chip">${dog.name}</span>`).join("")
-    : `<p class="empty-state">Aucun chien selectionne.</p>`;
+    : `<p class="empty-state">Appuie sur Modifier ✏️ pour sélectionner tes chiens.</p>`;
 }
 
 function renderTeamSlots() {
@@ -4378,6 +4377,13 @@ function saveCurrentRun() {
 
 navButtons.forEach((button) => {
   button.addEventListener("click", () => showScreen(button.dataset.go));
+});
+
+// Bouton "Modifier" attelage dans l'écran GPS
+document.querySelector("#toggle-dog-picker-record")?.addEventListener("click", () => {
+  const picker = document.querySelector("#dog-picker-record");
+  if (!picker) return;
+  picker.classList.toggle("hidden");
 });
 
 document.querySelectorAll("[data-mode]").forEach((button) => {
