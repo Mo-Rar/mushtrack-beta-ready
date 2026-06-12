@@ -92,16 +92,22 @@ async function getRaceInterests(raceIds) {
   );
 
   return rows.reduce((acc, row) => {
-    acc[row.race_id] ||= { count: 0, people: [] };
+    acc[row.race_id] ||= { count: 0, people: [], interested: [], participants: [] };
     acc[row.race_id].count += 1;
-    if (acc[row.race_id].people.length < 8) {
-      acc[row.race_id].people.push({
-        name: row.profile_name || "Musher",
-        region: row.region || "",
-        level: row.level || "",
-        disciplines: row.disciplines || "",
-        status: row.status || "interesse"
-      });
+    const person = {
+      name: row.profile_name || "Musher",
+      region: row.region || "",
+      level: row.level || "",
+      disciplines: row.disciplines || "",
+      status: row.status || "interesse"
+    };
+    // Compatibilité ancienne version
+    if (acc[row.race_id].people.length < 8) acc[row.race_id].people.push(person);
+    // Listes séparées par statut
+    if (row.status === "participe") {
+      if (acc[row.race_id].participants.length < 20) acc[row.race_id].participants.push(person);
+    } else {
+      if (acc[row.race_id].interested.length < 20) acc[row.race_id].interested.push(person);
     }
     return acc;
   }, {});

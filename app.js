@@ -3385,22 +3385,48 @@ async function adminUpdateRace(id, updates) {
 }
 
 function renderRaceInterestSummary(race) {
-  const interested = Boolean(state.raceInterests[race.id]);
-  const remote = communityInterests[race.id] || { count: 0, people: [] };
-  const remoteHasMe = remote.people.some((person) => person.name === (state.profile.name || "Musher"));
-  const localExtra = interested && !remoteHasMe ? 1 : 0;
-  const count = remote.count + localExtra;
-  const names = [
-    ...remote.people.map((person) => person.region ? `${person.name} (${person.region})` : person.name),
-    ...(localExtra ? [state.profile.name || "Moi"] : [])
-  ].slice(0, 4);
+  const myName = state.profile.name || "Musher";
+  const myRegion = state.profile.region || "";
+  const iAmInterested = Boolean(state.raceInterests[race.id]);
+  const iAmParticipating = state.agenda.some(a => a.sourceId === race.id);
 
-  return `
-    <div class="race-interest ${interested ? "active" : ""}">
-      <span>${count} personne(s) interessee(s)</span>
-      <p>${names.length ? names.join(", ") : "Indique ton interet pour retrouver plus tard les personnes motivees par cette course."}</p>
-    </div>
-  `;
+  const remote = communityInterests[race.id] || { count: 0, interested: [], participants: [] };
+
+  // ── Intéressés ─────────────────────────────────────────────────────────────
+  const remoteInterested = remote.interested || [];
+  const remoteInterestedHasMe = remoteInterested.some(p => p.name === myName);
+  const interestedList = [
+    ...remoteInterested.map(p => p.region ? `${p.name} (${p.region})` : p.name),
+    ...(iAmInterested && !remoteInterestedHasMe ? [myRegion ? `${myName} (${myRegion})` : myName] : [])
+  ];
+
+  // ── Participants ────────────────────────────────────────────────────────────
+  const remoteParticipants = remote.participants || [];
+  const remoteParticHasMe = remoteParticipants.some(p => p.name === myName);
+  const participantsList = [
+    ...remoteParticipants.map(p => p.region ? `${p.name} (${p.region})` : p.name),
+    ...(iAmParticipating && !remoteParticHasMe ? [myRegion ? `${myName} (${myRegion})` : myName] : [])
+  ];
+
+  const hasAnything = interestedList.length > 0 || participantsList.length > 0;
+  if (!hasAnything) {
+    return `<div class="race-community-summary empty">
+      <p>Sois le premier à marquer ton intérêt pour cette course ! ⭐</p>
+    </div>`;
+  }
+
+  return `<div class="race-community-summary">
+    ${participantsList.length > 0 ? `
+      <div class="race-community-group participants">
+        <span class="community-label">✓ Participe (${participantsList.length})</span>
+        <span class="community-names">${participantsList.join(" · ")}</span>
+      </div>` : ""}
+    ${interestedList.length > 0 ? `
+      <div class="race-community-group interested">
+        <span class="community-label">⭐ Intéressé (${interestedList.length})</span>
+        <span class="community-names">${interestedList.join(" · ")}</span>
+      </div>` : ""}
+  </div>`;
 }
 
 async function toggleRaceInterest(id) {
@@ -3539,7 +3565,7 @@ function getReliabilityLabel(value) {
   }[value] || "A verifier";
 }
 
-function importRaceToAgenda(id) {
+async function importRaceToAgenda(id) {
   const race = mergeRaceSources([...remoteRaceCatalog, ...raceCatalog, ...state.missingRaceReports])
     .find((item) => item.id === id);
   if (!race || !race.date) return;
@@ -3550,6 +3576,25 @@ function importRaceToAgenda(id) {
     state.agenda.splice(existingIndex, 1);
     saveState();
     renderAgenda();
+    // Sync communauté : supprime la participation
+    try {
+      await fetch("/api/community", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          raceId: id,
+          raceName: race.name,
+          deviceId: state.deviceId,
+          interested: false,
+          status: "participe",
+          profile: state.profile
+        })
+      });
+      delete communityInterests[id];
+      const fresh = await fetch(`/api/community?raceIds=${encodeURIComponent(id)}`);
+      const data = await fresh.json();
+      if (data.configured && data.interests) communityInterests = { ...communityInterests, ...data.interests };
+    } catch { /* hors ligne, pas grave */ }
     renderRaceSearch();
     showSyncBadge("🗑️ Participation annulée");
     return;
@@ -3570,6 +3615,23 @@ function importRaceToAgenda(id) {
   });
   saveState();
   renderAgenda();
+  // Sync communauté : enregistre la participation
+  try {
+    const resp = await fetch("/api/community", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        raceId: id,
+        raceName: race.name,
+        deviceId: state.deviceId,
+        interested: true,
+        status: "participe",
+        profile: state.profile
+      })
+    });
+    const data = await resp.json();
+    if (data.configured && data.interests) communityInterests = { ...communityInterests, ...data.interests };
+  } catch { /* hors ligne, pas grave */ }
   renderRaceSearch();
   showSyncBadge("🏁 Participation confirmée !");
 }

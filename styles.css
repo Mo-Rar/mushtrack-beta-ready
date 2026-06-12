@@ -2030,6 +2030,7 @@ textarea {
   transform: scale(0.97);
 }
 
+/* ── Ancien style (rétrocompat) ── */
 .race-interest {
   margin-top: 10px;
   padding: 10px;
@@ -2037,19 +2038,64 @@ textarea {
   background: #fafafa;
   border: 1px solid #f0f0f0;
 }
-
-.race-interest.active {
-  background: #21140f;
-  border-color: #21140f;
-}
-
+.race-interest.active { background: #21140f; border-color: #21140f; }
 .race-interest.active span,
-.race-interest.active p {
-  color: #fff;
+.race-interest.active p { color: #fff; }
+.race-interest p { margin: 4px 0 0; }
+
+/* ── Nouveau résumé communautaire ── */
+.race-community-summary {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.race-interest p {
-  margin: 4px 0 0;
+.race-community-summary.empty {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+}
+
+.race-community-summary.empty p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #888;
+}
+
+.race-community-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 10px;
+}
+
+.race-community-group.participants {
+  background: #e8f7ef;
+  border: 1px solid #b6dfc8;
+}
+
+.race-community-group.interested {
+  background: #fff8f5;
+  border: 1px solid #fcd9c9;
+}
+
+.community-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #444;
+  letter-spacing: 0.02em;
+}
+
+.race-community-group.participants .community-label { color: #1a7a4a; }
+.race-community-group.interested  .community-label { color: #c43d00; }
+
+.community-names {
+  font-size: 0.83rem;
+  color: #555;
+  line-height: 1.4;
 }
 
 .checklist article {
