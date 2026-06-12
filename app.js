@@ -2713,10 +2713,42 @@ function getWeekFocus(index, isRest, context = getPlanContext()) {
 }
 
 function getNextWorkout() {
-  const first = buildPlan()[0];
+  // Aucune sortie → première séance douce
+  if (!state.runs || state.runs.length === 0) {
+    return {
+      title: "Première sortie",
+      text: "5 km faciles pour évaluer la forme de l'attelage.",
+      km: 5
+    };
+  }
+
+  // Moyenne des 3 dernières sorties
+  const recent = state.runs.slice(0, 3);
+  const avgKm = recent.reduce((s, r) => s + Number(r.km || 0), 0) / recent.length;
+
+  // +10 % par rapport à la moyenne récente, plafonné progressivement
+  const targetKm = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
+  let nextKm = Math.round(avgKm * 1.10);
+  nextKm = Math.max(4, Math.min(nextKm, Math.round(avgKm * 1.20 + 2), targetKm));
+
+  // Réduction si météo défavorable ou course imminente
+  const context = getPlanContext();
+  if (context.volumeFactor < 1) nextKm = Math.max(4, Math.round(nextKm * context.volumeFactor));
+
+  // Type de séance selon discipline
+  const label = state.raceType === "Sprint" ? "Intervalles courts"
+    : state.raceType === "Longue distance" ? "Sortie longue économique"
+    : "Endurance progressive";
+
+  // Alerte récupération
+  const lastRecov = state.runs[0]?.recovery || "";
+  const recovNote = (lastRecov === "Difficile" || lastRecov === "A surveiller")
+    ? " ⚠️ Récupération à surveiller." : "";
+
   return {
-    title: first.focus.split(",")[0],
-    text: `${first.km} km cette semaine. ${first.focus}`
+    title: label,
+    text: `${nextKm} km recommandés (moyenne récente : ${Math.round(avgKm)} km).${recovNote}`,
+    km: nextKm
   };
 }
 
