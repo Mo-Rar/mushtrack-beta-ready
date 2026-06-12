@@ -4948,5 +4948,57 @@ setTimeout(() => {
 }, 500);
 
 if ("serviceWorker" in navigator) {
-navigator.serviceWorker.register("./sw.js");
+  navigator.serviceWorker.register("./sw.js");
 }
+
+// ── Push Notifications ────────────────────────────────────────────────────────
+const VAPID_PUBLIC_KEY = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjZkOqp0nOFuUzIjbCzxO5_8IhFk";
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+async function subscribeToPush() {
+  if (!("PushManager" in window)) return;
+  if (!("serviceWorker" in navigator)) return;
+
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") return;
+
+    const registration = await navigator.serviceWorker.ready;
+    let sub = await registration.pushManager.getSubscription();
+    if (!sub) {
+      sub = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+
+    await fetch("/api/push-subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        subscription: sub.toJSON(),
+        userId: currentUser?.id || null
+      })
+    });
+
+    console.log("Push notifications activées ✅");
+  } catch (err) {
+    console.warn("Push subscribe error:", err);
+  }
+}
+
+// Demande la permission après 10 secondes (laisser l'app charger)
+setTimeout(() => {
+  if (Notification.permission === "default") {
+    subscribeToPush();
+  } else if (Notification.permission === "granted") {
+    subscribeToPush(); // Re-enregistre l'abonnement si besoin
+  }
+}, 10000);
+// ─────────────────────────────────────────────────────────────────────────────

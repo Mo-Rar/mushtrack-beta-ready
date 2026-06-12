@@ -3,6 +3,9 @@
   "version": "0.1.0-beta.1",
   "private": true,
   "description": "MushTrack beta - GPS, chiens, agenda et entrainement pour mushers.",
+  "dependencies": {
+    "web-push": "^3.6.7"
+  },
   "scripts": {
     "dev": "node static-server.js 4401 127.0.0.1",
     "start": "node static-server.js 4401 127.0.0.1",
