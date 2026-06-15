@@ -6759,6 +6759,31 @@ setTimeout(() => {
 checkReminders();
 fetchLeaderboard();
 applyLang();
+syncLocalInterestsToServer();
+
+// Renvoie à Supabase tous les intérêts locaux qui auraient été perdus (bug env vars)
+async function syncLocalInterestsToServer() {
+  const interests = state.raceInterests || {};
+  const ids = Object.keys(interests);
+  if (!ids.length) return;
+  for (const id of ids) {
+    const entry = interests[id];
+    try {
+      await fetch("/api/community", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          raceId: id,
+          raceName: entry.raceName || id,
+          deviceId: state.deviceId,
+          interested: true,
+          status: entry.status || "interesse",
+          profile: state.profile
+        })
+      });
+    } catch (_) {}
+  }
+}
 
 // Boutons de langue
 document.querySelectorAll(".lang-btn[data-lang]").forEach(btn => {
