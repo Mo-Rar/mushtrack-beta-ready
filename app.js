@@ -1263,10 +1263,6 @@ function showScreen(id) {
     }, 100);
   }
 
-  if (id === "plan") {
-    updatePlanWeatherIfNeeded();
-  }
-
   if (id === "race") {
     fetchRaceRadar();
   }
@@ -1276,6 +1272,8 @@ function showScreen(id) {
   }
 
   if (id === "coach") {
+    updatePlanWeatherIfNeeded();
+    renderPlanInsights();
     renderCoach();
   }
 }
