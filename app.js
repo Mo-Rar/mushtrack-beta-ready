@@ -1049,35 +1049,108 @@ function debouncedSync() {
   syncDebounceTimer = setTimeout(pushToSupabase, 2000);
 }
 
+// ── Queue offline ────────────────────────────────────────────────────────────
+const OFFLINE_QUEUE_KEY = "mushtrack-offline-queue";
+
+function getOfflineQueue() {
+  try { return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || "[]"); } catch { return []; }
+}
+
+function saveOfflineQueue(q) {
+  localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(q));
+}
+
+function queueOfflineSync(payload) {
+  const q = getOfflineQueue();
+  // On garde juste le dernier snapshot (un upsert complet suffit)
+  const existing = q.findIndex(op => op.type === "upsert-state");
+  if (existing !== -1) q.splice(existing, 1);
+  q.push({ type: "upsert-state", payload, ts: Date.now() });
+  saveOfflineQueue(q);
+  updateOfflineBanner();
+}
+
+function updateOfflineBanner() {
+  const q = getOfflineQueue();
+  let banner = document.getElementById("offline-banner");
+  if (!banner) {
+    banner = document.createElement("div");
+    banner.id = "offline-banner";
+    banner.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:9999;background:#f59e0b;color:#fff;font-size:0.8rem;font-weight:700;text-align:center;padding:6px 12px;display:none";
+    document.body.prepend(banner);
+  }
+  if (!navigator.onLine || q.length > 0) {
+    banner.style.display = "block";
+    banner.textContent = !navigator.onLine
+      ? "📵 Hors ligne — données sauvegardées localement, sync à la reconnexion"
+      : `🔄 ${q.length} modification${q.length > 1 ? "s" : ""} en attente de synchronisation...`;
+  } else {
+    banner.style.display = "none";
+  }
+}
+
+async function flushOfflineQueue() {
+  if (!supabase || !currentUser) return;
+  const q = getOfflineQueue();
+  if (q.length === 0) return;
+  // Prend le snapshot le plus récent (type upsert-state)
+  const op = q.filter(o => o.type === "upsert-state").sort((a, b) => b.ts - a.ts)[0];
+  if (!op) { saveOfflineQueue([]); updateOfflineBanner(); return; }
+  try {
+    const { error } = await supabase.from(SYNC_TABLE).upsert(op.payload, { onConflict: "user_id" });
+    if (!error) {
+      saveOfflineQueue([]);
+      updateOfflineBanner();
+      console.log("MushTrack: sync différée envoyée ✓");
+    }
+  } catch (err) {
+    console.warn("MushTrack: flush offline queue failed:", err.message);
+  }
+}
+
+window.addEventListener("online",  () => { updateOfflineBanner(); flushOfflineQueue(); });
+window.addEventListener("offline", () => { updateOfflineBanner(); });
+
 // Pousse les données vers Supabase (upsert sur user_id)
 async function pushToSupabase() {
   if (!supabase || !currentUser) return;
+
+  const payload = {
+    user_id:    currentUser.id,
+    dogs:       state.dogs,
+    runs:       state.runs,
+    agenda:     state.agenda,
+    settings: {
+      profile:    state.profile,
+      raceDate:   state.raceDate,
+      raceName:   state.raceName,
+      raceType:   state.raceType,
+      raceKm:     state.raceKm,
+      goalKm:     state.goalKm,
+      goalDate:   state.goalDate,
+      seasonMode: state.seasonMode
+    },
+    updated_at: new Date().toISOString()
+  };
+
+  if (!navigator.onLine) {
+    queueOfflineSync(payload);
+    return;
+  }
+
   try {
     state.cloudUpdatedAt = Date.now();
-    const { error } = await supabase.from(SYNC_TABLE).upsert({
-      user_id:    currentUser.id,
-      dogs:       state.dogs,
-      runs:       state.runs,
-      agenda:     state.agenda,
-      settings: {
-        profile:    state.profile,
-        raceDate:   state.raceDate,
-        raceName:   state.raceName,
-        raceType:   state.raceType,
-        raceKm:     state.raceKm,
-        goalKm:     state.goalKm,
-        goalDate:   state.goalDate,
-        seasonMode: state.seasonMode
-      },
-      updated_at: new Date().toISOString()
-    }, { onConflict: "user_id" });
-
+    const { error } = await supabase.from(SYNC_TABLE).upsert(payload, { onConflict: "user_id" });
     if (!error) {
-      // Sauvegarde locale silencieuse du timestamp (sans re-déclencher debouncedSync)
       localStorage.setItem("mushtrack-state", JSON.stringify(state));
+      // Si la queue était en attente, on tente de la vider aussi
+      if (getOfflineQueue().length > 0) flushOfflineQueue();
+    } else {
+      queueOfflineSync(payload);
     }
   } catch (err) {
     console.warn("MushTrack sync push failed:", err.message);
+    queueOfflineSync(payload);
   }
 }
 
@@ -1517,11 +1590,17 @@ function renderDogs() {
   list.innerHTML = state.dogs.map((dog) => {
     const load = getDogRecentKm(dog.id);
     const readiness = getDogReadiness(dog);
+    const photoHtml = dog.photoDataUrl
+      ? `<img src="${dog.photoDataUrl}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #fc4c02" alt="${dog.name}" />`
+      : `<div style="width:44px;height:44px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">🐕</div>`;
     return `
     <article class="dog-card ${readiness.level}" data-open-dog="${dog.id}">
-      <div>
-        <b>${dog.name}</b>
-        <span>${dog.role} - ${getDogAge(dog)} ans - ${dog.weight} kg - ${readiness.title}</span>
+      <div style="display:flex;align-items:center;gap:12px">
+        ${photoHtml}
+        <div>
+          <b>${dog.name}</b>
+          <span>${dog.role} - ${getDogAge(dog)} ans - ${dog.weight} kg - ${readiness.title}</span>
+        </div>
       </div>
       <strong>${Math.round(dog.km)} km</strong>
       <div class="load-meter"><span style="width:${Math.min(100, load * 2)}%"></span></div>
@@ -1755,11 +1834,16 @@ function renderDogProfile() {
 
   list.innerHTML = `
     <article class="profile-hero" style="position:relative">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-        <div>
-          <span>${dog.role}</span>
-          <strong>${Math.round(dog.km)} km saison</strong>
-          <p>${dog.note || "Aucune note pour ce chien."}</p>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+          ${dog.photoDataUrl
+            ? `<img src="${dog.photoDataUrl}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:3px solid rgba(255,255,255,0.4)" alt="${dog.name}" />`
+            : `<div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0">🐕</div>`}
+          <div>
+            <span>${dog.role}</span>
+            <strong>${Math.round(dog.km)} km saison</strong>
+            <p>${dog.note || "Aucune note pour ce chien."}</p>
+          </div>
         </div>
         <div style="text-align:center;flex-shrink:0;font-size:2rem;line-height:1">${formEmoji}
           <div style="font-size:0.7rem;font-weight:700;color:rgba(255,255,255,0.8);margin-top:4px">${health.title}</div>
@@ -1978,6 +2062,19 @@ function editDog(id) {
   document.querySelector("#dog-limitation").value = dog.limitation || "";
   document.querySelector("#dog-note").value = dog.note || "";
   dogSubmitButton.textContent = "Enregistrer";
+  // Pré-remplir la photo existante
+  currentDogPhotoDataUrl = dog.photoDataUrl || null;
+  const preview = document.getElementById("dog-photo-preview");
+  if (preview) {
+    if (dog.photoDataUrl) {
+      preview.innerHTML = `<img src="${dog.photoDataUrl}" style="width:100%;height:100%;object-fit:cover" />`;
+      preview.style.border = "2px solid #fc4c02";
+    } else {
+      preview.innerHTML = "🐕";
+      preview.style.background = "#f0f0f0";
+      preview.style.border = "2px dashed #ddd";
+    }
+  }
   dogForm.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -5120,6 +5217,42 @@ document.querySelector('[data-action="toggleDogForm"]').addEventListener("click"
   editingDogId = null;
   dogSubmitButton.textContent = "Ajouter";
   dogForm.classList.remove("hidden");
+  // Reset photo preview
+  const preview = document.getElementById("dog-photo-preview");
+  if (preview) { preview.innerHTML = "🐕"; preview.style.background = "#f0f0f0"; }
+  currentDogPhotoDataUrl = null;
+});
+
+// ── Photo de profil chien ─────────────────────────────────────────────────────
+let currentDogPhotoDataUrl = null;
+
+document.getElementById("dog-photo-input")?.addEventListener("change", function () {
+  const file = this.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const img = new Image();
+    img.onload = function () {
+      const canvas = document.createElement("canvas");
+      const SIZE = 300;
+      const ratio = Math.min(SIZE / img.width, SIZE / img.height);
+      canvas.width  = Math.round(img.width  * ratio);
+      canvas.height = Math.round(img.height * ratio);
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      currentDogPhotoDataUrl = canvas.toDataURL("image/jpeg", 0.75);
+      const preview = document.getElementById("dog-photo-preview");
+      if (preview) {
+        preview.innerHTML = "";
+        const im = document.createElement("img");
+        im.src = currentDogPhotoDataUrl;
+        im.style.cssText = "width:100%;height:100%;object-fit:cover";
+        preview.appendChild(im);
+        preview.style.border = "2px solid #fc4c02";
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 });
 
 document.querySelector('[data-action="toggleEventForm"]')?.addEventListener("click", () => {
@@ -5183,6 +5316,7 @@ dogForm.addEventListener("submit", (event) => {
     dog.vet = document.querySelector("#dog-vet").value.trim();
     dog.limitation = document.querySelector("#dog-limitation").value.trim();
     dog.note = document.querySelector("#dog-note").value.trim();
+    if (currentDogPhotoDataUrl) dog.photoDataUrl = currentDogPhotoDataUrl;
     resetDogForm();
     saveState();
     render();
@@ -5202,7 +5336,8 @@ dogForm.addEventListener("submit", (event) => {
     vet: document.querySelector("#dog-vet").value.trim(),
     limitation: document.querySelector("#dog-limitation").value.trim(),
     status: "Nouveau",
-    km: 0
+    km: 0,
+    photoDataUrl: currentDogPhotoDataUrl || null
   };
 
   state.dogs.push(dog);
@@ -5869,6 +6004,115 @@ function checkReminders() {
 
 // ── Export PDF rapport de saison ──────────────────────────────────────────────
 document.getElementById("export-pdf-btn")?.addEventListener("click", exportSeasonPDF);
+
+// ── Profil public musher ──────────────────────────────────────────────────────
+(function initPublicProfile() {
+  const slugInput   = document.getElementById("profile-slug");
+  const urlPreview  = document.getElementById("profile-url-preview");
+  const publishBtn  = document.getElementById("publish-profile-btn");
+  const statusEl    = document.getElementById("publish-status");
+  const linkWrap    = document.getElementById("profile-link-wrap");
+  const linkAnchor  = document.getElementById("profile-public-link");
+  const copyBtn     = document.getElementById("copy-profile-link");
+  if (!slugInput) return;
+
+  // Pré-remplir depuis le profil sauvegardé
+  const savedSlug = localStorage.getItem("mushtrack-profile-slug") || "";
+  if (savedSlug) {
+    slugInput.value = savedSlug;
+    showPublishedLink(savedSlug);
+  }
+
+  slugInput.addEventListener("input", () => {
+    const raw   = slugInput.value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-");
+    const slug  = raw.slice(0, 40);
+    const origin = location.origin;
+    urlPreview.textContent = slug ? `${origin}/musher.html?slug=${slug}` : "";
+  });
+
+  publishBtn.addEventListener("click", async () => {
+    const slug = slugInput.value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").slice(0, 40);
+    if (!slug) { alert("Saisis un identifiant URL."); return; }
+
+    publishBtn.disabled = true;
+    publishBtn.textContent = "Publication…";
+    statusEl.style.display = "block";
+    statusEl.textContent   = "Envoi en cours…";
+
+    // Construit le payload public (sans données sensibles)
+    const totalKm   = state.runs.reduce((s, r) => s + (Number(r.km) || 0), 0);
+    const payload = {
+      name:        state.profile.name || "Musher",
+      region:      state.profile.region || "",
+      level:       state.profile.level || "",
+      disciplines: state.profile.disciplines || "",
+      seasonMode:  state.seasonMode,
+      raceType:    state.raceType,
+      totalKm:     Math.round(totalKm * 10) / 10,
+      totalRuns:   state.runs.length,
+      goalKm:      state.goalKm,
+      // Photo du premier chien (avatar musher si pas de photo profil)
+      photoDataUrl: state.dogs[0]?.photoDataUrl || null,
+      dogs: state.dogs.map(d => ({
+        name:        d.name,
+        role:        d.role,
+        weight:      d.weight,
+        km:          Math.round(d.km || 0),
+        photoDataUrl: d.photoDataUrl || null
+      })),
+      agenda: state.agenda
+        .filter(a => a.isRace || a.sourceId)
+        .map(a => ({
+          id:       a.id,
+          title:    a.title || a.name,
+          name:     a.name,
+          date:     a.date,
+          km:       a.km,
+          category: a.category,
+          isRace:   true,
+          result:   a.result || null
+        }))
+    };
+
+    try {
+      const res  = await fetch("/api/profile", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ slug, data: payload })
+      });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || "Erreur serveur");
+
+      localStorage.setItem("mushtrack-profile-slug", slug);
+      statusEl.style.display  = "none";
+      publishBtn.disabled     = false;
+      publishBtn.textContent  = "🌐 Publier mon profil";
+      showPublishedLink(json.slug || slug);
+    } catch (err) {
+      statusEl.textContent   = "❌ " + err.message;
+      publishBtn.disabled    = false;
+      publishBtn.textContent = "🌐 Publier mon profil";
+    }
+  });
+
+  copyBtn?.addEventListener("click", () => {
+    const url = linkAnchor?.href;
+    if (!url) return;
+    navigator.clipboard.writeText(url).then(() => {
+      copyBtn.textContent = "✅ Copié !";
+      setTimeout(() => { copyBtn.textContent = "📋 Copier le lien"; }, 2000);
+    });
+  });
+
+  function showPublishedLink(slug) {
+    const url = `${location.origin}/musher.html?slug=${slug}`;
+    linkWrap.style.display    = "block";
+    linkAnchor.href           = url;
+    linkAnchor.textContent    = url;
+    urlPreview.textContent    = url;
+    slugInput.value           = slug;
+  }
+})();
 
 // ── Partage de sortie ─────────────────────────────────────────────────────────
 document.getElementById("share-run-btn")?.addEventListener("click", shareCurrentRun);
