@@ -6010,12 +6010,41 @@ function renderCoach() {
   el.innerHTML = `
     <!-- En-tête objectif -->
     <div style="background:linear-gradient(135deg,#1a1a2e,${phaseColor});border-radius:16px;padding:18px;color:#fff;margin:16px 0 12px">
-      <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;opacity:.75;margin-bottom:4px">${PHASE_LABELS[plan.phase]}</p>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;opacity:.75">${PHASE_LABELS[plan.phase]}</p>
+        ${plan.isDeloadWeek ? `<span style="background:rgba(255,255,255,0.2);border-radius:8px;padding:2px 8px;font-size:0.68rem;font-weight:700">📉 SEMAINE DÉCHARGE</span>` : ""}
+      </div>
       <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:8px">${plan.raceName || "Objectif saison"}</h2>
-      <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px">
         <div><strong style="font-size:1.4rem">${plan.weeksLeft}</strong><span style="font-size:0.78rem;opacity:.8;margin-left:4px">semaines</span></div>
         <div><strong style="font-size:1.4rem">${plan.weekTarget}</strong><span style="font-size:0.78rem;opacity:.8;margin-left:4px">km/sem cible</span></div>
         <div><strong style="font-size:1.4rem">${plan.weekDone.toFixed(0)}</strong><span style="font-size:0.78rem;opacity:.8;margin-left:4px">km cette sem.</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:0.75rem;opacity:.8">Niveau : <strong>${plan.trainingLevel}</strong></span>
+        ${plan.progressPct !== null ? `<span style="font-size:0.75rem;opacity:.8">· Progression : <strong>${plan.progressPct > 0 ? "+" : ""}${plan.progressPct}%</strong> vs sem. passée</span>` : ""}
+      </div>
+    </div>
+
+    <!-- Graphique 4 semaines -->
+    <div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid #f0f0f0">
+      <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;color:#999;font-weight:700;margin-bottom:10px">Volume 4 semaines (km)</p>
+      <div style="display:flex;align-items:flex-end;gap:6px;height:60px">
+        ${(() => {
+          const weeks4 = plan.weeklyKm.slice(4); // 4 dernières semaines
+          const maxK   = Math.max(...weeks4, 1);
+          const labels = ["S-3","S-2","S-1","Cette sem."];
+          return weeks4.map((k, i) => {
+            const h   = Math.round((k / maxK) * 52);
+            const col = i === 3 ? phaseColor : "#e5e7eb";
+            const txtCol = i === 3 ? phaseColor : "#666";
+            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+              <span style="font-size:0.68rem;font-weight:700;color:${txtCol}">${k > 0 ? Math.round(k) : ""}</span>
+              <div style="width:100%;height:${h}px;background:${col};border-radius:4px 4px 0 0;min-height:${k > 0 ? 4 : 0}px"></div>
+              <span style="font-size:0.62rem;color:#aaa">${labels[i]}</span>
+            </div>`;
+          }).join("");
+        })()}
       </div>
     </div>
 
@@ -6050,7 +6079,10 @@ function renderCoach() {
             <div style="font-size:0.9rem;font-weight:700;color:#1a1a1a">${day.label}</div>
             <div style="font-size:0.78rem;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${day.desc}</div>
           </div>
-          ${day.km ? `<div style="font-size:0.88rem;font-weight:700;color:${day.color};flex-shrink:0">${day.km} km</div>` : ""}
+          ${day.km ? `<div style="text-align:right;flex-shrink:0">
+            <div style="font-size:0.88rem;font-weight:700;color:${day.color}">${day.km} km</div>
+            ${day.charge ? `<div style="font-size:0.65rem;color:#aaa">${day.charge} u.</div>` : ""}
+          </div>` : ""}
         </div>`;
       }).join("")}
     </div>
@@ -6075,74 +6107,109 @@ function renderCoach() {
 }
 
 function generateCoachPlan() {
-  const today     = new Date(); today.setHours(0,0,0,0);
-  const raceDate  = new Date((state.raceDate || "2027-01-01") + "T12:00:00");
+  const today    = new Date(); today.setHours(0,0,0,0);
+  const raceDate = new Date((state.raceDate || "2027-01-01") + "T12:00:00");
   const weeksLeft = Math.max(0, Math.ceil((raceDate - today) / (7 * 86400000)));
-  const raceKm    = Number(state.raceKm) || 100;
-  const raceType  = state.raceType || "Mid-distance";
-  const isSummer  = state.seasonMode === "summer";
+  const raceKm   = Number(state.raceKm) || 100;
+  const raceType = state.raceType || "Mid-distance";
 
-  // Km de la semaine en cours (lun-dim)
-  const monday = new Date(today); monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
-  const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
-  const weekDone = state.runs
-    .filter(r => { const d = new Date(r.date + "T12:00:00"); return d >= monday && d <= sunday; })
-    .reduce((s, r) => s + (Number(r.km) || 0), 0);
-
-  // Cible hebdo selon phase
-  let phase, weekTarget;
-  if (weeksLeft > 12) {
-    phase = "base";
-    weekTarget = Math.round(raceKm * 0.15);
-  } else if (weeksLeft > 6) {
-    phase = "build";
-    weekTarget = Math.round(raceKm * 0.22);
-  } else if (weeksLeft > 2) {
-    phase = "peak";
-    weekTarget = Math.round(raceKm * 0.28);
-  } else {
-    phase = "taper";
-    weekTarget = Math.round(raceKm * 0.10);
+  // ── Km des 8 dernières semaines (pour progression réelle) ─────────────────
+  const weeklyKm = [];
+  for (let w = 0; w < 8; w++) {
+    const mon = new Date(today); mon.setDate(today.getDate() - ((today.getDay() + 6) % 7) - w * 7);
+    const sun = new Date(mon);   sun.setDate(mon.getDate() + 6); sun.setHours(23,59,59);
+    const km  = state.runs
+      .filter(r => { const d = new Date(r.date + "T12:00:00"); return d >= mon && d <= sun; })
+      .reduce((s, r) => s + (Number(r.km) || 0), 0);
+    weeklyKm.unshift(km); // index 0 = il y a 7 semaines, index 7 = semaine actuelle
   }
+  const weekDone    = weeklyKm[7];
+  const lastWeekKm  = weeklyKm[6];  // semaine passée
+  const avgKm4weeks = weeklyKm.slice(3, 7).reduce((s, k) => s + k, 0) / 4 || 0;
 
-  // Sessions selon phase & discipline
+  // ── Niveau d'entraînement actuel ──────────────────────────────────────────
+  let trainingLevel;
+  if (avgKm4weeks < 20)       trainingLevel = "Débutant";
+  else if (avgKm4weeks < 40)  trainingLevel = "Intermédiaire";
+  else if (avgKm4weeks < 80)  trainingLevel = "Avancé";
+  else if (avgKm4weeks < 150) trainingLevel = "Performant";
+  else                         trainingLevel = "Longue distance";
+
+  // ── Semaine de décharge ? (toutes les 4 sem) ─────────────────────────────
+  // On compte le nb de semaines depuis le début de la saison (1er sept ou 1er mars selon mode)
+  const seasonStart = state.seasonMode === "summer"
+    ? new Date(today.getFullYear(), 2, 1)   // 1er mars
+    : new Date(today.getFullYear(), 8, 1);  // 1er sept
+  const weeksSinceStart = Math.floor((today - seasonStart) / (7 * 86400000));
+  const isDeloadWeek = (weeksSinceStart % 4 === 3); // 4e semaine = décharge
+
+  // ── Cible hebdo ───────────────────────────────────────────────────────────
+  // Phase selon les semaines avant la course
+  let phase;
+  if (weeksLeft > 12)      phase = "base";
+  else if (weeksLeft > 6)  phase = "build";
+  else if (weeksLeft > 2)  phase = "peak";
+  else                      phase = "taper";
+
+  // Cible = progression +8%/sem depuis la moyenne des 4 dernières semaines
+  // Plafonnée par la phase de course
+  const PHASE_MAX = { base: raceKm * 0.20, build: raceKm * 0.30, peak: raceKm * 0.35, taper: raceKm * 0.12 };
+  let weekTarget = Math.round(Math.min(
+    (avgKm4weeks > 0 ? avgKm4weeks * 1.08 : raceKm * 0.12),
+    PHASE_MAX[phase]
+  ));
+  if (isDeloadWeek) weekTarget = Math.round(weekTarget * 0.75); // -25% semaine décharge
+  weekTarget = Math.max(weekTarget, 10);
+
+  // ── Charge d'entraînement (distance × vitesse estimée) ──────────────────
+  // Utilise les sorties réelles si dispo, sinon vitesse estimée par type
+  const SPEED_EST = { endurance: 14, long: 12, sprint: 18, recup: 10, technique: 12, rest: 0 };
+
+  // ── Sessions types ────────────────────────────────────────────────────────
   const SESSION_TYPES = {
-    endurance: { label: "Endurance",    emoji: "🏃", color: "#3b82f6", desc: "Rythme régulier, chiens décontractés" },
-    long:      { label: "Sortie longue", emoji: "🌲", color: "#059669", desc: "Pace lent, hydratation fréquente" },
-    sprint:    { label: "Sprint",        emoji: "⚡", color: "#fc4c02", desc: "Intervalles courts, haute intensité" },
+    endurance: { label: "Endurance",     emoji: "🏃", color: "#3b82f6", desc: "70–80% effort max, rythme conversationnel" },
+    long:      { label: "Sortie longue", emoji: "🌲", color: "#059669", desc: "Pace lent, hydratation toutes les 8–10 km" },
+    sprint:    { label: "Sprint",        emoji: "⚡", color: "#fc4c02", desc: "Intervalles 2–3 km haute intensité" },
     recup:     { label: "Récupération",  emoji: "🐾", color: "#8b5cf6", desc: "Allure douce, pattes et harnais contrôlés" },
     rest:      { label: "Repos",         emoji: "😴", color: "#94a3b8", desc: "Jeu libre, massage, observation", rest: true },
-    technique: { label: "Technique",     emoji: "🎯", color: "#f59e0b", desc: "Travail de commandes et départs" },
+    technique: { label: "Technique",     emoji: "🎯", color: "#f59e0b", desc: "Commandes, départs, dépassements" },
   };
 
-  // Distribution sur 7 jours (lun→dim)
+  // ── Distribution 7 jours (lun→dim) ───────────────────────────────────────
+  // Règle : weekend = 60–70% du volume (2 sorties longues back-to-back)
+  // Ratio km par type (rapporté à 1)
   const PLANS = {
-    base:  ["endurance","rest","endurance","rest","long","recup","rest"],
-    build: ["endurance","sprint","rest","endurance","long","recup","rest"],
-    peak:  ["sprint","endurance","rest","long","sprint","recup","rest"],
+    base:  ["endurance","rest","endurance","rest","long","long","rest"],
+    build: ["endurance","sprint","rest","endurance","long","long","rest"],
+    peak:  ["sprint","endurance","rest","endurance","long","long","recup"],
     taper: ["recup","rest","endurance","rest","recup","rest","rest"],
   };
-  const dayTypes = PLANS[phase];
+  // Ratios : les deux "long" du weekend = 32% + 32% = 64% du volume total
+  const KM_RATIO = { endurance: 0.18, long: 0.32, sprint: 0.10, recup: 0.07, technique: 0.09, rest: 0 };
 
-  // Répartition km sur la semaine
-  const KM_RATIO = { endurance: 0.22, long: 0.35, sprint: 0.12, recup: 0.09, technique: 0.10, rest: 0 };
+  const dayTypes = PLANS[phase];
   const totalRatio = dayTypes.reduce((s, t) => s + (KM_RATIO[t] || 0), 0);
 
   const days = dayTypes.map(type => {
-    const s   = SESSION_TYPES[type];
-    const km  = s.rest ? 0 : Math.round((KM_RATIO[type] / totalRatio) * weekTarget);
-    return { ...s, km: km || null, type };
+    const s  = SESSION_TYPES[type];
+    const km = s.rest ? 0 : Math.round((KM_RATIO[type] / totalRatio) * weekTarget);
+    const charge = km * (SPEED_EST[type] || 12); // unités de charge (km × vitesse)
+    return { ...s, km: km || null, type, charge: km ? charge : null };
   });
 
-  // Conseils par phase
+  // ── Indicateur de progression ─────────────────────────────────────────────
+  const progressPct = lastWeekKm > 0 ? Math.round(((weekTarget - lastWeekKm) / lastWeekKm) * 100) : null;
+
+  // ── Conseils par phase ────────────────────────────────────────────────────
+  const deloadNote = isDeloadWeek ? " Cette semaine est une semaine de décharge — volume réduit de 25% pour permettre la supercompensation." : "";
   const ADVICE = {
-    base:  `Avec ${weeksLeft} semaines devant toi, cette phase de base est cruciale. Priorité au volume à basse intensité — tes chiens doivent construire leur condition cardio sans accumuler de fatigue. Cible ${weekTarget} km/sem en maintenant un rythme où tu pourrais avoir une conversation.`,
-    build: `La construction est lancée. Intègre des sorties plus longues et des séances de sprint courtes. À ${weeksLeft} semaines de la course, surveille les signaux de fatigue : appétit, récupération nocturne, attitude au départ. Si un chien hésite, réduis son volume.`,
-    peak:  `Phase de pointe ! À ${weeksLeft} semaines de ${state.raceName || "la course"}, les chiens doivent être au top. Fais au moins une sortie à l'allure de course cette semaine. Contrôle les pattes après chaque sortie — c'est maintenant que les petites blessures apparaissent.`,
-    taper: `Affûtage final. Réduis le volume de 40-50% mais garde l'intensité. Tes chiens doivent arriver frais et motivés. Prépare le matériel, vérifie les harnaies, fais la checklist. Plus qu'à gérer l'excitation au départ !`,
+    base:  `Phase de base : priorité au volume à basse intensité (70–80% de l'effort max). Objectif ${weekTarget} km avec les deux sorties longues du week-end en back-to-back. Progression de 8%/sem maximum.${deloadNote}`,
+    build: `Construction en cours — ${weeksLeft} semaines avant la course. Intègre les intervalles (sprint) et conserve les back-to-back du week-end. Si un chien refuse le départ ou mange moins, réduis son volume de 20% cette semaine.${deloadNote}`,
+    peak:  `Phase de pointe ! ${weeksLeft} semaines avant ${state.raceName || "la course"}. Fais au moins une sortie à l'allure de course. Les back-to-back samedi-dimanche simulent la fatigue accumulée. Contrôle les pattes après chaque sortie.${deloadNote}`,
+    taper: `Affûtage final — réduis le volume de 40–50% mais garde l'intensité courte. Tes chiens doivent arriver frais et motivés. Prépare le matériel, fais la checklist pré-course. Plus qu'à gérer l'excitation au départ !`,
   };
 
-  // Alertes chiens
+  // ── Alertes chiens ────────────────────────────────────────────────────────
   const dogAlerts = [];
   for (const dog of state.dogs) {
     const fatigue = getDogFatigueIndex ? getDogFatigueIndex(dog.id) : 0;
@@ -6150,7 +6217,11 @@ function generateCoachPlan() {
     else if (fatigue > 1.0) dogAlerts.push({ name: dog.name, emoji: "🟡", msg: "Charge normale — surveiller la récupération" });
   }
 
-  return { phase, weeksLeft, weekTarget, weekDone, raceName: state.raceName, days, advice: ADVICE[phase], dogAlerts };
+  return {
+    phase, weeksLeft, weekTarget, weekDone, raceName: state.raceName,
+    days, advice: ADVICE[phase], dogAlerts,
+    trainingLevel, isDeloadWeek, weeklyKm, lastWeekKm, progressPct, avgKm4weeks
+  };
 }
 
 // ── Rappels personnalisables ──────────────────────────────────────────────────
