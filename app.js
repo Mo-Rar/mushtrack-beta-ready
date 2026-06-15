@@ -6082,7 +6082,8 @@ document.getElementById("export-pdf-btn")?.addEventListener("click", exportSeaso
       try { json = JSON.parse(rawText); } catch { json = {}; }
 
       if (json.configured === false) {
-        throw new Error("Variables Supabase manquantes sur Vercel");
+        const d = json.debug || {};
+        throw new Error(`Supabase non configuré — URL:${d.hasUrl} KEY:${d.hasKey} vars:[${d.allKeys||"aucune"}]`);
       }
       if (!res.ok || !json.ok) {
         throw new Error(json.error || `HTTP ${res.status}: ${rawText.slice(0, 120)}`);
