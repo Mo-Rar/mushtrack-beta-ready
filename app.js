@@ -6083,7 +6083,7 @@ document.getElementById("export-pdf-btn")?.addEventListener("click", exportSeaso
 
       if (json.configured === false) {
         const d = json.debug || {};
-        throw new Error(`Supabase non configuré — URL:${d.hasUrl} KEY:${d.hasKey} vars:[${d.allKeys||"aucune"}]`);
+        throw new Error(`Supabase non configuré — URL:${d.hasUrl} KEY:${d.hasKey} vars custom:[${d.customKeys||"aucune"}]`);
       }
       if (!res.ok || !json.ok) {
         throw new Error(json.error || `HTTP ${res.status}: ${rawText.slice(0, 120)}`);

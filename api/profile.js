@@ -14,11 +14,9 @@ module.exports = async function handler(req, res) {
   const hasKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
   const configured = hasUrl && hasKey;
   if (!configured) {
-    // Liste toutes les variables qui contiennent SUPA, URL, KEY, ou MUSH (sans exposer les valeurs)
-    const allKeys = Object.keys(process.env)
-      .filter(k => /SUPA|MUSH|SERVICE|ROLE|ANON|DATABASE|POSTGRES/i.test(k))
-      .join(",");
-    return res.status(200).json({ configured: false, debug: { hasUrl, hasKey, allKeys: allKeys || "aucune" } });
+    const systemKeys = new Set(["PATH","HOME","USER","SHELL","PWD","LANG","LC_ALL","TZ","NODE_ENV","AWS_LAMBDA_FUNCTION_NAME","AWS_REGION","AWS_EXECUTION_ENV","LAMBDA_TASK_ROOT","VERCEL","VERCEL_ENV","VERCEL_URL","VERCEL_REGION","NOW_REGION","_HANDLER","NODE_PATH","npm_config_cache"]);
+    const customKeys = Object.keys(process.env).filter(k => !systemKeys.has(k) && !k.startsWith("AWS_") && !k.startsWith("LAMBDA_") && !k.startsWith("npm_")).join(",");
+    return res.status(200).json({ configured: false, debug: { hasUrl, hasKey, customKeys: customKeys || "aucune" } });
   }
 
   try {
