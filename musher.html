@@ -123,7 +123,12 @@
   <p style="margin-top:12px"><a href="https://mushtrack-beta-ready.vercel.app" style="color:#fc4c02">Créer mon profil MushTrack</a></p>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
+const SUPABASE_URL = "https://ipfnldjrpocceptavvaf.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwZm5sZGpycG9jY2VwdGF2dmFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDk0MTQsImV4cCI6MjA5NjYyNTQxNH0.FVkq0EooacG7lETDAwxJ-ArocxUYFVZVfhxdhyWFhrI";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 (async () => {
   const slug = new URLSearchParams(location.search).get("slug") || location.pathname.split("/").pop();
   if (!slug || slug === "musher") {
@@ -132,12 +137,14 @@
   }
 
   try {
-    const res  = await fetch(`/api/profile?slug=${encodeURIComponent(slug)}`);
-    const json = await res.json();
-    if (!res.ok || json.error) { showError(json.error || "Profil introuvable"); return; }
+    const { data, error } = await sb
+      .from("mushtrack_profiles")
+      .select("slug,data,updated_at")
+      .eq("slug", slug)
+      .single();
 
-    const d = json.profile.data;
-    render(d);
+    if (error || !data) { showError("Profil introuvable"); return; }
+    render(data.data);
   } catch (e) {
     showError("Erreur de chargement : " + e.message);
   }

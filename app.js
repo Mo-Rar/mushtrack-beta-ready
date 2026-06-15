@@ -6072,28 +6072,19 @@ document.getElementById("export-pdf-btn")?.addEventListener("click", exportSeaso
     };
 
     try {
-      const res  = await fetch("/api/profile", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ slug, data: payload })
-      });
-      const rawText = await res.text();
-      let json;
-      try { json = JSON.parse(rawText); } catch { json = {}; }
+      if (!supabase) throw new Error("Client Supabase non disponible — recharge l'app");
 
-      if (json.configured === false) {
-        const d = json.debug || {};
-        throw new Error(`Supabase non configuré — URL:${d.hasUrl} KEY:${d.hasKey} vars custom:[${d.customKeys||"aucune"}]`);
-      }
-      if (!res.ok || !json.ok) {
-        throw new Error(json.error || `HTTP ${res.status}: ${rawText.slice(0, 120)}`);
-      }
+      const { error } = await supabase
+        .from("mushtrack_profiles")
+        .upsert({ slug, data: payload, updated_at: new Date().toISOString() }, { onConflict: "slug" });
+
+      if (error) throw new Error(error.message);
 
       localStorage.setItem("mushtrack-profile-slug", slug);
       statusEl.style.display  = "none";
       publishBtn.disabled     = false;
       publishBtn.textContent  = "🌐 Publier mon profil";
-      showPublishedLink(json.slug || slug);
+      showPublishedLink(slug);
     } catch (err) {
       statusEl.textContent   = "❌ " + err.message;
       statusEl.style.color   = "#d94040";
