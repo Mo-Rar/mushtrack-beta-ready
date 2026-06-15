@@ -2143,6 +2143,13 @@ textarea {
   opacity: 0.6;
 }
 
+.sponsor-divider {
+  width: 0.5px;
+  height: 28px;
+  background: var(--color-border-tertiary, #e0e0e0);
+  flex-shrink: 0;
+}
+
 .sponsor-logo img {
   max-height: 36px;
   max-width: 100%;
