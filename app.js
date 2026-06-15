@@ -1557,6 +1557,131 @@ function renderDogs() {
   });
 }
 
+// ── Checklist pré-course ──────────────────────────────────────────────────────
+const RACE_CHECKLIST_DEFAULTS = [
+  { id: "harnais",    label: "Harnais & traits" },
+  { id: "papiers",    label: "Papiers chiens (carnet santé)" },
+  { id: "bib",        label: "Dossard / bib" },
+  { id: "dropbags",   label: "Dropbags préparés" },
+  { id: "nourriture", label: "Nourriture équipe" },
+  { id: "eau",        label: "Eau & abreuvoirs" },
+  { id: "pharma",     label: "Trousse de secours" },
+  { id: "gps",        label: "GPS tracker" },
+  { id: "rechange",   label: "Vêtements de rechange" },
+  { id: "contact",    label: "Contact vétérinaire de course" }
+];
+
+function renderRaceChecklist(item) {
+  const checklist = item.checklist || {};
+  const customItems = item.customChecklist || [];
+  const allItems = [...RACE_CHECKLIST_DEFAULTS, ...customItems];
+  const done = allItems.filter(c => checklist[c.id] || c.checked).length;
+  const total = allItems.length;
+  const pct = Math.round((done / total) * 100);
+  const allDone = done === total;
+
+  return `
+  <div class="race-checklist-wrap" id="checklist-wrap-${item.id}" style="display:none;margin-top:12px;padding:14px;background:#f8f7ff;border-radius:12px;border:1.5px solid #6366f1">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <p style="margin:0;font-size:0.78rem;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.05em">☑️ Checklist pré-course</p>
+      <span style="font-size:0.8rem;font-weight:700;color:${allDone ? "#22c55e" : "#6366f1"}">${done}/${total} ${allDone ? "✅" : ""}</span>
+    </div>
+    <div style="background:#e8e7ff;border-radius:4px;height:4px;margin-bottom:12px">
+      <div style="background:#6366f1;height:4px;border-radius:4px;width:${pct}%;transition:width .3s"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      ${allItems.map(c => {
+        const checked = checklist[c.id] || c.checked || false;
+        return `<label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:6px 8px;border-radius:8px;background:${checked ? "#eefdf3" : "#fff"};border:1px solid ${checked ? "#bbf7d0" : "#e5e5e5"}">
+          <input type="checkbox" data-checklist-item="${item.id}" data-checklist-key="${c.id}" ${checked ? "checked" : ""} style="accent-color:#6366f1;width:16px;height:16px;flex-shrink:0"/>
+          <span style="font-size:0.88rem;color:${checked ? "#16a34a" : "#333"};${checked ? "text-decoration:line-through;opacity:0.7" : ""}">${c.label}</span>
+        </label>`;
+      }).join("")}
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:0.82rem;color:#888">
+      <input id="checklist-custom-${item.id}" type="text" placeholder="+ Ajouter un élément..." style="flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:0.85rem"/>
+      <button data-checklist-add="${item.id}" type="button" style="padding:7px 12px;background:#6366f1;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.85rem">+</button>
+    </label>
+  </div>`;
+}
+
+function drawWeightChart(dog) {
+  const canvas = document.getElementById(`weight-chart-${dog.id}`);
+  if (!canvas) return;
+  const history = (dog.weightHistory || []).slice(-20);
+  if (history.length < 2) return;
+
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  const pad = { top: 20, right: 20, bottom: 36, left: 44 };
+  const cW = W - pad.left - pad.right;
+  const cH = H - pad.top - pad.bottom;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = "#f9f9f9";
+  ctx.fillRect(0, 0, W, H);
+
+  const weights = history.map(h => h.weight);
+  const minW = Math.min(...weights) - 0.5;
+  const maxW = Math.max(...weights) + 0.5;
+  const range = maxW - minW || 1;
+
+  const toX = i => pad.left + (i / (history.length - 1)) * cW;
+  const toY = w => pad.top + cH - ((w - minW) / range) * cH;
+
+  // Grille
+  ctx.strokeStyle = "#e5e5e5";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (i / 4) * cH;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cW, y); ctx.stroke();
+    const val = (maxW - (i / 4) * range).toFixed(1);
+    ctx.fillStyle = "#aaa"; ctx.font = "20px system-ui"; ctx.textAlign = "right";
+    ctx.fillText(val + " kg", pad.left - 6, y + 7);
+  }
+
+  // Zone sous la courbe
+  ctx.beginPath();
+  history.forEach((h, i) => {
+    i === 0 ? ctx.moveTo(toX(i), toY(h.weight)) : ctx.lineTo(toX(i), toY(h.weight));
+  });
+  ctx.lineTo(toX(history.length - 1), pad.top + cH);
+  ctx.lineTo(toX(0), pad.top + cH);
+  ctx.closePath();
+  ctx.fillStyle = "rgba(252,76,2,0.08)";
+  ctx.fill();
+
+  // Courbe
+  ctx.beginPath();
+  history.forEach((h, i) => {
+    i === 0 ? ctx.moveTo(toX(i), toY(h.weight)) : ctx.lineTo(toX(i), toY(h.weight));
+  });
+  ctx.strokeStyle = "#fc4c02";
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = "round";
+  ctx.stroke();
+
+  // Points + dates
+  history.forEach((h, i) => {
+    const x = toX(i), y = toY(h.weight);
+    ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = "#fc4c02"; ctx.fill();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.stroke();
+
+    // Date (première, dernière, et tous les 4)
+    if (i === 0 || i === history.length - 1 || i % 4 === 0) {
+      const label = h.date.slice(5); // MM-DD
+      ctx.fillStyle = "#999"; ctx.font = "18px system-ui"; ctx.textAlign = "center";
+      ctx.fillText(label, x, pad.top + cH + 24);
+    }
+  });
+
+  // Valeur courante
+  const last = history[history.length - 1];
+  ctx.fillStyle = "#fc4c02"; ctx.font = "bold 22px system-ui"; ctx.textAlign = "left";
+  ctx.fillText(last.weight + " kg", toX(history.length - 1) - 50, toY(last.weight) - 10);
+}
+
 function buildWeightSparkline(dog) {
   const history = (dog.weightHistory || []).slice(-12); // 12 derniers points max
   const current = dog.weight || 0;
@@ -1691,6 +1816,13 @@ function renderDogProfile() {
       </article>
     </section>
 
+    <!-- Graphique poids -->
+    ${(dog.weightHistory || []).length >= 2 ? `
+    <div style="margin-bottom:18px">
+      <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0 0 8px">Évolution du poids</p>
+      <canvas id="weight-chart-${dog.id}" width="800" height="160" style="width:100%;border-radius:12px;background:#f9f9f9"></canvas>
+    </div>` : ""}
+
     <!-- Historique santé -->
     <div style="margin-bottom:10px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
@@ -1761,6 +1893,9 @@ function renderDogProfile() {
       `).join("") || `<p class="empty-state">Pas encore de sortie pour ${dog.name}.</p>`}
     </section>
   `;
+
+  // Graphique poids
+  drawWeightChart(dog);
 
   // Bouton + Ajouter événement santé
   const addBtn = list.querySelector("#add-health-event-btn");
@@ -4140,8 +4275,10 @@ function renderAgenda() {
             ${item.result.notes ? `<span style="font-size:0.82rem;color:#888">· ${item.result.notes}</span>` : ""}
           </div>
         </div>` : ""}
+        ${isRace && days >= 0 ? renderRaceChecklist(item) : ""}
         <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
           ${isRace && days < 0 ? `<button data-agenda-result="${item.id}" type="button" style="flex:1;min-width:100px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #1a7a4a;border-radius:8px;background:#fff;color:#1a7a4a;cursor:pointer">${item.result ? "✏️ Résultat" : "🏆 Résultat"}</button>` : ""}
+          ${isRace && days >= 0 ? `<button data-checklist-toggle="${item.id}" type="button" style="flex:1;min-width:100px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #6366f1;border-radius:8px;background:#fff;color:#6366f1;cursor:pointer">☑️ Checklist</button>` : ""}
           <button data-agenda-edit="${item.id}" type="button" style="flex:1;min-width:80px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #fc4c02;border-radius:8px;background:#fff;color:#fc4c02;cursor:pointer">✏️ Modifier</button>
           <button data-agenda-delete="${item.id}" type="button" style="flex:1;min-width:80px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#999;cursor:pointer">🗑 Supprimer</button>
         </div>
@@ -4212,6 +4349,61 @@ function renderAgenda() {
         saveState();
         showSyncBadge("✏️ Modifié");
       }
+      renderAgenda();
+    });
+  });
+
+  // Checklist pré-course
+  list.querySelectorAll("[data-checklist-toggle]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.checklistToggle;
+      const wrap = list.querySelector(`#checklist-wrap-${id}`);
+      if (!wrap) return;
+      const isOpen = wrap.style.display !== "none";
+      wrap.style.display = isOpen ? "none" : "block";
+    });
+  });
+
+  list.querySelectorAll("[data-checklist-item]").forEach(cb => {
+    cb.addEventListener("change", () => {
+      const id  = cb.dataset.checklistItem;
+      const key = cb.dataset.checklistKey;
+      const idx = state.agenda.findIndex(a => a.id === id);
+      if (idx === -1) return;
+      state.agenda[idx].checklist = state.agenda[idx].checklist || {};
+      state.agenda[idx].checklist[key] = cb.checked;
+      // Sync aussi les custom items
+      if (state.agenda[idx].customChecklist) {
+        const ci = state.agenda[idx].customChecklist.findIndex(c => c.id === key);
+        if (ci !== -1) state.agenda[idx].customChecklist[ci].checked = cb.checked;
+      }
+      saveState();
+      // Mettre à jour la progression sans re-render complet
+      const wrap = list.querySelector(`#checklist-wrap-${id}`);
+      if (wrap) {
+        const allItems = RACE_CHECKLIST_DEFAULTS.length;
+        const done = Object.values(state.agenda[idx].checklist).filter(Boolean).length;
+        const pct = Math.round((done / allItems) * 100);
+        const bar = wrap.querySelector("div[style*='background:#e8e7ff'] > div");
+        if (bar) bar.style.width = pct + "%";
+        const counter = wrap.querySelector("span[style*='font-weight:700']");
+        if (counter) counter.textContent = `${done}/${allItems} ${done === allItems ? "✅" : ""}`;
+      }
+    });
+  });
+
+  list.querySelectorAll("[data-checklist-add]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.checklistAdd;
+      const input = list.querySelector(`#checklist-custom-${id}`);
+      const text = input?.value.trim();
+      if (!text) return;
+      const idx = state.agenda.findIndex(a => a.id === id);
+      if (idx === -1) return;
+      // Ajoute à une liste custom dans l'item
+      state.agenda[idx].customChecklist = state.agenda[idx].customChecklist || [];
+      state.agenda[idx].customChecklist.push({ id: `custom-${Date.now()}`, label: text, checked: false });
+      saveState();
       renderAgenda();
     });
   });
@@ -5677,6 +5869,164 @@ function checkReminders() {
 
 // ── Export PDF rapport de saison ──────────────────────────────────────────────
 document.getElementById("export-pdf-btn")?.addEventListener("click", exportSeasonPDF);
+
+// ── Partage de sortie ─────────────────────────────────────────────────────────
+document.getElementById("share-run-btn")?.addEventListener("click", shareCurrentRun);
+
+function shareCurrentRun() {
+  const canvas = document.getElementById("share-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+
+  const km       = pendingRunSummary?.km    ?? 0;
+  const speed    = pendingRunSummary?.speed ?? 0;
+  const dur      = pendingRunSummary?.duration ?? 0;
+  const runType  = document.getElementById("runType")?.value || "Sortie";
+  const musher   = state.profile.name || "Musher";
+  const dogs     = state.selectedDogIds.map(id => state.dogs.find(d => d.id === id)?.name).filter(Boolean).join(", ") || "";
+  const dateStr  = new Date().toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+  const durStr   = `${Math.floor(dur/3600)}h${String(Math.floor((dur%3600)/60)).padStart(2,"0")}`;
+
+  // Fond sombre
+  ctx.fillStyle = "#1a1a2e";
+  ctx.fillRect(0, 0, W, H);
+
+  // Bande orange haut
+  ctx.fillStyle = "#fc4c02";
+  ctx.fillRect(0, 0, W, 8);
+
+  // Tracé GPS simplifié (fond carte)
+  if (gpsPath.length > 1) {
+    const lats = gpsPath.map(p => p[0]);
+    const lons = gpsPath.map(p => p[1]);
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+    const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+    const mapW = W * 0.45, mapH = H - 80, mapX = W * 0.5, mapY = 40;
+    const pad = 30;
+    const scaleX = (mapW - pad*2) / (maxLon - minLon || 1);
+    const scaleY = (mapH - pad*2) / (maxLat - minLat || 1);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(mapX, mapY, mapW, mapH);
+    ctx.clip();
+
+    // Fond carte
+    ctx.fillStyle = "#0d1b2a";
+    ctx.fillRect(mapX, mapY, mapW, mapH);
+
+    // Tracé
+    ctx.beginPath();
+    gpsPath.forEach((p, i) => {
+      const x = mapX + pad + (p[1] - minLon) * scaleX;
+      const y = mapY + mapH - pad - (p[0] - minLat) * scaleY;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = "#fc4c02";
+    ctx.lineWidth = 3;
+    ctx.lineJoin = "round";
+    ctx.lineCap  = "round";
+    ctx.stroke();
+
+    // Point départ / arrivée
+    const drawDot = (p, color) => {
+      const x = mapX + pad + (p[1] - minLon) * scaleX;
+      const y = mapY + mapH - pad - (p[0] - minLat) * scaleY;
+      ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI*2);
+      ctx.fillStyle = color; ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+    };
+    drawDot(gpsPath[0], "#22c55e");
+    drawDot(gpsPath[gpsPath.length-1], "#fc4c02");
+    ctx.restore();
+  } else {
+    // Pas de tracé — fond simple
+    ctx.fillStyle = "#0d1b2a";
+    ctx.fillRect(W*0.5, 40, W*0.45, H-80);
+    ctx.fillStyle = "#333";
+    ctx.font = "16px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("Tracé GPS non disponible", W*0.72, H/2);
+  }
+
+  // Colonne gauche — stats
+  const leftX = 60;
+  ctx.textAlign = "left";
+
+  // Logo / titre
+  ctx.fillStyle = "#fc4c02";
+  ctx.font = "bold 22px system-ui";
+  ctx.fillText("🐕 MushTrack", leftX, 55);
+
+  ctx.fillStyle = "#aaa";
+  ctx.font = "14px system-ui";
+  ctx.fillText(dateStr, leftX, 80);
+
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 16px system-ui";
+  ctx.fillText(runType, leftX, 108);
+  if (dogs) { ctx.fillStyle = "#fc4c02"; ctx.font = "13px system-ui"; ctx.fillText("🐾 " + dogs, leftX, 128); }
+
+  // Grande stat km
+  ctx.fillStyle = "#fc4c02";
+  ctx.font = "bold 96px system-ui";
+  ctx.fillText(km.toFixed(1), leftX, 240);
+  ctx.fillStyle = "#aaa";
+  ctx.font = "bold 28px system-ui";
+  ctx.fillText("km", leftX + ctx.measureText(km.toFixed(1)).width + 8, 240);
+
+  // Stats secondaires
+  const stats = [
+    { label: "Durée",   value: durStr },
+    { label: "Vitesse", value: speed.toFixed(1) + " km/h" },
+    { label: "Musher",  value: musher }
+  ];
+  let sy = 300;
+  stats.forEach(s => {
+    ctx.fillStyle = "#666";
+    ctx.font = "13px system-ui";
+    ctx.fillText(s.label.toUpperCase(), leftX, sy);
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 20px system-ui";
+    ctx.fillText(s.value, leftX, sy + 22);
+    sy += 58;
+  });
+
+  // Bande orange bas
+  ctx.fillStyle = "#fc4c02";
+  ctx.fillRect(0, H-8, W, 8);
+
+  // Watermark
+  ctx.fillStyle = "#444";
+  ctx.font = "12px system-ui";
+  ctx.textAlign = "right";
+  ctx.fillText("mushtrack.vercel.app", W - 20, H - 18);
+
+  // Partage
+  canvas.toBlob(async blob => {
+    const file = new File([blob], "sortie-mushtrack.png", { type: "image/png" });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          title: `Sortie MushTrack — ${km.toFixed(1)} km`,
+          text: `${runType} • ${km.toFixed(1)} km • ${durStr} • ${speed.toFixed(1)} km/h`,
+          files: [file]
+        });
+      } catch(e) { if (e.name !== "AbortError") downloadShareImage(blob); }
+    } else {
+      downloadShareImage(blob);
+    }
+  }, "image/png");
+}
+
+function downloadShareImage(blob) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `sortie-mushtrack-${new Date().toISOString().slice(0,10)}.png`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
 
 function exportSeasonPDF() {
   const { jsPDF } = window.jspdf;

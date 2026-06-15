@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="icon-192.png" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="styles.css?v=20260621" />
+    <link rel="stylesheet" href="styles.css?v=20260622" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
   </head>
@@ -275,8 +275,13 @@
             Notes
             <textarea id="notes" rows="3">Chiens calmes, bonne traction.</textarea>
           </label>
-          <button class="primary-button" id="save-run" type="button">Enregistrer la sortie</button>
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <button class="primary-button" id="save-run" type="button" style="flex:2">Enregistrer la sortie</button>
+            <button class="secondary-button" id="share-run-btn" type="button" style="flex:1">📤 Partager</button>
+          </div>
         </section>
+        <!-- Canvas caché pour la carte de partage -->
+        <canvas id="share-canvas" style="display:none" width="900" height="500"></canvas>
 
         <!-- Historique -->
         <div class="strava-history-header">
@@ -787,6 +792,6 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-    <script src="app.js?v=20260621"></script>
+    <script src="app.js?v=20260622"></script>
   </body>
 </html>
