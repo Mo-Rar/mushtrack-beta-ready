@@ -1494,7 +1494,13 @@ textarea {
 .alert-list,
 .team-health,
 .checklist,
-.agenda-list,
+.agenda-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
 .plan-insights {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
