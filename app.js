@@ -5886,16 +5886,22 @@ function renderLeaderboardRows(entries, myKm) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Calculateur de ration alimentaire ────────────────────────────────────────
-function calcRation(weightKg, weekKm, kcalPer100g) {
-  const dailyKm   = weekKm / 7;
+function calcRation(weightKg, weekKm, kcalPer100g, season) {
+  const dailyKm = weekKm / 7;
+
   // Maintenance NRC : 132 × kg^0.75 kcal/jour
-  const maint     = 132 * Math.pow(weightKg, 0.75);
-  // Exercice mushing : ~4.0 kcal/kg/km (études Iditarod, Hinchcliff et al.)
-  // 1.6 kcal/kg/km était valable pour la course à pied — trop bas pour le traîneau en froid
-  const exercise  = 4.0 * weightKg * dailyKm;
+  const maint = 132 * Math.pow(weightKg, 0.75);
+
+  // Coût de l'exercice selon la saison :
+  // Hiver : 4.0 kcal/kg/km — traîneau en froid, thermorégulation élevée (Hinchcliff et al.)
+  // Été   : 2.5 kcal/kg/km — dryland/canicross, chaleur réduit les besoins en thermogenèse
+  //         mais augmente les pertes hydriques (pas de compensation calorique)
+  const kcalPerKgKm = (season === "summer") ? 2.5 : 4.0;
+  const exercise = kcalPerKgKm * weightKg * dailyKm;
+
   const totalKcal = maint + exercise;
   const grams     = Math.round((totalKcal / kcalPer100g) * 100);
-  return { grams, totalKcal: Math.round(totalKcal), maint: Math.round(maint), exercise: Math.round(exercise) };
+  return { grams, totalKcal: Math.round(totalKcal), maint: Math.round(maint), exercise: Math.round(exercise), kcalPerKgKm };
 }
 
 document.getElementById("toggle-ration-calc")?.addEventListener("click", () => {
@@ -5927,8 +5933,12 @@ document.getElementById("calc-ration-btn")?.addEventListener("click", () => {
   const result  = document.getElementById("ration-result");
   if (!weight || !result) return;
 
-  const { grams, totalKcal, maint, exercise } = calcRation(weight, km, density);
+  const season = state.seasonMode || "winter";
+  const { grams, totalKcal, maint, exercise, kcalPerKgKm } = calcRation(weight, km, density, season);
   const intensity = km === 0 ? "repos complet" : km < 20 ? "faible activité" : km < 50 ? "activité modérée" : "haute performance";
+  const seasonLabel = season === "summer"
+    ? `☀️ Base été — ${kcalPerKgKm} kcal/kg/km (dryland/canicross, chaleur)`
+    : `❄️ Base hiver — ${kcalPerKgKm} kcal/kg/km (traîneau, froid)`;
 
   result.classList.remove("hidden");
   result.innerHTML = `
@@ -5941,6 +5951,7 @@ document.getElementById("calc-ration-btn")?.addEventListener("click", () => {
       <div class="ration-breakdown">
         <span>🏠 Maintenance</span><span>${maint} kcal</span>
         <span>🏃 Exercice</span><span>${exercise} kcal</span>
+        <span style="grid-column:1/-1;font-size:0.75rem;color:#888;margin-top:4px">${seasonLabel}</span>
       </div>
       ${state.dogs.length > 1 ? `
       <div class="ration-team">
