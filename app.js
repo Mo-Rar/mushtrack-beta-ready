@@ -5886,22 +5886,42 @@ function renderLeaderboardRows(entries, myKm) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Calculateur de ration alimentaire ────────────────────────────────────────
-function calcRation(weightKg, weekKm, kcalPer100g, season) {
-  const dailyKm = weekKm / 7;
-
+function calcRation(weightKg, weekKm, kcalPer100g, season, raceType) {
   // Maintenance NRC : 132 × kg^0.75 kcal/jour
   const maint = 132 * Math.pow(weightKg, 0.75);
 
-  // Coût de l'exercice selon la saison :
-  // Hiver : 4.0 kcal/kg/km — traîneau en froid, thermorégulation élevée (Hinchcliff et al.)
-  // Été   : 2.5 kcal/kg/km — dryland/canicross, chaleur réduit les besoins en thermogenèse
-  //         mais augmente les pertes hydriques (pas de compensation calorique)
-  const kcalPerKgKm = (season === "summer") ? 2.5 : 4.0;
-  const exercise = kcalPerKgKm * weightKg * dailyKm;
+  let exercise, baseLabel;
+
+  if (raceType === "Canicross" || raceType === "Dryland") {
+    // Canicross / dryland : approche kcal/kg/jour selon intensité hebdo
+    // (les courses sont courtes mais rapides → coût glycolytique élevé + récupération)
+    // Source : 100–200 kcal/kg/jour selon le niveau (littérature vétérinaire sportive)
+    let kcalPerKgDay, niveauLabel;
+    if (weekKm < 20) {
+      kcalPerKgDay = 110; niveauLabel = "loisir (<20 km/sem)";
+    } else if (weekKm < 50) {
+      kcalPerKgDay = 145; niveauLabel = "régulier (20–50 km/sem)";
+    } else {
+      kcalPerKgDay = 185; niveauLabel = "intensif/compétition (>50 km/sem)";
+    }
+    const totalTarget = kcalPerKgDay * weightKg;
+    exercise  = Math.max(0, totalTarget - maint);
+    baseLabel = `🏃 Canicross ${niveauLabel} — ${kcalPerKgDay} kcal/kg/jour`;
+  } else {
+    // Mushing traîneau : approche kcal/kg/km
+    // Hiver : 4.0 kcal/kg/km (traîneau, froid, thermorégulation — Hinchcliff et al.)
+    // Été   : 2.5 kcal/kg/km (dryland été, pas de thermogenèse hivernale)
+    const kcalPerKgKm = (season === "summer") ? 2.5 : 4.0;
+    const dailyKm     = weekKm / 7;
+    exercise  = kcalPerKgKm * weightKg * dailyKm;
+    baseLabel = season === "summer"
+      ? `☀️ Base été — ${kcalPerKgKm} kcal/kg/km (traîneau dryland, chaleur)`
+      : `❄️ Base hiver — ${kcalPerKgKm} kcal/kg/km (traîneau en froid — études Iditarod)`;
+  }
 
   const totalKcal = maint + exercise;
   const grams     = Math.round((totalKcal / kcalPer100g) * 100);
-  return { grams, totalKcal: Math.round(totalKcal), maint: Math.round(maint), exercise: Math.round(exercise), kcalPerKgKm };
+  return { grams, totalKcal: Math.round(totalKcal), maint: Math.round(maint), exercise: Math.round(exercise), baseLabel };
 }
 
 document.getElementById("toggle-ration-calc")?.addEventListener("click", () => {
@@ -5933,12 +5953,10 @@ document.getElementById("calc-ration-btn")?.addEventListener("click", () => {
   const result  = document.getElementById("ration-result");
   if (!weight || !result) return;
 
-  const season = state.seasonMode || "winter";
-  const { grams, totalKcal, maint, exercise, kcalPerKgKm } = calcRation(weight, km, density, season);
+  const season   = state.seasonMode || "winter";
+  const raceType = state.raceType   || "";
+  const { grams, totalKcal, maint, exercise, baseLabel } = calcRation(weight, km, density, season, raceType);
   const intensity = km === 0 ? "repos complet" : km < 20 ? "faible activité" : km < 50 ? "activité modérée" : "haute performance";
-  const seasonLabel = season === "summer"
-    ? `☀️ Base été — ${kcalPerKgKm} kcal/kg/km (dryland/canicross, chaleur)`
-    : `❄️ Base hiver — ${kcalPerKgKm} kcal/kg/km (traîneau, froid)`;
 
   result.classList.remove("hidden");
   result.innerHTML = `
@@ -5951,7 +5969,7 @@ document.getElementById("calc-ration-btn")?.addEventListener("click", () => {
       <div class="ration-breakdown">
         <span>🏠 Maintenance</span><span>${maint} kcal</span>
         <span>🏃 Exercice</span><span>${exercise} kcal</span>
-        <span style="grid-column:1/-1;font-size:0.75rem;color:#888;margin-top:4px">${seasonLabel}</span>
+        <span style="grid-column:1/-1;font-size:0.75rem;color:#888;margin-top:4px">${baseLabel}</span>
       </div>
       ${state.dogs.length > 1 ? `
       <div class="ration-team">
