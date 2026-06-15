@@ -3425,11 +3425,6 @@ function renderPlanInsights() {
       <b>${context.weekKm.toFixed(1)} km cette semaine</b>
       <small>${context.loadRatio > 1.25 ? "Plan allege automatiquement." : "Plan ajuste selon tes sorties."}</small>
     </article>
-    <article class="plan-signal ${weekActions.level}">
-      <span>Cette semaine</span>
-      <b>${weekActions.title}</b>
-      <small>${weekActions.text}</small>
-    </article>
   `;
 }
 
