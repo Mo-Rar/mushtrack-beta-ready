@@ -775,8 +775,128 @@ const defaultState = {
   runs: [],
   planWeather: null,
   planWeatherUpdatedAt: null,
-  reminders: []
+  reminders: [],
+  lang: "fr"
 };
+
+// ── Traductions ──────────────────────────────────────────────────────────────
+const TRANSLATIONS = {
+  fr: {
+    nav_dashboard: "Accueil",
+    nav_runs: "Sorties",
+    nav_dogs: "Chiens",
+    nav_races: "Courses",
+    nav_settings: "Paramètres",
+    btn_start_run: "Démarrer une sortie",
+    btn_add_dog: "Ajouter un chien",
+    btn_save: "Enregistrer",
+    btn_cancel: "Annuler",
+    btn_delete: "Supprimer",
+    label_name: "Nom",
+    label_distance: "Distance (km)",
+    label_duration: "Durée",
+    label_date: "Date",
+    label_notes: "Notes",
+    label_weight: "Poids (kg)",
+    label_breed: "Race",
+    label_language: "Langue",
+    settings_title: "Paramètres",
+    runs_title: "Mes sorties",
+    dogs_title: "Mes chiens",
+    races_title: "Courses",
+    race_result_title: "Résultat de course",
+    race_rank: "Classement",
+    race_participants: "/ Participants",
+    race_time: "Temps",
+    race_notes: "Note personnelle",
+    upcoming: "À venir",
+    past: "Passé",
+    interested: "Intéressé",
+    participating: "Participe"
+  },
+  en: {
+    nav_dashboard: "Home",
+    nav_runs: "Runs",
+    nav_dogs: "Dogs",
+    nav_races: "Races",
+    nav_settings: "Settings",
+    btn_start_run: "Start a run",
+    btn_add_dog: "Add a dog",
+    btn_save: "Save",
+    btn_cancel: "Cancel",
+    btn_delete: "Delete",
+    label_name: "Name",
+    label_distance: "Distance (km)",
+    label_duration: "Duration",
+    label_date: "Date",
+    label_notes: "Notes",
+    label_weight: "Weight (kg)",
+    label_breed: "Breed",
+    label_language: "Language",
+    settings_title: "Settings",
+    runs_title: "My runs",
+    dogs_title: "My dogs",
+    races_title: "Races",
+    race_result_title: "Race result",
+    race_rank: "Rank",
+    race_participants: "/ Participants",
+    race_time: "Time",
+    race_notes: "Personal note",
+    upcoming: "Upcoming",
+    past: "Past",
+    interested: "Interested",
+    participating: "Participating"
+  },
+  de: {
+    nav_dashboard: "Startseite",
+    nav_runs: "Ausfahrten",
+    nav_dogs: "Hunde",
+    nav_races: "Rennen",
+    nav_settings: "Einstellungen",
+    btn_start_run: "Ausfahrt starten",
+    btn_add_dog: "Hund hinzufügen",
+    btn_save: "Speichern",
+    btn_cancel: "Abbrechen",
+    btn_delete: "Löschen",
+    label_name: "Name",
+    label_distance: "Distanz (km)",
+    label_duration: "Dauer",
+    label_date: "Datum",
+    label_notes: "Notizen",
+    label_weight: "Gewicht (kg)",
+    label_breed: "Rasse",
+    label_language: "Sprache",
+    settings_title: "Einstellungen",
+    runs_title: "Meine Ausfahrten",
+    dogs_title: "Meine Hunde",
+    races_title: "Rennen",
+    race_result_title: "Rennergebnis",
+    race_rank: "Platzierung",
+    race_participants: "/ Teilnehmer",
+    race_time: "Zeit",
+    race_notes: "Persönliche Notiz",
+    upcoming: "Bevorstehend",
+    past: "Vergangen",
+    interested: "Interessiert",
+    participating: "Teilnahme"
+  }
+};
+
+function t(key) {
+  const lang = (state && state.lang) || "fr";
+  return (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) || TRANSLATIONS.fr[key] || key;
+}
+
+function applyLang() {
+  const lang = (state && state.lang) || "fr";
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-t]").forEach(el => {
+    const key = el.dataset.t;
+    el.textContent = t(key);
+  });
+  const sel = document.getElementById("lang-select");
+  if (sel) sel.value = lang;
+}
 
 let state = loadState();
 let timer = null;
@@ -881,6 +1001,7 @@ function normalizeState(value) {
   value.planWeather ||= null;
   value.planWeatherUpdatedAt ||= null;
   if (!Array.isArray(value.reminders)) value.reminders = [];
+  if (!value.lang) value.lang = "fr";
   return value;
 }
 
@@ -4010,10 +4131,33 @@ function renderAgenda() {
             ${notesHtml}
           </div>
         </div>
-        <div style="display:flex;gap:8px;margin-top:12px">
-          <button data-agenda-edit="${item.id}" type="button" style="flex:1;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #fc4c02;border-radius:8px;background:#fff;color:#fc4c02;cursor:pointer">✏️ Modifier</button>
-          <button data-agenda-delete="${item.id}" type="button" style="flex:1;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#999;cursor:pointer">🗑 Supprimer</button>
+        ${isRace && item.result ? `
+        <div style="margin-top:10px;padding:10px 12px;background:#fff8f5;border-radius:10px;border:1px solid #fcd9c9">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:1.2rem">🏆</span>
+            ${item.result.rank ? `<strong style="font-size:1rem;color:#fc4c02">${item.result.rank}${item.result.totalParticipants ? ` / ${item.result.totalParticipants}` : ""}</strong>` : ""}
+            ${item.result.time ? `<span style="font-size:0.85rem;color:#666">· ${item.result.time}</span>` : ""}
+            ${item.result.notes ? `<span style="font-size:0.82rem;color:#888">· ${item.result.notes}</span>` : ""}
+          </div>
+        </div>` : ""}
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+          ${isRace && days < 0 ? `<button data-agenda-result="${item.id}" type="button" style="flex:1;min-width:100px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #1a7a4a;border-radius:8px;background:#fff;color:#1a7a4a;cursor:pointer">${item.result ? "✏️ Résultat" : "🏆 Résultat"}</button>` : ""}
+          <button data-agenda-edit="${item.id}" type="button" style="flex:1;min-width:80px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #fc4c02;border-radius:8px;background:#fff;color:#fc4c02;cursor:pointer">✏️ Modifier</button>
+          <button data-agenda-delete="${item.id}" type="button" style="flex:1;min-width:80px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#999;cursor:pointer">🗑 Supprimer</button>
         </div>
+        <form data-result-form="${item.id}" style="display:none;flex-direction:column;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #eee">
+          <p style="margin:0 0 4px;font-size:0.78rem;font-weight:700;color:#1a7a4a;text-transform:uppercase;letter-spacing:.05em">🏆 Résultat de course</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <label style="font-size:0.8rem;font-weight:600;color:#555">Classement<input name="rank" type="text" value="${item.result?.rank || ""}" placeholder="Ex: 3" style="display:block;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem;width:100%;box-sizing:border-box"/></label>
+            <label style="font-size:0.8rem;font-weight:600;color:#555">/ Participants<input name="totalParticipants" type="text" value="${item.result?.totalParticipants || ""}" placeholder="Ex: 42" style="display:block;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem;width:100%;box-sizing:border-box"/></label>
+          </div>
+          <label style="font-size:0.8rem;font-weight:600;color:#555">Temps<input name="time" type="text" value="${item.result?.time || ""}" placeholder="Ex: 1h23m45s" style="display:block;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem"/></label>
+          <label style="font-size:0.8rem;font-weight:600;color:#555">Note personnelle<input name="notes" type="text" value="${item.result?.notes || ""}" placeholder="Super course, conditions parfaites..." style="display:block;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem"/></label>
+          <div style="display:flex;gap:8px">
+            <button type="submit" style="flex:1;padding:9px;background:#1a7a4a;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">Enregistrer</button>
+            <button type="button" data-result-cancel="${item.id}" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;cursor:pointer">Annuler</button>
+          </div>
+        </form>
         <form data-agenda-edit-form="${item.id}" style="display:none;flex-direction:column;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #eee">
           <input name="name" type="text" value="${(item.name || item.title || "").replace(/"/g,"&quot;")}" placeholder="Titre" required style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem" />
           <input name="date" type="date" value="${item.date || ""}" required style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem" />
@@ -4068,6 +4212,43 @@ function renderAgenda() {
         saveState();
         showSyncBadge("✏️ Modifié");
       }
+      renderAgenda();
+    });
+  });
+
+  // Résultat de course — bouton + formulaire
+  list.querySelectorAll("[data-agenda-result]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.agendaResult;
+      const form = list.querySelector(`[data-result-form="${id}"]`);
+      if (!form) return;
+      const isOpen = form.style.display === "flex";
+      form.style.display = isOpen ? "none" : "flex";
+    });
+  });
+
+  list.querySelectorAll("[data-result-cancel]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.resultCancel;
+      const form = list.querySelector(`[data-result-form="${id}"]`);
+      if (form) form.style.display = "none";
+    });
+  });
+
+  list.querySelectorAll("[data-result-form]").forEach(form => {
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const id = form.dataset.resultForm;
+      const idx = state.agenda.findIndex(a => a.id === id);
+      if (idx === -1) return;
+      const data = new FormData(form);
+      state.agenda[idx].result = {
+        rank:             data.get("rank").trim(),
+        totalParticipants: data.get("totalParticipants").trim(),
+        time:             data.get("time").trim(),
+        notes:            data.get("notes").trim()
+      };
+      saveState();
       renderAgenda();
     });
   });
@@ -4617,10 +4798,42 @@ function finishCurrentRun() {
 }
 
 function detectRunType(km, speed) {
-  if (km >= 28) return "Sortie longue";
-  if (speed >= 18) return "Sprint";
-  if (speed <= 10 || km <= 6) return "Recuperation";
-  if (speed >= 14 && km >= 12) return "Endurance";
+  const disciplines = (state.profile.disciplines || "").toLowerCase();
+  const isSummer    = state.seasonMode === "summer";
+  const isCanicross = disciplines.includes("canicross");
+  const isSkijor    = disciplines.includes("ski") || disciplines.includes("joering");
+  const isBike      = disciplines.includes("bike") || disciplines.includes("vtt") || disciplines.includes("trottinette");
+  const isSled      = disciplines.includes("traineau") || disciplines.includes("kart") || disciplines.includes("dryland");
+
+  // Vitesse très élevée → traîneau / kart / ski-joering
+  if (speed >= 28) {
+    if (isSkijor)  return "Ski-joering";
+    if (isBike)    return "Cani-VTT";
+    if (isSled)    return "Traineau / Kart";
+    return isSummer ? "Dryland sprint" : "Sprint traineau";
+  }
+  if (speed >= 20) {
+    if (isSled && !isSummer)   return "Endurance traineau";
+    if (isSkijor)              return "Ski-joering endurance";
+    if (isBike)                return "Cani-VTT endurance";
+    return "Sprint";
+  }
+  // Vitesse canicross / trot (12-20 km/h)
+  if (speed >= 14) {
+    if (isCanicross)  return km >= 15 ? "Canicross longue" : "Canicross";
+    if (km >= 20)     return "Sortie longue";
+    if (km >= 12)     return "Endurance";
+    return "Canicross";
+  }
+  // Allure modérée
+  if (speed >= 10) {
+    if (km <= 6)  return "Recuperation";
+    if (km >= 25) return "Sortie longue";
+    return "Endurance";
+  }
+  // Lente / très court
+  if (km <= 5) return "Recuperation";
+  if (km >= 20) return "Sortie longue";
   return "Cotes / technique";
 }
 
@@ -5644,4 +5857,32 @@ setTimeout(() => {
 // Initialisation au démarrage
 checkReminders();
 fetchLeaderboard();
+applyLang();
+
+// Boutons de langue
+document.querySelectorAll(".lang-btn[data-lang]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    state.lang = btn.dataset.lang;
+    saveState();
+    // Mettre à jour le style actif
+    document.querySelectorAll(".lang-btn").forEach(b => {
+      const active = b.dataset.lang === state.lang;
+      b.style.borderColor = active ? "#fc4c02" : "#ddd";
+      b.style.background   = active ? "#fff4f0" : "#fff";
+      b.style.color        = active ? "#fc4c02" : "#555";
+    });
+    applyLang();
+  });
+});
+
+// Appliquer le style actif au chargement
+function updateLangButtons() {
+  document.querySelectorAll(".lang-btn").forEach(b => {
+    const active = b.dataset.lang === (state.lang || "fr");
+    b.style.borderColor = active ? "#fc4c02" : "#ddd";
+    b.style.background   = active ? "#fff4f0" : "#fff";
+    b.style.color        = active ? "#fc4c02" : "#555";
+  });
+}
+updateLangButtons();
 // ─────────────────────────────────────────────────────────────────────────────
