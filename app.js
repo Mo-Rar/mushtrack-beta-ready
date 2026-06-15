@@ -39,6 +39,7 @@ document.getElementById("auth-toggle-btn")?.addEventListener("click", () => {
   document.getElementById("auth-toggle-text").textContent = isSignup ? "Déjà un compte ?" : "Pas encore de compte ?";
   document.getElementById("auth-toggle-btn").textContent = isSignup ? "Se connecter" : "Créer un compte";
   document.getElementById("auth-password").autocomplete = isSignup ? "new-password" : "current-password";
+  document.getElementById("auth-pseudo-label").style.display = isSignup ? "" : "none";
   setAuthError(null);
 });
 
@@ -54,12 +55,18 @@ document.getElementById("auth-form")?.addEventListener("submit", async (e) => {
   try {
     let result;
     if (authMode === "signup") {
+      const pseudo = document.getElementById("auth-pseudo")?.value.trim() || "";
       result = await supabase.auth.signUp({ email, password });
       if (!result.error && result.data?.user && !result.data.session) {
         setAuthError("Vérifiez votre email pour confirmer votre compte.");
         btn.disabled = false;
         btn.textContent = "Créer le compte";
         return;
+      }
+      if (!result.error && pseudo) {
+        state.profile = state.profile || {};
+        if (!state.profile.name) state.profile.name = pseudo;
+        saveState();
       }
     } else {
       result = await supabase.auth.signInWithPassword({ email, password });
