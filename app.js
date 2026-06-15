@@ -1199,6 +1199,7 @@ function render() {
   renderWebAdvice();
   renderNextRace();
   fillSettingsForm();
+  renderProgressChart();
 }
 
 function bindText(name, value) {
@@ -1206,6 +1207,161 @@ function bindText(name, value) {
     node.textContent = value;
   });
 }
+
+// ── Graphique de progression (km par semaine) ────────────────────────────────
+function renderProgressChart() {
+  const canvas = document.getElementById("progress-chart");
+  const empty  = document.getElementById("chart-empty");
+  if (!canvas) return;
+
+  const WEEKS = 10;
+  const now   = new Date();
+
+  // Construire tableau des 10 dernières semaines (lundi→dimanche)
+  const weeks = [];
+  for (let w = WEEKS - 1; w >= 0; w--) {
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - now.getDay() + 1 - w * 7); // lundi
+    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+    weeks.push({ monday, sunday, km: 0, label: `S${WEEKS - w}` });
+  }
+
+  // Sommer les km de chaque run dans la bonne semaine
+  state.runs.forEach(r => {
+    if (!r.date) return;
+    const d = new Date(r.date + "T12:00:00");
+    const wk = weeks.find(w => d >= w.monday && d <= w.sunday);
+    if (wk) wk.km += Number(r.km || 0);
+  });
+
+  const hasData = weeks.some(w => w.km > 0);
+  if (empty) empty.classList.toggle("hidden", hasData);
+  canvas.style.display = hasData ? "block" : "none";
+  if (!hasData) return;
+
+  const target = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
+  const maxKm  = Math.max(...weeks.map(w => w.km), target, 1);
+
+  const dpr  = window.devicePixelRatio || 1;
+  const W    = canvas.parentElement.clientWidth || 340;
+  const H    = 130;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + "px";
+  canvas.style.height = H + "px";
+
+  const ctx  = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const PAD_LEFT = 28, PAD_RIGHT = 8, PAD_TOP = 10, PAD_BOT = 22;
+  const chartW = W - PAD_LEFT - PAD_RIGHT;
+  const chartH = H - PAD_TOP - PAD_BOT;
+  const barW   = Math.floor(chartW / WEEKS * 0.55);
+  const gap    = chartW / WEEKS;
+
+  // Ligne cible
+  const targetY = PAD_TOP + chartH * (1 - target / maxKm);
+  ctx.setLineDash([4, 3]);
+  ctx.strokeStyle = "#fc4c02";
+  ctx.lineWidth = 1;
+  ctx.globalAlpha = 0.4;
+  ctx.beginPath();
+  ctx.moveTo(PAD_LEFT, targetY);
+  ctx.lineTo(W - PAD_RIGHT, targetY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.globalAlpha = 1;
+
+  // Axe Y — labels
+  ctx.fillStyle = "#aaa";
+  ctx.font = `${10 * dpr / dpr}px system-ui`;
+  ctx.textAlign = "right";
+  ctx.fillText(`${Math.round(maxKm)}`, PAD_LEFT - 4, PAD_TOP + 4);
+  ctx.fillText("0", PAD_LEFT - 4, PAD_TOP + chartH + 2);
+
+  weeks.forEach((wk, i) => {
+    const x  = PAD_LEFT + i * gap + (gap - barW) / 2;
+    const bh = wk.km > 0 ? Math.max(4, (wk.km / maxKm) * chartH) : 0;
+    const y  = PAD_TOP + chartH - bh;
+    const isCurrentWeek = i === WEEKS - 1;
+
+    // Barre
+    ctx.fillStyle = isCurrentWeek ? "#fc4c02" : (wk.km >= target ? "#2f8f46" : "#c8dff5");
+    ctx.beginPath();
+    ctx.roundRect(x, y, barW, bh, [3, 3, 0, 0]);
+    ctx.fill();
+
+    // Valeur km au-dessus si > 0
+    if (wk.km > 0) {
+      ctx.fillStyle = isCurrentWeek ? "#fc4c02" : "#666";
+      ctx.font = `bold ${9}px system-ui`;
+      ctx.textAlign = "center";
+      ctx.fillText(Math.round(wk.km), x + barW / 2, y - 3);
+    }
+
+    // Label semaine en bas
+    ctx.fillStyle = "#bbb";
+    ctx.font = `${9}px system-ui`;
+    ctx.textAlign = "center";
+    ctx.fillText(isCurrentWeek ? "Cette sem." : wk.label, x + barW / 2, H - 5);
+  });
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Météo GPS (Open-Meteo, sans clé API) ─────────────────────────────────────
+const WMO_CODES = {
+  0:"Ciel dégagé",1:"Peu nuageux",2:"Partiellement nuageux",3:"Couvert",
+  45:"Brouillard",48:"Brouillard givrant",
+  51:"Bruine légère",53:"Bruine",55:"Bruine dense",
+  61:"Pluie légère",63:"Pluie",65:"Pluie forte",
+  71:"Neige légère",73:"Neige",75:"Neige forte",77:"Grésil",
+  80:"Averses légères",81:"Averses",82:"Averses fortes",
+  85:"Averses de neige",86:"Averses de neige fortes",
+  95:"Orage",96:"Orage avec grêle",99:"Orage avec forte grêle"
+};
+const WMO_ICONS = {
+  0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",
+  51:"🌦️",53:"🌦️",55:"🌧️",61:"🌧️",63:"🌧️",65:"🌧️",
+  71:"🌨️",73:"❄️",75:"❄️",77:"🌨️",
+  80:"🌦️",81:"🌧️",82:"⛈️",85:"🌨️",86:"❄️",
+  95:"⛈️",96:"⛈️",99:"⛈️"
+};
+
+async function fetchAndShowWeather(lat, lon) {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&current=temperature_2m,wind_speed_10m,weather_code&wind_speed_unit=kmh`;
+    const res  = await fetch(url);
+    const data = await res.json();
+    const cur  = data.current;
+    const code = cur.weather_code;
+    const temp = Math.round(cur.temperature_2m);
+    const wind = Math.round(cur.wind_speed_10m);
+    const desc = WMO_CODES[code] || "—";
+    const icon = WMO_ICONS[code] || "🌡️";
+
+    // Affiche la bandelette météo sur l'écran GPS
+    const strip = document.getElementById("weather-strip");
+    if (strip) {
+      document.getElementById("weather-icon").textContent  = icon;
+      document.getElementById("weather-temp").textContent  = `${temp}°C`;
+      document.getElementById("weather-wind").textContent  = `${wind} km/h`;
+      document.getElementById("weather-desc").textContent  = desc;
+      strip.classList.remove("hidden");
+    }
+
+    // Pré-remplit le champ Météo du bilan de sortie
+    const weatherInput = document.getElementById("weather");
+    if (weatherInput) weatherInput.value = `${icon} ${temp}°C · ${wind} km/h · ${desc}`;
+
+  } catch {
+    // Hors ligne ou API indisponible — pas grave, champ reste vide
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 function attachLongPress(element, callback) {
   let pressTimer = null;
@@ -1337,7 +1493,16 @@ function renderDogProfile() {
   const formEmoji    = health.level === "danger" ? "🔴" : health.level === "warning" ? "🟡" : "🟢";
 
   const healthHistory = Array.isArray(dog.healthHistory) ? dog.healthHistory : [];
-  const healthIcons   = { blessure:"🤕", veto:"🏥", traitement:"💊", repos:"😴", autre:"📌" };
+  const healthIcons   = { blessure:"🤕", veto:"🏥", traitement:"💊", repos:"😴", vaccin:"💉", vermifuge:"🐛", autre:"📌" };
+
+  // Prochains rappels (vaccin/vermifuge avec nextDue)
+  const upcomingReminders = healthHistory.filter(e =>
+    e.nextDue && (e.type === "vaccin" || e.type === "vermifuge")
+  ).map(e => {
+    const due  = new Date(e.nextDue + "T12:00:00");
+    const days = Math.round((due - Date.now()) / 86400000);
+    return { ...e, days };
+  }).filter(e => e.days <= 60).sort((a, b) => a.days - b.days);
 
   list.innerHTML = `
     <article class="profile-hero" style="position:relative">
@@ -1408,16 +1573,33 @@ function renderDogProfile() {
         <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0">Historique santé</p>
         <button type="button" id="add-health-event-btn" style="font-size:0.78rem;color:#fc4c02;background:none;border:none;font-weight:700;cursor:pointer">+ Ajouter</button>
       </div>
+      ${upcomingReminders.length > 0 ? `
+      <div class="vet-reminders">
+        ${upcomingReminders.map(e => `
+          <div class="vet-reminder ${e.days < 0 ? "overdue" : e.days <= 14 ? "urgent" : ""}">
+            <span>${healthIcons[e.type]}</span>
+            <div>
+              <strong>${e.type === "vaccin" ? "Vaccin" : "Vermifuge"} — ${e.notes || ""}</strong>
+              <small>${e.days < 0 ? `En retard de ${Math.abs(e.days)} j` : e.days === 0 ? "Aujourd'hui !" : `Dans ${e.days} jour${e.days > 1 ? "s" : ""}`}</small>
+            </div>
+          </div>`).join("")}
+      </div>` : ""}
       <form id="health-event-form" style="display:none;flex-direction:column;gap:8px;background:#fff;border-radius:12px;padding:14px;border:1px solid #f0f0f0;margin-bottom:8px">
         <select id="health-event-type" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem">
-          <option value="blessure">🤕 Blessure</option>
+          <option value="vaccin">💉 Vaccin</option>
+          <option value="vermifuge">🐛 Vermifuge</option>
           <option value="veto">🏥 Visite vétérinaire</option>
+          <option value="blessure">🤕 Blessure</option>
           <option value="traitement">💊 Traitement</option>
           <option value="repos">😴 Repos imposé</option>
           <option value="autre">📌 Autre</option>
         </select>
         <input id="health-event-date" type="date" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem" />
-        <textarea id="health-event-notes" placeholder="Description..." rows="2" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem;resize:none"></textarea>
+        <textarea id="health-event-notes" placeholder="Description (ex: Rage + Parvo, Dr Martin...)" rows="2" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem;resize:none"></textarea>
+        <label id="health-next-due-wrap" style="display:flex;flex-direction:column;gap:4px;font-size:0.82rem;color:#666;font-weight:600">
+          Prochain rappel
+          <input id="health-event-next-due" type="date" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem;font-weight:400" />
+        </label>
         <div style="display:flex;gap:8px">
           <button type="submit" style="flex:1;padding:9px;background:#fc4c02;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">Enregistrer</button>
           <button type="button" id="health-event-cancel" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;cursor:pointer">Annuler</button>
@@ -1459,10 +1641,21 @@ function renderDogProfile() {
   // Bouton + Ajouter événement santé
   const addBtn = list.querySelector("#add-health-event-btn");
   const healthForm = list.querySelector("#health-event-form");
+  const nextDueWrap = list.querySelector("#health-next-due-wrap");
+  const typeSelect  = list.querySelector("#health-event-type");
+
+  function toggleNextDue() {
+    const needsRecall = typeSelect?.value === "vaccin" || typeSelect?.value === "vermifuge";
+    if (nextDueWrap) nextDueWrap.style.display = needsRecall ? "flex" : "none";
+  }
+  typeSelect?.addEventListener("change", toggleNextDue);
+  toggleNextDue();
+
   addBtn?.addEventListener("click", () => {
     healthForm.style.display = healthForm.style.display === "none" ? "flex" : "none";
     if (healthForm.style.display !== "none") {
       list.querySelector("#health-event-date").value = new Date().toISOString().slice(0, 10);
+      toggleNextDue();
     }
   });
   list.querySelector("#health-event-cancel")?.addEventListener("click", () => {
@@ -1473,10 +1666,13 @@ function renderDogProfile() {
     const dogIdx = state.dogs.findIndex(d => d.id === dog.id);
     if (dogIdx === -1) return;
     if (!Array.isArray(state.dogs[dogIdx].healthHistory)) state.dogs[dogIdx].healthHistory = [];
+    const type    = list.querySelector("#health-event-type").value;
+    const nextDue = list.querySelector("#health-event-next-due").value || null;
     state.dogs[dogIdx].healthHistory.push({
-      type:  list.querySelector("#health-event-type").value,
-      date:  list.querySelector("#health-event-date").value,
-      notes: list.querySelector("#health-event-notes").value.trim()
+      type,
+      date:    list.querySelector("#health-event-date").value,
+      notes:   list.querySelector("#health-event-notes").value.trim(),
+      ...(nextDue ? { nextDue } : {})
     });
     saveState();
     renderDogProfile();
@@ -4276,10 +4472,18 @@ function startGPS() {
     polyline.setLatLngs([]);
   }
 
+  let weatherFetched = false;
+
   watchId = navigator.geolocation.watchPosition(
     (position) => {
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
+
+      // Fetch météo une seule fois au démarrage
+      if (!weatherFetched) {
+        weatherFetched = true;
+        fetchAndShowWeather(lat, lon);
+      }
 
       updateMapPosition(lat, lon, "Enregistrement GPS en cours");
 

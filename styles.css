@@ -2098,6 +2098,99 @@ textarea {
   line-height: 1.4;
 }
 
+/* ── Graphique de progression ─────────────────────────────────────────────── */
+.progress-chart-wrap {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 14px;
+  padding: 12px 10px 6px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.progress-chart-wrap canvas {
+  display: block;
+  width: 100%;
+}
+
+.chart-empty {
+  text-align: center;
+  font-size: 0.82rem;
+  color: #aaa;
+  padding: 24px 16px;
+  margin: 0;
+}
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Météo GPS ────────────────────────────────────────────────────────────── */
+.weather-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.92);
+  border-radius: 20px;
+  padding: 6px 14px;
+  margin: 8px 16px 0;
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  width: fit-content;
+}
+
+.weather-strip.hidden { display: none; }
+
+.weather-sep {
+  color: #ccc;
+  font-size: 0.75rem;
+}
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Journal vétérinaire — rappels ───────────────────────────────────────── */
+.vet-reminders {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.vet-reminder {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #e8f7ef;
+  border: 1px solid #b6dfc8;
+  font-size: 0.84rem;
+}
+
+.vet-reminder.urgent {
+  background: #fff8e1;
+  border-color: #ffe082;
+}
+
+.vet-reminder.overdue {
+  background: #fdecea;
+  border-color: #f5c6c2;
+}
+
+.vet-reminder strong {
+  display: block;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.vet-reminder small {
+  font-size: 0.75rem;
+  color: #777;
+}
+
+.vet-reminder.urgent small { color: #b8860b; }
+.vet-reminder.overdue strong { color: #c0392b; }
+.vet-reminder.overdue small  { color: #c0392b; }
+/* ─────────────────────────────────────────────────────────────────────────── */
+
 /* ── Bannière partenaires ─────────────────────────────────────────────────── */
 .sponsor-banner {
   display: flex;

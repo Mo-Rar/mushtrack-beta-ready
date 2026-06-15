@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="icon-192.png" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="styles.css?v=20260618" />
+    <link rel="stylesheet" href="styles.css?v=20260619" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
   </head>
   <body>
@@ -130,6 +130,16 @@
           </button>
         </article>
 
+        <!-- Graphique de progression -->
+        <section class="section-heading" style="margin-top:18px">
+          <h2>Progression km</h2>
+          <span id="chart-period-label">10 dernières semaines</span>
+        </section>
+        <div class="progress-chart-wrap">
+          <canvas id="progress-chart" height="130"></canvas>
+          <p class="chart-empty hidden" id="chart-empty">Enregistre ta première sortie pour voir ta progression.</p>
+        </div>
+
         <!-- Bannière partenaires -->
         <section class="sponsor-banner">
           <span class="sponsor-label">Partenaires</span>
@@ -187,6 +197,16 @@
               <span class="strava-stat-unit-small">km/h</span>
             </div>
           </div>
+        </div>
+
+        <!-- Météo en direct -->
+        <div class="weather-strip hidden" id="weather-strip">
+          <span id="weather-icon">🌡️</span>
+          <span id="weather-temp">—</span>
+          <span class="weather-sep">·</span>
+          <span id="weather-wind">— km/h</span>
+          <span class="weather-sep">·</span>
+          <span id="weather-desc">—</span>
         </div>
 
         <!-- Team du jour -->
@@ -679,6 +699,6 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-    <script src="app.js?v=20260618"></script>
+    <script src="app.js?v=20260619"></script>
   </body>
 </html>
