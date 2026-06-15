@@ -5888,10 +5888,11 @@ function renderLeaderboardRows(entries, myKm) {
 // ── Calculateur de ration alimentaire ────────────────────────────────────────
 function calcRation(weightKg, weekKm, kcalPer100g) {
   const dailyKm   = weekKm / 7;
-  // Maintenance : formule NRC (132 × kg^0.75 kcal/jour)
+  // Maintenance NRC : 132 × kg^0.75 kcal/jour
   const maint     = 132 * Math.pow(weightKg, 0.75);
-  // Exercice : ~1.6 kcal/kg/km
-  const exercise  = 1.6 * weightKg * dailyKm;
+  // Exercice mushing : ~4.0 kcal/kg/km (études Iditarod, Hinchcliff et al.)
+  // 1.6 kcal/kg/km était valable pour la course à pied — trop bas pour le traîneau en froid
+  const exercise  = 4.0 * weightKg * dailyKm;
   const totalKcal = maint + exercise;
   const grams     = Math.round((totalKcal / kcalPer100g) * 100);
   return { grams, totalKcal: Math.round(totalKcal), maint: Math.round(maint), exercise: Math.round(exercise) };
