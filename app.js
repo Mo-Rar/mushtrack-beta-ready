@@ -32,6 +32,26 @@ function setAuthError(msg) {
 
 let authMode = "login"; // "login" | "signup"
 
+document.getElementById("forgot-pwd-btn")?.addEventListener("click", async () => {
+  const email = document.getElementById("auth-email").value.trim();
+  const msgEl = document.getElementById("forgot-msg");
+  if (!email) {
+    msgEl.style.display = "block";
+    msgEl.style.color = "#d94040";
+    msgEl.textContent = "Saisis ton email d'abord.";
+    return;
+  }
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: location.origin });
+  msgEl.style.display = "block";
+  if (error) {
+    msgEl.style.color = "#d94040";
+    msgEl.textContent = "Erreur : " + error.message;
+  } else {
+    msgEl.style.color = "#16a34a";
+    msgEl.textContent = "Email envoyé ! Vérifie ta boîte de réception.";
+  }
+});
+
 document.getElementById("auth-toggle-btn")?.addEventListener("click", () => {
   authMode = authMode === "login" ? "signup" : "login";
   const isSignup = authMode === "signup";
@@ -746,6 +766,7 @@ const defaultState = {
   goalKm: 1000,
   goalDate: "2027-01-01",
   seasonMode: "winter",
+  unit: "km",
   raceType: "Mid-distance",
   raceName: "",
   raceKm: 100,
@@ -1323,15 +1344,17 @@ function render() {
   const weeklyNeed = Math.ceil(remainingKm / weeksLeft);
   const progress = Math.min(100, Math.round((seasonKm / state.goalKm) * 100));
 
-  bindText("seasonKm", Math.round(seasonKm));
-  bindText("goalKm", state.goalKm);
-  bindText("goalMessage", `${remainingKm.toFixed(0)} km restants, environ ${weeklyNeed} km par semaine.`);
-  bindText("weekKm", getWeekKm().toFixed(1));
+  const isMi = (state.unit || "km") === "mi";
+  const distUnit = isMi ? "mi" : "km";
+  bindText("seasonKm", isMi ? Math.round(kmToMi(seasonKm)) : Math.round(seasonKm));
+  bindText("goalKm", isMi ? Math.round(kmToMi(state.goalKm)) : state.goalKm);
+  bindText("goalMessage", `${isMi ? Math.round(kmToMi(remainingKm)) : remainingKm.toFixed(0)} ${distUnit} restants, environ ${isMi ? Math.round(kmToMi(weeklyNeed)) : weeklyNeed} ${distUnit} par semaine.`);
+  bindText("weekKm", isMi ? kmToMi(getWeekKm()).toFixed(1) : getWeekKm().toFixed(1));
   bindText("avgSpeed", getAvgSpeed().toFixed(1));
   bindText("runCount", state.runs.length);
   bindText("dogCount", state.dogs.length);
   bindText("raceType", state.raceType);
-  bindText("raceKm", state.raceKm);
+  bindText("raceKm", isMi ? Math.round(kmToMi(state.raceKm)) : state.raceKm);
   bindText("selectedCount", `${state.selectedDogIds.length} selectionnes`);
   bindText("coachTitle", getCoachInsight().title);
   bindText("coachText", getCoachInsight().text);
@@ -6198,11 +6221,13 @@ document.getElementById("export-pdf-btn")?.addEventListener("click", exportSeaso
   const copyBtn     = document.getElementById("copy-profile-link");
   if (!slugInput) return;
 
-  // Pré-remplir depuis le profil sauvegardé
+  // Pré-remplir depuis le profil sauvegardé ou générer depuis le pseudo
   const savedSlug = localStorage.getItem("mushtrack-profile-slug") || "";
   if (savedSlug) {
     slugInput.value = savedSlug;
     showPublishedLink(savedSlug);
+  } else if (state.profile && state.profile.name) {
+    slugInput.value = state.profile.name.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
   }
 
   slugInput.addEventListener("input", () => {
@@ -6660,4 +6685,31 @@ function updateLangButtons() {
   });
 }
 updateLangButtons();
+
+// Boutons d'unités km / miles
+function kmToMi(km) { return km * 0.621371; }
+function miToKm(mi) { return mi / 0.621371; }
+function displayDist(km) {
+  if ((state.unit || "km") === "mi") return kmToMi(km).toFixed(1) + " mi";
+  return Number(km).toFixed(1) + " km";
+}
+
+document.querySelectorAll(".unit-btn[data-unit]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    state.unit = btn.dataset.unit;
+    saveState();
+    updateUnitButtons();
+    render();
+  });
+});
+
+function updateUnitButtons() {
+  document.querySelectorAll(".unit-btn").forEach(b => {
+    const active = b.dataset.unit === (state.unit || "km");
+    b.style.borderColor = active ? "#fc4c02" : "#ddd";
+    b.style.background  = active ? "#fff4f0" : "#fff";
+    b.style.color       = active ? "#fc4c02" : "#555";
+  });
+}
+updateUnitButtons();
 // ─────────────────────────────────────────────────────────────────────────────

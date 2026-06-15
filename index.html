@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="icon-192.png" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="styles.css?v=20260616" />
+    <link rel="stylesheet" href="styles.css?v=20260617" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
   </head>
@@ -43,6 +43,10 @@
           <span id="auth-toggle-text">Pas encore de compte ?</span>
           <button class="text-button" id="auth-toggle-btn" type="button">Créer un compte</button>
         </div>
+        <div style="text-align:center;margin-top:10px">
+          <button class="text-button" id="forgot-pwd-btn" type="button" style="font-size:0.8rem;color:#888">Mot de passe oublié ?</button>
+        </div>
+        <div id="forgot-msg" style="display:none;font-size:0.8rem;text-align:center;margin-top:8px;color:#16a34a"></div>
       </div>
     </div>
 
@@ -729,6 +733,15 @@
         </form>
         <section class="reminder-list" id="reminder-list"></section>
 
+        <!-- Unités -->
+        <section class="section-heading spaced" style="margin-top:20px">
+          <h2>Unités</h2>
+        </section>
+        <div style="display:flex;gap:10px;margin-bottom:20px">
+          <button class="unit-btn" data-unit="km" style="flex:1;padding:10px;border-radius:10px;border:2px solid #fc4c02;font-size:1rem;font-weight:700;cursor:pointer;background:#fff4f0;color:#fc4c02">km</button>
+          <button class="unit-btn" data-unit="mi" style="flex:1;padding:10px;border-radius:10px;border:2px solid #ddd;font-size:1rem;font-weight:700;cursor:pointer;background:#fff;color:#555">miles</button>
+        </div>
+
         <!-- Langue -->
         <section class="section-heading spaced" style="margin-top:20px">
           <h2 data-t="label_language">Langue</h2>
@@ -843,6 +856,6 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-    <script src="app.js?v=20260616"></script>
+    <script src="app.js?v=20260617"></script>
   </body>
 </html>
