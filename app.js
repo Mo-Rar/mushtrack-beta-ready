@@ -6051,14 +6051,11 @@ document.getElementById("export-pdf-btn")?.addEventListener("click", exportSeaso
       totalKm:     Math.round(totalKm * 10) / 10,
       totalRuns:   state.runs.length,
       goalKm:      state.goalKm,
-      // Photo du premier chien (avatar musher si pas de photo profil)
-      photoDataUrl: state.dogs[0]?.photoDataUrl || null,
       dogs: state.dogs.map(d => ({
-        name:        d.name,
-        role:        d.role,
-        weight:      d.weight,
-        km:          Math.round(d.km || 0),
-        photoDataUrl: d.photoDataUrl || null
+        name:   d.name,
+        role:   d.role,
+        weight: d.weight,
+        km:     Math.round(d.km || 0)
       })),
       agenda: state.agenda
         .filter(a => a.isRace || a.sourceId)
