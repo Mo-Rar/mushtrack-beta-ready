@@ -13,10 +13,13 @@ module.exports = async function handler(req, res) {
   const hasUrl = Boolean(process.env.SUPABASE_URL);
   const hasKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
   const configured = hasUrl && hasKey;
-  if (!configured) return res.status(200).json({
-    configured: false,
-    debug: { hasUrl, hasKey, allKeys: Object.keys(process.env).filter(k => k.includes("SUPA")).join(",") }
-  });
+  if (!configured) {
+    // Liste toutes les variables qui contiennent SUPA, URL, KEY, ou MUSH (sans exposer les valeurs)
+    const allKeys = Object.keys(process.env)
+      .filter(k => /SUPA|MUSH|SERVICE|ROLE|ANON|DATABASE|POSTGRES/i.test(k))
+      .join(",");
+    return res.status(200).json({ configured: false, debug: { hasUrl, hasKey, allKeys: allKeys || "aucune" } });
+  }
 
   try {
     if (req.method === "GET") {
