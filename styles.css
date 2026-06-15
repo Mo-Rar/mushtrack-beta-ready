@@ -2098,6 +2098,64 @@ textarea {
   line-height: 1.4;
 }
 
+/* ── Bannière partenaires ─────────────────────────────────────────────────── */
+.sponsor-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 14px;
+  padding: 10px 16px;
+  margin-bottom: 14px;
+}
+
+.sponsor-label {
+  font-size: 0.70rem;
+  font-weight: 600;
+  color: #bbb;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sponsor-logos {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  justify-content: center;
+}
+
+.sponsor-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  flex: 1;
+  max-width: 120px;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+
+.sponsor-logo:active {
+  opacity: 0.6;
+}
+
+.sponsor-logo img {
+  max-height: 36px;
+  max-width: 100%;
+  width: auto;
+  object-fit: contain;
+  /* Placeholder grisé si image manquante */
+  background: #f5f5f5;
+  border-radius: 6px;
+  min-width: 80px;
+  min-height: 30px;
+}
+/* ─────────────────────────────────────────────────────────────────────────── */
+
 .checklist article {
   display: grid;
   grid-template-columns: 24px 1fr;
