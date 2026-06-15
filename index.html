@@ -8,8 +8,9 @@
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="icon-192.png" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="styles.css?v=20260619" />
+    <link rel="stylesheet" href="styles.css?v=20260620" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
   </head>
   <body>
     <!-- Écran de connexion -->
@@ -362,6 +363,35 @@
         <section class="dog-picker" data-list="dogPicker"></section>
 
         <section class="dog-list" data-list="dogs"></section>
+
+        <!-- Calculateur de ration -->
+        <section class="section-heading spaced" style="margin-top:8px">
+          <h2>Ration alimentaire</h2>
+          <button class="text-button" id="toggle-ration-calc" type="button">Calculer ▾</button>
+        </section>
+        <div class="ration-calc hidden" id="ration-calc">
+          <div class="ration-inputs">
+            <label>
+              Poids du chien (kg)
+              <input id="ration-weight" type="number" min="5" max="60" step="0.5" placeholder="25" />
+            </label>
+            <label>
+              Km cette semaine
+              <input id="ration-km" type="number" min="0" step="1" placeholder="0" />
+            </label>
+            <label>
+              Densité aliment (kcal/100g)
+              <select id="ration-density">
+                <option value="320">Bas (320 kcal/100g) — croquettes entrée gamme</option>
+                <option value="360" selected>Moyen (360 kcal/100g) — standard musher</option>
+                <option value="400">Élevé (400 kcal/100g) — performance/raw</option>
+                <option value="440">Très élevé (440 kcal/100g) — viande crue premium</option>
+              </select>
+            </label>
+          </div>
+          <button class="primary-button" id="calc-ration-btn" type="button" style="width:100%;margin-top:10px">Calculer</button>
+          <div class="ration-result hidden" id="ration-result"></div>
+        </div>
       </section>
 
       <section class="screen" id="dog-detail">
@@ -446,6 +476,15 @@
           <section class="race-search-results" data-list="raceSearchResults"></section>
         </section>
         <section id="admin-panel" hidden></section>
+
+        <!-- Classement communautaire -->
+        <section class="section-heading spaced" style="margin-top:20px">
+          <h2>Classement du mois</h2>
+          <span id="leaderboard-month"></span>
+        </section>
+        <div class="leaderboard-wrap" id="leaderboard-wrap">
+          <p class="leaderboard-loading">Chargement…</p>
+        </div>
       </section>
 
       <section class="screen" id="agenda">
@@ -628,6 +667,45 @@
           </label>
           <button class="primary-button" type="submit">Mettre a jour</button>
         </form>
+
+        <!-- Rappels personnalisables -->
+        <section class="section-heading spaced" style="margin-top:20px">
+          <h2>Rappels</h2>
+          <button class="text-button" id="add-reminder-btn" type="button">+ Ajouter</button>
+        </section>
+        <form class="add-form hidden" id="reminder-form" style="margin-bottom:12px">
+          <label>
+            Titre
+            <input id="reminder-title" placeholder="Ex: Vermifuge attelage, contrôle pattes..." />
+          </label>
+          <div class="form-grid">
+            <label>
+              Date
+              <input id="reminder-date" type="date" />
+            </label>
+            <label>
+              Répétition
+              <select id="reminder-repeat">
+                <option value="">Aucune</option>
+                <option value="30">Tous les 30 jours</option>
+                <option value="90">Tous les 3 mois</option>
+                <option value="180">Tous les 6 mois</option>
+                <option value="365">Annuel</option>
+              </select>
+            </label>
+          </div>
+          <button class="primary-button" type="submit">Enregistrer le rappel</button>
+        </form>
+        <section class="reminder-list" id="reminder-list"></section>
+
+        <!-- Export PDF -->
+        <section class="section-heading spaced" style="margin-top:20px">
+          <h2>Rapport de saison</h2>
+          <span>Export PDF</span>
+        </section>
+        <button class="secondary-button" id="export-pdf-btn" type="button" style="width:100%;margin-bottom:24px">
+          📄 Télécharger le rapport PDF
+        </button>
       </section>
 
       <nav class="bottom-nav">
@@ -699,6 +777,6 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-    <script src="app.js?v=20260619"></script>
+    <script src="app.js?v=20260620"></script>
   </body>
 </html>

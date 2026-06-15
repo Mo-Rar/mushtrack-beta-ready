@@ -2191,6 +2191,117 @@ textarea {
 .vet-reminder.overdue small  { color: #c0392b; }
 /* ─────────────────────────────────────────────────────────────────────────── */
 
+/* ── Classement communautaire ─────────────────────────────────────────────── */
+.leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+}
+.leaderboard-row.me {
+  background: #fff8f5;
+  border-color: #fcd9c9;
+}
+.lb-rank {
+  font-size: 1.1rem;
+  width: 28px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.lb-info { flex: 1; }
+.lb-info strong { display: block; font-size: 0.88rem; }
+.lb-info small  { font-size: 0.75rem; color: #999; }
+.lb-km { font-size: 0.9rem; font-weight: 700; color: #fc4c02; white-space: nowrap; }
+.leaderboard-empty, .leaderboard-loading {
+  font-size: 0.82rem; color: #aaa; text-align: center; padding: 16px;
+}
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Calculateur de ration ────────────────────────────────────────────────── */
+.ration-calc {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+.ration-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ration-result { margin-top: 12px; }
+.ration-output {
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ration-main { text-align: center; }
+.ration-label { font-size: 0.75rem; color: #999; display: block; margin-bottom: 4px; }
+.ration-value { font-size: 2rem; font-weight: 800; color: #fc4c02; display: block; }
+.ration-main small { font-size: 0.78rem; color: #888; }
+.ration-breakdown {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  font-size: 0.82rem;
+  color: #555;
+  padding: 8px 12px;
+  background: #fff;
+  border-radius: 8px;
+}
+.ration-team {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  padding: 8px 12px;
+  background: #e8f7ef;
+  border-radius: 8px;
+  color: #1a7a4a;
+}
+.ration-team strong { font-size: 0.82rem; }
+.ration-note { font-size: 0.75rem; color: #aaa; margin: 0; text-align: center; }
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Rappels personnalisables ─────────────────────────────────────────────── */
+.reminder-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.reminder-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+}
+.reminder-item.soon   { background: #e8f7ef; border-color: #b6dfc8; }
+.reminder-item.urgent { background: #fff8e1; border-color: #ffe082; }
+.reminder-item.overdue { background: #fdecea; border-color: #f5c6c2; }
+.reminder-body { flex: 1; }
+.reminder-body strong { display: block; font-size: 0.85rem; color: #333; }
+.reminder-body small  { font-size: 0.75rem; color: #888; }
+.reminder-item.urgent  small  { color: #b8860b; }
+.reminder-item.overdue strong { color: #c0392b; }
+.reminder-item.overdue small  { color: #c0392b; }
+.reminder-del {
+  background: none; border: none; color: #ccc;
+  font-size: 0.85rem; cursor: pointer; padding: 4px;
+}
+/* ─────────────────────────────────────────────────────────────────────────── */
+
 /* ── Bannière partenaires ─────────────────────────────────────────────────── */
 .sponsor-banner {
   display: flex;

@@ -774,7 +774,8 @@ const defaultState = {
   selectedDogIds: [],
   runs: [],
   planWeather: null,
-  planWeatherUpdatedAt: null
+  planWeatherUpdatedAt: null,
+  reminders: []
 };
 
 let state = loadState();
@@ -879,6 +880,7 @@ function normalizeState(value) {
   value.missingRaceReports ||= [];
   value.planWeather ||= null;
   value.planWeatherUpdatedAt ||= null;
+  if (!Array.isArray(value.reminders)) value.reminders = [];
   return value;
 }
 
@@ -1200,6 +1202,7 @@ function render() {
   renderNextRace();
   fillSettingsForm();
   renderProgressChart();
+  renderReminders();
 }
 
 function bindText(name, value) {
@@ -5225,6 +5228,368 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js");
 }
 
+// ── Classement communautaire ──────────────────────────────────────────────────
+async function fetchLeaderboard() {
+  const wrap = document.getElementById("leaderboard-wrap");
+  if (!wrap) return;
+  const month = new Date().toISOString().slice(0, 7);
+  const label = document.getElementById("leaderboard-month");
+  if (label) {
+    const [y, m] = month.split("-");
+    label.textContent = new Date(Number(y), Number(m) - 1, 1)
+      .toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+  }
+
+  // Calcul local : km ce mois pour l'utilisateur courant
+  const myKm = state.runs
+    .filter(r => r.date && r.date.startsWith(month))
+    .reduce((s, r) => s + Number(r.km || 0), 0);
+
+  // Push vers Supabase (silencieux)
+  if (myKm > 0 && state.profile.name) {
+    fetch("/api/leaderboard", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        deviceId: state.deviceId,
+        name: state.profile.name,
+        region: state.profile.region || "",
+        monthKm: Math.round(myKm * 10) / 10,
+        month
+      })
+    }).catch(() => {});
+  }
+
+  // Fetch classement
+  try {
+    const res  = await fetch(`/api/leaderboard?month=${month}`);
+    const data = await res.json();
+    if (!data.configured || !data.entries?.length) {
+      wrap.innerHTML = renderLeaderboardLocal(myKm, month);
+      return;
+    }
+    // Injecte l'entrée locale si absente du serveur
+    let entries = data.entries;
+    const meInList = entries.some(e => e.device_id === state.deviceId);
+    if (!meInList && myKm > 0 && state.profile.name) {
+      entries = [...entries, { device_id: state.deviceId, name: state.profile.name, region: state.profile.region || "", month_km: myKm }];
+      entries.sort((a, b) => b.month_km - a.month_km);
+    }
+    wrap.innerHTML = renderLeaderboardRows(entries, myKm);
+  } catch {
+    wrap.innerHTML = renderLeaderboardLocal(myKm, month);
+  }
+}
+
+function renderLeaderboardLocal(myKm, month) {
+  if (myKm === 0) {
+    return `<p class="leaderboard-empty">Enregistre ta première sortie ce mois-ci pour apparaître dans le classement !</p>`;
+  }
+  return renderLeaderboardRows([{
+    device_id: state.deviceId,
+    name: state.profile.name || "Toi",
+    region: state.profile.region || "",
+    month_km: myKm
+  }], myKm);
+}
+
+function renderLeaderboardRows(entries, myKm) {
+  const medals = ["🥇", "🥈", "🥉"];
+  return `<div class="leaderboard">` +
+    entries.slice(0, 15).map((e, i) => {
+      const isMe = e.device_id === state.deviceId;
+      return `<div class="leaderboard-row ${isMe ? "me" : ""}">
+        <span class="lb-rank">${medals[i] || `${i + 1}.`}</span>
+        <div class="lb-info">
+          <strong>${e.name || "Musher"}</strong>
+          ${e.region ? `<small>${e.region}</small>` : ""}
+        </div>
+        <span class="lb-km">${Math.round(e.month_km * 10) / 10} km</span>
+      </div>`;
+    }).join("") +
+  `</div>`;
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Calculateur de ration alimentaire ────────────────────────────────────────
+function calcRation(weightKg, weekKm, kcalPer100g) {
+  const dailyKm   = weekKm / 7;
+  // Maintenance : formule NRC (132 × kg^0.75 kcal/jour)
+  const maint     = 132 * Math.pow(weightKg, 0.75);
+  // Exercice : ~1.6 kcal/kg/km
+  const exercise  = 1.6 * weightKg * dailyKm;
+  const totalKcal = maint + exercise;
+  const grams     = Math.round((totalKcal / kcalPer100g) * 100);
+  return { grams, totalKcal: Math.round(totalKcal), maint: Math.round(maint), exercise: Math.round(exercise) };
+}
+
+document.getElementById("toggle-ration-calc")?.addEventListener("click", () => {
+  const panel = document.getElementById("ration-calc");
+  if (!panel) return;
+  panel.classList.toggle("hidden");
+  document.getElementById("toggle-ration-calc").textContent =
+    panel.classList.contains("hidden") ? "Calculer ▾" : "Fermer ▴";
+  // Pré-remplit poids moyen de l'attelage
+  if (!panel.classList.contains("hidden") && state.dogs.length > 0) {
+    const avgWeight = state.dogs.reduce((s, d) => s + Number(d.weight || 25), 0) / state.dogs.length;
+    const weekKm    = Math.round(state.runs.filter(r => {
+      if (!r.date) return false;
+      const d = new Date(r.date + "T12:00:00");
+      const monday = new Date(); monday.setDate(monday.getDate() - monday.getDay() + 1); monday.setHours(0,0,0,0);
+      return d >= monday;
+    }).reduce((s, r) => s + Number(r.km || 0), 0));
+    const weightEl = document.getElementById("ration-weight");
+    const kmEl     = document.getElementById("ration-km");
+    if (weightEl && !weightEl.value) weightEl.value = Math.round(avgWeight * 2) / 2;
+    if (kmEl && !kmEl.value)         kmEl.value = weekKm;
+  }
+});
+
+document.getElementById("calc-ration-btn")?.addEventListener("click", () => {
+  const weight  = parseFloat(document.getElementById("ration-weight")?.value || 0);
+  const km      = parseFloat(document.getElementById("ration-km")?.value || 0);
+  const density = parseFloat(document.getElementById("ration-density")?.value || 360);
+  const result  = document.getElementById("ration-result");
+  if (!weight || !result) return;
+
+  const { grams, totalKcal, maint, exercise } = calcRation(weight, km, density);
+  const intensity = km === 0 ? "repos complet" : km < 20 ? "faible activité" : km < 50 ? "activité modérée" : "haute performance";
+
+  result.classList.remove("hidden");
+  result.innerHTML = `
+    <div class="ration-output">
+      <div class="ration-main">
+        <span class="ration-label">Ration journalière recommandée</span>
+        <strong class="ration-value">${grams} g / jour</strong>
+        <small>${totalKcal} kcal/jour · ${intensity}</small>
+      </div>
+      <div class="ration-breakdown">
+        <span>🏠 Maintenance</span><span>${maint} kcal</span>
+        <span>🏃 Exercice</span><span>${exercise} kcal</span>
+      </div>
+      ${state.dogs.length > 1 ? `
+      <div class="ration-team">
+        <strong>Pour tout l'attelage (${state.dogs.length} chiens)</strong>
+        <span>${Math.round(grams * state.dogs.length / 100) * 100} g/jour total</span>
+      </div>` : ""}
+      <p class="ration-note">⚠️ Indicatif uniquement. Ajuste selon l'état corporel et consulte ton vétérinaire.</p>
+    </div>
+  `;
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Rappels personnalisables ──────────────────────────────────────────────────
+function renderReminders() {
+  const list = document.getElementById("reminder-list");
+  if (!list) return;
+  const reminders = state.reminders || [];
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  if (reminders.length === 0) {
+    list.innerHTML = `<p class="empty-state" style="font-size:0.83rem;color:#aaa;padding:8px 0">Aucun rappel configuré.</p>`;
+    return;
+  }
+
+  list.innerHTML = reminders.map((r, i) => {
+    const due  = new Date(r.date + "T12:00:00");
+    const days = Math.round((due - today) / 86400000);
+    const badge = days < 0 ? "overdue" : days <= 3 ? "urgent" : days <= 14 ? "soon" : "";
+    const label = days < 0 ? `En retard de ${Math.abs(days)} j`
+      : days === 0 ? "Aujourd'hui !"
+      : days === 1 ? "Demain"
+      : `Dans ${days} jour${days > 1 ? "s" : ""}`;
+    return `<div class="reminder-item ${badge}">
+      <div class="reminder-body">
+        <strong>${r.title}</strong>
+        <small>${label}${r.interval ? ` · répète tous les ${r.interval} j` : ""}</small>
+      </div>
+      <button class="reminder-del" data-del-reminder="${i}" type="button">✕</button>
+    </div>`;
+  }).join("");
+
+  list.querySelectorAll("[data-del-reminder]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.reminders.splice(Number(btn.dataset.delReminder), 1);
+      saveState();
+      renderReminders();
+    });
+  });
+}
+
+document.getElementById("add-reminder-btn")?.addEventListener("click", () => {
+  const form = document.getElementById("reminder-form");
+  if (!form) return;
+  form.classList.toggle("hidden");
+  if (!form.classList.contains("hidden")) {
+    const d = document.getElementById("reminder-date");
+    if (d && !d.value) d.value = new Date().toISOString().slice(0, 10);
+  }
+});
+
+document.getElementById("reminder-form")?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const title    = document.getElementById("reminder-title")?.value.trim();
+  const date     = document.getElementById("reminder-date")?.value;
+  const interval = document.getElementById("reminder-repeat")?.value || "";
+  if (!title || !date) return;
+  if (!Array.isArray(state.reminders)) state.reminders = [];
+  state.reminders.push({ id: `rem-${Date.now()}`, title, date, interval: interval ? Number(interval) : null });
+  state.reminders.sort((a, b) => a.date.localeCompare(b.date));
+  saveState();
+  renderReminders();
+  document.getElementById("reminder-form").classList.add("hidden");
+  document.getElementById("reminder-title").value = "";
+});
+
+// Vérifie les rappels au démarrage
+function checkReminders() {
+  if (!Array.isArray(state.reminders)) return;
+  const today = new Date().toISOString().slice(0, 10);
+  let changed = false;
+  state.reminders = state.reminders.map(r => {
+    if (r.date <= today && r.interval) {
+      // Avance à la prochaine occurrence
+      const next = new Date(r.date + "T12:00:00");
+      while (next.toISOString().slice(0, 10) <= today) {
+        next.setDate(next.getDate() + r.interval);
+      }
+      changed = true;
+      return { ...r, date: next.toISOString().slice(0, 10) };
+    }
+    return r;
+  });
+  if (changed) saveState();
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Export PDF rapport de saison ──────────────────────────────────────────────
+document.getElementById("export-pdf-btn")?.addEventListener("click", exportSeasonPDF);
+
+function exportSeasonPDF() {
+  const { jsPDF } = window.jspdf;
+  if (!jsPDF) { alert("PDF non disponible, réessaie dans un instant."); return; }
+
+  const doc    = new jsPDF({ unit: "mm", format: "a4" });
+  const orange = [252, 76, 2];
+  const dark   = [30, 30, 30];
+  const gray   = [120, 120, 120];
+  const light  = [245, 245, 245];
+  const W      = 210;
+  let y        = 0;
+
+  // En-tête
+  doc.setFillColor(...orange);
+  doc.rect(0, 0, W, 28, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(22); doc.setFont("helvetica", "bold");
+  doc.text("MushTrack", 14, 13);
+  doc.setFontSize(10); doc.setFont("helvetica", "normal");
+  doc.text("Rapport de saison", 14, 20);
+  const dateStr = new Date().toLocaleDateString("fr-FR", { day:"numeric", month:"long", year:"numeric" });
+  doc.text(dateStr, W - 14, 20, { align: "right" });
+  y = 36;
+
+  // Musher
+  doc.setTextColor(...dark);
+  doc.setFontSize(13); doc.setFont("helvetica", "bold");
+  doc.text(state.profile.name || "Musher", 14, y);
+  doc.setFontSize(9); doc.setFont("helvetica", "normal");
+  doc.setTextColor(...gray);
+  doc.text(`${state.profile.region || ""}  ·  ${state.profile.disciplines || ""}  ·  ${state.profile.level || ""}`, 14, y + 5);
+  y += 14;
+
+  // Ligne séparatrice
+  doc.setDrawColor(230, 230, 230); doc.setLineWidth(0.3);
+  doc.line(14, y, W - 14, y); y += 8;
+
+  // Cartes résumé (4 KPIs)
+  const seasonKm = state.runs.reduce((s, r) => s + Number(r.km || 0), 0);
+  const kpis = [
+    ["Total km saison", `${Math.round(seasonKm)} km`],
+    ["Sorties", `${state.runs.length}`],
+    ["Attelage", `${state.dogs.length} chien${state.dogs.length !== 1 ? "s" : ""}`],
+    ["Course objectif", state.raceName || state.raceType || "—"]
+  ];
+  const colW = (W - 28 - 9) / 4;
+  kpis.forEach(([label, val], i) => {
+    const x = 14 + i * (colW + 3);
+    doc.setFillColor(...light);
+    doc.roundedRect(x, y, colW, 20, 2, 2, "F");
+    doc.setFontSize(7); doc.setFont("helvetica", "normal"); doc.setTextColor(...gray);
+    doc.text(label, x + colW / 2, y + 7, { align: "center" });
+    doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(...dark);
+    doc.text(val, x + colW / 2, y + 15, { align: "center" });
+  });
+  y += 28;
+
+  // Attelage
+  if (state.dogs.length > 0) {
+    doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(...orange);
+    doc.text("Attelage", 14, y); y += 6;
+    doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(...dark);
+    const dogCols = 3;
+    state.dogs.forEach((dog, i) => {
+      const col = i % dogCols;
+      const row = Math.floor(i / dogCols);
+      const x = 14 + col * 64;
+      const dy = y + row * 10;
+      doc.setFillColor(...light);
+      doc.roundedRect(x, dy - 4, 60, 9, 1, 1, "F");
+      doc.setFont("helvetica", "bold"); doc.text(dog.name, x + 3, dy + 1);
+      doc.setFont("helvetica", "normal"); doc.setTextColor(...gray);
+      doc.text(`${dog.role}  ·  ${Math.round(dog.km || 0)} km`, x + 3, dy + 5);
+      doc.setTextColor(...dark);
+    });
+    y += Math.ceil(state.dogs.length / dogCols) * 10 + 10;
+  }
+
+  // Historique sorties
+  doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(...orange);
+  doc.text("Historique des sorties", 14, y); y += 6;
+
+  const headers = ["Date", "Type", "Distance", "Récupération", "Météo"];
+  const colWidths = [28, 38, 22, 36, 50];
+  let x = 14;
+
+  // En-tête tableau
+  doc.setFillColor(...orange);
+  doc.rect(14, y - 4, W - 28, 8, "F");
+  doc.setFontSize(7); doc.setFont("helvetica", "bold"); doc.setTextColor(255, 255, 255);
+  headers.forEach((h, i) => {
+    doc.text(h, x + 2, y + 0.5);
+    x += colWidths[i];
+  });
+  y += 6;
+
+  // Lignes
+  const runs = state.runs.slice(0, 30);
+  runs.forEach((run, ri) => {
+    if (y > 270) { doc.addPage(); y = 20; }
+    if (ri % 2 === 0) { doc.setFillColor(248, 248, 248); doc.rect(14, y - 3, W - 28, 7, "F"); }
+    doc.setFontSize(7); doc.setFont("helvetica", "normal"); doc.setTextColor(...dark);
+    x = 14;
+    const row = [
+      run.date ? new Date(run.date + "T12:00:00").toLocaleDateString("fr-FR") : "—",
+      run.type || "—",
+      `${Number(run.km || 0).toFixed(1)} km`,
+      run.recovery || "—",
+      run.weather || "—"
+    ];
+    row.forEach((cell, i) => {
+      doc.text(String(cell).slice(0, 22), x + 2, y + 1.5);
+      x += colWidths[i];
+    });
+    y += 7;
+  });
+
+  // Pied de page
+  doc.setFontSize(7); doc.setTextColor(...gray);
+  doc.text("Généré par MushTrack · mushtrack-beta-ready.vercel.app", W / 2, 290, { align: "center" });
+
+  doc.save(`mushtrack-saison-${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 // ── Push Notifications ────────────────────────────────────────────────────────
 const VAPID_PUBLIC_KEY = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjZkOqp0nOFuUzIjbCzxO5_8IhFk";
 
@@ -5272,7 +5637,11 @@ setTimeout(() => {
   if (Notification.permission === "default") {
     subscribeToPush();
   } else if (Notification.permission === "granted") {
-    subscribeToPush(); // Re-enregistre l'abonnement si besoin
+    subscribeToPush();
   }
 }, 10000);
+
+// Initialisation au démarrage
+checkReminders();
+fetchLeaderboard();
 // ─────────────────────────────────────────────────────────────────────────────
