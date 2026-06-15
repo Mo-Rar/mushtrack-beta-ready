@@ -6311,6 +6311,75 @@ function checkReminders() {
 // ── Export PDF rapport de saison ──────────────────────────────────────────────
 document.getElementById("export-pdf-btn")?.addEventListener("click", exportSeasonPDF);
 
+// ── Export CSV sorties ────────────────────────────────────────────────────────
+document.getElementById("export-csv-btn")?.addEventListener("click", () => {
+  const runs = state.runs || [];
+  if (!runs.length) { alert("Aucune sortie à exporter."); return; }
+
+  const header = ["Date", "Distance (km)", "Durée (min)", "Vitesse moy (km/h)", "Chiens", "Récupération", "Notes"];
+  const rows = runs.map(r => [
+    r.date || "",
+    Number(r.km || 0).toFixed(2),
+    r.duration ? Math.round(r.duration / 60) : "",
+    (r.duration && r.km) ? (r.km / (r.duration / 3600)).toFixed(1) : "",
+    (r.dogIds || []).map(id => { const d = state.dogs.find(dd => dd.id === id); return d ? d.name : id; }).join(" / "),
+    r.recovery || "",
+    (r.notes || "").replace(/"/g, "'")
+  ]);
+
+  const csv = [header, ...rows]
+    .map(row => row.map(v => `"${v}"`).join(";"))
+    .join("\n");
+
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `mushtrack-sorties-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// ── Suppression de compte RGPD ────────────────────────────────────────────────
+document.getElementById("delete-account-btn")?.addEventListener("click", () => {
+  document.getElementById("delete-account-confirm").style.display = "block";
+});
+
+document.getElementById("delete-account-cancel")?.addEventListener("click", () => {
+  document.getElementById("delete-account-confirm").style.display = "none";
+});
+
+document.getElementById("delete-account-confirm-btn")?.addEventListener("click", async () => {
+  const statusEl = document.getElementById("delete-account-status");
+  statusEl.style.display = "block";
+  statusEl.style.color   = "#888";
+  statusEl.textContent   = "Suppression en cours…";
+
+  try {
+    const deviceId = state.deviceId;
+    const slug     = localStorage.getItem("mushtrack-profile-slug") || "";
+
+    // Supprime dans Supabase (best effort — ne bloque pas si pas connecté)
+    await Promise.allSettled([
+      supabase.from("mushtrack_user_data").delete().eq("device_id", deviceId),
+      supabase.from("mushtrack_race_interests").delete().eq("device_id", deviceId),
+      supabase.from("mushtrack_open_run_participants").delete().eq("device_id", deviceId),
+      supabase.from("push_subscriptions").delete().eq("device_id", deviceId),
+      slug ? supabase.from("mushtrack_profiles").delete().eq("slug", slug) : Promise.resolve(),
+    ]);
+
+    // Efface toutes les données locales
+    Object.keys(localStorage).filter(k => k.startsWith("mushtrack")).forEach(k => localStorage.removeItem(k));
+
+    statusEl.style.color   = "#16a34a";
+    statusEl.textContent   = "✅ Données supprimées. L'app va se recharger.";
+    setTimeout(() => location.reload(), 2000);
+  } catch (err) {
+    statusEl.style.color   = "#dc2626";
+    statusEl.textContent   = "Erreur : " + err.message;
+  }
+});
+
 // ── Profil public musher ──────────────────────────────────────────────────────
 (function initPublicProfile() {
   const slugInput   = document.getElementById("profile-slug");

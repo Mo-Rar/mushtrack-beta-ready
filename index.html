@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="icon-192.png" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="styles.css?v=20260624" />
+    <link rel="stylesheet" href="styles.css?v=20260625" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
   </head>
@@ -752,14 +752,38 @@
           <button class="lang-btn" data-lang="de" style="flex:1;padding:10px;border-radius:10px;border:2px solid #ddd;font-size:1rem;font-weight:700;cursor:pointer;background:#fff;color:#555">DE</button>
         </div>
 
-        <!-- Export PDF -->
+        <!-- Export PDF + CSV -->
         <section class="section-heading spaced" style="margin-top:20px">
-          <h2>Rapport de saison</h2>
-          <span>Export PDF</span>
+          <h2>Export données</h2>
         </section>
-        <button class="secondary-button" id="export-pdf-btn" type="button" style="width:100%;margin-bottom:24px">
-          📄 Télécharger le rapport PDF
-        </button>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px">
+          <button class="secondary-button" id="export-pdf-btn" type="button" style="width:100%">
+            📄 Rapport PDF (saison complète)
+          </button>
+          <button class="secondary-button" id="export-csv-btn" type="button" style="width:100%">
+            📊 Export CSV (sorties — pour entraîneur)
+          </button>
+        </div>
+
+        <!-- Suppression compte RGPD -->
+        <section class="section-heading spaced" style="margin-top:20px">
+          <h2>Données personnelles</h2>
+          <span>RGPD</span>
+        </section>
+        <div style="background:#fff5f5;border-radius:14px;padding:16px;border:1.5px solid #fecaca;margin-bottom:24px">
+          <p style="font-size:0.82rem;color:#555;margin-bottom:12px">Supprime définitivement toutes tes données : sorties, chiens, profil et données Supabase. Cette action est irréversible.</p>
+          <button id="delete-account-btn" type="button" style="width:100%;padding:11px;background:#fff;color:#dc2626;border:1.5px solid #dc2626;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer">
+            🗑️ Supprimer mon compte et mes données
+          </button>
+          <div id="delete-account-confirm" style="display:none;margin-top:10px">
+            <p style="font-size:0.82rem;color:#dc2626;font-weight:700;margin-bottom:8px">⚠️ Confirmes-tu la suppression définitive de toutes tes données ?</p>
+            <div style="display:flex;gap:8px">
+              <button id="delete-account-cancel" type="button" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;font-weight:700;cursor:pointer">Annuler</button>
+              <button id="delete-account-confirm-btn" type="button" style="flex:1;padding:9px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">Oui, supprimer</button>
+            </div>
+          </div>
+          <div id="delete-account-status" style="display:none;font-size:0.8rem;text-align:center;margin-top:8px"></div>
+        </div>
 
         <!-- Profil public -->
         <section class="section-heading spaced" style="margin-top:20px">
@@ -856,6 +880,6 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-    <script src="app.js?v=20260624"></script>
+    <script src="app.js?v=20260625"></script>
   </body>
 </html>
