@@ -6077,8 +6077,15 @@ document.getElementById("export-pdf-btn")?.addEventListener("click", exportSeaso
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ slug, data: payload })
       });
-      const json = await res.json();
-      if (!json.ok) throw new Error(json.error || "Erreur serveur");
+      let json;
+      try { json = await res.json(); } catch { json = {}; }
+
+      if (json.configured === false) {
+        throw new Error("Variables Supabase manquantes sur Vercel (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)");
+      }
+      if (!res.ok || !json.ok) {
+        throw new Error(json.error || `Erreur HTTP ${res.status}`);
+      }
 
       localStorage.setItem("mushtrack-profile-slug", slug);
       statusEl.style.display  = "none";
@@ -6087,6 +6094,7 @@ document.getElementById("export-pdf-btn")?.addEventListener("click", exportSeaso
       showPublishedLink(json.slug || slug);
     } catch (err) {
       statusEl.textContent   = "❌ " + err.message;
+      statusEl.style.color   = "#d94040";
       publishBtn.disabled    = false;
       publishBtn.textContent = "🌐 Publier mon profil";
     }
