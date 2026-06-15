@@ -68,20 +68,66 @@ module.exports = async (req, res) => {
           }
         }
 
-        if (!shouldNotify) return { skipped: true };
+        // Vérifie les rappels vétérinaires (vaccins/vermifuges à venir)
+        let vetNotif = null;
+        if (row.user_id) {
+          const { data: userData } = await supabase
+            .from("mushtrack_user_data")
+            .select("dogs")
+            .eq("user_id", row.user_id)
+            .single();
 
-        const payload = JSON.stringify({
-          title: "MushTrack — Rappel d'entraînement",
-          body: message,
-          icon: "/assets/icon-192.png",
-          badge: "/assets/icon-192.png",
-          tag: "mushtrack-inactivite",
-          renotify: false,
-          data: { url: "/" }
-        });
+          if (userData?.dogs) {
+            const today = new Date(); today.setHours(0,0,0,0);
+            for (const dog of userData.dogs) {
+              for (const event of (dog.healthHistory || [])) {
+                if (!event.nextDue) continue;
+                const due = new Date(event.nextDue + "T12:00:00");
+                const days = Math.round((due - today) / 86400000);
+                if (days >= 0 && days <= 7) {
+                  const typeLabel = event.type === "vaccin" ? "Vaccin" : "Vermifuge";
+                  const dayLabel  = days === 0 ? "aujourd'hui" : days === 1 ? "demain" : `dans ${days} jours`;
+                  vetNotif = {
+                    title: `MushTrack — Rappel santé ${dog.name}`,
+                    body: `${typeLabel} de ${dog.name} prévu ${dayLabel}${event.notes ? ` (${event.notes})` : ""}. N'oublie pas ! 🐾`,
+                    tag: `mushtrack-vet-${dog.id}-${event.nextDue}`
+                  };
+                  break;
+                }
+              }
+              if (vetNotif) break;
+            }
+          }
+        }
 
-        await webpush.sendNotification(sub, payload);
-        return { sent: true };
+        const notifications = [];
+        if (vetNotif) {
+          notifications.push(JSON.stringify({
+            ...vetNotif,
+            icon: "/assets/icon-192.png",
+            badge: "/assets/icon-192.png",
+            renotify: true,
+            data: { url: "/" }
+          }));
+        }
+        if (shouldNotify) {
+          notifications.push(JSON.stringify({
+            title: "MushTrack — Rappel d'entraînement",
+            body: message,
+            icon: "/assets/icon-192.png",
+            badge: "/assets/icon-192.png",
+            tag: "mushtrack-inactivite",
+            renotify: false,
+            data: { url: "/" }
+          }));
+        }
+
+        if (notifications.length === 0) return { skipped: true };
+
+        for (const payload of notifications) {
+          await webpush.sendNotification(sub, payload);
+        }
+        return { sent: notifications.length };
       })
     );
 

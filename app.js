@@ -1246,6 +1246,10 @@ function showScreen(id) {
   if (id === "agenda") {
     fetchOpenRuns();
   }
+
+  if (id === "coach") {
+    renderCoach();
+  }
 }
 
 function getSeasonKm() {
@@ -5917,6 +5921,177 @@ document.getElementById("calc-ration-btn")?.addEventListener("click", () => {
   `;
 });
 // ─────────────────────────────────────────────────────────────────────────────
+
+// ── Mode Coach ───────────────────────────────────────────────────────────────
+function renderCoach() {
+  const el = document.getElementById("coach-content");
+  if (!el) return;
+
+  const plan = generateCoachPlan();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const DAY_NAMES = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+  const PHASE_COLORS = { base: "#3b82f6", build: "#f59e0b", peak: "#fc4c02", taper: "#22c55e" };
+  const PHASE_LABELS = { base: "Phase de base", build: "Construction", peak: "Pic de forme", taper: "Affûtage" };
+
+  // Vet reminders
+  const vetAlerts = [];
+  for (const dog of state.dogs) {
+    for (const ev of (dog.healthHistory || [])) {
+      if (!ev.nextDue) continue;
+      const due  = new Date(ev.nextDue + "T12:00:00");
+      const days = Math.round((due - today) / 86400000);
+      if (days >= -3 && days <= 14) vetAlerts.push({ dog: dog.name, type: ev.type, days, notes: ev.notes || "" });
+    }
+  }
+  vetAlerts.sort((a, b) => a.days - b.days);
+
+  const phaseColor = PHASE_COLORS[plan.phase] || "#fc4c02";
+
+  el.innerHTML = `
+    <!-- En-tête objectif -->
+    <div style="background:linear-gradient(135deg,#1a1a2e,${phaseColor});border-radius:16px;padding:18px;color:#fff;margin:16px 0 12px">
+      <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;opacity:.75;margin-bottom:4px">${PHASE_LABELS[plan.phase]}</p>
+      <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:8px">${plan.raceName || "Objectif saison"}</h2>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div><strong style="font-size:1.4rem">${plan.weeksLeft}</strong><span style="font-size:0.78rem;opacity:.8;margin-left:4px">semaines</span></div>
+        <div><strong style="font-size:1.4rem">${plan.weekTarget}</strong><span style="font-size:0.78rem;opacity:.8;margin-left:4px">km/sem cible</span></div>
+        <div><strong style="font-size:1.4rem">${plan.weekDone.toFixed(0)}</strong><span style="font-size:0.78rem;opacity:.8;margin-left:4px">km cette sem.</span></div>
+      </div>
+    </div>
+
+    <!-- Alertes véto -->
+    ${vetAlerts.length ? `
+    <div style="margin-bottom:12px">
+      ${vetAlerts.map(v => `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:${v.days < 0 ? "#fff1f1" : v.days <= 3 ? "#fff8f0" : "#f0fff4"};border-radius:12px;border:1px solid ${v.days < 0 ? "#fca5a5" : v.days <= 3 ? "#fdba74" : "#86efac"};margin-bottom:6px">
+          <span style="font-size:1.3rem">${v.type === "vaccin" ? "💉" : "🐛"}</span>
+          <div>
+            <strong style="font-size:0.88rem">${v.type === "vaccin" ? "Vaccin" : "Vermifuge"} — ${v.dog}</strong>
+            <small style="display:block;font-size:0.75rem;color:#666">${v.days < 0 ? `En retard de ${Math.abs(v.days)}j` : v.days === 0 ? "Aujourd'hui !" : `Dans ${v.days} jour${v.days > 1 ? "s" : ""}`}${v.notes ? " · " + v.notes : ""}</small>
+          </div>
+        </div>`).join("")}
+    </div>` : ""}
+
+    <!-- Plan hebdo -->
+    <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;color:#999;font-weight:700;margin-bottom:8px">Plan de la semaine</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+      ${plan.days.map((day, i) => {
+        const date = new Date(today); date.setDate(today.getDate() - today.getDay() + 1 + i);
+        const isToday = date.toDateString() === today.toDateString();
+        const isPast  = date < today;
+        return `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:${isToday ? "#fff4f0" : "#fff"};border-radius:12px;border:${isToday ? "2px solid #fc4c02" : "1px solid #f0f0f0"};opacity:${isPast ? "0.6" : "1"}">
+          <div style="width:36px;text-align:center;flex-shrink:0">
+            <div style="font-size:0.68rem;color:#999;font-weight:700">${DAY_NAMES[(date.getDay())]}</div>
+            <div style="font-size:1.1rem;font-weight:800;color:${isToday ? "#fc4c02" : "#333"}">${date.getDate()}</div>
+          </div>
+          <div style="width:36px;height:36px;border-radius:50%;background:${day.rest ? "#f5f5f5" : day.color + "18"};display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">${day.emoji}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:0.9rem;font-weight:700;color:#1a1a1a">${day.label}</div>
+            <div style="font-size:0.78rem;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${day.desc}</div>
+          </div>
+          ${day.km ? `<div style="font-size:0.88rem;font-weight:700;color:${day.color};flex-shrink:0">${day.km} km</div>` : ""}
+        </div>`;
+      }).join("")}
+    </div>
+
+    <!-- Conseil du coach -->
+    <div style="background:#f8f9ff;border-radius:14px;padding:16px;border-left:4px solid ${phaseColor};margin-bottom:16px">
+      <p style="font-size:0.72rem;font-weight:700;color:${phaseColor};text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Conseil du coach</p>
+      <p style="font-size:0.88rem;color:#444;line-height:1.5">${plan.advice}</p>
+    </div>
+
+    <!-- Chiens à surveiller -->
+    ${plan.dogAlerts.length ? `
+    <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;color:#999;font-weight:700;margin-bottom:8px">Chiens à surveiller</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px">
+      ${plan.dogAlerts.map(a => `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-radius:12px;border:1px solid #f0f0f0">
+          <span style="font-size:1.2rem">${a.emoji}</span>
+          <div><strong style="font-size:0.88rem">${a.name}</strong><small style="display:block;font-size:0.75rem;color:#888">${a.msg}</small></div>
+        </div>`).join("")}
+    </div>` : ""}
+  `;
+}
+
+function generateCoachPlan() {
+  const today     = new Date(); today.setHours(0,0,0,0);
+  const raceDate  = new Date((state.raceDate || "2027-01-01") + "T12:00:00");
+  const weeksLeft = Math.max(0, Math.ceil((raceDate - today) / (7 * 86400000)));
+  const raceKm    = Number(state.raceKm) || 100;
+  const raceType  = state.raceType || "Mid-distance";
+  const isSummer  = state.seasonMode === "summer";
+
+  // Km de la semaine en cours (lun-dim)
+  const monday = new Date(today); monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+  const weekDone = state.runs
+    .filter(r => { const d = new Date(r.date + "T12:00:00"); return d >= monday && d <= sunday; })
+    .reduce((s, r) => s + (Number(r.km) || 0), 0);
+
+  // Cible hebdo selon phase
+  let phase, weekTarget;
+  if (weeksLeft > 12) {
+    phase = "base";
+    weekTarget = Math.round(raceKm * 0.15);
+  } else if (weeksLeft > 6) {
+    phase = "build";
+    weekTarget = Math.round(raceKm * 0.22);
+  } else if (weeksLeft > 2) {
+    phase = "peak";
+    weekTarget = Math.round(raceKm * 0.28);
+  } else {
+    phase = "taper";
+    weekTarget = Math.round(raceKm * 0.10);
+  }
+
+  // Sessions selon phase & discipline
+  const SESSION_TYPES = {
+    endurance: { label: "Endurance",    emoji: "🏃", color: "#3b82f6", desc: "Rythme régulier, chiens décontractés" },
+    long:      { label: "Sortie longue", emoji: "🌲", color: "#059669", desc: "Pace lent, hydratation fréquente" },
+    sprint:    { label: "Sprint",        emoji: "⚡", color: "#fc4c02", desc: "Intervalles courts, haute intensité" },
+    recup:     { label: "Récupération",  emoji: "🐾", color: "#8b5cf6", desc: "Allure douce, pattes et harnais contrôlés" },
+    rest:      { label: "Repos",         emoji: "😴", color: "#94a3b8", desc: "Jeu libre, massage, observation", rest: true },
+    technique: { label: "Technique",     emoji: "🎯", color: "#f59e0b", desc: "Travail de commandes et départs" },
+  };
+
+  // Distribution sur 7 jours (lun→dim)
+  const PLANS = {
+    base:  ["endurance","rest","endurance","rest","long","recup","rest"],
+    build: ["endurance","sprint","rest","endurance","long","recup","rest"],
+    peak:  ["sprint","endurance","rest","long","sprint","recup","rest"],
+    taper: ["recup","rest","endurance","rest","recup","rest","rest"],
+  };
+  const dayTypes = PLANS[phase];
+
+  // Répartition km sur la semaine
+  const KM_RATIO = { endurance: 0.22, long: 0.35, sprint: 0.12, recup: 0.09, technique: 0.10, rest: 0 };
+  const totalRatio = dayTypes.reduce((s, t) => s + (KM_RATIO[t] || 0), 0);
+
+  const days = dayTypes.map(type => {
+    const s   = SESSION_TYPES[type];
+    const km  = s.rest ? 0 : Math.round((KM_RATIO[type] / totalRatio) * weekTarget);
+    return { ...s, km: km || null, type };
+  });
+
+  // Conseils par phase
+  const ADVICE = {
+    base:  `Avec ${weeksLeft} semaines devant toi, cette phase de base est cruciale. Priorité au volume à basse intensité — tes chiens doivent construire leur condition cardio sans accumuler de fatigue. Cible ${weekTarget} km/sem en maintenant un rythme où tu pourrais avoir une conversation.`,
+    build: `La construction est lancée. Intègre des sorties plus longues et des séances de sprint courtes. À ${weeksLeft} semaines de la course, surveille les signaux de fatigue : appétit, récupération nocturne, attitude au départ. Si un chien hésite, réduis son volume.`,
+    peak:  `Phase de pointe ! À ${weeksLeft} semaines de ${state.raceName || "la course"}, les chiens doivent être au top. Fais au moins une sortie à l'allure de course cette semaine. Contrôle les pattes après chaque sortie — c'est maintenant que les petites blessures apparaissent.`,
+    taper: `Affûtage final. Réduis le volume de 40-50% mais garde l'intensité. Tes chiens doivent arriver frais et motivés. Prépare le matériel, vérifie les harnaies, fais la checklist. Plus qu'à gérer l'excitation au départ !`,
+  };
+
+  // Alertes chiens
+  const dogAlerts = [];
+  for (const dog of state.dogs) {
+    const fatigue = getDogFatigueIndex ? getDogFatigueIndex(dog.id) : 0;
+    if (fatigue > 1.4) dogAlerts.push({ name: dog.name, emoji: "🔴", msg: "Fatigue élevée — réduire le volume cette semaine" });
+    else if (fatigue > 1.0) dogAlerts.push({ name: dog.name, emoji: "🟡", msg: "Charge normale — surveiller la récupération" });
+  }
+
+  return { phase, weeksLeft, weekTarget, weekDone, raceName: state.raceName, days, advice: ADVICE[phase], dogAlerts };
+}
 
 // ── Rappels personnalisables ──────────────────────────────────────────────────
 function renderReminders() {
