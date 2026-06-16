@@ -5200,7 +5200,9 @@ function fetchWeatherForRun() {
 function saveCurrentRun() {
   if (!pendingRunSummary) finishCurrentRun();
 
-  const tempMatch = (state.planWeather || "").match(/-?\d+(?:\.\d+)?(?=°C)/);
+  const temp = typeof state.planWeather === "object" && state.planWeather
+    ? state.planWeather.temperature ?? null
+    : null;
   const run = {
     date: new Date().toISOString().slice(0, 10),
     type: document.querySelector("#runType").value,
@@ -5209,7 +5211,7 @@ function saveCurrentRun() {
     path: gpsPath,
     team: [...state.selectedDogIds],
     weather: document.querySelector("#weather").value,
-    temp: tempMatch ? Number(tempMatch[0]) : null,
+    temp,
     energy: Number(document.querySelector("#energy").value),
     recovery: document.querySelector("#recovery").value,
     paws: document.querySelector("#paw-check").checked,
