@@ -2225,7 +2225,7 @@ function renderSledDiagram() {
       };
       return `<div class="sled-row">${makeSlot(left,slotL)}<div class="sled-position-label">${label}</div>${makeSlot(right,slotR)}</div>`;
     }).join("");
-    return `<div class="sled-schema">${rows}<div class="sled-trait"></div><div class="sled-icon">🛷</div></div>`;
+    return `<div class="sled-schema">${rows}</div>`;
   }
 
   containers.forEach(container => {
@@ -2258,11 +2258,12 @@ function renderSledDiagram() {
         const target = document.elementFromPoint(t.clientX, t.clientY)?.closest("[data-slot]");
         if (target && touchDogId) {
           const toSlot = target.dataset.slot;
-          // Déposer uniquement sur un emplacement vide
-          if (state.teamPositions[toSlot] && state.teamPositions[toSlot] !== touchDogId) {
-            touchDogId = null; touchFromSlot = null; return;
+          if (toSlot === touchFromSlot) { touchDogId = null; touchFromSlot = null; return; }
+          const occupant = state.teamPositions[toSlot];
+          if (touchFromSlot) {
+            if (occupant) state.teamPositions[touchFromSlot] = occupant;
+            else delete state.teamPositions[touchFromSlot];
           }
-          if (touchFromSlot) delete state.teamPositions[touchFromSlot];
           state.teamPositions[toSlot] = touchDogId;
           saveState();
           renderSledDiagram();
@@ -2285,11 +2286,12 @@ function handleSlotDrop(event, toSlot) {
   const dogId = _dragDogId || event.dataTransfer.getData("text/plain");
   if (!dogId) return;
   if (!state.teamPositions) state.teamPositions = {};
-  // Bloquer si l'emplacement cible est déjà occupé par un autre chien
-  if (state.teamPositions[toSlot] && state.teamPositions[toSlot] !== dogId) {
-    _dragDogId = null; _dragFromSlot = null; return;
+  // Inverser si l'emplacement cible est occupé
+  const occupant = state.teamPositions[toSlot];
+  if (_dragFromSlot) {
+    if (occupant && occupant !== dogId) state.teamPositions[_dragFromSlot] = occupant;
+    else delete state.teamPositions[_dragFromSlot];
   }
-  if (_dragFromSlot) delete state.teamPositions[_dragFromSlot];
   state.teamPositions[toSlot] = dogId;
   _dragDogId = null; _dragFromSlot = null;
   // Met à jour le rôle du chien
