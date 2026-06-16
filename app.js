@@ -1599,9 +1599,15 @@ async function fetchAndShowWeather(lat, lon) {
 
 function attachLongPress(element, callback) {
   let pressTimer = null;
+  let fired = false;
+
   const start = (event) => {
     if (event.target.closest("button")) return;
-    pressTimer = setTimeout(() => callback(event), 550);
+    fired = false;
+    pressTimer = setTimeout(() => {
+      fired = true;
+      callback(event);
+    }, 600);
   };
   const cancel = () => {
     clearTimeout(pressTimer);
@@ -1610,7 +1616,7 @@ function attachLongPress(element, callback) {
 
   element.addEventListener("contextmenu", (event) => {
     event.preventDefault();
-    callback(event);
+    if (!fired) { fired = true; callback(event); }
   });
   element.addEventListener("touchstart", start, { passive: true });
   element.addEventListener("mousedown", start);
@@ -1655,7 +1661,10 @@ function renderDogs() {
       activeDogId = card.dataset.openDog;
       showScreen("dog-detail");
     });
-    attachLongPress(card, () => card.classList.toggle("show-actions"));
+    attachLongPress(card, () => {
+      document.querySelectorAll(".dog-card.show-actions").forEach(c => c.classList.remove("show-actions"));
+      card.classList.add("show-actions");
+    });
   });
 
   list.querySelectorAll("[data-edit-dog]").forEach((button) => {
@@ -2334,7 +2343,10 @@ function renderRuns() {
     list.innerHTML = runsHtml || `<p class="empty-state">Aucune sortie enregistree.</p>`;
 
     list.querySelectorAll("[data-run-index]").forEach((card) => {
-      attachLongPress(card, () => card.classList.toggle("show-actions"));
+      attachLongPress(card, () => {
+      document.querySelectorAll(".dog-card.show-actions").forEach(c => c.classList.remove("show-actions"));
+      card.classList.add("show-actions");
+    });
     });
 
     list.querySelectorAll("[data-run-option]").forEach((button) => {
@@ -7643,6 +7655,13 @@ function updateUnitButtons() {
   });
 }
 updateUnitButtons();
+
+// Ferme les actions chien si on clique ailleurs
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".dog-card")) {
+    document.querySelectorAll(".dog-card.show-actions").forEach(c => c.classList.remove("show-actions"));
+  }
+});
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Contact d'urgence + SOS ───────────────────────────────────────────────────
