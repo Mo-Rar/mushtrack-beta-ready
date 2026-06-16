@@ -1276,6 +1276,9 @@ function showScreen(id) {
     renderPlanInsights();
     renderCoach();
   }
+  if (id === "community") {
+    initCommunity();
+  }
 }
 
 function getSeasonKm() {
@@ -6765,6 +6768,193 @@ function exportSeasonPDF() {
   doc.save(`mushtrack-saison-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 // ─────────────────────────────────────────────────────────────────────────────
+
+// ── Réseau social — fil d'activité ───────────────────────────────────────────
+let feedPosts = [];
+let feedLoading = false;
+let lastSharedRun = null; // sortie en attente de partage
+
+// Appelé depuis showScreen("community")
+async function initCommunity() {
+  showCommunityShareBanner();
+  await fetchFeed();
+}
+
+// Affiche la bannière si une sortie vient d'être sauvegardée
+function showCommunityShareBanner() {
+  const run = state.runs[0];
+  if (!run || !run.km) return;
+  const banner  = document.getElementById("community-share-banner");
+  const summary = document.getElementById("community-share-summary");
+  if (!banner || !summary) return;
+  const dogs = (run.team || []).map(id => { const d = state.dogs.find(dd => dd.id === id); return d ? d.name : ""; }).filter(Boolean);
+  summary.textContent = `${Number(run.km).toFixed(1)} km · ${run.type || "Sortie"} · ${dogs.length ? dogs.join(", ") : "attelage"}`;
+  lastSharedRun = run;
+  banner.style.display = "block";
+}
+
+document.getElementById("community-share-dismiss")?.addEventListener("click", () => {
+  document.getElementById("community-share-banner").style.display = "none";
+});
+
+document.getElementById("community-share-btn")?.addEventListener("click", async () => {
+  const btn = document.getElementById("community-share-btn");
+  if (!lastSharedRun) return;
+  btn.disabled = true;
+  btn.textContent = "Partage en cours…";
+
+  const dogs = (lastSharedRun.team || [])
+    .map(id => { const d = state.dogs.find(dd => dd.id === id); return d ? d.name : ""; })
+    .filter(Boolean);
+
+  try {
+    const res = await fetch("/api/feed", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        deviceId:  state.deviceId,
+        userName:  state.profile.name || "Musher",
+        region:    state.profile.region || "",
+        level:     state.profile.level || "",
+        km:        lastSharedRun.km,
+        duration:  lastSharedRun.duration || 0,
+        type:      lastSharedRun.type || "",
+        dogNames:  dogs.join(", "),
+        dogCount:  dogs.length,
+        notes:     lastSharedRun.notes || ""
+      })
+    });
+    const data = await res.json();
+    if (data.configured === false) {
+      btn.textContent = "⚠️ Réseau non disponible";
+      return;
+    }
+    document.getElementById("community-share-banner").style.display = "none";
+    await fetchFeed();
+  } catch (e) {
+    btn.textContent = "❌ Erreur";
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+async function fetchFeed() {
+  if (feedLoading) return;
+  feedLoading = true;
+  const feedEl  = document.getElementById("community-feed");
+  const statusEl = document.getElementById("community-feed-status");
+  if (!feedEl) { feedLoading = false; return; }
+
+  try {
+    const res  = await fetch("/api/feed");
+    const data = await res.json();
+
+    if (!data.configured) {
+      feedEl.innerHTML = `<p style="color:#aaa;text-align:center;padding:40px 0;font-size:0.85rem">Réseau non encore configuré.<br>Exécute <code>supabase/feed.sql</code> dans Supabase.</p>`;
+      feedLoading = false; return;
+    }
+
+    feedPosts = data.posts || [];
+    if (statusEl) { statusEl.style.display = "block"; statusEl.textContent = `${feedPosts.length} activité${feedPosts.length !== 1 ? "s" : ""}`; }
+    renderFeed();
+  } catch (e) {
+    if (feedEl) feedEl.innerHTML = `<p style="color:#d94040;text-align:center;padding:20px 0;font-size:0.85rem">Erreur de chargement</p>`;
+  } finally {
+    feedLoading = false;
+  }
+}
+
+function renderFeed() {
+  const feedEl = document.getElementById("community-feed");
+  if (!feedEl) return;
+
+  if (!feedPosts.length) {
+    feedEl.innerHTML = `<p style="color:#aaa;text-align:center;padding:60px 0;font-size:0.85rem">Aucune activité partagée pour l'instant.<br>Sois le premier ! 🐕</p>`;
+    return;
+  }
+
+  feedEl.innerHTML = feedPosts.map(post => {
+    const isMe      = post.device_id === state.deviceId;
+    const reactions = post.reactions || [];
+    const myReact   = reactions.includes(state.deviceId);
+    const initials  = (post.user_name || "M").slice(0, 2).toUpperCase();
+    const mins      = post.duration ? Math.round(post.duration / 60) : null;
+    const pace      = (post.km && post.duration) ? (post.duration / 60 / post.km).toFixed(1) : null;
+    const timeAgo   = formatTimeAgo(post.created_at);
+
+    return `
+    <div class="feed-card" data-post-id="${post.id}">
+      <div class="feed-header">
+        <div class="feed-avatar">${initials}</div>
+        <div class="feed-user">
+          <strong>${post.user_name || "Musher"}</strong>
+          <small>${post.region ? post.region + " · " : ""}${timeAgo}</small>
+        </div>
+        ${isMe ? `<button class="feed-delete-btn" data-delete-post="${post.id}" title="Supprimer">✕</button>` : ""}
+      </div>
+
+      <div class="feed-stats">
+        <div class="feed-stat"><span>${Number(post.km || 0).toFixed(1)}</span><small>km</small></div>
+        ${mins ? `<div class="feed-stat"><span>${mins}</span><small>min</small></div>` : ""}
+        ${pace ? `<div class="feed-stat"><span>${pace}</span><small>min/km</small></div>` : ""}
+        ${post.dog_count ? `<div class="feed-stat"><span>${post.dog_count}</span><small>chien${post.dog_count > 1 ? "s" : ""}</small></div>` : ""}
+      </div>
+
+      ${post.dog_names ? `<p class="feed-dogs">🐾 ${post.dog_names}</p>` : ""}
+      ${post.type ? `<span class="feed-type">${post.type}</span>` : ""}
+      ${post.notes ? `<p class="feed-notes">"${post.notes}"</p>` : ""}
+
+      <div class="feed-actions">
+        <button class="feed-react-btn ${myReact ? "reacted" : ""}" data-react-post="${post.id}" data-reacted="${myReact}">
+          🐕 <span>${reactions.length || ""}</span>
+        </button>
+      </div>
+    </div>`;
+  }).join("");
+
+  // Réactions
+  feedEl.querySelectorAll("[data-react-post]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const postId  = btn.dataset.reactPost;
+      const reacted = btn.dataset.reacted === "true";
+      btn.dataset.reacted = !reacted;
+      btn.classList.toggle("reacted", !reacted);
+      const countEl = btn.querySelector("span");
+      const post    = feedPosts.find(p => p.id === postId);
+      if (!post) return;
+      if (!reacted) post.reactions.push(state.deviceId);
+      else post.reactions = post.reactions.filter(d => d !== state.deviceId);
+      if (countEl) countEl.textContent = post.reactions.length || "";
+      await fetch("/api/feed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "react", postId, deviceId: state.deviceId, active: !reacted })
+      }).catch(() => {});
+    });
+  });
+
+  // Suppression
+  feedEl.querySelectorAll("[data-delete-post]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Supprimer cette activité ?")) return;
+      const id = btn.dataset.deletePost;
+      await fetch(`/api/feed?id=${id}&deviceId=${encodeURIComponent(state.deviceId)}`, { method: "DELETE" }).catch(() => {});
+      feedPosts = feedPosts.filter(p => p.id !== id);
+      renderFeed();
+    });
+  });
+}
+
+function formatTimeAgo(iso) {
+  const diff = (Date.now() - new Date(iso)) / 1000;
+  if (diff < 60)   return "à l'instant";
+  if (diff < 3600) return `il y a ${Math.round(diff / 60)} min`;
+  if (diff < 86400) return `il y a ${Math.round(diff / 3600)} h`;
+  const d = new Date(iso);
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+}
+
+document.getElementById("community-refresh-btn")?.addEventListener("click", fetchFeed);
 
 // ── Push Notifications ────────────────────────────────────────────────────────
 const VAPID_PUBLIC_KEY = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjZkOqp0nOFuUzIjbCzxO5_8IhFk";
