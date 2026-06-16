@@ -239,6 +239,12 @@
             Terminer
           </button>
         </div>
+        <div style="text-align:center;margin:4px 0 8px">
+          <button onclick="triggerSOS()" type="button"
+            style="background:#dc2626;color:#fff;border:none;border-radius:12px;padding:12px 32px;font-size:1rem;font-weight:800;letter-spacing:.05em;cursor:pointer;box-shadow:0 4px 14px rgba(220,38,38,0.4)">
+            🆘 SOS — Appeler le contact
+          </button>
+        </div>
 
         <!-- Bilan post-sortie -->
         <section class="record-form hidden" id="post-run-form">
@@ -809,6 +815,9 @@
           <button class="unit-btn" data-unit="km" style="flex:1;padding:10px;border-radius:10px;border:2px solid #fc4c02;font-size:1rem;font-weight:700;cursor:pointer;background:#fff4f0;color:#fc4c02">km</button>
           <button class="unit-btn" data-unit="mi" style="flex:1;padding:10px;border-radius:10px;border:2px solid #ddd;font-size:1rem;font-weight:700;cursor:pointer;background:#fff;color:#555">miles</button>
         </div>
+
+        <!-- Contact d'urgence -->
+        <div id="emergency-contact-section"></div>
 
         <!-- Langue -->
         <section class="section-heading spaced" style="margin-top:20px">
