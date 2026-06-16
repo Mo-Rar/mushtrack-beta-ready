@@ -7633,3 +7633,60 @@ function triggerSOS() {
 
 renderEmergencyContact();
 // ─────────────────────────────────────────────────────────────────────────────
+
+// ── Suivi GPS en direct ───────────────────────────────────────────────────────
+let _liveToken = null;
+let _liveInterval = null;
+let _liveWatchId = null;
+
+function generateUUID() {
+  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+}
+
+function startLiveTracking() {
+  if (_liveToken) return;
+  _liveToken = generateUUID();
+
+  const liveBar = document.getElementById("live-tracking-bar");
+  if (liveBar) liveBar.style.display = "flex";
+
+  _liveWatchId = navigator.geolocation?.watchPosition(pos => {
+    fetch("/api/live", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        token: _liveToken,
+        device_id: state.deviceId,
+        user_name: state.profile?.name || "Musher",
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude,
+        accuracy: pos.coords.accuracy
+      })
+    }).catch(() => {});
+  }, null, { enableHighAccuracy: true, maximumAge: 5000 });
+}
+
+async function stopLiveTracking() {
+  if (!_liveToken) return;
+  if (_liveWatchId != null) navigator.geolocation?.clearWatch(_liveWatchId);
+  await fetch(`/api/live?token=${_liveToken}`, { method: "DELETE" }).catch(() => {});
+  _liveToken = null;
+  _liveWatchId = null;
+  const liveBar = document.getElementById("live-tracking-bar");
+  if (liveBar) liveBar.style.display = "none";
+}
+
+function shareLiveLink() {
+  if (!_liveToken) return;
+  const url = `${location.origin}/track?token=${_liveToken}`;
+  if (navigator.share) {
+    navigator.share({ title: "MushTrack — Suivi en direct", url });
+  } else {
+    navigator.clipboard?.writeText(url).then(() => alert("Lien copié !"));
+  }
+}
+
+document.getElementById("live-share-btn")?.addEventListener("click", shareLiveLink);
+document.getElementById("live-stop-btn")?.addEventListener("click", stopLiveTracking);
+// ─────────────────────────────────────────────────────────────────────────────

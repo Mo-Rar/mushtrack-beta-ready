@@ -2823,6 +2823,11 @@ textarea {
 }
 .bottom-nav::-webkit-scrollbar { display: none; }
 
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
 /* Mode saison dans paramètres */
 .mode-switch-settings {
   display: grid;

@@ -38,11 +38,64 @@ async function fetchFromSupabase(filters) {
   }
 }
 
+// ── Refresh cron (fusionné depuis races-refresh.js) ──────────────────────────
+const SOURCES = [
+  { id: "ifss-calendar", name: "IFSS", url: "https://sleddogsport.net/", keywords: ["2026","2027","race","calendar","sprint","distance"] },
+  { id: "ffslc-calendar", name: "FFSLC", url: "https://ffslc.fr/", keywords: ["2026","2027","canicross","calendrier","course"] },
+  { id: "swiss-canicross-calendar", name: "Swiss Canicross", url: "https://swiss-canicross.ch/", keywords: ["2026","2027","canicross","course"] },
+  { id: "finnmarkslopet-2027", name: "Finnmarkslopet", url: "https://finnmarkslopet.no/", keywords: ["2027","march","mars","start"] },
+  { id: "grande-odyssee-2027", name: "La Grande Odyssée", url: "https://www.grandeodyssee.com/home", keywords: ["2027","janvier","january","alpes"] },
+  { id: "yukon-quest-2027", name: "Yukon Quest", url: "https://yukonquest.com/", keywords: ["2027","february","whitehorse"] },
+  { id: "iditarod-source", name: "Iditarod", url: "https://iditarod.com/", keywords: ["2027","march","anchorage"] },
+  { id: "ahotu-europe-canicross", name: "Ahotu", url: "https://www.ahotu.com/fr/calendrier/canicross/europe", keywords: ["2026","2027","canicross"] },
+  { id: "amundsen-race-2027", name: "Amundsen Race", url: "https://www.amundsenrace.com/", keywords: ["2027","february","stromsund"] }
+];
+
+async function checkSource(source) {
+  const started = Date.now();
+  try {
+    const response = await fetch(source.url, { headers: { "User-Agent": "MushTrackRaceRadar/1.0" }, signal: AbortSignal.timeout(7000) });
+    if (!response.ok) return { id: source.id, ok: false, signal: `HTTP ${response.status}`, ms: Date.now() - started };
+    const text = await response.text();
+    const content = text.toLowerCase().replace(/\s+/g, " ").slice(0, 200000);
+    const found = source.keywords.filter(kw => content.includes(kw));
+    return { id: source.id, ok: true, signal: found.length > 0 ? `Signaux: ${found.slice(0,5).join(", ")}` : "Page ok, pas de signal", ms: Date.now() - started };
+  } catch (err) {
+    return { id: source.id, ok: false, signal: `Inaccessible: ${err.message.slice(0,80)}`, ms: Date.now() - started };
+  }
+}
+
+async function runRefresh(res) {
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const started = Date.now();
+  const results = await Promise.all(SOURCES.map(checkSource));
+  let updated = 0;
+  if (SUPABASE_URL && SUPABASE_KEY) {
+    for (const r of results) {
+      try {
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/mushtrack_races?id=eq.${encodeURIComponent(r.id)}`, {
+          method: "PATCH",
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+          body: JSON.stringify({ last_checked: new Date().toISOString(), source_ok: r.ok, source_signal: r.signal })
+        });
+        if (resp.ok) updated++;
+      } catch {}
+    }
+  }
+  return res.status(200).json({ ok: true, checkedAt: new Date().toISOString(), durationMs: Date.now() - started, sourcesChecked: results.length, supabaseUpdated: updated, results });
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 module.exports = async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Cache-Control", "s-maxage=3600, stale-while-revalidate=86400");
 
   const url = new URL(req.url, `https://${req.headers.host || "mushtrack.app"}`);
+
+  if (url.searchParams.get("action") === "refresh") return runRefresh(res);
+
+  res.setHeader("Cache-Control", "s-maxage=3600, stale-while-revalidate=86400");
+
   const query = (url.searchParams.get("q") || "").toLowerCase();
   const type = url.searchParams.get("type") || "";
   const distance = url.searchParams.get("distance") || "";
