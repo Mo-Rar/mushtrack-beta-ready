@@ -2161,26 +2161,40 @@ function renderTeamSlots() {
 let _dragDogId   = null;
 let _dragFromSlot = null;
 
+// Génère les paires [clé, label] pour n chiens sélectionnés
+function getSledPositions(dogCount) {
+  const pairs = Math.max(1, Math.ceil(dogCount / 2));
+  if (pairs === 1) return [["leader","Leader"]];
+  if (pairs === 2) return [["leader","Leader"],["wheel","Wheel"]];
+  const list = [["leader","Leader"],["swing","Swing"]];
+  for (let i = 2; i < pairs - 1; i++) list.push([`team${i-1}`, `Team ${i-1}`]);
+  list.push(["wheel","Wheel"]);
+  return list;
+}
+
 function renderSledDiagram() {
   const containers = document.querySelectorAll(".sled-diagram");
   if (!containers.length) return;
   if (!state.teamPositions) state.teamPositions = {};
 
-  // Nombre de paires = moitié de la sélection (min 1)
   const selectedCount = (state.selectedDogIds || []).length;
-  const pairCount = Math.max(1, Math.ceil(selectedCount / 2));
 
   // Génère les clés et labels selon le nombre de paires
-  function getPositions() {
-    if (pairCount === 1) return [["leader","Leader"]];
-    if (pairCount === 2) return [["leader","Leader"],["wheel","Wheel"]];
-    const list = [["leader","Leader"]];
-    for (let i = 1; i < pairCount - 1; i++) {
-      list.push([i === 1 ? "swing" : `team${i}`, i === 1 ? "Swing" : `Team ${i}`]);
+  function getPositions() { return getSledPositions(selectedCount); }
+
+  // Nettoyer les slots obsolètes et réassigner les chiens orphelins
+  const orderedSlots = getPositions().flatMap(([k]) => [`${k}-l`, `${k}-r`]);
+  const validSlots = new Set(orderedSlots);
+  Object.keys(state.teamPositions).forEach(slot => {
+    if (!validSlots.has(slot)) delete state.teamPositions[slot];
+  });
+  const assigned = new Set(Object.values(state.teamPositions));
+  (state.selectedDogIds || []).forEach(id => {
+    if (!assigned.has(id)) {
+      const free = orderedSlots.find(s => !state.teamPositions[s]);
+      if (free) { state.teamPositions[free] = id; assigned.add(id); }
     }
-    list.push(["wheel","Wheel"]);
-    return list;
-  }
+  });
 
   function dogInSlot(key, side) {
     const id = state.teamPositions[`${key}-${side}`];
@@ -4899,9 +4913,9 @@ function toggleDogSelection(id) {
     }
   } else {
     state.selectedDogIds = [...state.selectedDogIds, id];
-    // Assigner le chien au prochain emplacement libre
+    // Assigner au prochain emplacement libre selon le schéma actuel
     if (!state.teamPositions) state.teamPositions = {};
-    const allSlots = ["leader-l","leader-r","swing-l","swing-r","team-l","team-r","wheel-l","wheel-r"];
+    const allSlots = getSledPositions(state.selectedDogIds.length).flatMap(([k]) => [`${k}-l`, `${k}-r`]);
     const freeSlot = allSlots.find(s => !state.teamPositions[s]);
     if (freeSlot) state.teamPositions[freeSlot] = id;
   }
