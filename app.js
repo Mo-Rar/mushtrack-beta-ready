@@ -5981,6 +5981,21 @@ document.getElementById("calc-ration-btn")?.addEventListener("click", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Mode Coach ───────────────────────────────────────────────────────────────
+function calculateDynamicRation(dog, weekKm) {
+  const weight = Number(dog.weight) || 25;
+  const baseG = weight * 25;
+  let multiplier, level, levelColor;
+  if (weekKm <= 0)       { multiplier = 1.00; level = "Repos";       levelColor = "#94a3b8"; }
+  else if (weekKm < 20)  { multiplier = 1.20; level = "Léger";       levelColor = "#22c55e"; }
+  else if (weekKm < 50)  { multiplier = 1.40; level = "Modéré";      levelColor = "#3b82f6"; }
+  else if (weekKm < 100) { multiplier = 1.65; level = "Intense";     levelColor = "#f59e0b"; }
+  else                   { multiplier = 1.90; level = "Très intense"; levelColor = "#fc4c02"; }
+  const dailyG   = Math.round(baseG * multiplier / 10) * 10;
+  const morningG = Math.round(dailyG * 0.35 / 5) * 5;
+  const eveningG = dailyG - morningG;
+  return { dailyG, morningG, eveningG, level, levelColor };
+}
+
 function renderCoach() {
   const el = document.getElementById("coach-content");
   if (!el) return;
@@ -6101,6 +6116,43 @@ function renderCoach() {
           <div><strong style="font-size:0.88rem">${a.name}</strong><small style="display:block;font-size:0.75rem;color:#888">${a.msg}</small></div>
         </div>`).join("")}
     </div>` : ""}
+
+    <!-- Rations dynamiques -->
+    ${state.dogs.length ? (() => {
+      const mon = new Date(today); mon.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+      const sun = new Date(mon); sun.setDate(mon.getDate() + 6); sun.setHours(23,59,59);
+      const dogsWithRations = state.dogs.map(dog => {
+        const weekKm = state.runs
+          .filter(r => { const d = new Date(r.date + "T12:00:00"); return d >= mon && d <= sun && r.team.includes(dog.id); })
+          .reduce((s, r) => s + (Number(r.km) || 0), 0);
+        return { dog, weekKm, ...calculateDynamicRation(dog, weekKm) };
+      });
+      return `
+        <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;color:#999;font-weight:700;margin-bottom:8px">Rations dynamiques cette semaine</p>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+          ${dogsWithRations.map(({ dog, weekKm, dailyG, morningG, eveningG, level, levelColor }) => `
+            <div style="background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:12px 14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <strong style="font-size:0.9rem">${dog.name}</strong>
+                <span style="font-size:0.72rem;font-weight:700;color:${levelColor};background:${levelColor}18;border-radius:6px;padding:2px 8px">${level} · ${Math.round(weekKm)} km</span>
+              </div>
+              <div style="display:flex;gap:8px">
+                <div style="flex:1;background:#f8f9ff;border-radius:8px;padding:8px;text-align:center">
+                  <div style="font-size:0.68rem;color:#999;margin-bottom:2px">Matin</div>
+                  <div style="font-size:1.1rem;font-weight:800;color:#3b82f6">${morningG}g</div>
+                </div>
+                <div style="flex:1;background:#f8f9ff;border-radius:8px;padding:8px;text-align:center">
+                  <div style="font-size:0.68rem;color:#999;margin-bottom:2px">Soir</div>
+                  <div style="font-size:1.1rem;font-weight:800;color:#fc4c02">${eveningG}g</div>
+                </div>
+                <div style="flex:1;background:#f8f9ff;border-radius:8px;padding:8px;text-align:center">
+                  <div style="font-size:0.68rem;color:#999;margin-bottom:2px">Total/j</div>
+                  <div style="font-size:1.1rem;font-weight:800;color:#333">${dailyG}g</div>
+                </div>
+              </div>
+            </div>`).join("")}
+        </div>`;
+    })() : ""}
 
     <!-- Rapport mensuel -->
     <div style="margin-bottom:20px">
