@@ -2166,10 +2166,24 @@ function renderSledDiagram() {
   if (!containers.length) return;
   if (!state.teamPositions) state.teamPositions = {};
 
-  const positions = ["Leader","Swing","Team","Wheel"];
+  // Nombre de paires = moitié de la sélection (min 1)
+  const selectedCount = (state.selectedDogIds || []).length;
+  const pairCount = Math.max(1, Math.ceil(selectedCount / 2));
 
-  function dogInSlot(pos, side) {
-    const id = state.teamPositions[`${pos.toLowerCase()}-${side}`];
+  // Génère les clés et labels selon le nombre de paires
+  function getPositions() {
+    if (pairCount === 1) return [["leader","Leader"]];
+    if (pairCount === 2) return [["leader","Leader"],["wheel","Wheel"]];
+    const list = [["leader","Leader"]];
+    for (let i = 1; i < pairCount - 1; i++) {
+      list.push([i === 1 ? "swing" : `team${i}`, i === 1 ? "Swing" : `Team ${i}`]);
+    }
+    list.push(["wheel","Wheel"]);
+    return list;
+  }
+
+  function dogInSlot(key, side) {
+    const id = state.teamPositions[`${key}-${side}`];
     return id ? state.dogs.find(d => d.id === id) : null;
   }
 
@@ -2180,30 +2194,22 @@ function renderSledDiagram() {
   }
 
   function buildHTML() {
-    const rows = positions.map(pos => {
-      const left  = dogInSlot(pos, "l");
-      const right = dogInSlot(pos, "r");
-      const p = pos.toLowerCase();
-      return `
-        <div class="sled-row">
-          <div class="sled-slot ${left?"filled":"empty"}" data-slot="${p}-l"
-               ondragover="event.preventDefault();this.classList.add('drag-over')"
+    const rows = getPositions().map(([key, label]) => {
+      const left  = dogInSlot(key, "l");
+      const right = dogInSlot(key, "r");
+      const slotL = `${key}-l`, slotR = `${key}-r`;
+      const makeSlot = (dog, slot) => {
+        const occupied = !!dog;
+        return `<div class="sled-slot ${occupied?"filled":"empty"}" data-slot="${slot}"
+               ondragover="if(!${occupied})event.preventDefault();${occupied}?void 0:this.classList.add('drag-over')"
                ondragleave="this.classList.remove('drag-over')"
-               ondrop="handleSlotDrop(event,'${p}-l')">
-            ${left
-              ? `<span class="sled-dog" draggable="true" ondragstart="handleDogDragStart(event,'${left.id}','${p}-l')">${formEmoji(left)} ${left.name}<button type="button" class="sled-remove" onclick="removeFromSlot('${p}-l')">✕</button></span>`
+               ondrop="handleSlotDrop(event,'${slot}')">
+            ${dog
+              ? `<span class="sled-dog" draggable="true" ondragstart="handleDogDragStart(event,'${dog.id}','${slot}')">${formEmoji(dog)} ${dog.name}<button type="button" class="sled-remove" onclick="removeFromSlot('${slot}')">✕</button></span>`
               : `<span class="sled-empty-label">+</span>`}
-          </div>
-          <div class="sled-position-label">${pos}</div>
-          <div class="sled-slot ${right?"filled":"empty"}" data-slot="${p}-r"
-               ondragover="event.preventDefault();this.classList.add('drag-over')"
-               ondragleave="this.classList.remove('drag-over')"
-               ondrop="handleSlotDrop(event,'${p}-r')">
-            ${right
-              ? `<span class="sled-dog" draggable="true" ondragstart="handleDogDragStart(event,'${right.id}','${p}-r')">${formEmoji(right)} ${right.name}<button type="button" class="sled-remove" onclick="removeFromSlot('${p}-r')">✕</button></span>`
-              : `<span class="sled-empty-label">+</span>`}
-          </div>
-        </div>`;
+          </div>`;
+      };
+      return `<div class="sled-row">${makeSlot(left,slotL)}<div class="sled-position-label">${label}</div>${makeSlot(right,slotR)}</div>`;
     }).join("");
     return `<div class="sled-schema">${rows}<div class="sled-trait"></div><div class="sled-icon">🛷</div></div>`;
   }
@@ -2238,9 +2244,11 @@ function renderSledDiagram() {
         const target = document.elementFromPoint(t.clientX, t.clientY)?.closest("[data-slot]");
         if (target && touchDogId) {
           const toSlot = target.dataset.slot;
+          // Déposer uniquement sur un emplacement vide
+          if (state.teamPositions[toSlot] && state.teamPositions[toSlot] !== touchDogId) {
+            touchDogId = null; touchFromSlot = null; return;
+          }
           if (touchFromSlot) delete state.teamPositions[touchFromSlot];
-          const prev = Object.entries(state.teamPositions).find(([,v]) => v === touchDogId);
-          if (prev) delete state.teamPositions[prev[0]];
           state.teamPositions[toSlot] = touchDogId;
           saveState();
           renderSledDiagram();
@@ -2263,9 +2271,11 @@ function handleSlotDrop(event, toSlot) {
   const dogId = _dragDogId || event.dataTransfer.getData("text/plain");
   if (!dogId) return;
   if (!state.teamPositions) state.teamPositions = {};
+  // Bloquer si l'emplacement cible est déjà occupé par un autre chien
+  if (state.teamPositions[toSlot] && state.teamPositions[toSlot] !== dogId) {
+    _dragDogId = null; _dragFromSlot = null; return;
+  }
   if (_dragFromSlot) delete state.teamPositions[_dragFromSlot];
-  const prev = Object.entries(state.teamPositions).find(([,v]) => v === dogId);
-  if (prev) delete state.teamPositions[prev[0]];
   state.teamPositions[toSlot] = dogId;
   _dragDogId = null; _dragFromSlot = null;
   // Met à jour le rôle du chien
