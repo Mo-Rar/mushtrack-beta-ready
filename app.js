@@ -6795,7 +6795,42 @@ function showCommunityShareBanner() {
 
 document.getElementById("community-share-dismiss")?.addEventListener("click", () => {
   document.getElementById("community-share-banner").style.display = "none";
+  selectedPhotoFile = null;
+  const preview = document.getElementById("community-photo-preview");
+  if (preview) preview.style.display = "none";
 });
+
+// Aperçu photo en temps réel
+let selectedPhotoFile = null;
+document.getElementById("community-photo-input")?.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  selectedPhotoFile = file;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = document.getElementById("community-photo-img");
+    const preview = document.getElementById("community-photo-preview");
+    if (img && preview) {
+      img.src = ev.target.result;
+      preview.style.display = "block";
+    }
+  };
+  reader.readAsDataURL(file);
+  const label = document.getElementById("community-photo-label");
+  if (label) label.innerHTML = `&#x2705; Photo s&eacute;lectionn&eacute;e <input id="community-photo-input" type="file" accept="image/*" capture="environment" style="display:none"/>`;
+  document.getElementById("community-photo-input")?.addEventListener("change", arguments.callee);
+});
+
+async function uploadFeedPhoto(file, deviceId) {
+  const ext  = file.name.split(".").pop() || "jpg";
+  const path = `${deviceId}/${Date.now()}.${ext}`;
+  const { data, error } = await supabase.storage
+    .from("mushtrack-photos")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (error) throw error;
+  const { data: urlData } = supabase.storage.from("mushtrack-photos").getPublicUrl(path);
+  return urlData.publicUrl;
+}
 
 document.getElementById("community-share-btn")?.addEventListener("click", async () => {
   const btn = document.getElementById("community-share-btn");
@@ -6807,7 +6842,13 @@ document.getElementById("community-share-btn")?.addEventListener("click", async 
     .map(id => { const d = state.dogs.find(dd => dd.id === id); return d ? d.name : ""; })
     .filter(Boolean);
 
+  let photoUrl = "";
   try {
+    if (selectedPhotoFile) {
+      btn.textContent = "Upload photo…";
+      photoUrl = await uploadFeedPhoto(selectedPhotoFile, state.deviceId);
+    }
+
     const res = await fetch("/api/feed", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -6821,7 +6862,8 @@ document.getElementById("community-share-btn")?.addEventListener("click", async 
         type:      lastSharedRun.type || "",
         dogNames:  dogs.join(", "),
         dogCount:  dogs.length,
-        notes:     lastSharedRun.notes || ""
+        notes:     lastSharedRun.notes || "",
+        photoUrl
       })
     });
     const data = await res.json();
@@ -6829,10 +6871,12 @@ document.getElementById("community-share-btn")?.addEventListener("click", async 
       btn.textContent = "⚠️ Réseau non disponible";
       return;
     }
+    selectedPhotoFile = null;
     document.getElementById("community-share-banner").style.display = "none";
     await fetchFeed();
   } catch (e) {
     btn.textContent = "❌ Erreur";
+    console.error(e);
   } finally {
     btn.disabled = false;
   }
@@ -6900,6 +6944,7 @@ function renderFeed() {
         ${post.dog_count ? `<div class="feed-stat"><span>${post.dog_count}</span><small>chien${post.dog_count > 1 ? "s" : ""}</small></div>` : ""}
       </div>
 
+      ${post.photo_url ? `<div class="feed-photo"><img src="${post.photo_url}" alt="Photo sortie" loading="lazy"/></div>` : ""}
       ${post.dog_names ? `<p class="feed-dogs">🐾 ${post.dog_names}</p>` : ""}
       ${post.type ? `<span class="feed-type">${post.type}</span>` : ""}
       ${post.notes ? `<p class="feed-notes">"${post.notes}"</p>` : ""}
