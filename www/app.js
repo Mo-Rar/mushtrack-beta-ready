@@ -2232,33 +2232,37 @@ function renderSledDiagram() {
     container.innerHTML = buildHTML();
 
     // Touch drag (mobile)
-    let touchDogId = null, touchFromSlot = null, touchClone = null;
+    let touchDogId = null, touchFromSlot = null, touchClone = null, touchHoverSlot = null;
 
-    container.querySelectorAll(".sled-dog[draggable='true']").forEach(el => {
-      el.addEventListener("touchstart", e => {
-        const slot = el.closest("[data-slot]");
+    container.querySelectorAll(".sled-dog[draggable='true']").forEach(dogEl => {
+      dogEl.addEventListener("touchstart", e => {
+        const slot = dogEl.closest("[data-slot]");
         touchFromSlot = slot ? slot.dataset.slot : null;
         touchDogId = touchFromSlot ? state.teamPositions[touchFromSlot] : null;
-        touchClone = el.cloneNode(true);
+        touchHoverSlot = null;
+        touchClone = dogEl.cloneNode(true);
         touchClone.style.cssText = "position:fixed;opacity:.75;pointer-events:none;z-index:9999;font-size:0.85rem;background:#fc4c02;color:#fff;padding:6px 10px;border-radius:8px;transform:translate(-50%,-50%)";
         document.body.appendChild(touchClone);
       }, { passive: true });
 
-      el.addEventListener("touchmove", e => {
+      dogEl.addEventListener("touchmove", e => {
         if (!touchClone) return;
         const t = e.touches[0];
         touchClone.style.left = t.clientX + "px";
         touchClone.style.top  = t.clientY + "px";
+        // Détecter le slot sous le doigt en masquant le clone
+        touchClone.style.visibility = "hidden";
+        const under = document.elementFromPoint(t.clientX, t.clientY);
+        touchClone.style.visibility = "visible";
+        touchHoverSlot = under?.closest("[data-slot]")?.dataset?.slot || null;
         e.preventDefault();
       }, { passive: false });
 
-      el.addEventListener("touchend", e => {
+      dogEl.addEventListener("touchend", e => {
         if (touchClone) { touchClone.remove(); touchClone = null; }
-        const t = e.changedTouches[0];
-        const target = document.elementFromPoint(t.clientX, t.clientY)?.closest("[data-slot]");
-        if (target && touchDogId) {
-          const toSlot = target.dataset.slot;
-          if (toSlot === touchFromSlot) { touchDogId = null; touchFromSlot = null; return; }
+        const toSlot = touchHoverSlot;
+        touchHoverSlot = null;
+        if (toSlot && touchDogId && toSlot !== touchFromSlot) {
           const occupant = state.teamPositions[toSlot];
           if (touchFromSlot) {
             if (occupant) state.teamPositions[touchFromSlot] = occupant;
