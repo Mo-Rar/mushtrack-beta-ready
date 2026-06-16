@@ -2356,7 +2356,7 @@ function renderRuns() {
 
 function renderRoutePreview(path) {
   const points = path
-    .map((point) => Array.isArray(point) ? point : [point.lat, point.lng])
+    .map((point) => Array.isArray(point) ? point : [point.lat, point.lon ?? point.lng])
     .filter(([lat, lng]) => Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)));
   if (points.length < 2) return `<div class="route-preview empty">Trace GPS trop courte</div>`;
 
@@ -4997,8 +4997,7 @@ function startGPS() {
 
   watchId = navigator.geolocation.watchPosition(
     (position) => {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
+      const { latitude: lat, longitude: lon, accuracy, speed: gpsSpeedMs } = position.coords;
 
       // Fetch météo une seule fois au démarrage
       if (!weatherFetched) {
@@ -5006,48 +5005,46 @@ function startGPS() {
         fetchAndShowWeather(lat, lon);
       }
 
-      updateMapPosition(lat, lon, "Enregistrement GPS en cours");
+      // ── Filtres qualité GPS (style Strava) ──────────────────────────────
+      // 1. Rejeter si précision trop faible
+      if (accuracy > 50) {
+        updateMapPosition(lat, lon, `GPS: recherche précision (±${Math.round(accuracy)}m)…`);
+        return;
+      }
 
-      const gpsSpeed = position.coords.speed || 0;
+      // 2. Rejeter les pics aberrants (saut > 300m depuis le dernier point valide)
+      if (lastPosition) {
+        const jump = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
+        if (jump > 0.3) return; // > 300m d'un coup = artefact GPS
+      }
 
-      const point = {
-        lat,
-        lon,
-        timestamp: Date.now(),
-        speed: gpsSpeed
-      };
+      // 3. Ignorer si déplacement < 5m (évite la dérive stationnaire)
+      if (lastPosition) {
+        const moved = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
+        if (moved < 0.005) return;
+      }
+      // ────────────────────────────────────────────────────────────────────
 
+      updateMapPosition(lat, lon, `GPS actif — ±${Math.round(accuracy)}m`);
+
+      const point = { lat, lon, timestamp: Date.now() };
       gpsPath.push(point);
 
-if (polyline) {
-  polyline.addLatLng([lat, lon]);
-}
+      if (polyline) polyline.addLatLng([lat, lon]);
 
       if (lastPosition) {
-        const segment = calculateDistance(
-          lastPosition.lat,
-          lastPosition.lon,
-          lat,
-          lon
-        );
-
-        if (segment < 1) {
-          distance += segment;
-        }
+        const segment = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
+        if (segment < 1) distance += segment;
       }
 
       lastPosition = point;
 
       const hours = seconds / 3600;
-      const calculatedSpeed = hours > 0 ? distance / hours : 0;
+      const calcSpeed = hours > 0 ? distance / hours : 0;
+      const displaySpeed = gpsSpeedMs && gpsSpeedMs > 0 ? gpsSpeedMs * 3.6 : calcSpeed;
 
       distanceEl.textContent = distance.toFixed(2);
-      speedEl.textContent = (
-        gpsSpeed > 0
-          ? gpsSpeed * 3.6
-          : calculatedSpeed
-      ).toFixed(1);
-
+      speedEl.textContent = displaySpeed.toFixed(1);
     },
     (error) => {
       console.error("GPS error:", error);
@@ -5055,7 +5052,7 @@ if (polyline) {
     {
       enableHighAccuracy: true,
       maximumAge: 0,
-      timeout: 10000
+      timeout: 15000
     }
   );
 }
@@ -6686,8 +6683,8 @@ function shareCurrentRun() {
 
   // Tracé GPS simplifié (fond carte)
   if (gpsPath.length > 1) {
-    const lats = gpsPath.map(p => p[0]);
-    const lons = gpsPath.map(p => p[1]);
+    const lats = gpsPath.map(p => Array.isArray(p) ? p[0] : p.lat);
+    const lons = gpsPath.map(p => Array.isArray(p) ? p[1] : p.lon);
     const minLat = Math.min(...lats), maxLat = Math.max(...lats);
     const minLon = Math.min(...lons), maxLon = Math.max(...lons);
     const mapW = W * 0.45, mapH = H - 80, mapX = W * 0.5, mapY = 40;
@@ -6707,8 +6704,10 @@ function shareCurrentRun() {
     // Tracé
     ctx.beginPath();
     gpsPath.forEach((p, i) => {
-      const x = mapX + pad + (p[1] - minLon) * scaleX;
-      const y = mapY + mapH - pad - (p[0] - minLat) * scaleY;
+      const pLat = Array.isArray(p) ? p[0] : p.lat;
+      const pLon = Array.isArray(p) ? p[1] : p.lon;
+      const x = mapX + pad + (pLon - minLon) * scaleX;
+      const y = mapY + mapH - pad - (pLat - minLat) * scaleY;
       i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     });
     ctx.strokeStyle = "#fc4c02";
@@ -6719,8 +6718,10 @@ function shareCurrentRun() {
 
     // Point départ / arrivée
     const drawDot = (p, color) => {
-      const x = mapX + pad + (p[1] - minLon) * scaleX;
-      const y = mapY + mapH - pad - (p[0] - minLat) * scaleY;
+      const pLat = Array.isArray(p) ? p[0] : p.lat;
+      const pLon = Array.isArray(p) ? p[1] : p.lon;
+      const x = mapX + pad + (pLon - minLon) * scaleX;
+      const y = mapY + mapH - pad - (pLat - minLat) * scaleY;
       ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI*2);
       ctx.fillStyle = color; ctx.fill();
       ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
