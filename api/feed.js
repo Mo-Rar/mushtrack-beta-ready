@@ -1,6 +1,7 @@
 // /api/feed.js — fil d'activité communautaire MushTrack
 const FEED_TABLE      = "mushtrack_feed";
 const REACT_TABLE     = "mushtrack_feed_reactions";
+const COMMENT_TABLE   = "mushtrack_feed_comments";
 
 module.exports = async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -14,31 +15,72 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === "GET") {
+      const url = new URL(req.url, `https://${req.headers.host}`);
+      const commentsForPost = url.searchParams.get("comments");
+
+      // Fetch comments for one post
+      if (commentsForPost) {
+        const comments = await sb(
+          `${COMMENT_TABLE}?post_id=eq.${commentsForPost}&order=created_at.asc&select=id,device_id,user_name,text,created_at`,
+          "GET"
+        );
+        return res.status(200).json({ configured: true, comments });
+      }
+
+      // Fetch feed
       const limit = 30;
       const posts = await sb(`${FEED_TABLE}?select=*&order=created_at.desc&limit=${limit}`, "GET");
       if (!posts.length) return res.status(200).json({ configured: true, posts: [] });
 
       const ids = posts.map(p => p.id);
       const filter = ids.map(id => `"${id}"`).join(",");
-      const reactions = await sb(`${REACT_TABLE}?post_id=in.(${filter})&select=post_id,device_id`, "GET");
+
+      const [reactions, comments] = await Promise.all([
+        sb(`${REACT_TABLE}?post_id=in.(${filter})&select=post_id,device_id`, "GET"),
+        sb(`${COMMENT_TABLE}?post_id=in.(${filter})&select=post_id,id&order=created_at.asc`, "GET")
+      ]);
 
       const reactionMap = {};
       for (const r of reactions) {
         reactionMap[r.post_id] = reactionMap[r.post_id] || [];
         reactionMap[r.post_id].push(r.device_id);
       }
+      const commentCountMap = {};
+      for (const c of comments) {
+        commentCountMap[c.post_id] = (commentCountMap[c.post_id] || 0) + 1;
+      }
 
       return res.status(200).json({
         configured: true,
         posts: posts.map(p => ({
           ...p,
-          reactions: reactionMap[p.id] || []
+          reactions: reactionMap[p.id] || [],
+          comment_count: commentCountMap[p.id] || 0
         }))
       });
     }
 
     if (req.method === "POST") {
       const body = await readJson(req);
+
+      // Nouveau commentaire
+      if (body.kind === "comment") {
+        const { postId, deviceId, userName, text } = body;
+        if (!postId || !deviceId || !text) return res.status(400).json({ error: "postId, deviceId et text requis" });
+        const row = await sb(`${COMMENT_TABLE}`, "POST",
+          { Prefer: "return=representation" },
+          { post_id: postId, device_id: deviceId, user_name: userName || "Musher", text: text.slice(0, 500) }
+        );
+        return res.status(200).json({ configured: true, comment: row[0] });
+      }
+
+      // Suppression commentaire
+      if (body.kind === "delete-comment") {
+        const { commentId, deviceId } = body;
+        if (!commentId || !deviceId) return res.status(400).json({ error: "commentId et deviceId requis" });
+        await sb(`${COMMENT_TABLE}?id=eq.${commentId}&device_id=eq.${encodeURIComponent(deviceId)}`, "DELETE");
+        return res.status(200).json({ configured: true, ok: true });
+      }
 
       // Réaction 🐕
       if (body.kind === "react") {

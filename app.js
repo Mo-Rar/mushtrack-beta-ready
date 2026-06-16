@@ -6953,7 +6953,11 @@ function renderFeed() {
         <button class="feed-react-btn ${myReact ? "reacted" : ""}" data-react-post="${post.id}" data-reacted="${myReact}">
           🐕 <span>${reactions.length || ""}</span>
         </button>
+        <button class="feed-comment-btn" data-comment-post="${post.id}">
+          💬 <span>${post.comment_count || ""}</span>
+        </button>
       </div>
+      <div class="feed-comments-section" id="comments-${post.id}" style="display:none"></div>
     </div>`;
   }).join("");
 
@@ -6978,7 +6982,22 @@ function renderFeed() {
     });
   });
 
-  // Suppression
+  // Commentaires — toggle
+  feedEl.querySelectorAll("[data-comment-post]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const postId  = btn.dataset.commentPost;
+      const section = document.getElementById(`comments-${postId}`);
+      if (!section) return;
+      if (section.style.display === "none") {
+        section.style.display = "block";
+        await loadComments(postId, section, btn);
+      } else {
+        section.style.display = "none";
+      }
+    });
+  });
+
+  // Suppression post
   feedEl.querySelectorAll("[data-delete-post]").forEach(btn => {
     btn.addEventListener("click", async () => {
       if (!confirm("Supprimer cette activité ?")) return;
@@ -6988,6 +7007,71 @@ function renderFeed() {
       renderFeed();
     });
   });
+}
+
+async function loadComments(postId, section, toggleBtn) {
+  section.innerHTML = `<p class="feed-comment-loading">Chargement…</p>`;
+  try {
+    const res  = await fetch(`/api/feed?comments=${postId}`);
+    const data = await res.json();
+    const comments = data.comments || [];
+
+    const html = comments.map(c => {
+      const isMe = c.device_id === state.deviceId;
+      return `<div class="feed-comment" data-cid="${c.id}">
+        <strong>${c.user_name}</strong>
+        <span>${c.text}</span>
+        <small>${formatTimeAgo(c.created_at)}</small>
+        ${isMe ? `<button class="feed-comment-delete" data-delete-comment="${c.id}">✕</button>` : ""}
+      </div>`;
+    }).join("") || `<p class="feed-comment-empty">Aucun commentaire. Sois le premier !</p>`;
+
+    section.innerHTML = `
+      <div class="feed-comments-list">${html}</div>
+      <div class="feed-comment-form">
+        <input class="feed-comment-input" type="text" placeholder="Ajouter un commentaire…" maxlength="500"/>
+        <button class="feed-comment-send">Envoyer</button>
+      </div>`;
+
+    // Envoyer commentaire
+    const input  = section.querySelector(".feed-comment-input");
+    const sendBtn = section.querySelector(".feed-comment-send");
+    sendBtn.addEventListener("click", async () => {
+      const text = input.value.trim();
+      if (!text) return;
+      sendBtn.disabled = true;
+      const res2 = await fetch("/api/feed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "comment", postId, deviceId: state.deviceId, userName: state.profile.name || "Musher", text })
+      }).catch(() => null);
+      if (res2 && res2.ok) {
+        input.value = "";
+        const post = feedPosts.find(p => p.id === postId);
+        if (post) { post.comment_count = (post.comment_count || 0) + 1; if (toggleBtn) { const sp = toggleBtn.querySelector("span"); if (sp) sp.textContent = post.comment_count; } }
+        await loadComments(postId, section, toggleBtn);
+      }
+      sendBtn.disabled = false;
+    });
+    input.addEventListener("keydown", e => { if (e.key === "Enter") sendBtn.click(); });
+
+    // Supprimer commentaire
+    section.querySelectorAll("[data-delete-comment]").forEach(b => {
+      b.addEventListener("click", async () => {
+        const cid = b.dataset.deleteComment;
+        await fetch("/api/feed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ kind: "delete-comment", commentId: cid, deviceId: state.deviceId })
+        }).catch(() => {});
+        const post = feedPosts.find(p => p.id === postId);
+        if (post && post.comment_count > 0) { post.comment_count--; if (toggleBtn) { const sp = toggleBtn.querySelector("span"); if (sp) sp.textContent = post.comment_count || ""; } }
+        await loadComments(postId, section, toggleBtn);
+      });
+    });
+  } catch (e) {
+    section.innerHTML = `<p class="feed-comment-empty">Erreur de chargement</p>`;
+  }
 }
 
 function formatTimeAgo(iso) {

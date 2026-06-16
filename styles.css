@@ -1628,6 +1628,60 @@ textarea {
   border-color: #fc4c02;
   color: #fc4c02;
 }
+.feed-comment-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 0.82rem;
+  color: #ccc;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.feed-comments-section {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 10px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.feed-comments-list { display: flex; flex-direction: column; gap: 6px; }
+.feed-comment {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.82rem;
+  flex-wrap: wrap;
+}
+.feed-comment strong { color: #fc4c02; flex-shrink: 0; }
+.feed-comment span   { color: #ddd; flex: 1; }
+.feed-comment small  { color: #666; font-size: 0.7rem; flex-shrink: 0; }
+.feed-comment-delete { background: none; border: none; color: #555; font-size: 0.7rem; cursor: pointer; padding: 0 2px; }
+.feed-comment-form   { display: flex; gap: 6px; }
+.feed-comment-input  {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 0.82rem;
+  color: #fff;
+  outline: none;
+}
+.feed-comment-send {
+  background: #fc4c02;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 0.82rem;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+}
+.feed-comment-loading, .feed-comment-empty { font-size: 0.78rem; color: #666; text-align: center; padding: 8px 0; margin: 0; }
 /* ────────────────────────────────────────────────────────── */
 
 .agenda-card,
