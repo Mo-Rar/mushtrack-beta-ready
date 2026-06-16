@@ -1553,6 +1553,87 @@ textarea {
   margin-top: 1px;
 }
 
+/* ── Onglets communauté ──────────────────────────────────── */
+.community-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.community-tab {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  color: #aaa;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.community-tab.active {
+  background: #fc4c02;
+  color: #fff;
+}
+
+/* ── Défis ───────────────────────────────────────────────── */
+.challenge-card {
+  background: #1a1a2e;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.challenge-header { display: flex; justify-content: space-between; align-items: center; }
+.challenge-badge  { font-size: 0.78rem; font-weight: 700; color: #fc4c02; }
+.challenge-header small { font-size: 0.72rem; color: #888; }
+.challenge-title  { font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; }
+.challenge-desc   { font-size: 0.8rem; color: #aaa; margin: 0; }
+.challenge-progress-bar  { height: 10px; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; }
+.challenge-progress-fill { height: 100%; background: linear-gradient(90deg, #fc4c02, #ff8c42); border-radius: 10px; transition: width 0.4s; }
+.challenge-progress-label { display: flex; justify-content: space-between; font-size: 0.72rem; color: #aaa; }
+.challenge-join {
+  width: 100%;
+  padding: 10px;
+  background: #fc4c02;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+.challenge-join:disabled { background: rgba(252,76,2,0.3); cursor: default; }
+.challenge-leaderboard { display: flex; flex-direction: column; gap: 4px; }
+.challenge-lb-title { font-size: 0.75rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 4px; }
+.challenge-lb-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; font-size: 0.82rem; }
+.challenge-lb-row.me { background: rgba(252,76,2,0.12); }
+.lb-rank  { width: 20px; color: #888; font-weight: 700; flex-shrink: 0; }
+.lb-name  { flex: 1; color: #ddd; }
+.lb-km    { color: #fc4c02; font-weight: 700; }
+
+/* ── Clubs ────────────────────────────────────────────────── */
+.clubs-actions { margin-top: 14px; }
+.club-card {
+  background: #1a1a2e;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.club-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.club-header strong { font-size: 0.95rem; color: #fff; display: block; }
+.club-header small  { font-size: 0.72rem; color: #888; }
+.club-code { font-size: 1rem; font-weight: 900; color: #fc4c02; letter-spacing: 3px; flex-shrink: 0; }
+.club-desc { font-size: 0.78rem; color: #aaa; margin: 0; }
+.club-members { display: flex; flex-wrap: wrap; gap: 5px; }
+.club-member-chip { font-size: 0.72rem; background: rgba(255,255,255,0.07); border-radius: 20px; padding: 3px 10px; color: #ccc; }
+.club-member-chip.me { background: rgba(252,76,2,0.18); color: #fc4c02; }
+.club-leave-btn { background: none; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 4px 12px; font-size: 0.72rem; color: #888; cursor: pointer; }
+
 /* ── Feed réseau social ──────────────────────────────────── */
 .feed-card {
   background: #1a1a2e;

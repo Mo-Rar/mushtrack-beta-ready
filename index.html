@@ -592,8 +592,46 @@
               <button id="community-share-dismiss" type="button" style="padding:9px 14px;background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer">&#x2715;</button>
             </div>
           </div>
-          <div id="community-feed-status" style="font-size:0.8rem;color:#aaa;text-align:center;padding:8px 0;display:none"></div>
-          <div id="community-feed" style="display:flex;flex-direction:column;gap:10px"></div>
+          <!-- Onglets Fil / Defis / Clubs -->
+          <div class="community-tabs">
+            <button class="community-tab active" data-tab="feed">Fil</button>
+            <button class="community-tab" data-tab="challenges">D&eacute;fis</button>
+            <button class="community-tab" data-tab="clubs">Clubs</button>
+          </div>
+
+          <!-- Fil -->
+          <div id="community-tab-feed">
+            <div id="community-feed-status" style="font-size:0.8rem;color:#aaa;text-align:center;padding:8px 0;display:none"></div>
+            <div id="community-feed" style="display:flex;flex-direction:column;gap:10px"></div>
+          </div>
+
+          <!-- Defis -->
+          <div id="community-tab-challenges" style="display:none">
+            <div id="challenge-card"></div>
+          </div>
+
+          <!-- Clubs -->
+          <div id="community-tab-clubs" style="display:none">
+            <div id="clubs-my-list"></div>
+            <div class="clubs-actions">
+              <button id="clubs-create-btn" class="primary-button" style="width:100%;margin-bottom:10px">&#x2795; Cr&eacute;er un club</button>
+              <div style="display:flex;gap:8px">
+                <input id="clubs-join-input" type="text" placeholder="Code invitation (ex: AB3K7P)" maxlength="6" style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:#fff;font-size:0.9rem;text-transform:uppercase;letter-spacing:2px"/>
+                <button id="clubs-join-btn" style="background:#fc4c02;border:none;border-radius:10px;padding:10px 16px;color:#fff;font-weight:700;cursor:pointer">Rejoindre</button>
+              </div>
+              <div id="clubs-join-msg" style="font-size:0.8rem;text-align:center;padding:6px 0;display:none"></div>
+            </div>
+            <!-- Modal creation club -->
+            <div id="clubs-create-modal" style="display:none;background:#1a1a2e;border-radius:14px;padding:16px;margin-top:14px">
+              <p style="font-weight:700;margin:0 0 12px">Nouveau club</p>
+              <input id="clubs-create-name" type="text" placeholder="Nom du club" maxlength="60" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:#fff;font-size:0.9rem;margin-bottom:8px"/>
+              <input id="clubs-create-desc" type="text" placeholder="Description (optionnel)" maxlength="200" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:#fff;font-size:0.9rem;margin-bottom:12px"/>
+              <div style="display:flex;gap:8px">
+                <button id="clubs-create-confirm" style="flex:1;background:#fc4c02;border:none;border-radius:10px;padding:10px;color:#fff;font-weight:700;cursor:pointer">Cr&eacute;er</button>
+                <button id="clubs-create-cancel" style="background:rgba(255,255,255,0.1);border:none;border-radius:10px;padding:10px 14px;color:#fff;cursor:pointer">Annuler</button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

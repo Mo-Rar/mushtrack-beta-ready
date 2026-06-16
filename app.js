@@ -7083,7 +7083,176 @@ function formatTimeAgo(iso) {
   return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 }
 
-document.getElementById("community-refresh-btn")?.addEventListener("click", fetchFeed);
+document.getElementById("community-refresh-btn")?.addEventListener("click", () => {
+  const activeTab = document.querySelector(".community-tab.active")?.dataset.tab || "feed";
+  if (activeTab === "feed") fetchFeed();
+  else if (activeTab === "challenges") renderChallenge();
+  else if (activeTab === "clubs") renderMyClubs();
+});
+
+// ── Onglets communauté ────────────────────────────────────────────────────────
+document.querySelectorAll(".community-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".community-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    const t = tab.dataset.tab;
+    document.getElementById("community-tab-feed").style.display       = t === "feed"       ? "block" : "none";
+    document.getElementById("community-tab-challenges").style.display = t === "challenges" ? "block" : "none";
+    document.getElementById("community-tab-clubs").style.display      = t === "clubs"      ? "block" : "none";
+    if (t === "challenges") renderChallenge();
+    if (t === "clubs")      renderMyClubs();
+  });
+});
+
+// ── Défis hebdomadaires ───────────────────────────────────────────────────────
+async function renderChallenge() {
+  const el = document.getElementById("challenge-card");
+  if (!el) return;
+  el.innerHTML = `<p style="color:#aaa;text-align:center;padding:30px 0;font-size:0.85rem">Chargement…</p>`;
+  try {
+    const res  = await fetch("/api/challenges");
+    const data = await res.json();
+    if (!data.configured) { el.innerHTML = `<p style="color:#aaa;text-align:center;padding:30px 0;font-size:0.85rem">Défis non configurés.<br>Exécute <code>supabase/challenges_clubs.sql</code></p>`; return; }
+    if (!data.challenge)  { el.innerHTML = `<p style="color:#aaa;text-align:center;padding:30px 0;font-size:0.85rem">Aucun défi actif cette semaine.</p>`; return; }
+
+    const ch      = data.challenge;
+    const entries = data.entries || [];
+    const myEntry = entries.find(e => e.device_id === state.deviceId);
+    const myKm    = myEntry ? Number(myEntry.km) : 0;
+    const target  = Number(ch.target_km);
+    const pct     = Math.min(100, Math.round((myKm / target) * 100));
+    const weekKm  = Number(getWeekKm ? getWeekKm() : 0);
+
+    el.innerHTML = `
+      <div class="challenge-card">
+        <div class="challenge-header">
+          <span class="challenge-badge">🏆 Défi de la semaine</span>
+          <small>${new Date(ch.week_start).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} – ${new Date(ch.week_end).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</small>
+        </div>
+        <h3 class="challenge-title">${ch.title}</h3>
+        ${ch.description ? `<p class="challenge-desc">${ch.description}</p>` : ""}
+        <div class="challenge-progress-bar"><div class="challenge-progress-fill" style="width:${pct}%"></div></div>
+        <div class="challenge-progress-label">
+          <span>${myKm.toFixed(1)} km</span>
+          <span>${pct}%</span>
+          <span>${target} km</span>
+        </div>
+        <button id="challenge-join-btn" class="challenge-join" ${myEntry ? "disabled" : ""}>
+          ${myEntry ? "✓ Participant·e" : "Rejoindre le défi"}
+        </button>
+        <div class="challenge-leaderboard">
+          <p class="challenge-lb-title">Classement</p>
+          ${entries.slice(0, 10).map((e, i) => `
+            <div class="challenge-lb-row ${e.device_id === state.deviceId ? "me" : ""}">
+              <span class="lb-rank">${i + 1}</span>
+              <span class="lb-name">${e.user_name}</span>
+              <span class="lb-km">${Number(e.km).toFixed(1)} km</span>
+            </div>`).join("") || `<p style="color:#666;font-size:0.78rem;text-align:center;padding:8px 0">Aucun participant pour l'instant</p>`}
+        </div>
+      </div>`;
+
+    document.getElementById("challenge-join-btn")?.addEventListener("click", async () => {
+      const btn = document.getElementById("challenge-join-btn");
+      btn.disabled = true;
+      btn.textContent = "Inscription…";
+      await fetch("/api/challenges", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ challengeId: ch.id, deviceId: state.deviceId, userName: state.profile.name || "Musher", km: weekKm })
+      }).catch(() => {});
+      await renderChallenge();
+    });
+  } catch (e) {
+    el.innerHTML = `<p style="color:#d94040;text-align:center;padding:20px 0">Erreur de chargement</p>`;
+  }
+}
+
+// ── Clubs ─────────────────────────────────────────────────────────────────────
+let myClubs = [];
+
+async function renderMyClubs() {
+  const el = document.getElementById("clubs-my-list");
+  if (!el) return;
+  el.innerHTML = "";
+  try {
+    const res  = await fetch(`/api/clubs?deviceId=${encodeURIComponent(state.deviceId)}`);
+    const data = await res.json();
+    if (!data.configured) { el.innerHTML = `<p style="color:#aaa;font-size:0.82rem;text-align:center;padding:16px 0">Clubs non configurés.<br>Exécute <code>supabase/challenges_clubs.sql</code></p>`; return; }
+    myClubs = data.clubs || [];
+    if (!myClubs.length) { el.innerHTML = `<p style="color:#aaa;font-size:0.82rem;text-align:center;padding:16px 0">Tu n'es dans aucun club.<br>Crée-en un ou rejoins-en un avec un code.</p>`; return; }
+    el.innerHTML = myClubs.map(club => `
+      <div class="club-card">
+        <div class="club-header">
+          <div>
+            <strong>${club.name}</strong>
+            <small>${club.members.length} membre${club.members.length > 1 ? "s" : ""}</small>
+          </div>
+          <span class="club-code">${club.code}</span>
+        </div>
+        ${club.description ? `<p class="club-desc">${club.description}</p>` : ""}
+        <div class="club-members">
+          ${club.members.map(m => `<span class="club-member-chip ${m.device_id === state.deviceId ? "me" : ""}">${m.user_name}</span>`).join("")}
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:8px">
+          <button class="club-leave-btn" data-leave-club="${club.id}">Quitter</button>
+        </div>
+      </div>`).join("");
+
+    el.querySelectorAll("[data-leave-club]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        if (!confirm("Quitter ce club ?")) return;
+        await fetch(`/api/clubs?clubId=${btn.dataset.leaveClub}&deviceId=${encodeURIComponent(state.deviceId)}`, { method: "DELETE" }).catch(() => {});
+        await renderMyClubs();
+      });
+    });
+  } catch (e) {
+    el.innerHTML = `<p style="color:#d94040;font-size:0.82rem;text-align:center;padding:16px 0">Erreur de chargement</p>`;
+  }
+}
+
+// Créer un club
+document.getElementById("clubs-create-btn")?.addEventListener("click", () => {
+  const modal = document.getElementById("clubs-create-modal");
+  if (modal) modal.style.display = modal.style.display === "none" ? "block" : "none";
+});
+document.getElementById("clubs-create-cancel")?.addEventListener("click", () => {
+  document.getElementById("clubs-create-modal").style.display = "none";
+});
+document.getElementById("clubs-create-confirm")?.addEventListener("click", async () => {
+  const name = document.getElementById("clubs-create-name")?.value.trim();
+  const desc = document.getElementById("clubs-create-desc")?.value.trim();
+  if (!name) return;
+  const btn = document.getElementById("clubs-create-confirm");
+  btn.disabled = true;
+  const res  = await fetch("/api/clubs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "create", deviceId: state.deviceId, userName: state.profile.name || "Musher", name, description: desc }) }).catch(() => null);
+  const data = res ? await res.json() : null;
+  btn.disabled = false;
+  if (data?.club) {
+    document.getElementById("clubs-create-modal").style.display = "none";
+    document.getElementById("clubs-create-name").value = "";
+    document.getElementById("clubs-create-desc").value = "";
+    await renderMyClubs();
+  }
+});
+
+// Rejoindre un club
+document.getElementById("clubs-join-btn")?.addEventListener("click", async () => {
+  const code  = document.getElementById("clubs-join-input")?.value.trim().toUpperCase();
+  const msgEl = document.getElementById("clubs-join-msg");
+  if (!code || code.length !== 6) { if (msgEl) { msgEl.textContent = "Code à 6 caractères requis"; msgEl.style.color = "#d94040"; msgEl.style.display = "block"; } return; }
+  const btn = document.getElementById("clubs-join-btn");
+  btn.disabled = true;
+  const res  = await fetch("/api/clubs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "join", deviceId: state.deviceId, userName: state.profile.name || "Musher", code }) }).catch(() => null);
+  const data = res ? await res.json() : null;
+  btn.disabled = false;
+  if (data?.club) {
+    if (msgEl) { msgEl.textContent = `✓ Bienvenue dans ${data.club.name} !`; msgEl.style.color = "#4caf50"; msgEl.style.display = "block"; }
+    document.getElementById("clubs-join-input").value = "";
+    await renderMyClubs();
+  } else {
+    if (msgEl) { msgEl.textContent = data?.error || "Code invalide"; msgEl.style.color = "#d94040"; msgEl.style.display = "block"; }
+  }
+});
 
 // ── Push Notifications ────────────────────────────────────────────────────────
 const VAPID_PUBLIC_KEY = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjZkOqp0nOFuUzIjbCzxO5_8IhFk";
