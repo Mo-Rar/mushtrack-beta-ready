@@ -246,9 +246,12 @@ h2 {
 .round-button {
   min-width: 44px;
   height: 44px;
-  padding: 0 14px;
+  padding: 0 12px;
   border-radius: 999px;
   background: #fc4c02;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: #fff;
   font-weight: 800;
   font-size: 0.85rem;
@@ -2809,12 +2812,16 @@ textarea {
   bottom: 0;
   display: flex;
   overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   gap: 0;
   padding: 8px 4px 16px;
   background: #ffffff;
   border-top: 1px solid #eeeeee;
   box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
 }
+.bottom-nav::-webkit-scrollbar { display: none; }
 
 /* Mode saison dans paramètres */
 .mode-switch-settings {
