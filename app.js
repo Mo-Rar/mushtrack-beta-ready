@@ -1031,6 +1031,7 @@ function normalizeState(value) {
   if (!Array.isArray(value.reminders)) value.reminders = [];
   if (!value.lang) value.lang = "fr";
   value.emergencyContact ||= { name: "", phone: "" };
+  value.forecast ||= {};
   return value;
 }
 
@@ -4814,7 +4815,10 @@ function updatePlanWeatherIfNeeded() {
   navigator.geolocation.getCurrentPosition(async (position) => {
     try {
       const { latitude, longitude } = position.coords;
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude.toFixed(4)}&longitude=${longitude.toFixed(4)}&current=temperature_2m,wind_speed_10m,precipitation`;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude.toFixed(4)}&longitude=${longitude.toFixed(4)}`
+        + `&current=temperature_2m,wind_speed_10m,precipitation,weather_code`
+        + `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,weather_code`
+        + `&wind_speed_unit=kmh&timezone=auto&forecast_days=7`;
       const response = await fetch(url);
       const data = await response.json();
       state.planWeather = {
@@ -4822,6 +4826,19 @@ function updatePlanWeatherIfNeeded() {
         wind: Number(data.current.wind_speed_10m || 0),
         precipitation: Number(data.current.precipitation || 0)
       };
+      // Stocker les prévisions 7 jours indexées par date YYYY-MM-DD
+      const fc = {};
+      const dates = data.daily?.time || [];
+      dates.forEach((d, i) => {
+        fc[d] = {
+          tempMax:   data.daily.temperature_2m_max[i],
+          tempMin:   data.daily.temperature_2m_min[i],
+          precip:    data.daily.precipitation_sum[i],
+          wind:      data.daily.wind_speed_10m_max[i],
+          code:      data.daily.weather_code[i]
+        };
+      });
+      state.forecast = fc;
       state.planWeatherUpdatedAt = new Date().toISOString();
       saveState();
       render();
@@ -5983,6 +6000,20 @@ document.getElementById("calc-ration-btn")?.addEventListener("click", () => {
 
 // ── Mode Coach ───────────────────────────────────────────────────────────────
 
+function weatherCodeEmoji(code) {
+  if (code == null) return "🌡️";
+  if (code === 0) return "☀️";
+  if (code <= 2) return "🌤️";
+  if (code <= 3) return "☁️";
+  if (code <= 48) return "🌫️";
+  if (code <= 57) return "🌧️";
+  if (code <= 67) return "🌧️";
+  if (code <= 77) return "❄️";
+  if (code <= 82) return "🌦️";
+  if (code <= 86) return "🌨️";
+  return "⛈️";
+}
+
 function renderCoach() {
   const el = document.getElementById("coach-content");
   if (!el) return;
@@ -6069,20 +6100,23 @@ function renderCoach() {
         const isToday = date.toDateString() === today.toDateString();
         const isPast  = date < today;
         return `
-        <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:${isToday ? "#fff4f0" : "#fff"};border-radius:12px;border:${isToday ? "2px solid #fc4c02" : "1px solid #f0f0f0"};opacity:${isPast ? "0.6" : "1"}">
-          <div style="width:36px;text-align:center;flex-shrink:0">
-            <div style="font-size:0.68rem;color:#999;font-weight:700">${DAY_NAMES[(date.getDay())]}</div>
-            <div style="font-size:1.1rem;font-weight:800;color:${isToday ? "#fc4c02" : "#333"}">${date.getDate()}</div>
+        <div style="display:flex;flex-direction:column;gap:6px;padding:12px 14px;background:${isToday ? "#fff4f0" : "#fff"};border-radius:12px;border:${isToday ? "2px solid #fc4c02" : "1px solid #f0f0f0"};opacity:${isPast ? "0.6" : "1"}">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:36px;text-align:center;flex-shrink:0">
+              <div style="font-size:0.68rem;color:#999;font-weight:700">${DAY_NAMES[(date.getDay())]}</div>
+              <div style="font-size:1.1rem;font-weight:800;color:${isToday ? "#fc4c02" : "#333"}">${date.getDate()}</div>
+            </div>
+            <div style="width:36px;height:36px;border-radius:50%;background:${day.rest ? "#f5f5f5" : day.color + "18"};display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">${day.emoji}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:0.9rem;font-weight:700;color:#1a1a1a">${day.label}</div>
+              <div style="font-size:0.78rem;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${day.desc}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              ${day.weatherEmoji ? `<div style="font-size:1rem">${day.weatherEmoji}${day.weatherTemp != null ? `<span style="font-size:0.72rem;color:#999;margin-left:2px">${day.weatherTemp}°</span>` : ""}</div>` : ""}
+              ${day.km ? `<div style="font-size:0.88rem;font-weight:700;color:${day.color}">${day.km} km</div>` : ""}
+            </div>
           </div>
-          <div style="width:36px;height:36px;border-radius:50%;background:${day.rest ? "#f5f5f5" : day.color + "18"};display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">${day.emoji}</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:0.9rem;font-weight:700;color:#1a1a1a">${day.label}</div>
-            <div style="font-size:0.78rem;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${day.desc}</div>
-          </div>
-          ${day.km ? `<div style="text-align:right;flex-shrink:0">
-            <div style="font-size:0.88rem;font-weight:700;color:${day.color}">${day.km} km</div>
-            ${day.charge ? `<div style="font-size:0.65rem;color:#aaa">${day.charge} u.</div>` : ""}
-          </div>` : ""}
+          ${day.weatherWarning ? `<div style="font-size:0.75rem;color:#b45309;background:#fffbeb;border-radius:6px;padding:4px 8px">${day.weatherWarning}</div>` : ""}
         </div>`;
       }).join("")}
     </div>
@@ -6295,11 +6329,38 @@ function generateCoachPlan() {
   const dayTypes = PLANS[phase];
   const totalRatio = dayTypes.reduce((s, t) => s + (KM_RATIO[t] || 0), 0);
 
-  const days = dayTypes.map(type => {
-    const s  = SESSION_TYPES[type];
-    const km = s.rest ? 0 : Math.round((KM_RATIO[type] / totalRatio) * weekTarget);
-    const charge = km * (SPEED_EST[type] || 12); // unités de charge (km × vitesse)
-    return { ...s, km: km || null, type, charge: km ? charge : null };
+  // Lundi de la semaine en cours
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+
+  const days = dayTypes.map((type, i) => {
+    const dayDate = new Date(monday); dayDate.setDate(monday.getDate() + i);
+    const dateKey = dayDate.toISOString().slice(0, 10);
+    const fcst = (state.forecast || {})[dateKey] || null;
+
+    // Adaptation météo
+    let finalType = type;
+    let weatherWarning = null;
+    let weatherEmoji = null;
+    let weatherTemp = null;
+    if (fcst) {
+      weatherTemp = Math.round(fcst.tempMax);
+      weatherEmoji = weatherCodeEmoji(fcst.code);
+      if (fcst.tempMax > 28 && !SESSION_TYPES[type].rest) {
+        finalType = "rest";
+        weatherWarning = `⚠️ ${weatherTemp}°C — repos conseillé (chaleur)`;
+      } else if (fcst.tempMax > 22 && type === "sprint") {
+        finalType = "recup";
+        weatherWarning = `⚠️ ${weatherTemp}°C — sprint remplacé par récupération`;
+      } else if (fcst.tempMax > 22 && type === "long") {
+        weatherWarning = `🌡️ ${weatherTemp}°C — départ tôt, eau obligatoire`;
+      }
+    }
+
+    const s  = SESSION_TYPES[finalType];
+    const km = s.rest ? 0 : Math.round((KM_RATIO[finalType] / totalRatio) * weekTarget);
+    const charge = km * (SPEED_EST[finalType] || 12);
+    return { ...s, km: km || null, type: finalType, origType: type, charge: km ? charge : null, dateKey, weatherWarning, weatherEmoji, weatherTemp };
   });
 
   // ── Indicateur de progression ─────────────────────────────────────────────
