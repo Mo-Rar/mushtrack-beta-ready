@@ -117,6 +117,9 @@ module.exports = async function handler(req, res) {
           photo_url: photoUrl || ""
         }
       );
+      // Alertes push aux membres des clubs du posteur
+      notifyClubMembers(deviceId, userName || "Musher", Number(km) || 0, type || "").catch(() => {});
+
       return res.status(200).json({ configured: true, post: row[0] });
     }
 
@@ -152,6 +155,41 @@ async function sb(path, method, extraHeaders = {}, body = null) {
   if (r.status === 204) return [];
   const t = await r.text();
   return t ? JSON.parse(t) : [];
+}
+
+async function notifyClubMembers(deviceId, userName, km, type) {
+  // Trouver les clubs du posteur
+  const memberships = await sb(`mushtrack_club_members?device_id=eq.${encodeURIComponent(deviceId)}&select=club_id`, "GET");
+  if (!memberships.length) return;
+
+  const clubIds = memberships.map(m => `"${m.club_id}"`).join(",");
+  // Autres membres de ces clubs (pas le posteur)
+  const others = await sb(`mushtrack_club_members?club_id=in.(${clubIds})&device_id=neq.${encodeURIComponent(deviceId)}&select=device_id`, "GET");
+  if (!others.length) return;
+
+  const otherIds = [...new Set(others.map(m => m.device_id))];
+  const filter   = otherIds.map(id => `"${id}"`).join(",");
+  const subs     = await sb(`push_subscriptions?device_id=in.(${filter})&select=subscription`, "GET");
+  if (!subs.length) return;
+
+  const payload = JSON.stringify({
+    title: `🐕 ${userName} a partagé une sortie`,
+    body: `${km.toFixed(1)} km${type ? " · " + type : ""} — viens voir sur MushTrack !`,
+    url: "/"
+  });
+
+  const webpush = require("web-push");
+  webpush.setVapidDetails(
+    "mailto:contact@mushtrack.app",
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+
+  await Promise.allSettled(subs.map(s => {
+    try {
+      return webpush.sendNotification(JSON.parse(s.subscription), payload);
+    } catch { return Promise.resolve(); }
+  }));
 }
 
 function readJson(req) {

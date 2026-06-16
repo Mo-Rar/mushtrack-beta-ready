@@ -5182,6 +5182,7 @@ function fetchWeatherForRun() {
 function saveCurrentRun() {
   if (!pendingRunSummary) finishCurrentRun();
 
+  const tempMatch = (state.planWeather || "").match(/-?\d+(?:\.\d+)?(?=°C)/);
   const run = {
     date: new Date().toISOString().slice(0, 10),
     type: document.querySelector("#runType").value,
@@ -5190,6 +5191,7 @@ function saveCurrentRun() {
     path: gpsPath,
     team: [...state.selectedDogIds],
     weather: document.querySelector("#weather").value,
+    temp: tempMatch ? Number(tempMatch[0]) : null,
     energy: Number(document.querySelector("#energy").value),
     recovery: document.querySelector("#recovery").value,
     paws: document.querySelector("#paw-check").checked,
@@ -6099,7 +6101,112 @@ function renderCoach() {
           <div><strong style="font-size:0.88rem">${a.name}</strong><small style="display:block;font-size:0.75rem;color:#888">${a.msg}</small></div>
         </div>`).join("")}
     </div>` : ""}
+
+    <!-- Rapport mensuel -->
+    <div style="margin-bottom:20px">
+      <p style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:8px">Rapport mensuel</p>
+      ${renderMonthlyReport()}
+    </div>
+
+    <!-- Corrélation météo/performance -->
+    <div style="margin-bottom:20px">
+      <p style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:8px">Météo & performance</p>
+      ${renderWeatherCorrelation()}
+    </div>
   `;
+}
+
+function renderMonthlyReport() {
+  const now   = new Date();
+  const month = now.getMonth();
+  const year  = now.getFullYear();
+  const prevMonth = month === 0 ? 11 : month - 1;
+  const prevYear  = month === 0 ? year - 1 : year;
+
+  const monthRuns = state.runs.filter(r => {
+    const d = new Date(r.date);
+    return d.getMonth() === month && d.getFullYear() === year;
+  });
+  const prevRuns = state.runs.filter(r => {
+    const d = new Date(r.date);
+    return d.getMonth() === prevMonth && d.getFullYear() === prevYear;
+  });
+
+  const totalKm   = monthRuns.reduce((s, r) => s + Number(r.km), 0);
+  const prevKm    = prevRuns.reduce((s, r) => s + Number(r.km), 0);
+  const bestRun   = monthRuns.reduce((best, r) => (!best || Number(r.km) > Number(best.km)) ? r : best, null);
+  const avgRecov  = monthRuns.filter(r => r.recovery).length
+    ? monthRuns.filter(r => r.recovery).reduce((s, r) => s + (r.recovery === "excellent" ? 3 : r.recovery === "good" ? 2 : 1), 0) / monthRuns.filter(r => r.recovery).length
+    : null;
+  const recovLabel = avgRecov ? (avgRecov >= 2.5 ? "Excellente" : avgRecov >= 1.5 ? "Bonne" : "Faible") : "—";
+  const recovColor = avgRecov ? (avgRecov >= 2.5 ? "#22c55e" : avgRecov >= 1.5 ? "#f59e0b" : "#ef4444") : "#888";
+  const diff      = prevKm ? Math.round(((totalKm - prevKm) / prevKm) * 100) : null;
+  const monthName = now.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+
+  if (!monthRuns.length) return `<div style="background:#f9f9f9;border-radius:14px;padding:16px;text-align:center;color:#aaa;font-size:0.85rem">Aucune sortie ce mois-ci.</div>`;
+
+  return `
+    <div style="background:#f9f9f9;border-radius:14px;padding:16px">
+      <p style="font-size:0.82rem;font-weight:700;color:#333;margin:0 0 12px;text-transform:capitalize">${monthName}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="background:#fff;border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:1.4rem;font-weight:800;color:#fc4c02">${totalKm.toFixed(0)}<small style="font-size:0.7rem"> km</small></div>
+          <div style="font-size:0.7rem;color:#888">Total ${diff !== null ? `<span style="color:${diff >= 0 ? "#22c55e" : "#ef4444"}">${diff >= 0 ? "+" : ""}${diff}% vs mois préc.</span>` : ""}</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:1.4rem;font-weight:800;color:#333">${monthRuns.length}</div>
+          <div style="font-size:0.7rem;color:#888">sortie${monthRuns.length > 1 ? "s" : ""}</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:1.1rem;font-weight:800;color:#333">${bestRun ? Number(bestRun.km).toFixed(1) + " km" : "—"}</div>
+          <div style="font-size:0.7rem;color:#888">meilleure sortie${bestRun ? " · " + new Date(bestRun.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : ""}</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:1.1rem;font-weight:800;color:${recovColor}">${recovLabel}</div>
+          <div style="font-size:0.7rem;color:#888">récupération moy.</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderWeatherCorrelation() {
+  const runsWithTemp = state.runs.filter(r => r.temp !== null && r.temp !== undefined && r.km);
+  if (runsWithTemp.length < 3) return `<div style="background:#f9f9f9;border-radius:14px;padding:16px;text-align:center;color:#aaa;font-size:0.85rem">Pas encore assez de données.<br><small>La température est enregistrée automatiquement à chaque sortie.</small></div>`;
+
+  // Grouper par tranche de 5°C
+  const buckets = {};
+  for (const r of runsWithTemp) {
+    const bucket = Math.floor(r.temp / 5) * 5;
+    buckets[bucket] = buckets[bucket] || [];
+    buckets[bucket].push(Number(r.km));
+  }
+  const sorted = Object.keys(buckets).map(Number).sort((a, b) => a - b);
+  const maxAvg = Math.max(...sorted.map(k => buckets[k].reduce((s, v) => s + v, 0) / buckets[k].length));
+
+  const bars = sorted.map(k => {
+    const avg  = buckets[k].reduce((s, v) => s + v, 0) / buckets[k].length;
+    const pct  = Math.round((avg / maxAvg) * 100);
+    const col  = k <= -10 ? "#60a5fa" : k <= 0 ? "#93c5fd" : k <= 10 ? "#4ade80" : k <= 20 ? "#facc15" : "#f87171";
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+      <span style="font-size:0.68rem;color:#888;width:44px;text-align:right;flex-shrink:0">${k >= 0 ? "+" : ""}${k}°C</span>
+      <div style="flex:1;background:#e5e7eb;border-radius:6px;height:16px;overflow:hidden">
+        <div style="width:${pct}%;background:${col};height:100%;border-radius:6px"></div>
+      </div>
+      <span style="font-size:0.68rem;color:#666;width:36px;flex-shrink:0">${avg.toFixed(1)} km</span>
+    </div>`;
+  }).join("");
+
+  const best = sorted.reduce((b, k) => {
+    const avg = buckets[k].reduce((s, v) => s + v, 0) / buckets[k].length;
+    return (!b || avg > b.avg) ? { k, avg } : b;
+  }, null);
+
+  return `
+    <div style="background:#f9f9f9;border-radius:14px;padding:16px">
+      <p style="font-size:0.78rem;color:#444;margin:0 0 12px">Km moyen par tranche de température — ${runsWithTemp.length} sorties analysées</p>
+      ${bars}
+      ${best ? `<p style="font-size:0.78rem;color:#fc4c02;font-weight:700;margin:10px 0 0">🎯 Meilleure condition : ${best.k >= 0 ? "+" : ""}${best.k}°C à ${best.k + 4}°C (${best.avg.toFixed(1)} km en moyenne)</p>` : ""}
+    </div>`;
 }
 
 function generateCoachPlan() {
@@ -7101,6 +7208,7 @@ document.querySelectorAll(".community-tab").forEach(tab => {
     document.getElementById("community-tab-clubs").style.display      = t === "clubs"      ? "block" : "none";
     if (t === "challenges") renderChallenge();
     if (t === "clubs")      renderMyClubs();
+    if (t === "map")        initMushersMap();
   });
 });
 
@@ -7253,6 +7361,87 @@ document.getElementById("clubs-join-btn")?.addEventListener("click", async () =>
     if (msgEl) { msgEl.textContent = data?.error || "Code invalide"; msgEl.style.color = "#d94040"; msgEl.style.display = "block"; }
   }
 });
+
+// ── Carte des mushers ─────────────────────────────────────────────────────────
+let musherMap = null;
+
+async function initMushersMap() {
+  // Opt-in toggle : état sauvegardé en localStorage
+  const toggle = document.getElementById("map-optin-toggle");
+  if (toggle) {
+    toggle.checked = localStorage.getItem("mushtrack-map-optin") === "true";
+    toggle.addEventListener("change", async () => {
+      if (toggle.checked) {
+        localStorage.setItem("mushtrack-map-optin", "true");
+        navigator.geolocation?.getCurrentPosition(async pos => {
+          await fetch("/api/map", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              deviceId: state.deviceId,
+              userName: state.profile?.name || "Musher",
+              region:   state.profile?.region || "",
+              lat: pos.coords.latitude,
+              lon: pos.coords.longitude
+            })
+          }).catch(() => {});
+          loadMapMarkers();
+        }, () => { toggle.checked = false; localStorage.removeItem("mushtrack-map-optin"); });
+      } else {
+        localStorage.removeItem("mushtrack-map-optin");
+        await fetch(`/api/map?deviceId=${encodeURIComponent(state.deviceId)}`, { method: "DELETE" }).catch(() => {});
+        loadMapMarkers();
+      }
+    });
+  }
+
+  // Initialiser Leaflet une seule fois
+  const mapEl = document.getElementById("mushers-map");
+  if (!mapEl) return;
+  if (!musherMap) {
+    if (typeof L === "undefined") return;
+    musherMap = L.map("mushers-map", { zoomControl: true, attributionControl: false }).setView([46.5, 2.5], 5);
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+      maxZoom: 18,
+      subdomains: "abcd"
+    }).addTo(musherMap);
+  } else {
+    musherMap.invalidateSize();
+  }
+  loadMapMarkers();
+}
+
+async function loadMapMarkers() {
+  if (!musherMap) return;
+  musherMap.eachLayer(l => { if (l instanceof L.Marker || l instanceof L.CircleMarker) musherMap.removeLayer(l); });
+
+  try {
+    const res  = await fetch("/api/map");
+    const data = await res.json();
+    if (!data.configured || !data.mushers?.length) return;
+
+    // Grouper les mushers au même point arrondi
+    const groups = {};
+    for (const m of data.mushers) {
+      const key = `${m.lat},${m.lon}`;
+      groups[key] = groups[key] || { lat: m.lat, lon: m.lon, names: [] };
+      groups[key].names.push(m.user_name);
+    }
+
+    for (const g of Object.values(groups)) {
+      const isMe = data.mushers.some(m => m.lat === g.lat && m.lon === g.lon && m.user_name === (state.profile?.name || "Musher"));
+      const marker = L.circleMarker([g.lat, g.lon], {
+        radius: g.names.length > 1 ? 10 : 7,
+        fillColor: isMe ? "#fc4c02" : "#60a5fa",
+        color: "#fff",
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.85
+      }).addTo(musherMap);
+      marker.bindPopup(`<strong>${g.names.join(", ")}</strong><br><small>${g.names.length} musher${g.names.length > 1 ? "s" : ""} dans cette zone</small>`);
+    }
+  } catch (e) {}
+}
 
 // ── Push Notifications ────────────────────────────────────────────────────────
 const VAPID_PUBLIC_KEY = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjZkOqp0nOFuUzIjbCzxO5_8IhFk";

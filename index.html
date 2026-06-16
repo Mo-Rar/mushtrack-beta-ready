@@ -9,6 +9,8 @@
     <link rel="apple-touch-icon" href="icon-192.png" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css?v=20260629" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
   </head>
@@ -597,6 +599,7 @@
             <button class="community-tab active" data-tab="feed">Fil</button>
             <button class="community-tab" data-tab="challenges">D&eacute;fis</button>
             <button class="community-tab" data-tab="clubs">Clubs</button>
+            <button class="community-tab" data-tab="map">Carte</button>
           </div>
 
           <!-- Fil -->
@@ -631,6 +634,16 @@
                 <button id="clubs-create-cancel" style="background:rgba(255,255,255,0.1);border:none;border-radius:10px;padding:10px 14px;color:#fff;cursor:pointer">Annuler</button>
               </div>
             </div>
+          <!-- Carte des mushers -->
+          <div id="community-tab-map" style="display:none">
+            <div style="background:#1a1a2e;border-radius:14px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;cursor:pointer">
+                <input id="map-optin-toggle" type="checkbox" style="accent-color:#fc4c02;width:18px;height:18px"/>
+                Appara&icirc;tre sur la carte (r&eacute;gion seulement)
+              </label>
+            </div>
+            <div id="mushers-map" style="height:340px;border-radius:14px;overflow:hidden;background:#0d0d1a"></div>
+            <p style="font-size:0.72rem;color:#666;text-align:center;margin-top:8px">Position approch&eacute;e — seule ta r&eacute;gion est visible, pas ton adresse exacte.</p>
           </div>
         </div>
       </section>
