@@ -5398,13 +5398,24 @@ function toggleRecording() {
   timer = setInterval(() => {
     seconds += 1;
     durationEl.textContent = formatDuration(seconds);
-    // Allure (pace) en min/km
     const paceEl = document.querySelector("#pace");
-    if (paceEl && distance > 0) {
-      const minPerKm = seconds / 60 / distance;
-      const pMin = Math.floor(minPerKm);
-      const pSec = Math.round((minPerKm - pMin) * 60);
-      paceEl.textContent = `${pMin}:${String(pSec).padStart(2, "0")}`;
+    const paceUnitEl = document.querySelector("#pace-unit");
+    const usePace = state.gpsSpeedPace || false;
+    const useMi   = state.gpsUnitMi   || false;
+    if (usePace) {
+      // Afficher allure min/km ou min/mi
+      if (paceEl && distance > 0) {
+        const distUnit = useMi ? distance * 0.621371 : distance;
+        const minPerUnit = (seconds / 60) / distUnit;
+        const pMin = Math.floor(minPerUnit);
+        const pSec = Math.round((minPerUnit - pMin) * 60);
+        paceEl.textContent = `${pMin}:${String(pSec).padStart(2, "0")}`;
+        if (paceUnitEl) paceUnitEl.textContent = useMi ? "min/mi" : "min/km";
+      }
+    } else {
+      // Afficher km/h ou mph — vitesse calculée depuis distance/temps
+      if (paceEl) paceEl.textContent = "--:--";
+      if (paceUnitEl) paceUnitEl.textContent = useMi ? "mph" : "km/h";
     }
   }, 1000);
 
