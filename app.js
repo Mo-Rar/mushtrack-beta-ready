@@ -2627,6 +2627,15 @@ function openRunDetail(index) {
   document.getElementById("rd-duration").textContent = h > 0 ? `${h}h${String(m).padStart(2,"0")}` : `${m} min`;
 
   // Infos
+  const enginEl = document.getElementById("rd-engin");
+  if (enginEl) {
+    const poids = run.enginPoids ?? 0;
+    const nbChiens = (run.team?.length) || 1;
+    const chargeIndiv = run.engin && run.engin !== "Canicross" ? Math.round((poids + 75) / nbChiens) : 0;
+    enginEl.textContent = run.engin || "Canicross" + (chargeIndiv > 0 ? ` · ${chargeIndiv} kg/chien` : "");
+    if (run.engin && run.engin !== "Canicross") enginEl.textContent = `${run.engin} · ${chargeIndiv} kg/chien`;
+    else enginEl.textContent = "Canicross";
+  }
   document.getElementById("rd-weather").textContent = run.weather || "—";
   document.getElementById("rd-energy").textContent = run.energy ? run.energy + " / 5" : "—";
   document.getElementById("rd-recovery").textContent = run.recovery || "—";
