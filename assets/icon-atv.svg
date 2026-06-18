@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 90" fill="none">
+  <!-- Anneau de traction -->
+  <circle cx="8" cy="55" r="4" stroke="currentColor" stroke-width="3" fill="none"/>
+  <line x1="12" y1="55" x2="24" y2="55" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Roue arrière gauche (grande) -->
+  <circle cx="30" cy="62" r="18" stroke="currentColor" stroke-width="5.5" fill="none"/>
+  <circle cx="30" cy="62" r="7" stroke="currentColor" stroke-width="3" fill="none"/>
+  <line x1="30" y1="44" x2="30" y2="80" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="12" y1="62" x2="48" y2="62" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="17.3" y1="49.3" x2="42.7" y2="74.7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="17.3" y1="74.7" x2="42.7" y2="49.3" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Roue avant droite (grande) -->
+  <circle cx="112" cy="62" r="18" stroke="currentColor" stroke-width="5.5" fill="none"/>
+  <circle cx="112" cy="62" r="7" stroke="currentColor" stroke-width="3" fill="none"/>
+  <line x1="112" y1="44" x2="112" y2="80" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="94" y1="62" x2="130" y2="62" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="99.3" y1="49.3" x2="124.7" y2="74.7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="99.3" y1="74.7" x2="124.7" y2="49.3" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Châssis bas -->
+  <line x1="30" y1="55" x2="112" y2="55" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Carrosserie ATV (corps trapu) -->
+  <path d="M40 55 L38 36 L70 30 L102 36 L100 55 Z" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round" fill="none"/>
+
+  <!-- Garde-boue avant -->
+  <path d="M98 40 Q118 36 116 50" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <!-- Garde-boue arrière -->
+  <path d="M42 40 Q22 36 24 50" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+  <!-- Siège -->
+  <rect x="52" y="26" width="36" height="10" rx="5" stroke="currentColor" stroke-width="3" fill="none"/>
+
+  <!-- Guidon -->
+  <line x1="70" y1="30" x2="70" y2="18" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+  <line x1="58" y1="18" x2="82" y2="18" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="58" cy="18" r="3.5" fill="currentColor"/>
+  <circle cx="82" cy="18" r="3.5" fill="currentColor"/>
+
+  <!-- Pot d'échappement -->
+  <path d="M38 48 Q28 44 26 38" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+</svg>
