@@ -3343,3 +3343,221 @@ textarea {
 .kpi-sub { display: block; font-size: 0.72rem; color: #888; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .kpi-bar { height: 4px; background: #f0f0f0; border-radius: 2px; margin-top: 6px; overflow: hidden; }
 .kpi-bar span { display: block; height: 100%; background: #fc4c02; border-radius: 2px; transition: width .4s; width: 0%; }
+
+/* ═══════════════════════════════════════════════════════════════
+   PREMIUM STYLE — mushing / canicross — fond blanc
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Fond général légèrement warm gray */
+.phone-shell { background: #f2f3f7; }
+.screen { background: #f2f3f7; }
+#dashboard { padding-left: 0; padding-right: 0; padding-top: 0; }
+
+/* ── Topbar dashboard ─────────────────────────────────────────── */
+#dashboard > .topbar {
+  padding: 16px 18px 12px;
+  margin-bottom: 0;
+  border-bottom: none;
+  background: #f2f3f7;
+}
+#dashboard > .topbar h1 { font-size: 1.65rem; letter-spacing: -0.04em; }
+
+/* ── Hero card — grand, plein largeur, dramatique ─────────────── */
+.hero-card {
+  min-height: 310px;
+  border-radius: 0 0 28px 28px;
+  margin: 0;
+  padding: 24px 20px 26px;
+  background:
+    linear-gradient(180deg, rgba(8,18,14,0.18) 0%, rgba(8,18,14,0.82) 60%, rgba(8,18,14,0.96) 100%),
+    url("./assets/mode-hiver.jpg") center/cover no-repeat;
+  box-shadow: 0 12px 40px rgba(10,28,24,0.28);
+  gap: 8px;
+}
+.hero-card.summer {
+  background:
+    linear-gradient(180deg, rgba(12,26,16,0.18) 0%, rgba(12,26,16,0.82) 60%, rgba(12,26,16,0.96) 100%),
+    url("./assets/mode-ete.jpg") center/cover no-repeat;
+}
+.hero-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: #fc4c02;
+  margin: 0 0 6px;
+}
+.hero-sentence {
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.95);
+  margin: 0 0 18px;
+}
+.hero-sentence strong { color: #ffffff; font-weight: 900; }
+.hero-cta {
+  padding: 12px 26px;
+  background: #fc4c02;
+  color: #ffffff;
+  border-radius: 50px;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: .01em;
+  box-shadow: 0 4px 18px rgba(252,76,2,0.5);
+  align-self: flex-start;
+}
+
+/* ── Section headings ─────────────────────────────────────────── */
+#dashboard > .section-heading,
+#dashboard > .last-run-label {
+  padding: 0 18px;
+}
+.section-heading h2 { font-size: 1.12rem; font-weight: 900; color: #111; }
+.section-heading > span { font-size: 0.76rem; color: #aaa; font-weight: 700; }
+
+/* ── KPI grid ─────────────────────────────────────────────────── */
+.kpi-grid { padding: 0 18px; margin-bottom: 16px; gap: 10px; }
+.kpi-card {
+  background: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 16px 14px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #fc4c02, #ff8c42);
+  border-radius: 20px 20px 0 0;
+}
+.kpi-icon { font-size: 1.5rem; margin-top: 0; }
+.kpi-label { font-size: 0.65rem; letter-spacing: .07em; color: #bbb; margin-bottom: 3px; }
+.kpi-value { font-size: 1.35rem; font-weight: 900; color: #111; letter-spacing: -0.03em; }
+.kpi-sub { font-size: 0.72rem; color: #999; margin-top: 3px; }
+.kpi-bar { height: 5px; background: #f0f0f0; border-radius: 3px; margin-top: 8px; }
+
+/* ── Insight panel (Coach IA) — fond sombre premium ──────────── */
+.insight-panel {
+  margin: 0 18px 18px;
+  background: linear-gradient(135deg, #1a2232 0%, #0f1724 100%);
+  border-radius: 22px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(10,18,38,0.28);
+  border: 1px solid rgba(252,76,2,0.18);
+}
+.insight-panel span {
+  color: #fc4c02;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+.insight-panel strong { font-size: 1.2rem; color: #ffffff; margin: 6px 0; }
+.insight-panel p { color: rgba(255,255,255,0.75); font-size: 0.88rem; line-height: 1.45; }
+.insight-panel .primary-button {
+  background: #fc4c02;
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(252,76,2,0.45);
+  font-size: 0.85rem;
+  padding: 10px 16px;
+}
+
+/* ── Training card ────────────────────────────────────────────── */
+#dashboard .training-card {
+  margin: 0 18px 16px;
+  border-radius: 20px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+  border: none;
+  padding: 18px;
+}
+#dashboard .training-card strong { font-size: 1.05rem; font-weight: 900; }
+#dashboard .training-card p { font-size: 0.88rem; color: #666; }
+#dashboard .training-card .primary-button {
+  font-size: 0.85rem;
+  padding: 10px 14px;
+  white-space: nowrap;
+}
+
+/* ── Progress chart ───────────────────────────────────────────── */
+#dashboard .progress-chart-wrap {
+  margin: 0 18px 16px;
+  border-radius: 20px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+  border: none;
+  padding: 16px 12px 10px;
+}
+
+/* ── Next race card ───────────────────────────────────────────── */
+#dashboard .next-race-card { margin: 0 18px 16px; }
+#dashboard .next-race-card article {
+  border-radius: 20px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+  border: none;
+  border-left: 5px solid #fc4c02;
+}
+
+/* ── Sponsor banner ───────────────────────────────────────────── */
+#dashboard .sponsor-banner {
+  margin: 0 18px 16px;
+  border-radius: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  border: none;
+}
+
+/* ── Bottom nav — premium ─────────────────────────────────────── */
+.bottom-nav {
+  background: #ffffff;
+  border-top: none;
+  box-shadow: 0 -6px 28px rgba(0,0,0,0.1);
+  padding: 10px 0 env(safe-area-inset-bottom, 12px);
+}
+.bottom-nav button {
+  min-height: 54px;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  color: #bbb;
+  gap: 5px;
+}
+.bottom-nav button svg { width: 22px; height: 22px; stroke-width: 1.6; }
+.bottom-nav button.active { color: #fc4c02; }
+.bottom-nav button.active svg { stroke-width: 2.5; }
+
+/* ── Quick stats (autres screens) ────────────────────────────── */
+.quick-stats article {
+  border-radius: 16px;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.07);
+  border: none;
+  border-left: 3px solid #fc4c02;
+}
+.quick-stats strong { font-size: 1.75rem; font-weight: 900; letter-spacing: -0.03em; }
+
+/* ── Dog cards ────────────────────────────────────────────────── */
+.dog-list article, .run-list article, .mini-history article {
+  border-radius: 16px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+  border: none;
+  border-left: 4px solid #fc4c02;
+}
+
+/* ── Cards generiques autres screens ─────────────────────────── */
+.plan-signal, .race-result, .agenda-card, .advice-card, .reminder-item, .open-run-card {
+  border-radius: 16px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+}
+
+/* ── Strava GPS screen — stats panel ─────────────────────────── */
+.strava-stats-panel { background: #ffffff; box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+.strava-stat-hero strong { font-size: 4rem; font-weight: 900; color: #111; }
+
+/* ── Season hero (plan screen) ────────────────────────────────── */
+.season-hero {
+  min-height: 260px;
+  border-radius: 0 0 28px 28px;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
