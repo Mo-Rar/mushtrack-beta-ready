@@ -2610,7 +2610,7 @@ function openRunDetail(index) {
   document.getElementById("rd-notes").textContent = run.notes || "—";
 
   // Naviguer vers l'écran
-  navigateTo("run-detail");
+  showScreen("run-detail");
 
   // Carte Leaflet
   setTimeout(() => {
@@ -2658,7 +2658,7 @@ document.getElementById("run-detail-delete")?.addEventListener("click", () => {
   if (_runDetailIndex === null) return;
   if (!confirm("Supprimer cette activité ?")) return;
   deleteRun(_runDetailIndex);
-  navigateTo("record");
+  showScreen("record");
 });
 
 function renderWeeklyChart() {
@@ -5330,8 +5330,8 @@ function toggleRecording() {
     clearInterval(timer);
     timer = null;
 
-    stopGPS();
-    startLiveLocation();
+    stopGPS().then(() => startLiveLocation());
+
 
     setRecordButtonState(false);
     return;
