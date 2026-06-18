@@ -5172,9 +5172,10 @@ async function startGPS() {
   if (isCapacitorNative()) {
     // ── Mode Android natif : background geolocation ──────────────────────
     try {
-      const { BackgroundGeolocation } = await import("@capacitor-community/background-geolocation");
+      const BackgroundGeolocation = window.Capacitor?.Plugins?.BackgroundGeolocation;
+      if (!BackgroundGeolocation) throw new Error("Plugin non disponible");
 
-      await BackgroundGeolocation.addWatcher(
+      watchId = await BackgroundGeolocation.addWatcher(
         {
           backgroundMessage: "MushTrack enregistre votre parcours.",
           backgroundTitle: "MushTrack GPS",
@@ -5188,7 +5189,7 @@ async function startGPS() {
           if (!weatherFetched) { weatherFetched = true; fetchAndShowWeather(lat, lon); }
           onGPSPosition(lat, lon, accuracy, gpsSpeedMs);
         }
-      ).then(id => { watchId = id; });
+      );
 
     } catch (e) {
       console.error("BackgroundGeolocation plugin error:", e);
@@ -5217,8 +5218,8 @@ async function stopGPS() {
   if (watchId === null) return;
   if (isCapacitorNative()) {
     try {
-      const { BackgroundGeolocation } = await import("@capacitor-community/background-geolocation");
-      await BackgroundGeolocation.removeWatcher({ id: watchId });
+      const BackgroundGeolocation = window.Capacitor?.Plugins?.BackgroundGeolocation;
+      if (BackgroundGeolocation) await BackgroundGeolocation.removeWatcher({ id: watchId });
     } catch (e) { console.error("stopGPS native error:", e); }
   } else {
     navigator.geolocation.clearWatch(watchId);
