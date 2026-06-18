@@ -5745,10 +5745,21 @@ const coachQuestion = document.querySelector("#coach-question");
 
 document.querySelector("#open-coach-btn")?.addEventListener("click", () => {
   coachModal.classList.remove("hidden");
-  // Réinitialise si pas encore de résultat
+  document.getElementById("coach-question-row")?.classList.add("hidden");
+  document.getElementById("coach-modal-title").textContent = "Analyse complète";
   if (!coachResult.dataset.hasResult) {
     coachResult.innerHTML = buildCoachWelcome();
+    requestCoachAnalysis();
   }
+});
+
+document.querySelector("#open-coach-question-btn")?.addEventListener("click", () => {
+  coachModal.classList.remove("hidden");
+  document.getElementById("coach-question-row")?.classList.remove("hidden");
+  document.getElementById("coach-modal-title").textContent = "Poser une question";
+  coachResult.innerHTML = "";
+  delete coachResult.dataset.hasResult;
+  setTimeout(() => document.getElementById("coach-question")?.focus(), 100);
 });
 
 document.querySelector("#coach-modal-close")?.addEventListener("click", () => {
