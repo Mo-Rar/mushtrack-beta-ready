@@ -5907,11 +5907,14 @@ function buildLocalCoachReport() {
   }
 
   // ── Charge de traction par chien ──
-  // Pour chaque sortie : charge_par_chien = poids_engin / nb_chiens_attelage
+  // Charge totale = poids engin + musher (75 kg sauf canicross où le musher court)
+  const POIDS_MUSHER = 75;
   function chargeParChien(run) {
-    const poids = run.enginPoids ?? ENGIN_POIDS[run.engin || "Canicross"] ?? 0;
+    const engin = run.engin || "Canicross";
+    const poidsEngin = run.enginPoids ?? ENGIN_POIDS[engin] ?? 0;
+    const poidsTotal = engin === "Canicross" ? 0 : poidsEngin + POIDS_MUSHER;
     const nbChiens = (run.team || []).length || 1;
-    return Math.round(poids / nbChiens);
+    return Math.round(poidsTotal / nbChiens);
   }
   const chargesMoyennes = runs.map(r => chargeParChien(r));
   const chargeMoyGlobale = chargesMoyennes.length > 0 ? Math.round(chargesMoyennes.reduce((a,b)=>a+b,0)/chargesMoyennes.length) : 0;
