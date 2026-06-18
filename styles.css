@@ -3375,41 +3375,45 @@ textarea {
   color: #444; cursor: pointer;
 }
 
-/* ── Hero split ─────────────────────────────────────────────── */
+/* ── Hero — image arrière-plan plein largeur ─────────────────── */
 .dash-hero {
   position: relative;
-  background: #fff;
+  min-height: 230px;
+  background:
+    linear-gradient(160deg, rgba(5,10,20,0.45) 0%, rgba(5,10,20,0.25) 40%, rgba(5,10,20,0.6) 100%),
+    url("./assets/mode-hiver.jpg") center 30%/cover no-repeat;
   border-radius: 0 0 28px 28px;
   margin: 0 0 12px;
   padding: 16px 16px 0;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.07);
   overflow: hidden;
   display: block;
 }
+.dash-hero.summer {
+  background:
+    linear-gradient(160deg, rgba(5,20,10,0.45) 0%, rgba(5,20,10,0.25) 40%, rgba(5,20,10,0.6) 100%),
+    url("./assets/mode-ete.jpg") center 30%/cover no-repeat;
+}
 .dash-hero-text {
   position: relative; z-index: 2;
-  padding-right: 100px;
 }
 .dash-hello {
-  font-size: 0.92rem; color: #555; margin: 0 0 4px; font-weight: 500;
+  font-size: 0.88rem; color: rgba(255,255,255,0.85); margin: 0 0 3px; font-weight: 500;
 }
 .dash-mission-title {
-  font-size: 1.45rem; font-weight: 900; color: #111;
+  font-size: 1.5rem; font-weight: 900; color: #fff;
   margin: 0 0 14px; line-height: 1.15;
   letter-spacing: -0.03em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 .dash-mission-title span { color: #fc4c02; }
-.dash-hero-photo {
-  position: absolute;
-  top: 0; right: 0;
-  width: 110px; height: 110px;
-  background: url("./assets/mode-hiver.jpg") center/cover no-repeat;
-  border-radius: 0 0 0 40px;
-  opacity: 0.85;
-}
+.dash-hero-photo { display: none; }
+
 /* Carte countdown dans le hero */
 .dash-hero-card {
-  background: linear-gradient(135deg, #1a1a2e 0%, #0f1724 100%);
+  background: rgba(255,255,255,0.13);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.22);
   border-radius: 18px;
   margin: 0 -16px;
   padding: 14px 16px 16px;
@@ -3426,20 +3430,20 @@ textarea {
   letter-spacing: -0.05em; line-height: 1;
 }
 .dash-days-label {
-  font-size: 0.6rem; font-weight: 700; color: rgba(255,255,255,0.55);
+  font-size: 0.6rem; font-weight: 700; color: rgba(255,255,255,0.7);
   text-align: center; margin-top: 2px; text-transform: uppercase; letter-spacing: .05em;
 }
 .dash-hero-prep { flex: 1; }
 .dash-prep-eyebrow {
   font-size: 0.55rem; font-weight: 900; letter-spacing: .12em;
-  color: rgba(255,255,255,0.45); text-transform: uppercase; margin: 0 0 3px;
+  color: rgba(255,255,255,0.6); text-transform: uppercase; margin: 0 0 3px;
 }
 .dash-prep-value {
   display: block; font-size: 1.45rem; font-weight: 900; color: #fff;
   margin: 0 0 6px; letter-spacing: -0.03em;
 }
 .dash-prep-bar {
-  height: 5px; background: rgba(255,255,255,0.15); border-radius: 99px; overflow: hidden;
+  height: 5px; background: rgba(255,255,255,0.2); border-radius: 99px; overflow: hidden;
 }
 .dash-prep-bar span {
   display: block; height: 100%;
@@ -3447,7 +3451,7 @@ textarea {
   border-radius: 99px; width: 0%; transition: width .4s;
 }
 .dash-prep-phase {
-  font-size: 0.72rem; color: rgba(255,255,255,0.5); margin: 6px 0 0; line-height: 1.35;
+  font-size: 0.72rem; color: rgba(255,255,255,0.6); margin: 6px 0 0; line-height: 1.35;
 }
 .dash-orange { color: #fc4c02; font-weight: 700; }
 
