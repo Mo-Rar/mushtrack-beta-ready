@@ -189,7 +189,9 @@
           <img class="dash-coach-mascot" src="./assets/coach-mascot.png" alt="Coach MushTrack">
           <div class="dash-coach-body">
             <p class="dash-coach-eyebrow">COACH MUSHTRACK</p>
-            <p class="dash-coach-text" data-bind="coachText">Analyse IA de tes entraînements.</p>
+            <div class="dash-coach-bubble">
+              <p class="dash-coach-text" data-bind="coachText">Ton volume est légèrement en dessous de ton plan cette semaine. Une sortie facile aujourd'hui te remet dans le rythme et prépare la suite.</p>
+            </div>
             <div class="dash-coach-btns">
               <button class="dash-coach-main-btn" id="open-coach-btn" type="button">Voir l'analyse complète</button>
               <button class="dash-coach-sec-btn" id="open-coach-question-btn" type="button">Poser une question</button>
@@ -197,9 +199,10 @@
           </div>
           <div class="dash-coach-reco">
             <p class="dash-reco-title">NOTRE RECOMMANDATION</p>
-            <p class="dash-reco-item" data-bind="nextWorkoutTitle">—</p>
-            <p class="dash-reco-item" data-bind="dashWorkoutLevel">—</p>
-            <p class="dash-reco-item" data-bind="dashWeatherCond">—</p>
+            <p class="dash-reco-item" data-bind="nextWorkoutTitle">Endurance aujourd'hui</p>
+            <p class="dash-reco-item" data-bind="dashWorkoutLevel">Charge faible</p>
+            <p class="dash-reco-item">Récupération OK</p>
+            <p class="dash-reco-item" data-bind="dashWeatherCond">Bonne météo</p>
             <button class="dash-reco-badge">Parfait pour progresser ! ✨</button>
           </div>
         </section>
