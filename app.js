@@ -5556,40 +5556,23 @@ navButtons.forEach((button) => {
   button.addEventListener("click", () => showScreen(button.dataset.go));
 });
 
-// ── Panneau unités GPS ──────────────────────────────────────────
-const gpsUnitBtn   = document.getElementById("gps-unit-btn");
-const gpsUnitPanel = document.getElementById("gps-unit-panel");
-
-gpsUnitBtn?.addEventListener("click", (e) => {
-  e.stopPropagation();
-  gpsUnitPanel.style.display = gpsUnitPanel.style.display === "none" ? "block" : "none";
-});
-document.addEventListener("click", () => {
-  if (gpsUnitPanel) gpsUnitPanel.style.display = "none";
-});
-gpsUnitPanel?.addEventListener("click", e => e.stopPropagation());
-
+// ── Toggle allure/vitesse au tap ────────────────────────────────
 function applyGpsUnitUI() {
-  const useMi   = state.gpsUnitMi   || false;
   const usePace = state.gpsSpeedPace || false;
-  document.getElementById("unit-km")?.classList.toggle("active", !useMi);
-  document.getElementById("unit-mi")?.classList.toggle("active",  useMi);
-  document.getElementById("unit-kmh")?.classList.toggle("active", !usePace);
-  document.getElementById("unit-pace")?.classList.toggle("active", usePace);
-  if (gpsUnitBtn) gpsUnitBtn.textContent = `⚙ ${useMi ? "mi" : "km"}`;
+  const paceLabel = document.getElementById("pace-label");
+  const paceUnit  = document.getElementById("pace-unit");
+  const paceEl    = document.getElementById("pace");
+  const useMi     = state.gpsUnitMi || false;
+  if (paceLabel) paceLabel.textContent = usePace ? "Allure" : "Vitesse";
+  if (paceUnit)  paceUnit.textContent  = usePace ? (useMi ? "min/mi" : "min/km") : (useMi ? "mph" : "km/h");
+  if (paceEl && !usePace) paceEl.textContent = "0.0";
+  if (paceEl && usePace)  paceEl.textContent = "--:--";
 }
 
-document.getElementById("unit-km")?.addEventListener("click", () => {
-  state.gpsUnitMi = false; saveState(); applyGpsUnitUI();
-});
-document.getElementById("unit-mi")?.addEventListener("click", () => {
-  state.gpsUnitMi = true; saveState(); applyGpsUnitUI();
-});
-document.getElementById("unit-kmh")?.addEventListener("click", () => {
-  state.gpsSpeedPace = false; saveState(); applyGpsUnitUI();
-});
-document.getElementById("unit-pace")?.addEventListener("click", () => {
-  state.gpsSpeedPace = true; saveState(); applyGpsUnitUI();
+document.getElementById("pace-toggle-btn")?.addEventListener("click", () => {
+  state.gpsSpeedPace = !(state.gpsSpeedPace || false);
+  saveState();
+  applyGpsUnitUI();
 });
 
 applyGpsUnitUI();

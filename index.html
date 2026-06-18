@@ -283,8 +283,8 @@
               <span class="strava-stat-label">Durée</span>
               <strong id="duration">00:00</strong>
             </div>
-            <div class="strava-stat-secondary strava-stat-center-border">
-              <span class="strava-stat-label">Allure</span>
+            <div class="strava-stat-secondary strava-stat-center-border" id="pace-toggle-btn" style="cursor:pointer" title="Toucher pour changer l'unité">
+              <span class="strava-stat-label" id="pace-label">Allure</span>
               <strong id="pace">--:--</strong>
               <span class="strava-stat-unit-small" id="pace-unit">min/km</span>
             </div>
@@ -294,15 +294,6 @@
               <span class="strava-stat-unit-small gps-speed-unit">km/h</span>
             </div>
           </div>
-        </div>
-
-        <!-- Sélecteur unités GPS -->
-        <div class="gps-units-bar">
-          <button class="gps-unit-toggle active" id="unit-km" data-unit="km">km</button>
-          <button class="gps-unit-toggle" id="unit-mi" data-unit="mi">mi</button>
-          <div class="gps-units-sep"></div>
-          <button class="gps-unit-toggle active" id="unit-kmh" data-unit="kmh">km/h</button>
-          <button class="gps-unit-toggle" id="unit-pace" data-unit="pace">min/km</button>
         </div>
 
         <!-- Météo en direct -->
