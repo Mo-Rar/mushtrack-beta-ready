@@ -3378,7 +3378,7 @@ textarea {
 /* ── Hero — image arrière-plan plein largeur ─────────────────── */
 .dash-hero {
   position: relative;
-  min-height: 230px;
+  min-height: 165px;
   background:
     linear-gradient(160deg, rgba(5,10,20,0.45) 0%, rgba(5,10,20,0.25) 40%, rgba(5,10,20,0.6) 100%),
     url("./assets/mode-hiver.jpg") center 30%/cover no-repeat;
