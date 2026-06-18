@@ -5270,8 +5270,34 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs) {
   const hours = seconds / 3600;
   const calcSpeed = hours > 0 ? distance / hours : 0;
   const displaySpeed = gpsSpeedMs && gpsSpeedMs > 0 ? gpsSpeedMs * 3.6 : calcSpeed;
-  distanceEl.textContent = distance.toFixed(2);
-  speedEl.textContent = displaySpeed.toFixed(1);
+  updateGpsDisplay(distance, displaySpeed);
+}
+
+function updateGpsDisplay(distKm, speedKmh) {
+  const useMi   = state.gpsUnitMi  || false;
+  const usePace = state.gpsSpeedPace || false;
+  const dist    = useMi ? distKm * 0.621371 : distKm;
+  distanceEl.textContent = dist.toFixed(2);
+  document.querySelectorAll(".gps-dist-unit").forEach(el => el.textContent = useMi ? "mi" : "km");
+
+  if (usePace) {
+    const paceEl = document.querySelector("#pace");
+    const paceUnitEl = document.querySelector("#pace-unit");
+    const paceLabel = document.querySelector("#pace-label");
+    if (speedKmh > 0.5 && distKm > 0) {
+      const minPerUnit = useMi ? (1 / (speedKmh * 0.621371)) * 60 : (1 / speedKmh) * 60;
+      const pMin = Math.floor(minPerUnit);
+      const pSec = Math.round((minPerUnit - pMin) * 60);
+      if (paceEl) paceEl.textContent = `${pMin}:${String(pSec).padStart(2,"0")}`;
+      if (paceUnitEl) paceUnitEl.textContent = useMi ? "min/mi" : "min/km";
+    }
+    speedEl.textContent = "—";
+    if (paceLabel) paceLabel.textContent = "Allure";
+  } else {
+    const spd = useMi ? speedKmh * 0.621371 : speedKmh;
+    speedEl.textContent = spd.toFixed(1);
+    document.querySelectorAll(".gps-speed-unit").forEach(el => el.textContent = useMi ? "mph" : "km/h");
+  }
 }
 
 async function startGPS() {
@@ -5518,6 +5544,44 @@ function saveCurrentRun() {
 navButtons.forEach((button) => {
   button.addEventListener("click", () => showScreen(button.dataset.go));
 });
+
+// ── Panneau unités GPS ──────────────────────────────────────────
+const gpsUnitBtn   = document.getElementById("gps-unit-btn");
+const gpsUnitPanel = document.getElementById("gps-unit-panel");
+
+gpsUnitBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  gpsUnitPanel.style.display = gpsUnitPanel.style.display === "none" ? "block" : "none";
+});
+document.addEventListener("click", () => {
+  if (gpsUnitPanel) gpsUnitPanel.style.display = "none";
+});
+gpsUnitPanel?.addEventListener("click", e => e.stopPropagation());
+
+function applyGpsUnitUI() {
+  const useMi   = state.gpsUnitMi   || false;
+  const usePace = state.gpsSpeedPace || false;
+  document.getElementById("unit-km")?.classList.toggle("active", !useMi);
+  document.getElementById("unit-mi")?.classList.toggle("active",  useMi);
+  document.getElementById("unit-kmh")?.classList.toggle("active", !usePace);
+  document.getElementById("unit-pace")?.classList.toggle("active", usePace);
+  if (gpsUnitBtn) gpsUnitBtn.textContent = `⚙ ${useMi ? "mi" : "km"}`;
+}
+
+document.getElementById("unit-km")?.addEventListener("click", () => {
+  state.gpsUnitMi = false; saveState(); applyGpsUnitUI();
+});
+document.getElementById("unit-mi")?.addEventListener("click", () => {
+  state.gpsUnitMi = true; saveState(); applyGpsUnitUI();
+});
+document.getElementById("unit-kmh")?.addEventListener("click", () => {
+  state.gpsSpeedPace = false; saveState(); applyGpsUnitUI();
+});
+document.getElementById("unit-pace")?.addEventListener("click", () => {
+  state.gpsSpeedPace = true; saveState(); applyGpsUnitUI();
+});
+
+applyGpsUnitUI();
 
 // Sélecteur engin
 document.querySelectorAll(".engin-btn").forEach(btn => {

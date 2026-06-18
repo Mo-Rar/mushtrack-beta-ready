@@ -761,6 +761,22 @@ body.mode-summer .record-button {
   background: linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 100%);
 }
 
+.gps-unit-toggle {
+  background: #f0f0f0;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #666;
+  cursor: pointer;
+}
+.gps-unit-toggle.active {
+  background: #fff4ef;
+  border-color: #fc4c02;
+  color: #fc4c02;
+}
+
 .strava-back-btn {
   background: rgba(255,255,255,0.18);
   border: none;
