@@ -135,7 +135,7 @@
           <!-- Tile 1 : équipe -->
           <div class="dash-tile">
             <div class="dash-tile-head">
-              <svg class="dash-tile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <svg class="dash-tile-icon tile-icon-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               <span class="dash-tile-label">ATTELAGE</span>
             </div>
             <strong class="dash-tile-team-count" data-bind="dashDogCount">—</strong>
@@ -143,23 +143,24 @@
             <div class="dash-energy-row">
               <span>Énergie moy.</span>
               <div class="dash-energy-track"><span data-bind-style="dashDogEnergy"></span></div>
-              <span data-bind="dashDogEnergyPct">—</span>
+              <span class="dash-energy-pct" data-bind="dashDogEnergyPct">—</span>
             </div>
           </div>
           <!-- Tile 2 : conditions -->
           <div class="dash-tile">
             <div class="dash-tile-head">
-              <svg class="dash-tile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+              <svg class="dash-tile-icon tile-icon-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
               <span class="dash-tile-label">CONDITIONS</span>
             </div>
             <strong class="dash-tile-temp" data-bind="dashWeatherTemp">—</strong>
             <p class="dash-tile-wind" data-bind="dashWeatherWind">—</p>
+            <p class="dash-tile-ground" data-bind="dashWeatherGround">—</p>
             <p class="dash-tile-cond" data-bind="dashWeatherCond">—</p>
           </div>
           <!-- Tile 3 : cette semaine -->
           <div class="dash-tile">
             <div class="dash-tile-head">
-              <svg class="dash-tile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              <svg class="dash-tile-icon tile-icon-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
               <span class="dash-tile-label">CETTE SEMAINE</span>
             </div>
             <strong class="dash-tile-km" data-bind="kpiWeek">0 km</strong>
@@ -170,7 +171,7 @@
           <!-- Tile 4 : série -->
           <div class="dash-tile">
             <div class="dash-tile-head">
-              <svg class="dash-tile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              <svg class="dash-tile-icon tile-icon-orange" viewBox="0 0 24 24" fill="#fc4c02" stroke="#fc4c02" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
               <span class="dash-tile-label">SÉRIE</span>
             </div>
             <strong class="dash-tile-streak" data-bind="dashStreak">0 jours</strong>

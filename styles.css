@@ -3574,9 +3574,11 @@ textarea {
   margin-bottom: 3px;
 }
 .dash-tile-icon {
-  width: 11px; height: 11px;
+  width: 13px; height: 13px;
   stroke: #bbb; flex-shrink: 0;
 }
+.tile-icon-orange { stroke: #fc4c02; }
+.tile-icon-blue   { stroke: #3b82f6; }
 .dash-tile-label {
   font-size: 0.48rem; font-weight: 900; letter-spacing: .08em;
   color: #bbb; text-transform: uppercase; margin: 0;
@@ -3603,12 +3605,14 @@ textarea {
   background: linear-gradient(90deg, #22c55e, #86efac);
   border-radius: 99px; width: 0%; transition: width .4s;
 }
+.dash-energy-pct { color: #22c55e !important; font-weight: 800; }
 /* Tile météo */
 .dash-tile-temp {
   font-size: 1.5rem; font-weight: 900; color: #111; letter-spacing: -0.03em; line-height: 1;
 }
 .dash-tile-wind { font-size: 0.65rem; color: #555; margin: 2px 0 0; font-weight: 600; }
-.dash-tile-cond { font-size: 0.6rem; color: #aaa; margin: 2px 0 0; }
+.dash-tile-ground { font-size: 0.65rem; color: #555; margin: 1px 0 0; font-weight: 600; }
+.dash-tile-cond { font-size: 0.62rem; color: #22c55e; margin: 3px 0 0; font-weight: 800; }
 /* Tile semaine */
 .dash-tile-km { font-size: 1.25rem; font-weight: 900; color: #111; letter-spacing: -0.03em; }
 .dash-tile-target { font-size: 0.6rem; color: #aaa; margin: 2px 0 4px; }
@@ -3617,19 +3621,24 @@ textarea {
 }
 .dash-week-bar span {
   display: block; height: 100%;
-  background: linear-gradient(90deg, #fc4c02, #ff8c42);
+  background: linear-gradient(90deg, #22c55e, #86efac);
   border-radius: 99px; width: 0%; transition: width .4s;
 }
-.dash-week-pct { font-size: 0.7rem; font-weight: 800; color: #fc4c02; }
+.dash-week-pct { font-size: 0.7rem; font-weight: 800; color: #22c55e; margin-top: 3px; display: block; }
 /* Tile streak */
 .dash-tile-streak { font-size: 1.25rem; font-weight: 900; color: #111; letter-spacing: -0.03em; }
-.dash-tile-streak-sub { font-size: 0.6rem; color: #aaa; margin: 0 0 4px; }
-.dash-streak-dots { display: flex; gap: 5px; flex-wrap: wrap; }
+.dash-tile-streak-sub { font-size: 0.6rem; color: #aaa; margin: 0 0 5px; }
+.dash-streak-dots { display: flex; gap: 4px; flex-wrap: wrap; }
 .dash-streak-dot {
-  width: 10px; height: 10px; border-radius: 50%;
+  width: 12px; height: 12px; border-radius: 50%;
   background: #f0f0f0; transition: background .3s;
+  display: flex; align-items: center; justify-content: center;
 }
-.dash-streak-dot.done { background: #fc4c02; }
+.dash-streak-dot.done {
+  background: #fc4c02;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l3 3 5-5' stroke='white' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-size: 10px; background-repeat: no-repeat; background-position: center;
+}
 
 /* ── Coach card — 3 colonnes ────────────────────────────────── */
 .dash-coach {

@@ -1483,12 +1483,15 @@ function render() {
     const wind = wx.windspeed ?? wx.wind ?? 0;
     bindText("dashWeatherWind", `Vent ${wind < 10 ? "faible" : wind < 25 ? "modéré" : "fort"}`);
     const temp = wx.temperature ?? wx.temp ?? 15;
+    const groundLabel = temp < -2 ? "Sol enneigé" : temp < 2 ? "Sol gelé" : "Sol sec";
+    bindText("dashWeatherGround", groundLabel);
     const condLabel = temp < -5 ? "Froid intense" : temp < 5 ? "Conditions froides" : temp < 20 ? "Conditions idéales" : "Chaud";
     bindText("dashWeatherCond", condLabel);
     bindText("dashWeatherCondClass", temp >= 5 && temp < 20 ? "green" : "orange");
   } else {
     bindText("dashWeatherTemp", "—");
     bindText("dashWeatherWind", "—");
+    bindText("dashWeatherGround", "—");
     bindText("dashWeatherCond", "Météo non chargée");
   }
 
