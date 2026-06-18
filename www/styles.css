@@ -3415,49 +3415,48 @@ textarea {
 /* Carte countdown dans le hero — fond blanc, gauche seulement */
 .dash-hero-card {
   background: #ffffff;
-  border-radius: 14px;
-  margin: 10px 0 0;
-  padding: 8px 12px;
+  border-radius: 12px;
+  margin: 8px 0 0;
+  padding: 6px 10px;
   display: inline-flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
-  max-width: 230px;
+  max-width: 210px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 .dash-hero-countdown {
   display: flex; flex-direction: column; align-items: flex-start;
-  min-width: 60px;
+  min-width: 52px;
   border-right: 1px solid #f0f0f0;
-  padding-right: 10px;
+  padding-right: 8px;
 }
 .dash-days {
-  font-size: 1.9rem; font-weight: 900; color: #fc4c02;
+  font-size: 1.6rem; font-weight: 900; color: #fc4c02;
   letter-spacing: -0.05em; line-height: 1;
 }
 .dash-days-label {
-  font-size: 0.55rem; font-weight: 700; color: #aaa;
-  margin-top: 1px; text-transform: uppercase; letter-spacing: .05em;
+  font-size: 0.5rem; font-weight: 700; color: #aaa;
+  margin-top: 1px; text-transform: uppercase; letter-spacing: .04em;
 }
 .dash-hero-prep { flex: 1; }
 .dash-prep-eyebrow {
-  font-size: 0.5rem; font-weight: 900; letter-spacing: .12em;
+  font-size: 0.45rem; font-weight: 900; letter-spacing: .1em;
   color: #aaa; text-transform: uppercase; margin: 0 0 1px;
 }
 .dash-prep-value {
-  display: block; font-size: 1rem; font-weight: 900; color: #111;
-  margin: 0 0 4px; letter-spacing: -0.02em;
+  display: block; font-size: 0.88rem; font-weight: 900; color: #111;
+  margin: 0 0 3px; letter-spacing: -0.02em;
 }
 .dash-prep-bar {
   height: 3px; background: #f0f0f0; border-radius: 99px; overflow: hidden;
+  width: 100%;
 }
 .dash-prep-bar span {
   display: block; height: 100%;
   background: linear-gradient(90deg, #fc4c02, #ff8c42);
   border-radius: 99px; width: 0%; transition: width .4s;
 }
-.dash-prep-phase {
-  font-size: 0.62rem; color: #888; margin: 4px 0 0; line-height: 1.3;
-}
+.dash-prep-phase { display: none; }
 .dash-orange { color: #fc4c02; font-weight: 700; }
 
 /* ── Objectif du jour (avec gauge) ─────────────────────────── */
