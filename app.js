@@ -1436,24 +1436,44 @@ function render() {
     gaugeEl.style.stroke = woLoad < 35 ? "#22c55e" : woLoad < 65 ? "#f59e0b" : "#fc4c02";
   }
 
-  // Chien principal
-  const activeDog = state.selectedDogIds?.length
-    ? state.dogs.find(d => d.id === state.selectedDogIds[0]) : null;
-  if (activeDog) {
-    bindText("dashDogName", activeDog.name);
-    const sig = activeDog.healthSignal || "OK";
-    const healthLabel = sig === "Attention" ? "Surveiller" : sig === "Repos" ? "Au repos" : "Bonne forme";
-    bindText("dashDogHealth", healthLabel);
+  // Résumé équipe
+  const teamDogs = (state.selectedDogIds || [])
+    .map(id => state.dogs.find(d => d.id === id))
+    .filter(Boolean);
+  const teamCount = teamDogs.length;
+  if (teamCount === 0) {
+    bindText("dashDogCount", "Aucun chien");
+    bindText("dashDogHealth", "Ajoute tes chiens");
+    bindText("dashDogEnergyPct", "—");
+    const dogEnergyEl = document.querySelector('[data-bind-style="dashDogEnergy"]');
+    if (dogEnergyEl) dogEnergyEl.style.width = "0%";
+  } else if (teamCount === 1) {
+    const dog = teamDogs[0];
+    const sig = dog.healthSignal || "OK";
     const energy = sig === "Attention" ? 45 : sig === "Repos" ? 25 : 82;
+    bindText("dashDogCount", dog.name);
+    bindText("dashDogHealth", sig === "Attention" ? "Surveiller" : sig === "Repos" ? "Au repos" : "Bonne forme");
     bindText("dashDogEnergyPct", `${energy} %`);
     const dogEnergyEl = document.querySelector('[data-bind-style="dashDogEnergy"]');
     if (dogEnergyEl) dogEnergyEl.style.width = `${energy}%`;
-    const dogDot = document.querySelector(".dash-dog-dot");
-    if (dogDot) dogDot.style.color = sig === "OK" || !sig ? "#22c55e" : "#fc4c02";
   } else {
-    bindText("dashDogName", "—");
-    bindText("dashDogHealth", "Ajoute tes chiens");
-    bindText("dashDogEnergyPct", "—");
+    const nbOk = teamDogs.filter(d => !d.healthSignal || d.healthSignal === "OK").length;
+    const nbAttention = teamDogs.filter(d => d.healthSignal === "Attention").length;
+    const nbRepos = teamDogs.filter(d => d.healthSignal === "Repos").length;
+    const energies = teamDogs.map(d => {
+      const s = d.healthSignal || "OK";
+      return s === "Attention" ? 45 : s === "Repos" ? 25 : 82;
+    });
+    const avgEnergy = Math.round(energies.reduce((a,b)=>a+b,0) / energies.length);
+    bindText("dashDogCount", `${teamCount} chiens`);
+    const parts = [];
+    if (nbOk > 0) parts.push(`${nbOk} OK`);
+    if (nbAttention > 0) parts.push(`${nbAttention} ⚠`);
+    if (nbRepos > 0) parts.push(`${nbRepos} repos`);
+    bindText("dashDogHealth", parts.join(" · "));
+    bindText("dashDogEnergyPct", `${avgEnergy} %`);
+    const dogEnergyEl = document.querySelector('[data-bind-style="dashDogEnergy"]');
+    if (dogEnergyEl) dogEnergyEl.style.width = `${avgEnergy}%`;
   }
 
   // Météo

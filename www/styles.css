@@ -3881,3 +3881,6 @@ textarea {
 .run-detail-row:last-child { border-bottom: none; }
 .run-detail-row span:first-child { color: #888; font-weight: 500; }
 .run-detail-row span:last-child { color: #111; font-weight: 700; }
+
+.dash-tile-team-count { font-size: 1.1rem; font-weight: 900; color: #111; letter-spacing: -0.02em; }
+.dash-tile-team-health { font-size: 0.65rem; color: #666; margin: 2px 0 4px; font-weight: 600; }
