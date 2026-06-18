@@ -1748,7 +1748,7 @@ function renderDogs() {
     const readiness = getDogReadiness(dog);
     const photoHtml = dog.photoDataUrl
       ? `<img src="${dog.photoDataUrl}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #fc4c02" alt="${dog.name}" />`
-      : `<div style="width:44px;height:44px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">🐕</div>`;
+      : `<img src="assets/dog-placeholder.svg" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="chien" />`;
     return `
     <article class="dog-card ${readiness.level}" data-open-dog="${dog.id}">
       <div style="display:flex;align-items:center;gap:12px">
@@ -1997,7 +1997,7 @@ function renderDogProfile() {
         <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
           ${dog.photoDataUrl
             ? `<img src="${dog.photoDataUrl}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:3px solid rgba(255,255,255,0.4)" alt="${dog.name}" />`
-            : `<div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0">🐕</div>`}
+            : `<img src="assets/dog-placeholder.svg" style="width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:3px solid rgba(255,255,255,0.4)" alt="chien" />`}
           <div>
             <span>${dog.role}</span>
             <strong>${Math.round(dog.km)} km saison</strong>
