@@ -920,6 +920,16 @@ body.mode-summer .record-button {
   border-color: #fc4c02;
   color: #fc4c02;
 }
+.engin-icon {
+  width: 18px; height: 14px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 2px;
+  filter: brightness(0) saturate(100%);
+}
+.engin-btn.active .engin-icon {
+  filter: brightness(0) saturate(100%) invert(35%) sepia(90%) saturate(800%) hue-rotate(5deg);
+}
 
 .strava-section-label {
   font-size: 0.72rem;
