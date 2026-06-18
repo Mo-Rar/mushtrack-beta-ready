@@ -1,31 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 80" fill="currentColor">
-  <!-- Roue gauche -->
-  <circle cx="16" cy="58" r="15"/>
-  <circle cx="16" cy="58" r="6" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" fill="currentColor">
+  <!-- Roue arrière -->
+  <circle cx="26" cy="66" r="20"/>
+  <circle cx="26" cy="66" r="9" fill="white"/>
 
-  <!-- Roue droite -->
-  <circle cx="84" cy="58" r="15"/>
-  <circle cx="84" cy="58" r="6" fill="white"/>
+  <!-- Roue avant -->
+  <circle cx="94" cy="66" r="20"/>
+  <circle cx="94" cy="66" r="9" fill="white"/>
 
-  <!-- Axe reliant les roues -->
-  <rect x="16" y="54" width="68" height="8" rx="4"/>
+  <!-- Garde-boue arrière (grand arrondi) -->
+  <path d="M8 56 Q6 36 26 30 Q38 26 46 34 L42 40 Q34 36 26 40 Q14 46 14 58 Z"/>
 
-  <!-- Garde-boue gauche -->
-  <path d="M4 50 Q6 30 20 28 L28 32 Q18 34 14 50 Z"/>
+  <!-- Garde-boue avant -->
+  <path d="M112 56 Q114 36 94 30 Q82 26 74 34 L78 40 Q86 36 94 40 Q106 46 106 58 Z"/>
 
-  <!-- Garde-boue droit -->
-  <path d="M96 50 Q94 30 80 28 L72 32 Q82 34 86 50 Z"/>
-
-  <!-- Corps central (réservoir + cadre) -->
-  <path d="M26 50 L28 30 Q50 20 72 30 L74 50 Q60 56 40 56 Z"/>
+  <!-- Corps central / réservoir -->
+  <path d="M44 52 Q46 30 60 24 Q74 18 78 34 L76 52 Q62 58 44 52 Z"/>
 
   <!-- Siège -->
-  <path d="M36 30 Q50 20 64 30 Q60 24 50 22 Q40 24 36 30 Z"/>
+  <path d="M50 30 Q62 20 76 28 Q70 22 62 20 Q54 22 50 30 Z"/>
 
-  <!-- Guidon gauche -->
-  <rect x="30" y="17" width="14" height="5" rx="2.5"/>
-  <!-- Guidon droit -->
-  <rect x="56" y="17" width="14" height="5" rx="2.5"/>
-  <!-- Colonne de direction -->
-  <rect x="46" y="17" width="8" height="10" rx="2"/>
+  <!-- Guidon -->
+  <rect x="78" y="22" width="6" height="14" rx="3"/>
+  <rect x="72" y="20" width="18" height="6" rx="3"/>
+
+  <!-- Rétroviseur -->
+  <rect x="88" y="16" width="8" height="5" rx="2"/>
+
+  <!-- Axe bas reliant les roues -->
+  <rect x="26" y="60" width="68" height="8" rx="4"/>
 </svg>
