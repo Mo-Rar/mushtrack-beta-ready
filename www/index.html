@@ -69,21 +69,18 @@
           </button>
         </header>
 
-        <!-- ── Hero : texte gauche + photo droite ── -->
+        <!-- ── Hero : image fond, texte + countdown sur image ── -->
         <section class="dash-hero">
-          <div class="dash-hero-text">
-            <p class="dash-hello">Bonjour, <span data-bind="dashUserName">Musher</span> 👋</p>
-            <h2 class="dash-mission-title">Mission <span data-bind="kpiRaceName">—</span></h2>
-          </div>
-          <div class="dash-hero-photo"></div>
+          <p class="dash-hello">Bonjour, <span data-bind="dashUserName">Musher</span> 👋</p>
+          <h2 class="dash-mission-title">Mission <span data-bind="kpiRaceName">—</span></h2>
 
-          <!-- Carte countdown + préparation -->
-          <div class="dash-hero-card">
+          <!-- Bas du hero : countdown sur image + carte blanche préparation -->
+          <div class="dash-hero-bottom">
             <div class="dash-hero-countdown">
               <span class="dash-days" data-bind="kpiDays">—</span>
               <span class="dash-days-label">jours restants</span>
             </div>
-            <div class="dash-hero-prep">
+            <div class="dash-hero-card">
               <p class="dash-prep-eyebrow">PRÉPARATION GLOBALE</p>
               <strong class="dash-prep-value" data-bind="kpiProgress">0 %</strong>
               <div class="dash-prep-bar"><span data-bind-style="kpiProgressBar"></span></div>
