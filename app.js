@@ -5125,87 +5125,105 @@ function stopLiveLocation() {
   }
 }
 
-function startGPS() {
-  if (!navigator.geolocation) {
-    alert("GPS non disponible");
+// Détecte si on tourne dans Capacitor (Android natif)
+function isCapacitorNative() {
+  return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+}
+
+function onGPSPosition(lat, lon, accuracy, gpsSpeedMs) {
+  if (accuracy > 50) {
+    updateMapPosition(lat, lon, `GPS: recherche précision (±${Math.round(accuracy)}m)…`);
     return;
   }
+  if (lastPosition) {
+    const jump = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
+    if (jump > 0.3) return;
+  }
+  if (lastPosition) {
+    const moved = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
+    if (moved < 0.005) return;
+  }
 
+  updateMapPosition(lat, lon, `GPS actif — ±${Math.round(accuracy)}m`);
+  const point = { lat, lon, timestamp: Date.now() };
+  gpsPath.push(point);
+  if (polyline) polyline.addLatLng([lat, lon]);
+  if (lastPosition) {
+    const segment = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
+    if (segment < 1) distance += segment;
+  }
+  lastPosition = point;
+
+  const hours = seconds / 3600;
+  const calcSpeed = hours > 0 ? distance / hours : 0;
+  const displaySpeed = gpsSpeedMs && gpsSpeedMs > 0 ? gpsSpeedMs * 3.6 : calcSpeed;
+  distanceEl.textContent = distance.toFixed(2);
+  speedEl.textContent = displaySpeed.toFixed(1);
+}
+
+async function startGPS() {
   stopLiveLocation();
   gpsPath = [];
   lastPosition = null;
-  if (polyline) {
-    polyline.setLatLngs([]);
-  }
+  if (polyline) polyline.setLatLngs([]);
 
   let weatherFetched = false;
 
+  if (isCapacitorNative()) {
+    // ── Mode Android natif : background geolocation ──────────────────────
+    try {
+      const { BackgroundGeolocation } = await import("@capacitor-community/background-geolocation");
+
+      await BackgroundGeolocation.addWatcher(
+        {
+          backgroundMessage: "MushTrack enregistre votre parcours.",
+          backgroundTitle: "MushTrack GPS",
+          requestPermissions: true,
+          stale: false,
+          distanceFilter: 5
+        },
+        (position, error) => {
+          if (error) { console.error("BG GPS error:", error); return; }
+          const { latitude: lat, longitude: lon, accuracy, speed: gpsSpeedMs } = position;
+          if (!weatherFetched) { weatherFetched = true; fetchAndShowWeather(lat, lon); }
+          onGPSPosition(lat, lon, accuracy, gpsSpeedMs);
+        }
+      ).then(id => { watchId = id; });
+
+    } catch (e) {
+      console.error("BackgroundGeolocation plugin error:", e);
+      _startGPSBrowser(weatherFetched);
+    }
+  } else {
+    // ── Mode PWA navigateur : geolocation classique ───────────────────────
+    _startGPSBrowser(weatherFetched);
+  }
+}
+
+function _startGPSBrowser(weatherFetched) {
+  if (!navigator.geolocation) { alert("GPS non disponible"); return; }
   watchId = navigator.geolocation.watchPosition(
     (position) => {
       const { latitude: lat, longitude: lon, accuracy, speed: gpsSpeedMs } = position.coords;
-
-      // Fetch météo une seule fois au démarrage
-      if (!weatherFetched) {
-        weatherFetched = true;
-        fetchAndShowWeather(lat, lon);
-      }
-
-      // ── Filtres qualité GPS (style Strava) ──────────────────────────────
-      // 1. Rejeter si précision trop faible
-      if (accuracy > 50) {
-        updateMapPosition(lat, lon, `GPS: recherche précision (±${Math.round(accuracy)}m)…`);
-        return;
-      }
-
-      // 2. Rejeter les pics aberrants (saut > 300m depuis le dernier point valide)
-      if (lastPosition) {
-        const jump = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
-        if (jump > 0.3) return; // > 300m d'un coup = artefact GPS
-      }
-
-      // 3. Ignorer si déplacement < 5m (évite la dérive stationnaire)
-      if (lastPosition) {
-        const moved = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
-        if (moved < 0.005) return;
-      }
-      // ────────────────────────────────────────────────────────────────────
-
-      updateMapPosition(lat, lon, `GPS actif — ±${Math.round(accuracy)}m`);
-
-      const point = { lat, lon, timestamp: Date.now() };
-      gpsPath.push(point);
-
-      if (polyline) polyline.addLatLng([lat, lon]);
-
-      if (lastPosition) {
-        const segment = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
-        if (segment < 1) distance += segment;
-      }
-
-      lastPosition = point;
-
-      const hours = seconds / 3600;
-      const calcSpeed = hours > 0 ? distance / hours : 0;
-      const displaySpeed = gpsSpeedMs && gpsSpeedMs > 0 ? gpsSpeedMs * 3.6 : calcSpeed;
-
-      distanceEl.textContent = distance.toFixed(2);
-      speedEl.textContent = displaySpeed.toFixed(1);
+      if (!weatherFetched) { weatherFetched = true; fetchAndShowWeather(lat, lon); }
+      onGPSPosition(lat, lon, accuracy, gpsSpeedMs);
     },
-    (error) => {
-      console.error("GPS error:", error);
-    },
-    {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 15000
-    }
+    (error) => { console.error("GPS error:", error); },
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
   );
 }
-  function stopGPS() {
-  if (watchId !== null) {
+
+async function stopGPS() {
+  if (watchId === null) return;
+  if (isCapacitorNative()) {
+    try {
+      const { BackgroundGeolocation } = await import("@capacitor-community/background-geolocation");
+      await BackgroundGeolocation.removeWatcher({ id: watchId });
+    } catch (e) { console.error("stopGPS native error:", e); }
+  } else {
     navigator.geolocation.clearWatch(watchId);
-    watchId = null;
   }
+  watchId = null;
 }
 function setRecordButtonState(running) {
   const playIcon = document.querySelector("#record-icon-play");
