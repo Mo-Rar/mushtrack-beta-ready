@@ -14,7 +14,7 @@ input, textarea, [contenteditable] {
   inset: 0;
   background:
     linear-gradient(160deg, rgba(255, 247, 241, 0.95), rgba(252, 76, 2, 0.28)),
-    url("./assets/mode-hiver.jpg");
+    url("./assets/mode-hiver.png");
   background-size: cover;
   background-position: center;
   display: grid;
@@ -291,7 +291,7 @@ h2 {
   overflow: hidden;
   background:
     linear-gradient(180deg, rgba(10, 28, 24, 0.05), rgba(10, 28, 24, 0.88)),
-    url("./assets/mode-hiver.jpg");
+    url("./assets/mode-hiver.png");
   background-size: cover;
   background-position: center;
   box-shadow: 0 8px 32px rgba(10, 28, 24, 0.2);
@@ -300,7 +300,7 @@ h2 {
 body.mode-summer .season-hero {
   background:
     linear-gradient(180deg, rgba(18, 38, 24, 0.08), rgba(18, 38, 24, 0.9)),
-    url("./assets/mode-ete.jpg");
+    url("./assets/mode-ete.png");
   background-size: cover;
   background-position: center;
 }
@@ -656,7 +656,7 @@ body.mode-summer .profile-hero {
   border-radius: 8px;
   background:
     linear-gradient(180deg, rgba(10, 28, 24, 0), rgba(10, 28, 24, 0.28)),
-    url("./assets/mode-hiver.jpg");
+    url("./assets/mode-hiver.png");
   background-size: cover;
   background-position: center;
   box-shadow: 0 12px 26px rgba(13, 27, 24, 0.18);
@@ -666,7 +666,7 @@ body.mode-summer .profile-hero {
 body.mode-summer .mode-photo {
   background:
     linear-gradient(180deg, rgba(10, 28, 24, 0), rgba(10, 28, 24, 0.22)),
-    url("./assets/mode-ete.jpg");
+    url("./assets/mode-ete.png");
   background-size: cover;
   background-position: center;
 }
@@ -3277,7 +3277,7 @@ textarea {
   gap: 10px;
   background:
     linear-gradient(180deg, rgba(10,28,24,0.05) 0%, rgba(10,28,24,0.88) 100%),
-    url("./assets/mode-hiver.jpg") center/cover no-repeat;
+    url("./assets/mode-hiver.png") center/cover no-repeat;
   border-radius: 20px;
   padding: 20px;
   color: #fff;
@@ -3288,7 +3288,7 @@ textarea {
 .hero-card.summer {
   background:
     linear-gradient(180deg, rgba(18,38,24,0.08) 0%, rgba(18,38,24,0.90) 100%),
-    url("./assets/mode-ete.jpg") center/cover no-repeat;
+    url("./assets/mode-ete.png") center/cover no-repeat;
 }
 .hero-eyebrow {
   font-size: 0.72rem;
@@ -3353,45 +3353,49 @@ textarea {
 .screen { background: #f2f3f7; }
 #dashboard { background: #f2f3f7; padding: 0; }
 
-/* ── Header ─────────────────────────────────────────────────── */
-.dash-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px 10px;
-  background: #f2f3f7;
-}
-.dash-header-brand { text-align: center; }
-.dash-logo { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.04em; margin: 0; }
-.dash-season {
-  font-size: 0.55rem; font-weight: 800; letter-spacing: .14em;
-  color: #aaa; margin: 1px 0 0; text-transform: uppercase;
-}
-.dash-menu-btn, .dash-bell-btn {
-  background: #fff; border: none; border-radius: 50%;
-  width: 40px; height: 40px;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.09);
-  color: #444; cursor: pointer;
-}
-
-/* ── Hero — image arrière-plan plein largeur ─────────────────── */
+/* ── Hero — image couvre tout (header inclus) ───────────────── */
 .dash-hero {
   position: relative;
-  min-height: 165px;
+  min-height: 220px;
   background:
-    linear-gradient(160deg, rgba(5,10,20,0.45) 0%, rgba(5,10,20,0.25) 40%, rgba(5,10,20,0.6) 100%),
-    url("./assets/mode-hiver.jpg") center 30%/cover no-repeat;
+    linear-gradient(160deg, rgba(5,10,20,0.45) 0%, rgba(5,10,20,0.25) 40%, rgba(5,10,20,0.65) 100%),
+    url("./assets/mode-hiver.png") center 30%/cover no-repeat;
   border-radius: 0 0 28px 28px;
   margin: 0 0 12px;
-  padding: 16px 16px 0;
+  padding: 0 0 0;
   overflow: hidden;
   display: block;
 }
 .dash-hero.summer {
   background:
-    linear-gradient(160deg, rgba(5,20,10,0.45) 0%, rgba(5,20,10,0.25) 40%, rgba(5,20,10,0.6) 100%),
-    url("./assets/mode-ete.jpg") center 30%/cover no-repeat;
+    linear-gradient(160deg, rgba(5,20,10,0.45) 0%, rgba(5,20,10,0.25) 40%, rgba(5,20,10,0.65) 100%),
+    url("./assets/mode-ete.png") center 30%/cover no-repeat;
+}
+
+/* ── Header transparent sur l'image ─────────────────────────── */
+.dash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  background: transparent;
+}
+.dash-header-brand { text-align: center; }
+.dash-logo { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.04em; margin: 0; color: #fff; }
+.dash-logo .brand-orange { color: #fc4c02; }
+.dash-season {
+  font-size: 0.55rem; font-weight: 800; letter-spacing: .14em;
+  color: rgba(255,255,255,0.65); margin: 1px 0 0; text-transform: uppercase;
+}
+.dash-menu-btn, .dash-bell-btn {
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 50%;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; cursor: pointer;
 }
 .dash-hero-text {
   position: relative; z-index: 2;
