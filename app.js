@@ -2676,7 +2676,7 @@ function openRunDetail(index) {
 }
 
 // Boutons écran détail
-document.getElementById("run-detail-back")?.addEventListener("click", () => navigateTo("record"));
+document.getElementById("run-detail-back")?.addEventListener("click", () => showScreen("record"));
 document.getElementById("run-detail-delete")?.addEventListener("click", () => {
   if (_runDetailIndex === null) return;
   if (!confirm("Supprimer cette activité ?")) return;
