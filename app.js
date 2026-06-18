@@ -5468,6 +5468,7 @@ function saveCurrentRun() {
   const temp = typeof state.planWeather === "object" && state.planWeather
     ? state.planWeather.temperature ?? null
     : null;
+  const activeEnginBtn = document.querySelector(".engin-btn.active");
   const run = {
     date: new Date().toISOString().slice(0, 10),
     type: document.querySelector("#runType").value,
@@ -5481,7 +5482,9 @@ function saveCurrentRun() {
     recovery: document.querySelector("#recovery").value,
     paws: document.querySelector("#paw-check").checked,
     hydrated: document.querySelector("#hydrated").checked,
-    notes: document.querySelector("#notes").value
+    notes: document.querySelector("#notes").value,
+    engin: activeEnginBtn?.dataset.engin || "Canicross",
+    enginPoids: Number(activeEnginBtn?.dataset.poids || 0)
   };
 
   state.runs.unshift(run);
@@ -5505,6 +5508,14 @@ function saveCurrentRun() {
 
 navButtons.forEach((button) => {
   button.addEventListener("click", () => showScreen(button.dataset.go));
+});
+
+// Sélecteur engin
+document.querySelectorAll(".engin-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".engin-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+  });
 });
 
 // Bouton "Modifier" attelage dans l'écran GPS
@@ -5840,6 +5851,19 @@ function buildLocalCoachReport() {
   const daysLeft  = raceDate ? daysUntil(raceDate) : null;
   const level     = state.profile?.level || "Amateur";
 
+  // ── Engins utilisés ──
+  const ENGIN_POIDS = { "Canicross": 0, "Trottinette": 18, "Vélo": 18, "Kart": 100, "Quad": 200, "Traîneau": 18 };
+  const enginStats = {};
+  runs.forEach(r => {
+    const engin = r.engin || "Canicross";
+    const poids = r.enginPoids ?? ENGIN_POIDS[engin] ?? 0;
+    if (!enginStats[engin]) enginStats[engin] = { count: 0, km: 0, poids };
+    enginStats[engin].count++;
+    enginStats[engin].km += Number(r.km || 0);
+  });
+  const enginPrincipal = Object.entries(enginStats).sort((a, b) => b[1].km - a[1].km)[0];
+  const chargePrincipale = enginPrincipal ? enginPrincipal[1].poids : 0;
+
   // ── Statistiques de base ──
   const totalKm     = runs.reduce((s, r) => s + Number(r.km || 0), 0);
   const runCount    = runs.length;
@@ -5948,6 +5972,7 @@ function buildLocalCoachReport() {
     <h4>🎯 Évaluation actuelle</h4>
     <p>${evalColor} ${evalNote}</p>
     <p><strong>${totalKm.toFixed(0)} km</strong> totaux · <strong>${runCount}</strong> sortie(s) · vitesse moy. <strong>${avgSpeed > 0 ? avgSpeed.toFixed(1) + " km/h" : "—"}</strong>${daysLeft !== null ? ` · <strong>${daysLeft > 0 ? "J-" + daysLeft : "Course passée"}</strong> avant ${raceName}` : ""}</p>
+    ${enginPrincipal ? `<p>🛠️ Engin principal : <strong>${enginPrincipal[0]}</strong>${chargePrincipale > 0 ? ` (${chargePrincipale} kg de charge)` : " (pas de charge)"}${Object.keys(enginStats).length > 1 ? ` · aussi : ${Object.keys(enginStats).filter(e => e !== enginPrincipal[0]).join(", ")}` : ""}</p>` : ""}
 
     <h4>📊 Analyse des tendances</h4>
     <ul>${trends.map((t) => `<li>${t}</li>`).join("")}</ul>

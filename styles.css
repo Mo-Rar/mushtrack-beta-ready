@@ -892,6 +892,35 @@ body.mode-summer .record-button {
   margin: 16px 0 8px;
 }
 
+/* Engin selector */
+.engin-selector-row {
+  padding: 0 16px;
+  margin: 10px 0 6px;
+}
+.engin-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.engin-btn {
+  background: #f5f5f5;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 5px 11px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #555;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s;
+}
+.engin-btn.active {
+  background: #fff4ef;
+  border-color: #fc4c02;
+  color: #fc4c02;
+}
+
 .strava-section-label {
   font-size: 0.72rem;
   font-weight: 800;
