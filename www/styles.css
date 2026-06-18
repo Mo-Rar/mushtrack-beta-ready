@@ -3422,7 +3422,7 @@ textarea {
 .dash-hero-card {
   background: #ffffff;
   border-radius: 12px;
-  margin: 8px 0 0;
+  margin: 80px 0 16px 16px;
   padding: 6px 10px;
   display: inline-flex;
   gap: 8px;
