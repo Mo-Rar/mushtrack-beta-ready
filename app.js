@@ -2463,10 +2463,14 @@ function renderRuns() {
     list.innerHTML = runsHtml || `<p class="empty-state">Aucune sortie enregistree.</p>`;
 
     list.querySelectorAll("[data-run-index]").forEach((card) => {
+      card.addEventListener("click", (e) => {
+        if (e.target.closest("button")) return;
+        openRunDetail(Number(card.dataset.runIndex));
+      });
       attachLongPress(card, () => {
-      document.querySelectorAll(".dog-card.show-actions").forEach(c => c.classList.remove("show-actions"));
-      card.classList.add("show-actions");
-    });
+        document.querySelectorAll(".dog-card.show-actions").forEach(c => c.classList.remove("show-actions"));
+        card.classList.add("show-actions");
+      });
     });
 
     list.querySelectorAll("[data-run-option]").forEach((button) => {
@@ -2574,11 +2578,88 @@ function editRun(index) {
 
 function deleteRun(index) {
   if (!state.runs[index] || !confirm("Supprimer cette activite ?")) return;
-
   state.runs.splice(index, 1);
   saveState();
   render();
 }
+
+let _runDetailMap = null;
+let _runDetailIndex = null;
+
+function openRunDetail(index) {
+  const run = state.runs[index];
+  if (!run) return;
+  _runDetailIndex = index;
+
+  // Stats
+  document.getElementById("run-detail-type").textContent = run.type || "Sortie";
+  document.getElementById("run-detail-date").textContent = formatDate(run.date);
+  document.getElementById("rd-km").textContent = (run.km || 0).toFixed(2) + " km";
+  document.getElementById("rd-speed").textContent = (run.speed || 0).toFixed(1) + " km/h";
+  document.getElementById("rd-dogs").textContent = (run.team?.length || 0) + " chien(s)";
+
+  // Durée estimée
+  const durMin = run.km && run.speed > 0 ? Math.round(run.km / run.speed * 60) : 0;
+  const h = Math.floor(durMin / 60), m = durMin % 60;
+  document.getElementById("rd-duration").textContent = h > 0 ? `${h}h${String(m).padStart(2,"0")}` : `${m} min`;
+
+  // Infos
+  document.getElementById("rd-weather").textContent = run.weather || "—";
+  document.getElementById("rd-energy").textContent = run.energy ? run.energy + " / 5" : "—";
+  document.getElementById("rd-recovery").textContent = run.recovery || "—";
+  document.getElementById("rd-notes").textContent = run.notes || "—";
+
+  // Naviguer vers l'écran
+  navigateTo("run-detail");
+
+  // Carte Leaflet
+  setTimeout(() => {
+    const mapEl = document.getElementById("run-detail-map");
+
+    // Détruire la carte précédente
+    if (_runDetailMap) { _runDetailMap.remove(); _runDetailMap = null; }
+
+    const path = (run.path || [])
+      .map(p => Array.isArray(p) ? [p[0], p[1]] : [p.lat, p.lon ?? p.lng])
+      .filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b));
+
+    // Centre par défaut si pas de tracé
+    const center = path.length > 0
+      ? [path.reduce((s,p)=>s+p[0],0)/path.length, path.reduce((s,p)=>s+p[1],0)/path.length]
+      : [48.85, 2.35];
+
+    _runDetailMap = L.map(mapEl, { zoomControl: true, attributionControl: false }).setView(center, 15);
+
+    // Fond de carte OpenStreetMap
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "© OpenStreetMap"
+    }).addTo(_runDetailMap);
+
+    if (path.length > 1) {
+      const polyline = L.polyline(path, { color: "#fc4c02", weight: 4, opacity: 0.9 }).addTo(_runDetailMap);
+      _runDetailMap.fitBounds(polyline.getBounds(), { padding: [20, 20] });
+
+      // Marqueur départ (vert)
+      L.circleMarker(path[0], { radius: 8, fillColor: "#22c55e", color: "#fff", weight: 2, fillOpacity: 1 })
+        .bindTooltip("Départ").addTo(_runDetailMap);
+      // Marqueur arrivée (orange)
+      L.circleMarker(path[path.length-1], { radius: 8, fillColor: "#fc4c02", color: "#fff", weight: 2, fillOpacity: 1 })
+        .bindTooltip("Arrivée").addTo(_runDetailMap);
+    }
+
+    _runDetailMap.invalidateSize();
+  }, 150);
+}
+
+// Boutons écran détail
+document.getElementById("run-detail-back")?.addEventListener("click", () => navigateTo("record"));
+document.getElementById("run-detail-delete")?.addEventListener("click", () => {
+  if (_runDetailIndex === null) return;
+  if (!confirm("Supprimer cette activité ?")) return;
+  deleteRun(_runDetailIndex);
+  navigateTo("record");
+});
 
 function renderWeeklyChart() {
   const list = document.querySelector('[data-list="weeklyChart"]');
