@@ -3628,7 +3628,10 @@ textarea {
   flex-wrap: wrap;
 }
 .dash-coach-mascot {
-  font-size: 2.5rem;
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 16px;
   flex-shrink: 0;
   align-self: flex-start;
 }

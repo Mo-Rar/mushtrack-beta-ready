@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MushTrack — Suivi en direct</title>
+  <meta name="theme-color" content="#fc4c02"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #0d0d1a; color: #fff; height: 100dvh; display: flex; flex-direction: column; }
+    #topbar { padding: 12px 16px; background: #1a1a2e; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    #topbar h1 { font-size: 1rem; font-weight: 800; color: #fc4c02; }
+    #status-badge { font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: #22c55e20; color: #22c55e; }
+    #status-badge.offline { background: #ef444420; color: #ef4444; }
+    #musher-name { font-size: 0.85rem; color: #aaa; margin-left: auto; }
+    #map { flex: 1; }
+    #infos { padding: 12px 16px; background: #1a1a2e; display: flex; gap: 20px; flex-shrink: 0; }
+    .info-item { display: flex; flex-direction: column; gap: 2px; }
+    .info-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: .06em; color: #666; }
+    .info-value { font-size: 0.9rem; font-weight: 700; color: #fff; }
+    #sos-banner { display: none; background: #dc2626; padding: 10px 16px; text-align: center; font-weight: 800; font-size: 0.95rem; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <div id="topbar">
+    <h1>MushTrack</h1>
+    <span id="status-badge">En direct</span>
+    <span id="musher-name">—</span>
+  </div>
+  <div id="sos-banner">🆘 SOS ACTIVÉ — Ce musher a besoin d'aide</div>
+  <div id="map"></div>
+  <div id="infos">
+    <div class="info-item"><span class="info-label">Dernière position</span><span class="info-value" id="info-time">—</span></div>
+    <div class="info-item"><span class="info-label">Précision</span><span class="info-value" id="info-acc">—</span></div>
+  </div>
+
+  <script>
+    const token = new URLSearchParams(location.search).get("token");
+    if (!token) {
+      document.body.innerHTML = '<p style="padding:32px;color:#aaa;text-align:center">Lien de suivi invalide.</p>';
+    }
+
+    const map = L.map("map", { zoomControl: true }).setView([46.8, 2.3], 5);
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      attribution: "© OpenStreetMap · CartoDB", maxZoom: 19
+    }).addTo(map);
+
+    const markerIcon = L.divIcon({
+      className: "",
+      html: `<div style="width:18px;height:18px;border-radius:50%;background:#fc4c02;border:3px solid #fff;box-shadow:0 0 8px rgba(252,76,2,0.8)"></div>`,
+      iconSize: [18, 18], iconAnchor: [9, 9]
+    });
+    let marker = null;
+    let firstFix = true;
+
+    async function poll() {
+      try {
+        const r = await fetch(`/api/live?token=${encodeURIComponent(token)}`);
+        if (!r.ok) throw new Error();
+        const d = await r.json();
+
+        document.getElementById("musher-name").textContent = d.user_name || "Musher";
+        document.getElementById("status-badge").textContent = d.active ? "En direct" : "Session terminée";
+        document.getElementById("status-badge").className = d.active ? "" : "offline";
+        document.getElementById("sos-banner").style.display = d.sos ? "block" : "none";
+
+        const lat = Number(d.lat), lon = Number(d.lon);
+        const updated = new Date(d.updated_at);
+        const ago = Math.round((Date.now() - updated) / 1000);
+        document.getElementById("info-time").textContent = ago < 60 ? `il y a ${ago}s` : `il y a ${Math.round(ago/60)}min`;
+        document.getElementById("info-acc").textContent = d.accuracy ? `±${Math.round(d.accuracy)}m` : "—";
+
+        if (marker) {
+          marker.setLatLng([lat, lon]);
+        } else {
+          marker = L.marker([lat, lon], { icon: markerIcon }).addTo(map);
+        }
+        if (firstFix) { map.setView([lat, lon], 14); firstFix = false; }
+      } catch {
+        document.getElementById("status-badge").textContent = "Hors ligne";
+        document.getElementById("status-badge").className = "offline";
+      }
+    }
+
+    poll();
+    setInterval(poll, 5000);
+  </script>
+</body>
+</html>
