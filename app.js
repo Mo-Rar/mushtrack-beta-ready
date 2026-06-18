@@ -5906,6 +5906,29 @@ function buildLocalCoachReport() {
     evalColor = "🟠";
   }
 
+  // ── Charge de traction par chien ──
+  // Pour chaque sortie : charge_par_chien = poids_engin / nb_chiens_attelage
+  function chargeParChien(run) {
+    const poids = run.enginPoids ?? ENGIN_POIDS[run.engin || "Canicross"] ?? 0;
+    const nbChiens = (run.team || []).length || 1;
+    return Math.round(poids / nbChiens);
+  }
+  const chargesMoyennes = runs.map(r => chargeParChien(r));
+  const chargeMoyGlobale = chargesMoyennes.length > 0 ? Math.round(chargesMoyennes.reduce((a,b)=>a+b,0)/chargesMoyennes.length) : 0;
+  const chargeMax = chargesMoyennes.length > 0 ? Math.max(...chargesMoyennes) : 0;
+  // Charge par chien pour les 4 dernières semaines
+  const charge4w = runs4w.map(r => chargeParChien(r));
+  const chargeMoy4w = charge4w.length > 0 ? Math.round(charge4w.reduce((a,b)=>a+b,0)/charge4w.length) : 0;
+
+  // Seuils : >50 kg/chien = charge lourde, >25 = charge modérée, sinon légère
+  function niveauCharge(kg) { return kg > 50 ? "lourde" : kg > 25 ? "modérée" : kg > 0 ? "légère" : "nulle (canicross)"; }
+  function conseildRecupCharge(kg) {
+    if (kg > 50) return "Avec une charge lourde (quad), les tendons et épaules sont fortement sollicités. Prévoir 48h de récupération entre deux séances intenses.";
+    if (kg > 25) return "Charge modérée (kart) : les chiens travaillent significativement. Alterner avec des sorties légères ou du canicross.";
+    if (kg > 0)  return "Charge légère (trott./vélo/traîneau) : équivalent à un travail d'endurance standard. Bien géré.";
+    return "Canicross : pas de charge mécanique. Excellent pour la vitesse et la condition cardio.";
+  }
+
   // ── Section 2 : Tendances ──
   const trends = [];
   if (runCount >= 3) {
@@ -5919,13 +5942,17 @@ function buildLocalCoachReport() {
     }
   }
   if (avgSpeed > 0) {
-    if (avgSpeed < 12) trends.push("🐢 Vitesse moyenne basse (" + avgSpeed.toFixed(1) + " km/h) — normal en endurance, mais veille à intégrer des sorties plus dynamiques.");
-    else if (avgSpeed >= 16) trends.push("⚡ Bonne vitesse moyenne (" + avgSpeed.toFixed(1) + " km/h) — pense à équilibrer avec des sorties longues et lentes.");
-    else trends.push("✅ Vitesse moyenne correcte : " + avgSpeed.toFixed(1) + " km/h.");
+    if (avgSpeed < 12) trends.push(`🐢 Vitesse moyenne basse (${avgSpeed.toFixed(1)} km/h)${chargeMoyGlobale > 25 ? ` — compréhensible avec une charge ${niveauCharge(chargeMoyGlobale)}, mais intègre des sorties canicross ou trottinette pour travailler la vitesse.` : " — normal en endurance, mais intègre des sorties plus dynamiques."}`);
+    else if (avgSpeed >= 16) trends.push(`⚡ Bonne vitesse moyenne (${avgSpeed.toFixed(1)} km/h)${chargeMoyGlobale > 50 ? " — remarquable avec la charge quad !" : ""} — équilibre avec des sorties longues et lentes.`);
+    else trends.push(`✅ Vitesse moyenne correcte : ${avgSpeed.toFixed(1)} km/h.`);
   }
   if (avgEnergy !== null) {
-    if (avgEnergy < 3) trends.push("😴 Énergie moyenne faible (" + avgEnergy.toFixed(1) + "/5) — les chiens donnent des signes de fatigue. Augmente les jours de repos.");
-    else if (avgEnergy >= 4) trends.push("💪 Énergie des chiens au beau fixe (" + avgEnergy.toFixed(1) + "/5) — attelage en forme.");
+    if (avgEnergy < 3) trends.push(`😴 Énergie moyenne faible (${avgEnergy.toFixed(1)}/5)${chargeMoyGlobale > 50 ? " — la charge quad est très exigeante, augmente les jours de repos à 48-72h." : " — signes de fatigue. Augmente les jours de repos."}`);
+    else if (avgEnergy >= 4) trends.push(`💪 Énergie des chiens au beau fixe (${avgEnergy.toFixed(1)}/5) — attelage en forme.`);
+  }
+  // Tendance charge
+  if (enginPrincipal) {
+    trends.push(`🛠️ Charge moy. par chien : <strong>${chargeMoy4w > 0 ? chargeMoy4w + " kg" : "nulle"}</strong> (${enginPrincipal[0]}, ${niveauCharge(chargePrincipale)}) — ${conseildRecupCharge(chargePrincipale)}`);
   }
   if (runs4w.length < 3) trends.push("📅 Moins de 3 sorties sur 4 semaines — la régularité est la clé pour progresser.");
   if (trends.length === 0) trends.push("Pas encore assez de données pour analyser les tendances.");
@@ -5935,17 +5962,25 @@ function buildLocalCoachReport() {
 
   // ── Section 4 : Chiens ──
   const dogAdvice = [];
+  const nbChiensAttelage = (state.selectedDogIds || []).length || dogs.length || 1;
   if (dogs.length === 0) {
     dogAdvice.push("Aucun chien enregistré. Ajoute tes chiens dans l'onglet Chiens pour des conseils personnalisés.");
   } else {
+    // Conseil global charge / nb chiens
+    if (enginPrincipal && chargePrincipale > 0) {
+      const chargeIndiv = Math.round(chargePrincipale / nbChiensAttelage);
+      dogAdvice.push(`⚖️ Avec ${nbChiensAttelage} chien(s) et un ${enginPrincipal[0]} (${chargePrincipale} kg), chaque chien tire <strong>${chargeIndiv} kg</strong> — charge ${niveauCharge(chargeIndiv)} par individu.`);
+      if (chargeIndiv > 40) dogAdvice.push("🔴 Charge individuelle élevée : surveille particulièrement les épaules, poignets et tendons après chaque sortie. Temps de récupération : 48–72h minimum.");
+      else if (chargeIndiv > 20) dogAdvice.push("🟡 Charge individuelle modérée : surveille l'appétit et la démarche le lendemain. Un jour de repos entre deux séances est recommandé.");
+    }
     dogs.forEach((dog) => {
       const age = Number(dog.age || 0);
       const sig = dog.healthSignal || "ok";
-      if (age >= 8) dogAdvice.push(`🐕 ${dog.name} (${age} ans) : chien sénior — réduis les sorties longues, surveille les articulations et augmente la récupération.`);
-      else if (age <= 1) dogAdvice.push(`🐕 ${dog.name} (${age} an) : jeune chien — limite à 20-30 min par sortie, pas de longue distance avant 18 mois.`);
-      if (sig === "fatigue" || sig === "blessure") dogAdvice.push(`⚠️ ${dog.name} signalé en ${sig} — repos obligatoire, consulte un vétérinaire si ça dure.`);
+      if (age >= 8) dogAdvice.push(`🐕 ${dog.name} (${age} ans) : chien sénior — réduis les sorties longues${chargePrincipale > 50 ? ", évite le quad avec un sénior" : ""}. Surveille les articulations.`);
+      else if (age <= 1) dogAdvice.push(`🐕 ${dog.name} (${age} an) : jeune chien — limite à 20-30 min${chargePrincipale > 25 ? ", pas de kart/quad avant 18 mois" : ""}. Les articulations ne sont pas encore ossifiées.`);
+      if (sig === "fatigue" || sig === "blessure") dogAdvice.push(`⚠️ ${dog.name} signalé en ${sig} — repos obligatoire${chargePrincipale > 0 ? ", pas de sortie avec charge tant que non rétabli" : ""}. Consulte un vétérinaire si ça dure.`);
     });
-    if (dogAdvice.length === 0) dogAdvice.push("Chiens dans de bonnes conditions. Continue à surveiller leur énergie et leur appétit après chaque sortie.");
+    if (dogAdvice.length === 0 || (dogAdvice.length === 1 && dogAdvice[0].startsWith("⚖️"))) dogAdvice.push("Chiens dans de bonnes conditions. Continue à surveiller leur énergie et leur appétit après chaque sortie.");
   }
 
   // ── Section 5 : Actions prioritaires ──
@@ -5957,15 +5992,19 @@ function buildLocalCoachReport() {
     if (runs1w.length === 0) actions.push("Aucune sortie cette semaine — reprends dès que possible avec une sortie facile.");
     if (daysLeft !== null && daysLeft <= 14 && daysLeft > 0) actions.push(`Course dans ${daysLeft} jours — réduction du volume à 50%, sorties courtes et vives uniquement.`);
     if (dogs.some((d) => d.healthSignal === "fatigue" || d.healthSignal === "blessure")) actions.push("Mettre au repos les chiens signalés fatigués ou blessés avant toute prochaine sortie.");
+    // Conseil engin si charge lourde
+    if (chargeMoyGlobale > 50) actions.push(`Quad (200 kg) utilisé régulièrement : alterner avec des sorties trottinette ou canicross pour laisser récupérer les tendons.`);
+    else if (chargeMoyGlobale > 25) actions.push(`Kart (100 kg) : bien équilibrer avec des sorties légères. 1 sortie lourde pour 2 sorties légères est un bon ratio.`);
     if (actions.length < 3 && avgSpeed > 0 && avgSpeed < 12) actions.push("Intègre une sortie avec des intervals courts (3 × 3 min rapides) pour améliorer la vitesse.");
-    if (actions.length < 3) actions.push("Maintiens la régularité : 3 à 4 sorties par semaine est plus efficace que 1 longue sortie par semaine.");
+    if (actions.length < 3) actions.push("Maintiens la régularité : 3 à 4 sorties par semaine est plus efficace qu'une longue sortie par semaine.");
   }
 
-  // ── Section 6 : Alerte ──
+  // ── Section 6 : Alertes ──
   const alerts = [];
   if (daysLeft !== null && daysLeft < 0) alerts.push(`La date de course ${raceName} est dépassée. Mets à jour ta course objectif dans les Paramètres.`);
   if (weeklyRatio > 1.5) alerts.push(`Volume très élevé cette semaine (${km1w.toFixed(0)} km). Risque de surcharge — insère 2 jours de repos complets.`);
   if (runCount > 0 && runs.every((r) => !r.energy)) alerts.push("Pense à noter l'énergie de tes chiens après chaque sortie — ça permet de détecter la fatigue tôt.");
+  if (chargeMax > 50 && avgEnergy !== null && avgEnergy < 3) alerts.push("⚠️ Charge quad + énergie faible : combinaison à risque. Réduire le volume et la charge immédiatement.");
 
   // ── Rendu HTML ──
   return `
