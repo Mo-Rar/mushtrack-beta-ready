@@ -5852,7 +5852,7 @@ function buildLocalCoachReport() {
   const level     = state.profile?.level || "Amateur";
 
   // ── Engins utilisés ──
-  const ENGIN_POIDS = { "Canicross": 0, "Trottinette": 18, "Vélo": 18, "Kart": 100, "ATV": 200, "Traîneau": 18 };
+  const ENGIN_POIDS = { "Canicross": 0, "Trottinette": 18, "VTT": 18, "Kart": 100, "ATV": 200, "Traîneau": 18 };
   const enginStats = {};
   runs.forEach(r => {
     const engin = r.engin || "Canicross";
