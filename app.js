@@ -5559,20 +5559,25 @@ navButtons.forEach((button) => {
 // ── Toggle allure/vitesse au tap ────────────────────────────────
 function applyGpsUnitUI() {
   const usePace = state.gpsSpeedPace || false;
+  const useMi   = state.gpsUnitMi   || false;
   const paceLabel = document.getElementById("pace-label");
   const paceUnit  = document.getElementById("pace-unit");
   const paceEl    = document.getElementById("pace");
-  const useMi     = state.gpsUnitMi || false;
   if (paceLabel) paceLabel.textContent = usePace ? "Allure" : "Vitesse";
   if (paceUnit)  paceUnit.textContent  = usePace ? (useMi ? "min/mi" : "min/km") : (useMi ? "mph" : "km/h");
   if (paceEl && !usePace) paceEl.textContent = "0.0";
   if (paceEl && usePace)  paceEl.textContent = "--:--";
+  document.querySelectorAll(".gps-dist-unit").forEach(el => el.textContent = useMi ? "mi" : "km");
 }
 
 document.getElementById("pace-toggle-btn")?.addEventListener("click", () => {
   state.gpsSpeedPace = !(state.gpsSpeedPace || false);
-  saveState();
-  applyGpsUnitUI();
+  saveState(); applyGpsUnitUI();
+});
+
+document.getElementById("dist-toggle-btn")?.addEventListener("click", () => {
+  state.gpsUnitMi = !(state.gpsUnitMi || false);
+  saveState(); applyGpsUnitUI();
 });
 
 applyGpsUnitUI();
