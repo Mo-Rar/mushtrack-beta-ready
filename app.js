@@ -1395,13 +1395,103 @@ function render() {
     bindText("kpiTeamSub", "Ajoute tes chiens");
   }
   // Cette semaine
+  const weekPct = Math.min(100, Math.round(weekKmVal / targetKmVal * 100));
   bindText("kpiWeek", `${weekKmVal.toFixed(1)} km`);
-  bindText("kpiWeekSub", weekKmVal / targetKmVal >= 0.8 ? "Objectif atteint ✅" : `Cible : ${targetKmVal} km`);
+  bindText("kpiWeekSub", `Objectif : ${targetKmVal} km`);
+  bindText("dashWeekPct", `${weekPct} %`);
+  const dashWeekBarEl = document.querySelector('[data-bind-style="dashWeekBar"]');
+  if (dashWeekBarEl) dashWeekBarEl.style.width = `${weekPct}%`;
+
   // Phrase hero + image selon saison
   const heroEl = document.querySelector('[data-bind="heroSentence"]');
   if (heroEl) heroEl.innerHTML = buildHeroSentence(daysLeft, teamPct, getNextWorkout().title);
   const heroCard = document.querySelector('.hero-card');
   if (heroCard) heroCard.classList.toggle('summer', state.seasonMode === 'summer');
+  const dashHero = document.querySelector('.dash-hero');
+  if (dashHero) dashHero.classList.toggle('summer', state.seasonMode === 'summer');
+
+  // Nom utilisateur
+  const userName = state.profile?.name || (state.user?.email?.split("@")[0]) || "Musher";
+  bindText("dashUserName", userName);
+
+  // Séance du jour — km / durée / intensité / charge
+  const wo = getNextWorkout();
+  const woKm = wo.km || 5;
+  const woTime = Math.round(woKm * (state.raceType === "Sprint" ? 3.5 : state.raceType === "Longue distance" ? 5.5 : 4.5));
+  const woLevel = woKm <= 8 ? "Facile" : woKm <= 18 ? "Modéré" : "Difficile";
+  const woLoad = Math.min(95, Math.round(woKm * 3.2));
+  const woLoadLabel = woLoad < 35 ? "Faible" : woLoad < 65 ? "Modéré" : "Élevé";
+  bindText("dashWorkoutKm", `${woKm} km`);
+  bindText("dashWorkoutTime", `${woTime} min`);
+  bindText("dashWorkoutLevel", woLevel);
+  bindText("dashWorkoutLoad", String(woLoad));
+  bindText("dashWorkoutLoadLabel", woLoadLabel);
+  // Gauge SVG circulaire
+  const gaugeEl = document.querySelector(".dash-gauge-ring");
+  if (gaugeEl) {
+    const r = 36, circ = 2 * Math.PI * r;
+    const offset = circ - (woLoad / 100) * circ;
+    gaugeEl.style.strokeDasharray = `${circ}`;
+    gaugeEl.style.strokeDashoffset = `${offset}`;
+    gaugeEl.style.stroke = woLoad < 35 ? "#22c55e" : woLoad < 65 ? "#f59e0b" : "#fc4c02";
+  }
+
+  // Chien principal
+  const activeDog = state.selectedDogIds?.length
+    ? state.dogs.find(d => d.id === state.selectedDogIds[0]) : null;
+  if (activeDog) {
+    bindText("dashDogName", activeDog.name);
+    const sig = activeDog.healthSignal || "OK";
+    const healthLabel = sig === "Attention" ? "Surveiller" : sig === "Repos" ? "Au repos" : "Bonne forme";
+    bindText("dashDogHealth", healthLabel);
+    const energy = sig === "Attention" ? 45 : sig === "Repos" ? 25 : 82;
+    bindText("dashDogEnergyPct", `${energy} %`);
+    const dogEnergyEl = document.querySelector('[data-bind-style="dashDogEnergy"]');
+    if (dogEnergyEl) dogEnergyEl.style.width = `${energy}%`;
+    const dogDot = document.querySelector(".dash-dog-dot");
+    if (dogDot) dogDot.style.color = sig === "OK" || !sig ? "#22c55e" : "#fc4c02";
+  } else {
+    bindText("dashDogName", "—");
+    bindText("dashDogHealth", "Ajoute tes chiens");
+    bindText("dashDogEnergyPct", "—");
+  }
+
+  // Météo
+  const wx = typeof state.planWeather === "object" && state.planWeather ? state.planWeather : null;
+  if (wx) {
+    bindText("dashWeatherTemp", `${Math.round(wx.temperature ?? wx.temp ?? 0)} °C`);
+    const wind = wx.windspeed ?? wx.wind ?? 0;
+    bindText("dashWeatherWind", `Vent ${wind < 10 ? "faible" : wind < 25 ? "modéré" : "fort"}`);
+    const temp = wx.temperature ?? wx.temp ?? 15;
+    const condLabel = temp < -5 ? "Froid intense" : temp < 5 ? "Conditions froides" : temp < 20 ? "Conditions idéales" : "Chaud";
+    bindText("dashWeatherCond", condLabel);
+    bindText("dashWeatherCondClass", temp >= 5 && temp < 20 ? "green" : "orange");
+  } else {
+    bindText("dashWeatherTemp", "—");
+    bindText("dashWeatherWind", "—");
+    bindText("dashWeatherCond", "Météo non chargée");
+  }
+
+  // Série de jours consécutifs
+  const today2 = new Date(); today2.setHours(0,0,0,0);
+  let streak = 0;
+  if (state.runs?.length) {
+    let cursor = new Date(today2);
+    const runDays = new Set(state.runs.map(r => {
+      const d = new Date(r.date || r.createdAt || Date.now());
+      d.setHours(0,0,0,0); return d.toDateString();
+    }));
+    while (runDays.has(cursor.toDateString())) { streak++; cursor.setDate(cursor.getDate()-1); }
+  }
+  bindText("dashStreak", `${streak || 0} jours`);
+  bindText("dashStreakSub", streak >= 7 ? "Garde le rythme !" : streak >= 3 ? "Belle série !" : streak === 1 ? "C'est parti !" : "Lance-toi !");
+  // Render des dots série
+  const dotsEl = document.querySelector(".dash-streak-dots");
+  if (dotsEl) {
+    dotsEl.innerHTML = Array.from({length:7}, (_,i) =>
+      `<span class="dash-streak-dot ${i < streak ? "done" : ""}"></span>`
+    ).join("");
+  }
   // ────────────────────────────────────────────────────────────
 
   const progressBar = document.querySelector('[data-bind-style="progress"]');

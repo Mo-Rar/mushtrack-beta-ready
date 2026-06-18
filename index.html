@@ -57,30 +57,38 @@
 
         <!-- ── Header ── -->
         <header class="dash-header">
-          <div>
+          <button class="dash-menu-btn" data-go="settings" aria-label="Menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="22" height="22"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div class="dash-header-brand">
             <h1 class="dash-logo">Mush<span class="brand-orange">Track</span></h1>
             <p class="dash-season">SAISON ACTIVE</p>
           </div>
-          <button class="dash-settings-btn" data-go="settings" aria-label="Réglages">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <button class="dash-bell-btn" aria-label="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           </button>
         </header>
 
-        <!-- ── Hero plein largeur avec photo ── -->
+        <!-- ── Hero : texte gauche + photo droite ── -->
         <section class="dash-hero">
-          <p class="dash-mission-label">MISSION EN COURS</p>
-          <h2 class="dash-race-name" data-bind="kpiRaceName">—</h2>
-          <div class="dash-countdown">
-            <span class="dash-days" data-bind="kpiDays">—</span>
-            <span class="dash-days-sub">jours restants</span>
+          <div class="dash-hero-text">
+            <p class="dash-hello">Bonjour, <span data-bind="dashUserName">Musher</span> 👋</p>
+            <h2 class="dash-mission-title">Mission <span data-bind="kpiRaceName">—</span></h2>
           </div>
-          <div class="dash-prep">
-            <div class="dash-prep-row">
-              <span>PRÉPARATION GLOBALE</span>
-              <span data-bind="kpiProgress">0 %</span>
+          <div class="dash-hero-photo"></div>
+
+          <!-- Carte countdown + préparation -->
+          <div class="dash-hero-card">
+            <div class="dash-hero-countdown">
+              <span class="dash-days" data-bind="kpiDays">—</span>
+              <span class="dash-days-label">jours restants</span>
             </div>
-            <div class="dash-prep-bar"><span data-bind-style="kpiProgressBar"></span></div>
-            <p class="dash-hero-quote" data-bind="heroSentence"></p>
+            <div class="dash-hero-prep">
+              <p class="dash-prep-eyebrow">PRÉPARATION GLOBALE</p>
+              <strong class="dash-prep-value" data-bind="kpiProgress">0 %</strong>
+              <div class="dash-prep-bar"><span data-bind-style="kpiProgressBar"></span></div>
+              <p class="dash-prep-phase">Phase actuelle<br><span class="dash-orange" data-bind="heroSentence"></span></p>
+            </div>
           </div>
         </section>
 
@@ -88,81 +96,147 @@
         <span data-bind="seasonKm" style="display:none">0</span>
         <span data-bind="goalKm" style="display:none">1000</span>
         <span data-bind-style="progress" style="display:none"></span>
-        <p class="last-run-label" data-bind="lastRunLabel" style="padding:0 16px;margin:8px 0 0"></p>
+        <span data-bind="lastRunLabel" style="display:none"></span>
+        <span data-bind="raceType" style="display:none"></span>
 
         <!-- ── Objectif du jour ── -->
-        <section class="dash-workout-card">
-          <div class="dash-workout-top">
-            <div class="dash-workout-info">
-              <p class="dash-card-eyebrow">OBJECTIF DU JOUR</p>
-              <strong class="dash-workout-title" data-bind="nextWorkoutTitle">—</strong>
-              <p class="dash-workout-text" data-bind="nextWorkoutText">—</p>
+        <section class="dash-workout">
+          <div class="dash-workout-inner">
+            <div class="dash-workout-left">
+              <p class="dash-eyebrow-green">🏃 OBJECTIF DU JOUR</p>
+              <h3 class="dash-workout-title" data-bind="nextWorkoutTitle">—</h3>
+              <p class="dash-workout-desc" data-bind="nextWorkoutText">—</p>
+              <div class="dash-workout-stats">
+                <div class="dash-wstat"><strong data-bind="dashWorkoutKm">— km</strong><span>Distance</span></div>
+                <div class="dash-wstat"><strong data-bind="dashWorkoutTime">— min</strong><span>Durée estimée</span></div>
+                <div class="dash-wstat dash-wstat-intensity"><strong data-bind="dashWorkoutLevel">—</strong><span>Intensité</span></div>
+              </div>
+            </div>
+            <div class="dash-workout-gauge">
+              <svg width="88" height="88" viewBox="0 0 88 88">
+                <circle cx="44" cy="44" r="36" fill="none" stroke="#f0f0f0" stroke-width="7"/>
+                <circle class="dash-gauge-ring" cx="44" cy="44" r="36" fill="none" stroke="#22c55e" stroke-width="7" stroke-linecap="round" transform="rotate(-90 44 44)"/>
+              </svg>
+              <div class="dash-gauge-inner">
+                <span class="dash-gauge-label">Charge prévue</span>
+                <div class="dash-gauge-val"><strong data-bind="dashWorkoutLoad">—</strong><span>/100</span></div>
+                <span class="dash-gauge-level" data-bind="dashWorkoutLoadLabel">—</span>
+              </div>
             </div>
           </div>
-          <div class="dash-workout-actions">
-            <button class="dash-start-btn" data-go="record">▶ Démarrer la séance</button>
-            <button class="dash-detail-btn" data-go="plan">Voir le détail</button>
+          <div class="dash-workout-btns">
+            <button class="dash-start-btn" data-go="record">▶ DÉMARRER LA SÉANCE</button>
+            <button class="dash-detail-btn" data-go="plan">Voir le détail ›</button>
           </div>
         </section>
 
         <!-- ── 4 stat tiles ── -->
         <div class="dash-tiles">
+          <!-- Tile 1 : ton chien -->
           <div class="dash-tile">
-            <span class="dash-tile-label">ATTELAGE</span>
-            <strong class="dash-tile-value" data-bind="kpiTeam">—</strong>
-            <small class="dash-tile-sub" data-bind="kpiTeamSub">—</small>
+            <p class="dash-tile-label">TON CHIEN</p>
+            <div class="dash-tile-dog-row">
+              <div class="dash-dog-avatar">🐕</div>
+              <div>
+                <p class="dash-dog-name"><span data-bind="dashDogName">—</span> <span class="dash-dog-dot">●</span></p>
+                <p class="dash-dog-health" data-bind="dashDogHealth">—</p>
+              </div>
+            </div>
+            <div class="dash-energy-row">
+              <span>Énergie</span>
+              <div class="dash-energy-track"><span data-bind-style="dashDogEnergy"></span></div>
+              <span data-bind="dashDogEnergyPct">—</span>
+            </div>
           </div>
+          <!-- Tile 2 : conditions -->
           <div class="dash-tile">
-            <span class="dash-tile-label">SEMAINE</span>
-            <strong class="dash-tile-value" data-bind="kpiWeek">0 km</strong>
-            <small class="dash-tile-sub" data-bind="kpiWeekSub">—</small>
+            <p class="dash-tile-label">CONDITIONS</p>
+            <strong class="dash-tile-temp" data-bind="dashWeatherTemp">—</strong>
+            <p class="dash-tile-wind" data-bind="dashWeatherWind">—</p>
+            <p class="dash-tile-cond" data-bind="dashWeatherCond">—</p>
           </div>
+          <!-- Tile 3 : cette semaine -->
           <div class="dash-tile">
-            <span class="dash-tile-label">OBJECTIF</span>
-            <strong class="dash-tile-value dash-tile-orange" data-bind="kpiDays">—</strong>
-            <small class="dash-tile-sub" data-bind="kpiRaceName">—</small>
+            <p class="dash-tile-label">CETTE SEMAINE</p>
+            <strong class="dash-tile-km" data-bind="kpiWeek">0 km</strong>
+            <p class="dash-tile-target" data-bind="kpiWeekSub">—</p>
+            <div class="dash-week-bar"><span data-bind-style="dashWeekBar"></span></div>
+            <span class="dash-week-pct" data-bind="dashWeekPct">—</span>
           </div>
+          <!-- Tile 4 : série -->
           <div class="dash-tile">
-            <span class="dash-tile-label">PRÉPA</span>
-            <strong class="dash-tile-value" data-bind="kpiProgress">0 %</strong>
-            <div class="dash-tile-bar"><span data-bind-style="kpiProgressBar"></span></div>
+            <p class="dash-tile-label">SÉRIE</p>
+            <strong class="dash-tile-streak" data-bind="dashStreak">0 jours</strong>
+            <p class="dash-tile-streak-sub" data-bind="dashStreakSub">—</p>
+            <div class="dash-streak-dots"></div>
           </div>
         </div>
 
         <!-- ── Coach IA ── -->
-        <section class="dash-coach-card">
-          <div class="dash-coach-left">
-            <p class="dash-card-eyebrow">COACH MUSHTRACK IA</p>
-            <strong class="dash-coach-title" data-bind="coachTitle">Prêt pour l'analyse</strong>
-            <p class="dash-coach-text" data-bind="coachText">Analyse IA de tes entraînements et de ton objectif de course.</p>
-            <button class="dash-coach-btn" id="open-coach-btn" type="button">Voir l'analyse complète</button>
+        <section class="dash-coach">
+          <div class="dash-coach-mascot">🐺</div>
+          <div class="dash-coach-body">
+            <p class="dash-coach-eyebrow">COACH MUSHTRACK IA</p>
+            <p class="dash-coach-text" data-bind="coachText">Analyse IA de tes entraînements.</p>
+            <div class="dash-coach-btns">
+              <button class="dash-coach-main-btn" id="open-coach-btn" type="button">Voir l'analyse complète</button>
+              <button class="dash-coach-sec-btn" id="open-coach-question-btn" type="button">Poser une question</button>
+            </div>
+          </div>
+          <div class="dash-coach-reco">
+            <p class="dash-reco-title">NOTRE RECOMMANDATION</p>
+            <p class="dash-reco-item" data-bind="nextWorkoutTitle">—</p>
+            <p class="dash-reco-item" data-bind="dashWorkoutLevel">—</p>
+            <p class="dash-reco-item" data-bind="dashWeatherCond">—</p>
+            <button class="dash-reco-badge">Parfait pour progresser ! ✨</button>
           </div>
         </section>
 
-        <!-- ── Progression hebdomadaire ── -->
-        <section class="dash-chart-card">
-          <div class="dash-chart-header">
-            <span class="dash-chart-title">PROGRESSION HEBDOMADAIRE</span>
-            <span id="chart-period-label" class="dash-chart-sub">10 dernières semaines</span>
-          </div>
-          <canvas id="progress-chart" height="130"></canvas>
-          <p class="chart-empty hidden" id="chart-empty">Enregistre ta première sortie pour voir ta progression.</p>
-        </section>
-
-        <!-- ── Prochaine course ── -->
-        <section class="next-race-card" data-list="nextRace" style="margin:0 16px 14px"></section>
+        <!-- ── Bas : chart + mission semaine ── -->
+        <div class="dash-bottom-grid">
+          <section class="dash-chart-card">
+            <div class="dash-chart-header">
+              <span class="dash-chart-title">PROGRESSION</span>
+              <span id="chart-period-label" class="dash-chart-sub">10 semaines</span>
+            </div>
+            <canvas id="progress-chart" height="120"></canvas>
+            <p class="chart-empty hidden" id="chart-empty">Enregistre ta première sortie.</p>
+          </section>
+          <section class="dash-mission-card">
+            <p class="dash-chart-title">MISSION SEMAINE</p>
+            <div class="dash-mission-list" data-list="nextRace"></div>
+            <div class="dash-mission-items">
+              <div class="dash-mission-item">
+                <span class="dash-mi-check">✓</span>
+                <span class="dash-mi-label">Sorties</span>
+                <span class="dash-mi-val" data-bind="kpiWeek">—</span>
+              </div>
+              <div class="dash-mission-item">
+                <span class="dash-mi-check">✓</span>
+                <span class="dash-mi-label">Progression</span>
+                <span class="dash-mi-val dash-orange" data-bind="kpiProgress">—</span>
+              </div>
+              <div class="dash-mission-item">
+                <span class="dash-mi-check dash-mi-circle"></span>
+                <span class="dash-mi-label">Objectif race</span>
+                <span class="dash-mi-val" data-bind="kpiDays">—</span>
+              </div>
+            </div>
+            <div class="dash-mission-footer">
+              <span>Progression</span>
+              <span class="dash-orange" data-bind="dashWeekPct">—</span>
+            </div>
+            <div class="dash-prep-bar" style="margin-top:4px"><span data-bind-style="dashWeekBar"></span></div>
+          </section>
+        </div>
 
         <!-- ── Partenaires ── -->
-        <section class="sponsor-banner" style="margin:0 16px 16px">
+        <section class="sponsor-banner" style="margin:0 14px 16px">
           <span class="sponsor-label">Partenaires</span>
           <div class="sponsor-logos">
-            <a class="sponsor-logo" href="http://www.musherclub.ch/" target="_blank" rel="noopener" aria-label="Musher Club Suisse">
-              <img src="assets/sponsor-mcs.png" alt="Musher Club Suisse" />
-            </a>
+            <a class="sponsor-logo" href="http://www.musherclub.ch/" target="_blank" rel="noopener"><img src="assets/sponsor-mcs.png" alt="Musher Club Suisse"/></a>
             <div class="sponsor-divider"></div>
-            <a class="sponsor-logo" href="https://www.instagram.com/morardogteam.alaskan_kennel/" target="_blank" rel="noopener" aria-label="Morardog Team">
-              <img src="assets/sponsor-morardog.png" alt="Morardog Team — Alaskan Kennel" />
-            </a>
+            <a class="sponsor-logo" href="https://www.instagram.com/morardogteam.alaskan_kennel/" target="_blank" rel="noopener"><img src="assets/sponsor-morardog.png" alt="Morardog Team"/></a>
           </div>
         </section>
 
@@ -901,15 +975,15 @@
       <nav class="bottom-nav">
         <button class="active" data-go="dashboard">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <span data-t="nav_dashboard">Accueil</span>
+          <span>Accueil</span>
         </button>
         <button data-go="record">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
-          <span>GPS</span>
+          <span>Activités</span>
         </button>
-        <button data-go="community">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <span>R&eacute;seau</span>
+        <button data-go="plan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Plan</span>
         </button>
         <button data-go="dogs">
           <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" width="20" height="20">
@@ -919,28 +993,15 @@
             <circle cx="18.5" cy="9" r="2.2"/>
             <path d="M12 22C8.5 22 5.5 19.5 5.5 16.5C5.5 14 7 12 9.5 11.5L11 9.5a1.4 1.4 0 0 1 2 0L14.5 11.5C17 12 18.5 14 18.5 16.5C18.5 19.5 15.5 22 12 22Z"/>
           </svg>
-          <span data-t="nav_dogs">Chiens</span>
+          <span>Chien</span>
         </button>
-<button data-go="race">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4v16"/>
-            <path d="M4 4h10l-3 4 3 4H4"/>
-            <rect x="4" y="4" width="5" height="4" fill="currentColor" stroke="none" opacity="0.7"/>
-            <rect x="9" y="8" width="5" height="4" fill="currentColor" stroke="none" opacity="0.7"/>
-          </svg>
-          <span data-t="nav_races">Course</span>
-        </button>
-        <button data-go="agenda">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          <span>Agenda</span>
+        <button data-go="community">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span>Analyse</span>
         </button>
         <button data-go="coach">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
           <span>Coach</span>
-        </button>
-        <button data-go="advice">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span>Conseils</span>
         </button>
       </nav>
 

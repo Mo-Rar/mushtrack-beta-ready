@@ -3345,457 +3345,400 @@ textarea {
 .kpi-bar span { display: block; height: 100%; background: #fc4c02; border-radius: 2px; transition: width .4s; width: 0%; }
 
 /* ═══════════════════════════════════════════════════════════════
-   DASHBOARD PREMIUM — mushing / canicross — fond blanc
+   DASHBOARD PREMIUM v3 — fond blanc, split hero, gauge SVG
    ═══════════════════════════════════════════════════════════════ */
 
 /* Fond global */
-.phone-shell { background: #f0f1f5; }
-#dashboard { background: #f0f1f5; padding: 0; }
+.phone-shell { background: #f2f3f7; }
+.screen { background: #f2f3f7; }
+#dashboard { background: #f2f3f7; padding: 0; }
 
 /* ── Header ─────────────────────────────────────────────────── */
 .dash-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 18px 10px;
-  background: #f0f1f5;
+  padding: 14px 16px 10px;
+  background: #f2f3f7;
 }
-.dash-logo { font-size: 1.6rem; font-weight: 900; letter-spacing: -0.04em; margin: 0; }
+.dash-header-brand { text-align: center; }
+.dash-logo { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.04em; margin: 0; }
 .dash-season {
-  font-size: 0.6rem; font-weight: 800; letter-spacing: .14em;
+  font-size: 0.55rem; font-weight: 800; letter-spacing: .14em;
   color: #aaa; margin: 1px 0 0; text-transform: uppercase;
 }
-.dash-settings-btn {
-  background: #fff;
-  border: none;
-  border-radius: 50%;
-  width: 42px; height: 42px;
+.dash-menu-btn, .dash-bell-btn {
+  background: #fff; border: none; border-radius: 50%;
+  width: 40px; height: 40px;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  color: #555; cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.09);
+  color: #444; cursor: pointer;
 }
 
-/* ── Hero plein largeur ──────────────────────────────────────── */
+/* ── Hero split ─────────────────────────────────────────────── */
 .dash-hero {
   position: relative;
-  min-height: 340px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 20px 20px 24px;
-  background:
-    linear-gradient(180deg, rgba(5,10,20,0.1) 0%, rgba(5,10,20,0.65) 45%, rgba(5,10,20,0.97) 100%),
-    url("./assets/mode-hiver.jpg") center 30%/cover no-repeat;
+  background: #fff;
+  border-radius: 0 0 28px 28px;
+  margin: 0 0 12px;
+  padding: 16px 16px 0;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.07);
   overflow: hidden;
-  gap: 0;
+  display: block;
 }
-body.mode-summer .dash-hero {
-  background:
-    linear-gradient(180deg, rgba(5,15,10,0.1) 0%, rgba(5,15,10,0.65) 45%, rgba(5,15,10,0.97) 100%),
-    url("./assets/mode-ete.jpg") center 30%/cover no-repeat;
+.dash-hero-text {
+  position: relative; z-index: 2;
+  padding-right: 100px;
 }
-.dash-mission-label {
-  font-size: 0.68rem; font-weight: 900; letter-spacing: .14em;
-  color: #fc4c02; margin: 0 0 6px; text-transform: uppercase;
+.dash-hello {
+  font-size: 0.92rem; color: #555; margin: 0 0 4px; font-weight: 500;
 }
-.dash-race-name {
-  font-size: 2.2rem; font-weight: 900; letter-spacing: -0.02em;
-  color: #ffffff; margin: 0 0 12px; line-height: 1.05;
-  text-transform: uppercase;
+.dash-mission-title {
+  font-size: 1.45rem; font-weight: 900; color: #111;
+  margin: 0 0 14px; line-height: 1.15;
+  letter-spacing: -0.03em;
 }
-.dash-countdown {
+.dash-mission-title span { color: #fc4c02; }
+.dash-hero-photo {
+  position: absolute;
+  top: 0; right: 0;
+  width: 110px; height: 110px;
+  background: url("./assets/mode-hiver.jpg") center/cover no-repeat;
+  border-radius: 0 0 0 40px;
+  opacity: 0.85;
+}
+/* Carte countdown dans le hero */
+.dash-hero-card {
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f1724 100%);
+  border-radius: 18px;
+  margin: 0 -16px;
+  padding: 14px 16px 16px;
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 16px;
+  align-items: flex-start;
+}
+.dash-hero-countdown {
+  display: flex; flex-direction: column; align-items: center;
+  min-width: 64px;
 }
 .dash-days {
-  font-size: 3rem; font-weight: 900; color: #fc4c02;
-  letter-spacing: -0.04em; line-height: 1;
+  font-size: 2.6rem; font-weight: 900; color: #fc4c02;
+  letter-spacing: -0.05em; line-height: 1;
 }
-.dash-days-sub {
-  font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.65);
+.dash-days-label {
+  font-size: 0.6rem; font-weight: 700; color: rgba(255,255,255,0.55);
+  text-align: center; margin-top: 2px; text-transform: uppercase; letter-spacing: .05em;
 }
-.dash-prep { display: flex; flex-direction: column; gap: 6px; }
-.dash-prep-row {
-  display: flex; justify-content: space-between;
-  font-size: 0.68rem; font-weight: 800; letter-spacing: .06em;
-  color: rgba(255,255,255,0.55); text-transform: uppercase;
+.dash-hero-prep { flex: 1; }
+.dash-prep-eyebrow {
+  font-size: 0.55rem; font-weight: 900; letter-spacing: .12em;
+  color: rgba(255,255,255,0.45); text-transform: uppercase; margin: 0 0 3px;
 }
-.dash-prep-row span:last-child { color: rgba(255,255,255,0.9); }
+.dash-prep-value {
+  display: block; font-size: 1.45rem; font-weight: 900; color: #fff;
+  margin: 0 0 6px; letter-spacing: -0.03em;
+}
 .dash-prep-bar {
-  height: 6px; background: rgba(255,255,255,0.18); border-radius: 99px; overflow: hidden;
+  height: 5px; background: rgba(255,255,255,0.15); border-radius: 99px; overflow: hidden;
 }
 .dash-prep-bar span {
   display: block; height: 100%;
   background: linear-gradient(90deg, #fc4c02, #ff8c42);
   border-radius: 99px; width: 0%; transition: width .4s;
 }
-.dash-hero-quote {
-  font-size: 0.82rem; color: rgba(255,255,255,0.72);
-  margin: 6px 0 0; line-height: 1.4;
+.dash-prep-phase {
+  font-size: 0.72rem; color: rgba(255,255,255,0.5); margin: 6px 0 0; line-height: 1.35;
 }
-.dash-hero-quote strong { color: #fff; }
+.dash-orange { color: #fc4c02; font-weight: 700; }
 
-/* ── Objectif du jour ───────────────────────────────────────── */
-.dash-workout-card {
+/* ── Objectif du jour (avec gauge) ─────────────────────────── */
+.dash-workout {
   background: #fff;
   border-radius: 22px;
-  margin: 14px 14px 0;
-  padding: 18px 18px 14px;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+  margin: 0 12px 12px;
+  padding: 16px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.09);
 }
-.dash-card-eyebrow {
-  font-size: 0.62rem; font-weight: 900; letter-spacing: .12em;
-  color: #fc4c02; margin: 0 0 6px; text-transform: uppercase;
+.dash-workout-inner {
+  display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px;
+}
+.dash-workout-left { flex: 1; }
+.dash-eyebrow-green {
+  font-size: 0.6rem; font-weight: 900; letter-spacing: .1em;
+  color: #22c55e; text-transform: uppercase; margin: 0 0 5px;
 }
 .dash-workout-title {
-  display: block; font-size: 1.25rem; font-weight: 900;
-  color: #111; margin: 0 0 5px; line-height: 1.2;
+  display: block; font-size: 1.1rem; font-weight: 900;
+  color: #111; margin: 0 0 4px; line-height: 1.2;
 }
-.dash-workout-text {
-  font-size: 0.84rem; color: #777; margin: 0 0 14px; line-height: 1.45;
+.dash-workout-desc {
+  font-size: 0.8rem; color: #888; margin: 0 0 10px; line-height: 1.4;
 }
-.dash-workout-actions {
-  display: flex; gap: 10px; align-items: center;
+.dash-workout-stats {
+  display: flex; gap: 10px;
 }
+.dash-wstat {
+  display: flex; flex-direction: column; gap: 1px;
+}
+.dash-wstat strong { font-size: 0.88rem; font-weight: 900; color: #111; }
+.dash-wstat span { font-size: 0.6rem; color: #bbb; font-weight: 700; text-transform: uppercase; }
+.dash-wstat-intensity strong { color: #fc4c02; }
+
+/* Gauge SVG */
+.dash-workout-gauge {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.dash-gauge-ring {
+  stroke-dasharray: 226;
+  stroke-dashoffset: 56;
+  transition: stroke-dashoffset .5s, stroke .4s;
+}
+.dash-gauge-inner {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; text-align: center;
+}
+.dash-gauge-label {
+  font-size: 0.5rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .06em; color: #bbb; line-height: 1;
+}
+.dash-gauge-val {
+  display: flex; align-items: baseline; gap: 1px; line-height: 1.1;
+}
+.dash-gauge-val strong { font-size: 1.3rem; font-weight: 900; color: #111; }
+.dash-gauge-val span { font-size: 0.6rem; color: #aaa; }
+.dash-gauge-level {
+  font-size: 0.58rem; font-weight: 800; color: #555; margin-top: 1px;
+}
+
+/* Boutons séance */
+.dash-workout-btns { display: flex; flex-direction: column; gap: 8px; }
 .dash-start-btn {
-  flex: 1;
+  width: 100%;
   background: #fc4c02; color: #fff;
   border: none; border-radius: 50px;
-  padding: 12px 16px;
-  font-size: 0.88rem; font-weight: 800;
+  padding: 13px 16px;
+  font-size: 0.85rem; font-weight: 900; letter-spacing: .04em;
   box-shadow: 0 4px 14px rgba(252,76,2,0.4);
   cursor: pointer;
 }
 .dash-detail-btn {
-  background: #f5f5f5; color: #555;
-  border: none; border-radius: 50px;
-  padding: 12px 16px;
-  font-size: 0.84rem; font-weight: 700;
-  cursor: pointer; white-space: nowrap;
+  background: none; color: #888;
+  border: none; text-align: center;
+  font-size: 0.82rem; font-weight: 700;
+  cursor: pointer; padding: 4px;
 }
 
-/* ── 4 stat tiles ───────────────────────────────────────────── */
+/* ── 4 stat tiles (2×2) ─────────────────────────────────────── */
 .dash-tiles {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin: 12px 14px 0;
+  margin: 0 12px 12px;
 }
 .dash-tile {
   background: #fff;
-  border-radius: 18px;
-  padding: 12px 8px;
+  border-radius: 20px;
+  padding: 14px 12px;
   box-shadow: 0 4px 14px rgba(0,0,0,0.08);
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  align-items: flex-start;
+  gap: 4px;
 }
 .dash-tile-label {
-  font-size: 0.52rem; font-weight: 900; letter-spacing: .08em;
-  color: #bbb; text-transform: uppercase;
+  font-size: 0.58rem; font-weight: 900; letter-spacing: .1em;
+  color: #bbb; text-transform: uppercase; margin: 0;
 }
-.dash-tile-value {
-  font-size: 1.05rem; font-weight: 900; color: #111;
-  letter-spacing: -0.03em; line-height: 1.1;
+/* Tile chien */
+.dash-tile-dog-row { display: flex; align-items: center; gap: 8px; }
+.dash-dog-avatar { font-size: 1.5rem; }
+.dash-dog-name {
+  font-size: 0.9rem; font-weight: 900; color: #111; margin: 0;
 }
-.dash-tile-orange { color: #fc4c02; }
-.dash-tile-sub {
-  font-size: 0.58rem; color: #aaa; font-weight: 600;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  max-width: 100%;
+.dash-dog-dot { color: #22c55e; font-size: 0.7rem; }
+.dash-dog-health { font-size: 0.72rem; color: #888; margin: 0; }
+.dash-energy-row {
+  display: flex; align-items: center; gap: 6px; margin-top: 4px;
+  font-size: 0.65rem; color: #aaa; font-weight: 700;
 }
-.dash-tile-bar {
-  width: 100%; height: 4px; background: #f0f0f0;
-  border-radius: 2px; overflow: hidden; margin-top: 4px;
+.dash-energy-track {
+  flex: 1; height: 5px; background: #f0f0f0;
+  border-radius: 99px; overflow: hidden;
 }
-.dash-tile-bar span {
+.dash-energy-track span {
+  display: block; height: 100%;
+  background: linear-gradient(90deg, #22c55e, #86efac);
+  border-radius: 99px; width: 0%; transition: width .4s;
+}
+/* Tile météo */
+.dash-tile-temp {
+  font-size: 2rem; font-weight: 900; color: #111; letter-spacing: -0.04em; line-height: 1;
+}
+.dash-tile-wind { font-size: 0.75rem; color: #555; margin: 2px 0 0; font-weight: 600; }
+.dash-tile-cond { font-size: 0.68rem; color: #aaa; margin: 2px 0 0; }
+/* Tile semaine */
+.dash-tile-km { font-size: 1.6rem; font-weight: 900; color: #111; letter-spacing: -0.03em; }
+.dash-tile-target { font-size: 0.68rem; color: #aaa; margin: 2px 0 4px; }
+.dash-week-bar {
+  height: 5px; background: #f0f0f0; border-radius: 99px; overflow: hidden;
+}
+.dash-week-bar span {
   display: block; height: 100%;
   background: linear-gradient(90deg, #fc4c02, #ff8c42);
-  border-radius: 2px; width: 0%; transition: width .4s;
+  border-radius: 99px; width: 0%; transition: width .4s;
 }
+.dash-week-pct { font-size: 0.7rem; font-weight: 800; color: #fc4c02; }
+/* Tile streak */
+.dash-tile-streak { font-size: 1.55rem; font-weight: 900; color: #111; letter-spacing: -0.03em; }
+.dash-tile-streak-sub { font-size: 0.7rem; color: #aaa; margin: 0 0 6px; }
+.dash-streak-dots { display: flex; gap: 5px; flex-wrap: wrap; }
+.dash-streak-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #f0f0f0; transition: background .3s;
+}
+.dash-streak-dot.done { background: #fc4c02; }
 
-/* ── Coach IA card ──────────────────────────────────────────── */
-.dash-coach-card {
-  background: linear-gradient(135deg, #16213e 0%, #0f1724 100%);
-  border-radius: 22px;
-  margin: 12px 14px 0;
-  padding: 20px;
-  box-shadow: 0 8px 32px rgba(10,18,50,0.3);
-  border: 1px solid rgba(252,76,2,0.2);
-}
-.dash-coach-card .dash-card-eyebrow { color: #fc4c02; margin-bottom: 8px; }
-.dash-coach-title {
-  display: block; font-size: 1.15rem; font-weight: 900;
-  color: #fff; margin: 0 0 8px;
-}
-.dash-coach-text {
-  font-size: 0.84rem; color: rgba(255,255,255,0.68);
-  margin: 0 0 14px; line-height: 1.5;
-}
-.dash-coach-btn {
-  background: rgba(252,76,2,0.15);
-  border: 1px solid rgba(252,76,2,0.4);
-  color: #fc4c02;
-  border-radius: 50px;
-  padding: 10px 18px;
-  font-size: 0.82rem; font-weight: 800;
-  cursor: pointer;
-}
-
-/* ── Chart card ─────────────────────────────────────────────── */
-.dash-chart-card {
+/* ── Coach IA card — fond blanc ─────────────────────────────── */
+.dash-coach {
   background: #fff;
   border-radius: 22px;
-  margin: 12px 14px 0;
-  padding: 16px 14px 10px;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+  margin: 0 12px 12px;
+  padding: 16px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.09);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.dash-coach-mascot {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+.dash-coach-body { flex: 1; min-width: 160px; }
+.dash-coach-eyebrow {
+  font-size: 0.58rem; font-weight: 900; letter-spacing: .1em;
+  color: #fc4c02; text-transform: uppercase; margin: 0 0 5px;
+}
+.dash-coach-text {
+  font-size: 0.82rem; color: #555; margin: 0 0 10px; line-height: 1.45;
+}
+.dash-coach-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.dash-coach-main-btn {
+  background: #fc4c02; color: #fff;
+  border: none; border-radius: 50px;
+  padding: 9px 14px;
+  font-size: 0.78rem; font-weight: 800;
+  box-shadow: 0 3px 10px rgba(252,76,2,0.35);
+  cursor: pointer;
+}
+.dash-coach-sec-btn {
+  background: none; color: #fc4c02;
+  border: 1.5px solid #fc4c02; border-radius: 50px;
+  padding: 9px 14px;
+  font-size: 0.78rem; font-weight: 800; cursor: pointer;
+}
+.dash-coach-reco {
+  width: 100%;
+  border-top: 1px solid #f0f0f0; padding-top: 12px;
+  margin-top: 4px;
+}
+.dash-reco-title {
+  font-size: 0.58rem; font-weight: 900; letter-spacing: .1em;
+  color: #bbb; text-transform: uppercase; margin: 0 0 8px;
+}
+.dash-reco-item {
+  font-size: 0.78rem; color: #444; margin: 0 0 4px; font-weight: 500;
+}
+.dash-reco-item::before { content: "✓ "; color: #22c55e; font-weight: 900; }
+.dash-reco-badge {
+  background: #fff8f5; color: #fc4c02;
+  border: 1px solid #fde8da; border-radius: 50px;
+  padding: 7px 12px; font-size: 0.75rem; font-weight: 800;
+  margin-top: 8px; cursor: default; display: inline-block;
+}
+
+/* ── Bas : grille chart + mission ───────────────────────────── */
+.dash-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 12px 12px;
+}
+.dash-chart-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 14px 10px 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.dash-mission-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 14px 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 .dash-chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px;
 }
 .dash-chart-title {
-  font-size: 0.68rem; font-weight: 900; letter-spacing: .1em;
+  font-size: 0.6rem; font-weight: 900; letter-spacing: .1em;
   color: #222; text-transform: uppercase;
 }
-.dash-chart-sub { font-size: 0.68rem; color: #bbb; font-weight: 700; }
+.dash-chart-sub { font-size: 0.6rem; color: #bbb; font-weight: 700; }
+.dash-mission-list { min-height: 20px; }
+.dash-mission-items { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.dash-mission-item {
+  display: flex; align-items: center; gap: 6px; font-size: 0.72rem;
+}
+.dash-mi-check {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #22c55e; color: #fff;
+  font-size: 0.6rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.dash-mi-circle { background: #f0f0f0; }
+.dash-mi-label { flex: 1; color: #555; font-weight: 600; }
+.dash-mi-val { font-weight: 900; color: #111; }
+.dash-mission-footer {
+  display: flex; justify-content: space-between;
+  font-size: 0.65rem; color: #aaa; font-weight: 700;
+  margin-top: 10px;
+}
 
 /* ── Bottom nav premium ─────────────────────────────────────── */
 .bottom-nav {
   background: #ffffff;
   border-top: none;
-  box-shadow: 0 -6px 30px rgba(0,0,0,0.1);
-  padding: 10px 0 env(safe-area-inset-bottom, 14px);
-}
-.bottom-nav button {
-  min-height: 56px; font-size: 0.58rem; font-weight: 800;
-  letter-spacing: .04em; color: #ccc; gap: 5px;
-}
-.bottom-nav button svg { width: 22px; height: 22px; stroke-width: 1.6; }
-.bottom-nav button.active { color: #fc4c02; }
-.bottom-nav button.active svg { stroke-width: 2.5; }
-
-/* ═══════════════════════════════════════════════════════════════ */
-
-/* ═══════════════════════════════════════════════════════════════
-   PREMIUM STYLE — mushing / canicross — fond blanc
-   ═══════════════════════════════════════════════════════════════ */
-
-/* Fond général légèrement warm gray */
-.phone-shell { background: #f2f3f7; }
-.screen { background: #f2f3f7; }
-#dashboard { padding-left: 0; padding-right: 0; padding-top: 0; }
-
-/* ── Topbar dashboard ─────────────────────────────────────────── */
-#dashboard > .topbar {
-  padding: 16px 18px 12px;
-  margin-bottom: 0;
-  border-bottom: none;
-  background: #f2f3f7;
-}
-#dashboard > .topbar h1 { font-size: 1.65rem; letter-spacing: -0.04em; }
-
-/* ── Hero card — grand, plein largeur, dramatique ─────────────── */
-.hero-card {
-  min-height: 310px;
-  border-radius: 0 0 28px 28px;
-  margin: 0;
-  padding: 24px 20px 26px;
-  background:
-    linear-gradient(180deg, rgba(8,18,14,0.18) 0%, rgba(8,18,14,0.82) 60%, rgba(8,18,14,0.96) 100%),
-    url("./assets/mode-hiver.jpg") center/cover no-repeat;
-  box-shadow: 0 12px 40px rgba(10,28,24,0.28);
-  gap: 8px;
-}
-.hero-card.summer {
-  background:
-    linear-gradient(180deg, rgba(12,26,16,0.18) 0%, rgba(12,26,16,0.82) 60%, rgba(12,26,16,0.96) 100%),
-    url("./assets/mode-ete.jpg") center/cover no-repeat;
-}
-.hero-eyebrow {
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .12em;
-  color: #fc4c02;
-  margin: 0 0 6px;
-}
-.hero-sentence {
-  font-size: 1.08rem;
-  font-weight: 700;
-  line-height: 1.5;
-  color: rgba(255,255,255,0.95);
-  margin: 0 0 18px;
-}
-.hero-sentence strong { color: #ffffff; font-weight: 900; }
-.hero-cta {
-  padding: 12px 26px;
-  background: #fc4c02;
-  color: #ffffff;
-  border-radius: 50px;
-  font-size: 0.92rem;
-  font-weight: 800;
-  letter-spacing: .01em;
-  box-shadow: 0 4px 18px rgba(252,76,2,0.5);
-  align-self: flex-start;
-}
-
-/* ── Section headings ─────────────────────────────────────────── */
-#dashboard > .section-heading,
-#dashboard > .last-run-label {
-  padding: 0 18px;
-}
-.section-heading h2 { font-size: 1.12rem; font-weight: 900; color: #111; }
-.section-heading > span { font-size: 0.76rem; color: #aaa; font-weight: 700; }
-
-/* ── KPI grid ─────────────────────────────────────────────────── */
-.kpi-grid { padding: 0 18px; margin-bottom: 16px; gap: 10px; }
-.kpi-card {
-  background: #ffffff;
-  border: none;
-  border-radius: 20px;
-  padding: 16px 14px;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
-  position: relative;
-  overflow: hidden;
-}
-.kpi-card::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #fc4c02, #ff8c42);
-  border-radius: 20px 20px 0 0;
-}
-.kpi-icon { font-size: 1.5rem; margin-top: 0; }
-.kpi-label { font-size: 0.65rem; letter-spacing: .07em; color: #bbb; margin-bottom: 3px; }
-.kpi-value { font-size: 1.35rem; font-weight: 900; color: #111; letter-spacing: -0.03em; }
-.kpi-sub { font-size: 0.72rem; color: #999; margin-top: 3px; }
-.kpi-bar { height: 5px; background: #f0f0f0; border-radius: 3px; margin-top: 8px; }
-
-/* ── Insight panel (Coach IA) — fond sombre premium ──────────── */
-.insight-panel {
-  margin: 0 18px 18px;
-  background: linear-gradient(135deg, #1a2232 0%, #0f1724 100%);
-  border-radius: 22px;
-  padding: 20px;
-  box-shadow: 0 8px 32px rgba(10,18,38,0.28);
-  border: 1px solid rgba(252,76,2,0.18);
-}
-.insight-panel span {
-  color: #fc4c02;
-  font-size: 0.68rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: .1em;
-}
-.insight-panel strong { font-size: 1.2rem; color: #ffffff; margin: 6px 0; }
-.insight-panel p { color: rgba(255,255,255,0.75); font-size: 0.88rem; line-height: 1.45; }
-.insight-panel .primary-button {
-  background: #fc4c02;
-  color: #fff;
-  box-shadow: 0 3px 12px rgba(252,76,2,0.45);
-  font-size: 0.85rem;
-  padding: 10px 16px;
-}
-
-/* ── Training card ────────────────────────────────────────────── */
-#dashboard .training-card {
-  margin: 0 18px 16px;
-  border-radius: 20px;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
-  border: none;
-  padding: 18px;
-}
-#dashboard .training-card strong { font-size: 1.05rem; font-weight: 900; }
-#dashboard .training-card p { font-size: 0.88rem; color: #666; }
-#dashboard .training-card .primary-button {
-  font-size: 0.85rem;
-  padding: 10px 14px;
-  white-space: nowrap;
-}
-
-/* ── Progress chart ───────────────────────────────────────────── */
-#dashboard .progress-chart-wrap {
-  margin: 0 18px 16px;
-  border-radius: 20px;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.07);
-  border: none;
-  padding: 16px 12px 10px;
-}
-
-/* ── Next race card ───────────────────────────────────────────── */
-#dashboard .next-race-card { margin: 0 18px 16px; }
-#dashboard .next-race-card article {
-  border-radius: 20px;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
-  border: none;
-  border-left: 5px solid #fc4c02;
-}
-
-/* ── Sponsor banner ───────────────────────────────────────────── */
-#dashboard .sponsor-banner {
-  margin: 0 18px 16px;
-  border-radius: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-  border: none;
-}
-
-/* ── Bottom nav — premium ─────────────────────────────────────── */
-.bottom-nav {
-  background: #ffffff;
-  border-top: none;
   box-shadow: 0 -6px 28px rgba(0,0,0,0.1);
-  padding: 10px 0 env(safe-area-inset-bottom, 12px);
+  padding: 8px 0 env(safe-area-inset-bottom, 12px);
 }
 .bottom-nav button {
-  min-height: 54px;
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: .04em;
-  color: #bbb;
-  gap: 5px;
+  min-height: 52px;
+  font-size: 0.55rem; font-weight: 800;
+  letter-spacing: .04em; color: #bbb;
+  gap: 4px;
 }
-.bottom-nav button svg { width: 22px; height: 22px; stroke-width: 1.6; }
+.bottom-nav button svg { width: 20px; height: 20px; stroke-width: 1.6; }
 .bottom-nav button.active { color: #fc4c02; }
-.bottom-nav button.active svg { stroke-width: 2.5; }
+.bottom-nav button.active svg { stroke-width: 2.4; }
 
-/* ── Quick stats (autres screens) ────────────────────────────── */
+/* ── Autres screens — elevation cards ──────────────────────── */
 .quick-stats article {
-  border-radius: 16px;
-  box-shadow: 0 3px 14px rgba(0,0,0,0.07);
-  border: none;
-  border-left: 3px solid #fc4c02;
+  border-radius: 16px; box-shadow: 0 3px 14px rgba(0,0,0,0.07);
+  border: none; border-left: 3px solid #fc4c02;
 }
 .quick-stats strong { font-size: 1.75rem; font-weight: 900; letter-spacing: -0.03em; }
-
-/* ── Dog cards ────────────────────────────────────────────────── */
 .dog-list article, .run-list article, .mini-history article {
-  border-radius: 16px;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.06);
-  border: none;
-  border-left: 4px solid #fc4c02;
+  border-radius: 16px; box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+  border: none; border-left: 4px solid #fc4c02;
 }
-
-/* ── Cards generiques autres screens ─────────────────────────── */
 .plan-signal, .race-result, .agenda-card, .advice-card, .reminder-item, .open-run-card {
-  border-radius: 16px;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+  border-radius: 16px; box-shadow: 0 3px 12px rgba(0,0,0,0.06);
 }
-
-/* ── Strava GPS screen — stats panel ─────────────────────────── */
 .strava-stats-panel { background: #ffffff; box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
 .strava-stat-hero strong { font-size: 4rem; font-weight: 900; color: #111; }
-
-/* ── Season hero (plan screen) ────────────────────────────────── */
-.season-hero {
-  min-height: 260px;
-  border-radius: 0 0 28px 28px;
-}
+.season-hero { min-height: 260px; border-radius: 0 0 28px 28px; }
 
 /* ═══════════════════════════════════════════════════════════════ */
