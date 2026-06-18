@@ -264,30 +264,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
             <span class="strava-topbar-title">Sortie GPS</span>
-            <div style="display:flex;align-items:center;gap:8px">
-              <p class="strava-gps-dot" id="gps-status-dot" title="GPS"></p>
-              <button id="gps-unit-btn" aria-label="Unités" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;padding:4px 8px;font-size:0.72rem;font-weight:700;cursor:pointer;backdrop-filter:blur(6px)">⚙ km</button>
-            </div>
-          </div>
-          <!-- Mini panneau unités GPS -->
-          <div id="gps-unit-panel" style="display:none;position:absolute;top:56px;right:12px;z-index:1001;background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 4px 20px rgba(0,0,0,0.18);min-width:190px">
-            <p style="font-size:0.68rem;font-weight:900;color:#aaa;text-transform:uppercase;letter-spacing:.08em;margin:0 0 8px">Unités GPS</p>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-                <span style="font-size:0.82rem;font-weight:600;color:#333">Distance</span>
-                <div style="display:flex;gap:4px">
-                  <button class="gps-unit-toggle active" id="unit-km" data-unit="km">km</button>
-                  <button class="gps-unit-toggle" id="unit-mi" data-unit="mi">mi</button>
-                </div>
-              </div>
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-                <span style="font-size:0.82rem;font-weight:600;color:#333">Vitesse</span>
-                <div style="display:flex;gap:4px">
-                  <button class="gps-unit-toggle active" id="unit-kmh" data-unit="kmh">km/h</button>
-                  <button class="gps-unit-toggle" id="unit-pace" data-unit="pace">min/km</button>
-                </div>
-              </div>
-            </div>
+            <p class="strava-gps-dot" id="gps-status-dot" title="GPS"></p>
           </div>
           <p class="strava-gps-status" id="gps-status">Recherche GPS…</p>
         </div>
@@ -317,6 +294,15 @@
               <span class="strava-stat-unit-small gps-speed-unit">km/h</span>
             </div>
           </div>
+        </div>
+
+        <!-- Sélecteur unités GPS -->
+        <div class="gps-units-bar">
+          <button class="gps-unit-toggle active" id="unit-km" data-unit="km">km</button>
+          <button class="gps-unit-toggle" id="unit-mi" data-unit="mi">mi</button>
+          <div class="gps-units-sep"></div>
+          <button class="gps-unit-toggle active" id="unit-kmh" data-unit="kmh">km/h</button>
+          <button class="gps-unit-toggle" id="unit-pace" data-unit="pace">min/km</button>
         </div>
 
         <!-- Météo en direct -->

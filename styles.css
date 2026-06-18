@@ -762,6 +762,18 @@ body.mode-summer .record-button {
   background: linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 100%);
 }
 
+.gps-units-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  margin-bottom: 2px;
+}
+.gps-units-sep {
+  width: 1px; height: 20px;
+  background: #e0e0e0;
+  margin: 0 4px;
+}
 .gps-unit-toggle {
   background: #f0f0f0;
   border: 1.5px solid #e0e0e0;
