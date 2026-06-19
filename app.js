@@ -1417,15 +1417,25 @@ function render() {
   // Séance du jour — km / durée / intensité / charge
   const wo = getNextWorkout();
   const woKm = wo.km || 5;
-  const enginPaceMap = { Canicross: 5.0, Trottinette: 3.3, VTT: 3.3, Traîneau: 4.0, Kart: 2.7, ATV: 2.7 };
+  const enginDefaultPace = { Canicross: 5.0, Trottinette: 2.4, VTT: 2.4, Traîneau: 3.0, Kart: 3.33, ATV: 3.33 };
   const activeEngin = document.querySelector(".engin-btn.active")?.dataset.engin || "Canicross";
-  const enginPace = enginPaceMap[activeEngin] ?? 4.5;
-  const woTime = Math.round(woKm * enginPace);
+  // Calcul de l'allure réelle basée sur les sorties enregistrées avec cet engin
+  const runsForEngin = (state.runs || []).filter(r =>
+    (r.engin || "Canicross") === activeEngin && r.distance > 0 && r.duration > 0
+  );
+  let enginPace;
+  if (runsForEngin.length >= 3) {
+    const avgPace = runsForEngin.reduce((sum, r) => sum + (r.duration / r.distance), 0) / runsForEngin.length;
+    enginPace = avgPace; // min/km basé sur les vraies sorties
+  } else {
+    enginPace = enginDefaultPace[activeEngin] ?? 4.5;
+  }
+  const woTime = woKm > 0 ? Math.round(woKm * enginPace) : null;
   const woLevel = woKm <= 8 ? "Facile" : woKm <= 18 ? "Modéré" : "Difficile";
   const woLoad = Math.min(95, Math.round(woKm * 3.2));
   const woLoadLabel = woLoad < 35 ? "Faible" : woLoad < 65 ? "Modéré" : "Élevé";
   bindText("dashWorkoutKm", `${woKm} km`);
-  bindText("dashWorkoutTime", `${woTime} min`);
+  bindText("dashWorkoutTime", woTime ? `${woTime} min` : "—");
   bindText("dashWorkoutLevel", woLevel);
   bindText("dashWorkoutLoad", String(woLoad));
   bindText("dashWorkoutLoadLabel", woLoadLabel);
@@ -5565,6 +5575,7 @@ function saveCurrentRun() {
     type: document.querySelector("#runType").value,
     km: pendingRunSummary.km,
     speed: pendingRunSummary.speed,
+    duration: pendingRunSummary.duration ? Math.round(pendingRunSummary.duration / 60) : null,
     path: gpsPath,
     team: [...state.selectedDogIds],
     weather: document.querySelector("#weather").value,
