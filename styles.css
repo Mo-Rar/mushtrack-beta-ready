@@ -3287,7 +3287,7 @@ textarea {
 
 .bottom-nav button {
   flex: 1 0 0;
-  min-width: 0;
+  min-width: 52px;
   min-height: 50px;
   border-radius: 0;
   background: transparent;
