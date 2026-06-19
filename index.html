@@ -177,6 +177,16 @@
             <p class="dash-tile-streak-sub" data-bind="dashStreakSub">—</p>
             <div class="dash-streak-dots"></div>
           </div>
+          <!-- Tile 5 : forme attelage -->
+          <div class="dash-tile">
+            <div class="dash-tile-head">
+              <svg class="dash-tile-icon" viewBox="0 0 24 24" fill="none" stroke="var(--season-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span class="dash-tile-label">FORME</span>
+            </div>
+            <strong id="dash-forme-score" style="font-size:1.25rem;font-weight:900;color:#111;letter-spacing:-0.03em">—</strong>
+            <p id="dash-forme-label" style="font-size:0.62rem;color:#888;margin:2px 0 4px;font-weight:600">—</p>
+            <div class="dash-week-bar"><span id="dash-forme-bar" style="width:0%;display:block;height:100%;background:linear-gradient(90deg,var(--season-color),var(--season-color-light));border-radius:99px;transition:width .4s"></span></div>
+          </div>
         </div>
 
         <!-- ── Coach ── -->
@@ -1074,6 +1084,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
             Enregistrement
           </button>
+          <button class="vous-subtab" data-you="badges">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+            Badges
+          </button>
         </div>
         <!-- Panneaux inline -->
         <div class="vous-panel active" id="vous-panel-agenda">
@@ -1114,6 +1128,9 @@
             <button class="text-button" onclick="document.getElementById('manual-run-button').click();showScreen('record')">+ Ajouter</button>
           </div>
           <section class="run-list gps-history" data-list="runs" style="padding:0 16px"></section>
+        </div>
+        <div class="vous-panel" id="vous-panel-badges">
+          <div id="vous-badges" style="padding:16px 0"></div>
         </div>
       </section>
 

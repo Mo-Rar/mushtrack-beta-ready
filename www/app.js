@@ -937,6 +937,8 @@ let marker = null;
 let polyline = null;
 let seconds = 0;
 let distance = 0;
+let elevationGain = 0;
+let lastAltitude = null;
 let pendingRunSummary = null;
 let planWeatherLoading = false;
 let remoteRaceCatalog = [];
@@ -1320,6 +1322,48 @@ function getTeamReadinessPct() {
   return Math.round((volumeScore * 0.40 + regulariteScore * 0.25 + healthScore * 0.20 + recovScore * 0.15) * 100);
 }
 
+function getFormeAttelageScore() {
+  if (state.dogs.length === 0 || state.runs.length === 0) return null;
+  const now = Date.now();
+  const last = state.runs[0];
+  // 1. Énergie moyenne des chiens sur les 3 dernières sorties
+  const recent3 = state.runs.slice(0, 3);
+  const avgEnergy = recent3.filter(r => r.energy).reduce((s,r) => s + Number(r.energy), 0) / (recent3.filter(r=>r.energy).length || 1);
+  const energyScore = Math.min(1, avgEnergy / 5);
+  // 2. Récupération dernière sortie
+  const recovMap = { "Excellente": 1, "Bonne": 0.85, "Normale": 0.65, "A surveiller": 0.35, "Difficile": 0.1 };
+  const recovScore = recovMap[last.recovery] ?? 0.65;
+  // 3. Jours depuis dernière sortie (1-2 jours = optimal)
+  const daysSince = last.date ? Math.round((now - new Date(last.date+"T12:00:00").getTime()) / 86400000) : 99;
+  const restScore = daysSince === 0 ? 0.5 : daysSince <= 2 ? 1 : daysSince <= 4 ? 0.75 : daysSince <= 7 ? 0.5 : 0.2;
+  // 4. Santé des chiens
+  const healthyDogs = state.dogs.filter(d => d.healthSignal !== "Attention" && d.healthSignal !== "Repos").length;
+  const healthScore = healthyDogs / state.dogs.length;
+  // 5. Surcharge cette semaine
+  const kmThisWeek = state.runs.filter(r => r.date && now - new Date(r.date+"T12:00:00").getTime() < 7*86400000).reduce((s,r)=>s+(r.km||0),0);
+  const kmLastWeek = state.runs.filter(r => { const age=now-new Date(r.date+"T12:00:00").getTime(); return r.date&&age>=7*86400000&&age<14*86400000; }).reduce((s,r)=>s+(r.km||0),0);
+  const overloadPenalty = kmLastWeek > 2 && kmThisWeek > kmLastWeek * 1.1 ? 0.8 : 1;
+  const score = Math.round((energyScore*0.30 + recovScore*0.25 + restScore*0.20 + healthScore*0.25) * 100 * overloadPenalty);
+  const label = score >= 80 ? "Excellent 🟢" : score >= 60 ? "Bon 🟡" : score >= 40 ? "Moyen 🟠" : "Fatigué 🔴";
+  return { score, label };
+}
+
+const BADGES = [
+  { id:"first_run",    icon:"🏁", name:"Première sortie",     check: s => s.runs.length >= 1 },
+  { id:"run10",        icon:"🔟", name:"10 sorties",           check: s => s.runs.length >= 10 },
+  { id:"run50",        icon:"💪", name:"50 sorties",           check: s => s.runs.length >= 50 },
+  { id:"km50",         icon:"📍", name:"50 km cumulés",        check: s => s.runs.reduce((t,r)=>t+(r.km||0),0) >= 50 },
+  { id:"km100",        icon:"💯", name:"100 km cumulés",       check: s => s.runs.reduce((t,r)=>t+(r.km||0),0) >= 100 },
+  { id:"km500",        icon:"🚀", name:"500 km cumulés",       check: s => s.runs.reduce((t,r)=>t+(r.km||0),0) >= 500 },
+  { id:"team5",        icon:"🐕", name:"5 chiens enregistrés", check: s => s.dogs.length >= 5 },
+  { id:"elev500",      icon:"⛰️", name:"500 m D+ cumulés",     check: s => s.runs.reduce((t,r)=>t+(r.elevationGain||0),0) >= 500 },
+  { id:"streak5",      icon:"🔥", name:"5 sorties en 7 jours", check: s => { const now=Date.now(); return s.runs.filter(r=>r.date&&now-new Date(r.date+"T12:00:00").getTime()<7*86400000).length>=5; } },
+  { id:"winter_ready", icon:"❄️", name:"Saison hiver lancée",  check: s => s.seasonMode==="winter" && s.runs.length >= 3 },
+];
+function getEarnedBadges() {
+  return BADGES.filter(b => b.check(state));
+}
+
 function buildHeroSentence(daysLeft, teamPct, workoutTitle) {
   const raceName = state.raceName || state.raceType || "ta course";
   const raceKm   = state.raceKm || "—";
@@ -1401,6 +1445,17 @@ function render() {
   bindText("dashWeekPct", `${weekPct} %`);
   const dashWeekBarEl = document.querySelector('[data-bind-style="dashWeekBar"]');
   if (dashWeekBarEl) dashWeekBarEl.style.width = `${weekPct}%`;
+
+  // Score forme attelage
+  const formeEl = document.getElementById("dash-forme-score");
+  const formeLabelEl = document.getElementById("dash-forme-label");
+  const formeBarEl = document.getElementById("dash-forme-bar");
+  const forme = getFormeAttelageScore();
+  if (formeEl && forme) {
+    formeEl.textContent = forme.score + "%";
+    if (formeLabelEl) formeLabelEl.textContent = forme.label;
+    if (formeBarEl) formeBarEl.style.width = forme.score + "%";
+  }
 
   // Phrase hero + image selon saison
   const heroEl = document.querySelector('[data-bind="heroSentence"]');
@@ -1561,6 +1616,25 @@ function render() {
   fillSettingsForm();
   renderProgressChart();
   renderReminders();
+  renderBadges();
+}
+
+function renderBadges() {
+  const el = document.getElementById("vous-badges");
+  if (!el) return;
+  const earned = getEarnedBadges();
+  const allBadges = BADGES.map(b => {
+    const done = earned.some(e => e.id === b.id);
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;opacity:${done?1:0.3}">
+      <div style="width:48px;height:48px;border-radius:50%;background:${done?"var(--season-color)":"#f0f0f0"};display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:${done?"0 3px 10px rgba(0,0,0,0.15)":"none"}">${b.icon}</div>
+      <span style="font-size:0.6rem;font-weight:700;color:${done?"#111":"#aaa"};text-align:center;line-height:1.2">${b.name}</span>
+    </div>`;
+  }).join("");
+  el.innerHTML = `
+    <div style="padding:0 16px 4px">
+      <p style="font-size:0.62rem;font-weight:900;letter-spacing:.08em;color:#bbb;text-transform:uppercase;margin:0 0 10px">🏅 Badges — ${earned.length}/${BADGES.length} obtenus</p>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px 6px">${allBadges}</div>
+    </div>`;
 }
 
 function bindText(name, value) {
@@ -2483,6 +2557,10 @@ function renderRuns() {
             <span class="run-stat-value">${paceStr}</span>
             <span class="run-stat-label">min/km</span>
           </div>
+          ${run.elevationGain > 0 ? `<div class="run-stat">
+            <span class="run-stat-value">+${run.elevationGain}</span>
+            <span class="run-stat-label">m D+</span>
+          </div>` : ""}
         </div>
         <div class="run-details">
           <span>Vitesse ${speed} km/h</span>
@@ -3859,7 +3937,14 @@ function buildAlerts() {
   const context = getPlanContext();
   if (context.weatherRisk) alerts.push({ level: "danger", label: "Meteo", text: context.weatherRisk });
   if (context.daysToRace <= 7) alerts.push({ level: "info", label: "Course", text: "Course proche. Diminuer le volume, garder les chiens frais et verifier le materiel." });
-  return alerts.slice(0, 7);
+  // Alerte surcharge : règle des 10%
+  const now = Date.now();
+  const kmThisWeek = state.runs.filter(r => r.date && now - new Date(`${r.date}T12:00:00`).getTime() < 7*86400000).reduce((s,r) => s+(r.km||0), 0);
+  const kmLastWeek = state.runs.filter(r => { const age = now - new Date(`${r.date}T12:00:00`).getTime(); return r.date && age >= 7*86400000 && age < 14*86400000; }).reduce((s,r) => s+(r.km||0), 0);
+  if (kmLastWeek > 2 && kmThisWeek > kmLastWeek * 1.10) {
+    alerts.push({ level: "danger", label: "⚠️ Surcharge", text: `Volume cette semaine (${kmThisWeek.toFixed(1)} km) dépasse de plus de 10% la semaine précédente (${kmLastWeek.toFixed(1)} km). Risque de blessure — prévoir récupération.` });
+  }
+  return alerts.slice(0, 8);
 }
 
 function getDogRecentKm(id, days = 7) {
@@ -5301,7 +5386,7 @@ function isCapacitorNative() {
   return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 }
 
-function onGPSPosition(lat, lon, accuracy, gpsSpeedMs) {
+function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
   if (accuracy > 50) {
     updateMapPosition(lat, lon, `GPS: recherche précision (±${Math.round(accuracy)}m)…`);
     return;
@@ -5316,6 +5401,12 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs) {
   }
 
   updateMapPosition(lat, lon, `GPS actif — ±${Math.round(accuracy)}m`);
+  if (altitude !== null && altitude !== undefined) {
+    if (lastAltitude !== null && altitude - lastAltitude > 1) {
+      elevationGain += altitude - lastAltitude;
+    }
+    lastAltitude = altitude;
+  }
   const point = { lat, lon, timestamp: Date.now() };
   gpsPath.push(point);
   if (polyline) polyline.addLatLng([lat, lon]);
@@ -5362,6 +5453,8 @@ async function startGPS() {
   stopLiveLocation();
   gpsPath = [];
   lastPosition = null;
+  elevationGain = 0;
+  lastAltitude = null;
   if (polyline) polyline.setLatLngs([]);
 
   let weatherFetched = false;
@@ -5402,9 +5495,9 @@ function _startGPSBrowser(weatherFetched) {
   if (!navigator.geolocation) { alert("GPS non disponible"); return; }
   watchId = navigator.geolocation.watchPosition(
     (position) => {
-      const { latitude: lat, longitude: lon, accuracy, speed: gpsSpeedMs } = position.coords;
+      const { latitude: lat, longitude: lon, accuracy, speed: gpsSpeedMs, altitude } = position.coords;
       if (!weatherFetched) { weatherFetched = true; fetchAndShowWeather(lat, lon); }
-      onGPSPosition(lat, lon, accuracy, gpsSpeedMs);
+      onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude);
     },
     (error) => { console.error("GPS error:", error); },
     { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
@@ -5494,7 +5587,8 @@ function finishCurrentRun() {
   pendingRunSummary = {
     km: Number(distance.toFixed(1)),
     speed: Number(speed.toFixed(1)),
-    duration: seconds
+    duration: seconds,
+    elevationGain: Math.round(elevationGain)
   };
 
   document.querySelector("#runType").value = detectRunType(pendingRunSummary.km, pendingRunSummary.speed);
@@ -5579,6 +5673,7 @@ function saveCurrentRun() {
     km: pendingRunSummary.km,
     speed: pendingRunSummary.speed,
     duration: pendingRunSummary.duration ? Math.round(pendingRunSummary.duration / 60) : null,
+    elevationGain: pendingRunSummary.elevationGain || 0,
     path: gpsPath,
     team: [...state.selectedDogIds],
     weather: document.querySelector("#weather").value,
