@@ -1626,7 +1626,7 @@ function renderProgressChart() {
   // Ligne cible
   const targetY = PAD_TOP + chartH * (1 - target / maxKm);
   ctx.setLineDash([4, 3]);
-  ctx.strokeStyle = "#fc4c02";
+  ctx.strokeStyle = "#22c55e";
   ctx.lineWidth = 1;
   ctx.globalAlpha = 0.4;
   ctx.beginPath();
@@ -1650,14 +1650,14 @@ function renderProgressChart() {
     const isCurrentWeek = i === WEEKS - 1;
 
     // Barre
-    ctx.fillStyle = isCurrentWeek ? "#fc4c02" : (wk.km >= target ? "#2f8f46" : "#c8dff5");
+    ctx.fillStyle = isCurrentWeek ? "#22c55e" : (wk.km >= target ? "#16a34a" : "#c8dff5");
     ctx.beginPath();
     ctx.roundRect(x, y, barW, bh, [3, 3, 0, 0]);
     ctx.fill();
 
     // Valeur km au-dessus si > 0
     if (wk.km > 0) {
-      ctx.fillStyle = isCurrentWeek ? "#fc4c02" : "#666";
+      ctx.fillStyle = isCurrentWeek ? "#16a34a" : "#666";
       ctx.font = `bold ${9}px system-ui`;
       ctx.textAlign = "center";
       ctx.fillText(Math.round(wk.km), x + barW / 2, y - 3);
