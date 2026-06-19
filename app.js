@@ -1417,7 +1417,10 @@ function render() {
   // Séance du jour — km / durée / intensité / charge
   const wo = getNextWorkout();
   const woKm = wo.km || 5;
-  const woTime = Math.round(woKm * (state.raceType === "Sprint" ? 3.5 : state.raceType === "Longue distance" ? 5.5 : 4.5));
+  const enginPaceMap = { Canicross: 5.0, Trottinette: 3.3, VTT: 3.3, Traîneau: 4.0, Kart: 2.7, ATV: 2.7 };
+  const activeEngin = document.querySelector(".engin-btn.active")?.dataset.engin || "Canicross";
+  const enginPace = enginPaceMap[activeEngin] ?? 4.5;
+  const woTime = Math.round(woKm * enginPace);
   const woLevel = woKm <= 8 ? "Facile" : woKm <= 18 ? "Modéré" : "Difficile";
   const woLoad = Math.min(95, Math.round(woKm * 3.2));
   const woLoadLabel = woLoad < 35 ? "Faible" : woLoad < 65 ? "Modéré" : "Élevé";
