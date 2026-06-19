@@ -3582,7 +3582,7 @@ textarea {
 }
 .dash-prep-bar span {
   display: block; height: 100%;
-  background: linear-gradient(90deg, #fc4c02, #ff8c42);
+  background: linear-gradient(90deg, #22c55e, #4ade80);
   border-radius: 99px; width: 0%; transition: width .4s;
 }
 .dash-prep-phase { display: none; }
