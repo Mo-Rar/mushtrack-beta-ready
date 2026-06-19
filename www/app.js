@@ -4057,18 +4057,26 @@ function renderRaceSearch() {
     // Section par pays — accordéon (fermé par défaut)
     const countriesHtml = Object.entries(byCountry)
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([country, races]) => `
+      .map(([country, races]) => {
+        const codeMatch = country.match(/^([a-z]{2})\s/i);
+        const code = codeMatch ? codeMatch[1].toUpperCase() : "";
+        const flag = code.length === 2
+          ? code.replace(/./g, c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65))
+          : "🏁";
+        const label = code ? country.slice(code.length + 1) : country;
+        return `
         <div class="race-country-group">
           <button class="race-country-header" type="button" data-country="${country}" aria-expanded="false">
+            <span class="race-country-flag">${flag}</span>
+            <h3>${label}</h3>
+            <span class="race-count-badge">${races.length} course${races.length > 1 ? "s" : ""}</span>
             <svg class="country-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
-            <h3>${country}</h3>
-            <span>${races.length} course${races.length > 1 ? "s" : ""}</span>
           </button>
           <div class="race-country-body" hidden>
             ${races.map((r) => buildRaceCard(r, false)).join("")}
           </div>
         </div>
-      `).join("");
+      `;}).join("");
 
     list.innerHTML = radarMeta + pinnedHtml + (countriesHtml || "");
 

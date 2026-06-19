@@ -2209,32 +2209,70 @@ textarea {
 
 /* Groupe pays */
 .race-country-group {
-  margin-bottom: 20px;
+  margin-bottom: 6px;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+  background: #fff;
 }
 
 .race-country-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 0 8px;
-  border-bottom: 2px solid #fc4c02;
-  margin-bottom: 10px;
+  gap: 10px;
+  padding: 13px 16px;
+  background: #fff;
+  border: none;
+  border-left: 4px solid #fc4c02;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  margin-bottom: 0;
+}
+
+.race-country-header[aria-expanded="true"] {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.race-country-flag {
+  font-size: 1.3rem;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .race-country-header h3 {
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #fc4c02;
+  letter-spacing: 0.06em;
+  color: #222;
   margin: 0;
+  flex: 1;
 }
 
-.race-country-header span {
-  font-size: 0.72rem;
-  color: #aaaaaa;
-  font-weight: 700;
-  margin-left: auto;
+.race-country-header .race-count-badge {
+  background: #fff4ef;
+  color: #fc4c02;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.country-chevron {
+  color: #bbb;
+  flex-shrink: 0;
+  transition: transform .2s;
+}
+
+.race-country-header[aria-expanded="true"] .country-chevron {
+  transform: rotate(180deg);
+}
+
+.race-country-body {
+  padding: 10px 12px 12px;
+  background: #fafafa;
 }
 
 /* Course épinglée / sélectionnée */

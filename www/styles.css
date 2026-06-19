@@ -754,6 +754,7 @@ body.mode-summer .record-button {
   top: 0;
   left: 0;
   right: 0;
+  z-index: 1000;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -761,6 +762,51 @@ body.mode-summer .record-button {
   background: linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 100%);
 }
 
+.gps-units-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  margin-bottom: 2px;
+}
+.gps-units-sep {
+  width: 1px; height: 20px;
+  background: #e0e0e0;
+  margin: 0 4px;
+}
+.gps-unit-toggle {
+  background: #f0f0f0;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #666;
+  cursor: pointer;
+}
+.gps-unit-toggle.active {
+  background: #fff4ef;
+  border-color: #fc4c02;
+  color: #fc4c02;
+}
+
+.map-layer-opt {
+  background: #f5f5f5;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #444;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+.map-layer-opt.active {
+  background: #fff4ef;
+  border-color: #fc4c02;
+  color: #fc4c02;
+}
 .strava-back-btn {
   background: rgba(255,255,255,0.18);
   border: none;
@@ -890,6 +936,45 @@ body.mode-summer .record-button {
 /* Team row */
 .strava-team-row {
   margin: 16px 0 8px;
+}
+
+/* Engin selector */
+.engin-selector-row {
+  padding: 0 16px;
+  margin: 10px 0 6px;
+}
+.engin-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.engin-btn {
+  background: #f5f5f5;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 5px 11px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #555;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s;
+}
+.engin-btn.active {
+  background: #fff4ef;
+  border-color: #fc4c02;
+  color: #fc4c02;
+}
+.engin-icon {
+  width: 18px; height: 14px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 2px;
+  filter: brightness(0) saturate(100%);
+}
+.engin-btn.active .engin-icon {
+  filter: brightness(0) saturate(100%) invert(35%) sepia(90%) saturate(800%) hue-rotate(5deg);
 }
 
 .strava-section-label {
@@ -2124,32 +2209,70 @@ textarea {
 
 /* Groupe pays */
 .race-country-group {
-  margin-bottom: 20px;
+  margin-bottom: 6px;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+  background: #fff;
 }
 
 .race-country-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 0 8px;
-  border-bottom: 2px solid #fc4c02;
-  margin-bottom: 10px;
+  gap: 10px;
+  padding: 13px 16px;
+  background: #fff;
+  border: none;
+  border-left: 4px solid #fc4c02;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  margin-bottom: 0;
+}
+
+.race-country-header[aria-expanded="true"] {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.race-country-flag {
+  font-size: 1.3rem;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .race-country-header h3 {
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #fc4c02;
+  letter-spacing: 0.06em;
+  color: #222;
   margin: 0;
+  flex: 1;
 }
 
-.race-country-header span {
-  font-size: 0.72rem;
-  color: #aaaaaa;
-  font-weight: 700;
-  margin-left: auto;
+.race-country-header .race-count-badge {
+  background: #fff4ef;
+  color: #fc4c02;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.country-chevron {
+  color: #bbb;
+  flex-shrink: 0;
+  transition: transform .2s;
+}
+
+.race-country-header[aria-expanded="true"] .country-chevron {
+  transform: rotate(180deg);
+}
+
+.race-country-body {
+  padding: 10px 12px 12px;
+  background: #fafafa;
 }
 
 /* Course épinglée / sélectionnée */
@@ -3574,9 +3697,11 @@ textarea {
   margin-bottom: 3px;
 }
 .dash-tile-icon {
-  width: 11px; height: 11px;
+  width: 13px; height: 13px;
   stroke: #bbb; flex-shrink: 0;
 }
+.tile-icon-orange { stroke: #fc4c02; }
+.tile-icon-blue   { stroke: #3b82f6; }
 .dash-tile-label {
   font-size: 0.48rem; font-weight: 900; letter-spacing: .08em;
   color: #bbb; text-transform: uppercase; margin: 0;
@@ -3603,12 +3728,14 @@ textarea {
   background: linear-gradient(90deg, #22c55e, #86efac);
   border-radius: 99px; width: 0%; transition: width .4s;
 }
+.dash-energy-pct { color: #22c55e !important; font-weight: 800; }
 /* Tile météo */
 .dash-tile-temp {
   font-size: 1.5rem; font-weight: 900; color: #111; letter-spacing: -0.03em; line-height: 1;
 }
 .dash-tile-wind { font-size: 0.65rem; color: #555; margin: 2px 0 0; font-weight: 600; }
-.dash-tile-cond { font-size: 0.6rem; color: #aaa; margin: 2px 0 0; }
+.dash-tile-ground { font-size: 0.65rem; color: #555; margin: 1px 0 0; font-weight: 600; }
+.dash-tile-cond { font-size: 0.62rem; color: #22c55e; margin: 3px 0 0; font-weight: 800; }
 /* Tile semaine */
 .dash-tile-km { font-size: 1.25rem; font-weight: 900; color: #111; letter-spacing: -0.03em; }
 .dash-tile-target { font-size: 0.6rem; color: #aaa; margin: 2px 0 4px; }
@@ -3617,19 +3744,24 @@ textarea {
 }
 .dash-week-bar span {
   display: block; height: 100%;
-  background: linear-gradient(90deg, #fc4c02, #ff8c42);
+  background: linear-gradient(90deg, #22c55e, #86efac);
   border-radius: 99px; width: 0%; transition: width .4s;
 }
-.dash-week-pct { font-size: 0.7rem; font-weight: 800; color: #fc4c02; }
+.dash-week-pct { font-size: 0.7rem; font-weight: 800; color: #22c55e; margin-top: 3px; display: block; }
 /* Tile streak */
 .dash-tile-streak { font-size: 1.25rem; font-weight: 900; color: #111; letter-spacing: -0.03em; }
-.dash-tile-streak-sub { font-size: 0.6rem; color: #aaa; margin: 0 0 4px; }
-.dash-streak-dots { display: flex; gap: 5px; flex-wrap: wrap; }
+.dash-tile-streak-sub { font-size: 0.6rem; color: #aaa; margin: 0 0 5px; }
+.dash-streak-dots { display: flex; gap: 4px; flex-wrap: wrap; }
 .dash-streak-dot {
-  width: 10px; height: 10px; border-radius: 50%;
+  width: 12px; height: 12px; border-radius: 50%;
   background: #f0f0f0; transition: background .3s;
+  display: flex; align-items: center; justify-content: center;
 }
-.dash-streak-dot.done { background: #fc4c02; }
+.dash-streak-dot.done {
+  background: #fc4c02;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l3 3 5-5' stroke='white' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-size: 10px; background-repeat: no-repeat; background-position: center;
+}
 
 /* ── Coach card — 3 colonnes ────────────────────────────────── */
 .dash-coach {
@@ -3794,6 +3926,43 @@ textarea {
 .bottom-nav button svg { width: 20px; height: 20px; stroke-width: 1.6; }
 .bottom-nav button.active { color: #fc4c02; }
 .bottom-nav button.active svg { stroke-width: 2.4; }
+
+/* ── Écran Vous ─────────────────────────────────────────────── */
+.vous-subtab-bar {
+  display: flex;
+  border-bottom: 2px solid #f0f0f0;
+  margin: 0;
+}
+.vous-subtab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 14px 8px 12px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #999;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+  margin-bottom: -2px;
+}
+.vous-subtab.active {
+  color: #fc4c02;
+  border-bottom-color: #fc4c02;
+}
+.vous-subtab svg { opacity: 0.6; }
+.vous-subtab.active svg { opacity: 1; }
+.vous-panel { display: none; }
+.vous-panel.active { display: block; }
+.vous-panel-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 16px 4px;
+}
 
 /* ── Autres screens — elevation cards ──────────────────────── */
 .quick-stats article {
