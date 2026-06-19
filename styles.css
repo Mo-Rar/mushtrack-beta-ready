@@ -3918,6 +3918,13 @@ textarea {
 }
 .vous-subtab svg { opacity: 0.6; }
 .vous-subtab.active svg { opacity: 1; }
+.vous-panel { display: none; }
+.vous-panel.active { display: block; }
+.vous-panel-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 16px 4px;
+}
 
 /* ── Autres screens — elevation cards ──────────────────────── */
 .quick-stats article {

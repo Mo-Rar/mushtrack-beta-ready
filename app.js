@@ -1740,10 +1740,10 @@ function attachLongPress(element, callback) {
 }
 
 function renderDogs() {
-  const list = document.querySelector('[data-list="dogs"]');
-  if (!list) return;
+  const lists = document.querySelectorAll('[data-list="dogs"]');
+  if (!lists.length) return;
 
-  list.innerHTML = state.dogs.map((dog) => {
+  const html = state.dogs.map((dog) => {
     const load = getDogRecentKm(dog.id);
     const readiness = getDogReadiness(dog);
     const photoHtml = dog.photoDataUrl
@@ -1768,29 +1768,30 @@ function renderDogs() {
     </article>
   `}).join("");
 
-  list.querySelectorAll("[data-open-dog]").forEach((card) => {
-    card.addEventListener("click", () => {
-      if (card.classList.contains("show-actions")) return;
-      activeDogId = card.dataset.openDog;
-      showScreen("dog-detail");
+  lists.forEach(list => {
+    list.innerHTML = html || `<p class="empty-state">Aucun chien enregistré.</p>`;
+    list.querySelectorAll("[data-open-dog]").forEach((card) => {
+      card.addEventListener("click", () => {
+        if (card.classList.contains("show-actions")) return;
+        activeDogId = card.dataset.openDog;
+        showScreen("dog-detail");
+      });
+      attachLongPress(card, () => {
+        document.querySelectorAll(".dog-card.show-actions").forEach(c => c.classList.remove("show-actions"));
+        card.classList.add("show-actions");
+      });
     });
-    attachLongPress(card, () => {
-      document.querySelectorAll(".dog-card.show-actions").forEach(c => c.classList.remove("show-actions"));
-      card.classList.add("show-actions");
+    list.querySelectorAll("[data-edit-dog]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        editDog(button.dataset.editDog);
+      });
     });
-  });
-
-  list.querySelectorAll("[data-edit-dog]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      editDog(button.dataset.editDog);
-    });
-  });
-
-  list.querySelectorAll("[data-delete-dog]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      deleteDog(button.dataset.deleteDog);
+    list.querySelectorAll("[data-delete-dog]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        deleteDog(button.dataset.deleteDog);
+      });
     });
   });
 }
@@ -4604,17 +4605,17 @@ function renderAdminPanel() {
 const EVENT_ICONS = { veto:"🏥", osteo:"💆", sortie:"🐕", entrainement:"🏃", materiel:"🛒", course:"🏁", autre:"📌", race:"🏁" };
 
 function renderAgenda() {
-  const list = document.querySelector('[data-list="agenda"]');
-  if (!list) return;
+  const lists = document.querySelectorAll('[data-list="agenda"]');
+  if (!lists.length) return;
 
   const items = [...state.agenda].sort((a, b) => new Date(a.date) - new Date(b.date));
 
   if (items.length === 0) {
-    list.innerHTML = `<p class="empty-state">Agenda vide — ajoute un événement avec + ou valide une course dans l'onglet Course.</p>`;
+    lists.forEach(l => { l.innerHTML = `<p class="empty-state">Agenda vide — ajoute un événement avec + ou valide une course dans l'onglet Course.</p>`; });
     return;
   }
 
-  list.innerHTML = items.map((item) => {
+  const agendaHtml = items.map((item) => {
     const days = daysUntil(item.date);
     const status = days < 0 ? "Passé" : days === 0 ? "Aujourd'hui !" : `Dans ${days} jour${days > 1 ? "s" : ""}`;
     const isRace = item.kind === "race" || item.sourceId;
@@ -4682,6 +4683,10 @@ function renderAgenda() {
       </article>
     `;
   }).join("");
+
+  lists.forEach(list => { list.innerHTML = agendaHtml; });
+
+  lists.forEach(list => {
 
   // Modifier
   list.querySelectorAll("[data-agenda-edit]").forEach(btn => {
@@ -4843,6 +4848,8 @@ function renderAgenda() {
       }
     });
   });
+
+  }); // fin lists.forEach
 }
 
 function renderOpenRuns() {
@@ -5582,8 +5589,10 @@ document.querySelectorAll(".vous-subtab").forEach(btn => {
   btn.addEventListener("click", () => {
     const target = btn.dataset.you;
     document.querySelectorAll(".vous-subtab").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".vous-panel").forEach(p => p.classList.remove("active"));
     btn.classList.add("active");
-    showScreen(target);
+    const panel = document.getElementById("vous-panel-" + target);
+    if (panel) panel.classList.add("active");
   });
 });
 

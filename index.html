@@ -1106,10 +1106,29 @@
             <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" width="20" height="20"><circle cx="9" cy="4.5" r="2.2"/><circle cx="15" cy="4.5" r="2.2"/><circle cx="5.5" cy="9" r="2.2"/><circle cx="18.5" cy="9" r="2.2"/><path d="M12 22C8.5 22 5.5 19.5 5.5 16.5C5.5 14 7 12 9.5 11.5L11 9.5a1.4 1.4 0 0 1 2 0L14.5 11.5C17 12 18.5 14 18.5 16.5C18.5 19.5 15.5 22 12 22Z"/></svg>
             Chiens
           </button>
-          <button class="vous-subtab" data-you="vous-enregistrement">
+          <button class="vous-subtab" data-you="enregistrement">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
             Enregistrement
           </button>
+        </div>
+        <!-- Panneaux inline -->
+        <div class="vous-panel active" id="vous-panel-agenda">
+          <div class="vous-panel-toolbar">
+            <button class="text-button" onclick="showScreen('agenda')">+ Ajouter</button>
+          </div>
+          <section data-list="agenda" style="padding:0 16px"></section>
+        </div>
+        <div class="vous-panel" id="vous-panel-dogs">
+          <div class="vous-panel-toolbar">
+            <button class="text-button" onclick="showScreen('dogs')">+ Ajouter</button>
+          </div>
+          <section data-list="dogs" style="padding:0 16px"></section>
+        </div>
+        <div class="vous-panel" id="vous-panel-enregistrement">
+          <div class="vous-panel-toolbar">
+            <button class="text-button" onclick="document.getElementById('manual-run-button').click();showScreen('record')">+ Ajouter</button>
+          </div>
+          <section class="run-list gps-history" data-list="runs" style="padding:0 16px"></section>
         </div>
       </section>
 
