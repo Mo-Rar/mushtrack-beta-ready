@@ -20,33 +20,33 @@
       <div class="auth-card">
         <div class="auth-logo">
           <h1>MushTrack</h1>
-          <p>Votre compagnon de mushing</p>
+          <p data-t="auth_companion">Votre compagnon de mushing</p>
         </div>
 
         <div id="auth-error" class="auth-error hidden"></div>
 
         <form id="auth-form">
           <label id="auth-pseudo-label" style="display:none">
-            Pseudo (ton nom sur MushTrack)
+            <span data-t="auth_pseudo_label">Pseudo (ton nom sur MushTrack)</span>
             <input id="auth-pseudo" type="text" placeholder="ex: Mo-Rar" autocomplete="nickname" maxlength="40" />
           </label>
           <label>
-            Email
+            <span data-t="auth_email">Email</span>
             <input id="auth-email" type="email" placeholder="vous@exemple.com" autocomplete="email" required />
           </label>
           <label>
-            Mot de passe
+            <span data-t="auth_password">Mot de passe</span>
             <input id="auth-password" type="password" placeholder="Minimum 6 caractères" autocomplete="current-password" required />
           </label>
-          <button class="primary-button" id="auth-submit" type="submit">Se connecter</button>
+          <button class="primary-button" id="auth-submit" type="submit" data-t="auth_login">Se connecter</button>
         </form>
 
         <div class="auth-toggle">
-          <span id="auth-toggle-text">Pas encore de compte ?</span>
-          <button class="text-button" id="auth-toggle-btn" type="button">Créer un compte</button>
+          <span id="auth-toggle-text" data-t="auth_no_account">Pas encore de compte ?</span>
+          <button class="text-button" id="auth-toggle-btn" type="button" data-t="auth_signup">Créer un compte</button>
         </div>
         <div style="text-align:center;margin-top:10px">
-          <button class="text-button" id="forgot-pwd-btn" type="button" style="font-size:0.8rem;color:#888">Mot de passe oublié ?</button>
+          <button class="text-button" id="forgot-pwd-btn" type="button" style="font-size:0.8rem;color:#888" data-t="auth_forgot">Mot de passe oublié ?</button>
         </div>
         <div id="forgot-msg" style="display:none;font-size:0.8rem;text-align:center;margin-top:8px;color:#16a34a"></div>
       </div>
@@ -64,7 +64,7 @@
             </button>
             <div class="dash-header-brand">
               <h1 class="dash-logo">Mush<span class="brand-orange">Track</span></h1>
-              <p class="dash-season">SAISON ACTIVE</p>
+              <p class="dash-season" data-t="dash_active_season">SAISON ACTIVE</p>
             </div>
             <button class="dash-bell-btn" aria-label="Notifications">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -81,13 +81,13 @@
           <div class="dash-hero-card">
             <div class="dash-hero-countdown">
               <span class="dash-days" data-bind="kpiDays">—</span>
-              <span class="dash-days-label">jours restants</span>
+              <span class="dash-days-label" data-t="dash_days_left">jours restants</span>
             </div>
             <div class="dash-hero-prep">
-              <p class="dash-prep-eyebrow">PRÉPARATION GLOBALE</p>
+              <p class="dash-prep-eyebrow" data-t="dash_global_prep">PRÉPARATION GLOBALE</p>
               <strong class="dash-prep-value" data-bind="kpiProgress">0 %</strong>
               <div class="dash-prep-bar"><span data-bind-style="kpiProgressBar"></span></div>
-              <p class="dash-prep-phase">Phase actuelle<br><span class="dash-orange" data-bind="heroSentence"></span></p>
+              <p class="dash-prep-phase"><span data-t="dash_current_phase">Phase actuelle</span><br><span class="dash-orange" data-bind="heroSentence"></span></p>
             </div>
           </div>
         </section>
@@ -103,13 +103,13 @@
         <section class="dash-workout">
           <div class="dash-workout-inner">
             <div class="dash-workout-left">
-              <p class="dash-eyebrow-green">🏃 OBJECTIF DU JOUR</p>
+              <p class="dash-eyebrow-green" data-t="dash_daily_goal">🏃 OBJECTIF DU JOUR</p>
               <h3 class="dash-workout-title" data-bind="nextWorkoutTitle">—</h3>
               <p class="dash-workout-desc" data-bind="nextWorkoutText">—</p>
               <div class="dash-workout-stats">
-                <div class="dash-wstat"><strong data-bind="dashWorkoutKm">— km</strong><span>Distance</span></div>
-                <div class="dash-wstat"><strong data-bind="dashWorkoutTime">— min</strong><span>Durée estimée</span></div>
-                <div class="dash-wstat dash-wstat-intensity"><strong data-bind="dashWorkoutLevel">—</strong><span>Intensité</span></div>
+                <div class="dash-wstat"><strong data-bind="dashWorkoutKm">— km</strong><span data-t="dash_distance_label">Distance</span></div>
+                <div class="dash-wstat"><strong data-bind="dashWorkoutTime">— min</strong><span data-t="dash_estimated_duration">Durée estimée</span></div>
+                <div class="dash-wstat dash-wstat-intensity"><strong data-bind="dashWorkoutLevel">—</strong><span data-t="dash_intensity_label">Intensité</span></div>
               </div>
             </div>
             <div class="dash-workout-gauge">
@@ -118,14 +118,14 @@
                 <circle class="dash-gauge-ring" cx="44" cy="44" r="36" fill="none" stroke="#22c55e" stroke-width="7" stroke-linecap="round" transform="rotate(-90 44 44)"/>
               </svg>
               <div class="dash-gauge-inner">
-                <span class="dash-gauge-label">Charge prévue</span>
+                <span class="dash-gauge-label" data-t="dash_planned_load">Charge prévue</span>
                 <div class="dash-gauge-val"><strong data-bind="dashWorkoutLoad">—</strong><span>/100</span></div>
                 <span class="dash-gauge-level" data-bind="dashWorkoutLoadLabel">—</span>
               </div>
             </div>
           </div>
           <div class="dash-workout-btns">
-            <button class="dash-start-btn" data-go="record">▶ DÉMARRER LA SÉANCE</button>
+            <button class="dash-start-btn" data-go="record" data-t="dash_start_session">▶ DÉMARRER LA SÉANCE</button>
           </div>
         </section>
 
@@ -135,12 +135,12 @@
           <div class="dash-tile">
             <div class="dash-tile-head">
               <svg class="dash-tile-icon tile-icon-orange" viewBox="0 0 24 24" fill="#fc4c02" stroke="none"><ellipse cx="4.5" cy="6" rx="1.7" ry="2.4"/><ellipse cx="9" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="15" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="19.5" cy="6" rx="1.7" ry="2.4"/><path d="M12 9c-4.5 0-7.5 2.8-7.5 6.2 0 2.2 1.8 4.2 4 4.6 1 .2 2 .2 3.5.2s2.5 0 3.5-.2c2.2-.4 4-2.4 4-4.6C19.5 11.8 16.5 9 12 9z"/></svg>
-              <span class="dash-tile-label">ATTELAGE</span>
+              <span class="dash-tile-label" data-t="dash_team_tile">ATTELAGE</span>
             </div>
             <strong class="dash-tile-team-count" data-bind="dashDogCount">—</strong>
             <p class="dash-tile-team-health" data-bind="dashDogHealth">—</p>
             <div class="dash-energy-row">
-              <span>Énergie moy.</span>
+              <span data-t="dash_avg_energy">Énergie moy.</span>
               <div class="dash-energy-track"><span data-bind-style="dashDogEnergy"></span></div>
               <span class="dash-energy-pct" data-bind="dashDogEnergyPct">—</span>
             </div>
@@ -149,7 +149,7 @@
           <div class="dash-tile">
             <div class="dash-tile-head">
               <svg class="dash-tile-icon tile-icon-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
-              <span class="dash-tile-label">CONDITIONS</span>
+              <span class="dash-tile-label" data-t="dash_conditions_tile">CONDITIONS</span>
             </div>
             <strong class="dash-tile-temp" data-bind="dashWeatherTemp">—</strong>
             <p class="dash-tile-wind" data-bind="dashWeatherWind">—</p>
@@ -160,7 +160,7 @@
           <div class="dash-tile">
             <div class="dash-tile-head">
               <svg class="dash-tile-icon tile-icon-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-              <span class="dash-tile-label">CETTE SEMAINE</span>
+              <span class="dash-tile-label" data-t="dash_this_week_tile">CETTE SEMAINE</span>
             </div>
             <strong class="dash-tile-km" data-bind="kpiWeek">0 km</strong>
             <p class="dash-tile-target" data-bind="kpiWeekSub">—</p>
@@ -171,7 +171,7 @@
           <div class="dash-tile">
             <div class="dash-tile-head">
               <svg class="dash-tile-icon tile-icon-orange" viewBox="0 0 24 24" fill="#fc4c02" stroke="#fc4c02" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-              <span class="dash-tile-label">SÉRIE</span>
+              <span class="dash-tile-label" data-t="dash_streak_tile">SÉRIE</span>
             </div>
             <strong class="dash-tile-streak" data-bind="dashStreak">0 jours</strong>
             <p class="dash-tile-streak-sub" data-bind="dashStreakSub">—</p>
@@ -183,22 +183,22 @@
         <section class="dash-coach">
           <img class="dash-coach-mascot" src="./assets/coach-mascot.png" alt="Coach MushTrack">
           <div class="dash-coach-body">
-            <p class="dash-coach-eyebrow">COACH MUSHTRACK</p>
+            <p class="dash-coach-eyebrow" data-t="dash_coach_title">COACH MUSHTRACK</p>
             <div class="dash-coach-bubble">
               <p class="dash-coach-text" data-bind="coachText">Ton volume est légèrement en dessous de ton plan cette semaine. Une sortie facile aujourd'hui te remet dans le rythme et prépare la suite.</p>
             </div>
             <div class="dash-coach-btns">
-              <button class="dash-coach-main-btn" id="open-coach-btn" type="button">Voir l'analyse complète</button>
-              <button class="dash-coach-sec-btn" id="open-coach-question-btn" type="button">Poser une question</button>
+              <button class="dash-coach-main-btn" id="open-coach-btn" type="button" data-t="dash_full_analysis">Voir l'analyse complète</button>
+              <button class="dash-coach-sec-btn" id="open-coach-question-btn" type="button" data-t="dash_ask_question">Poser une question</button>
             </div>
           </div>
           <div class="dash-coach-reco">
-            <p class="dash-reco-title">NOTRE RECOMMANDATION</p>
+            <p class="dash-reco-title" data-t="dash_our_reco">NOTRE RECOMMANDATION</p>
             <p class="dash-reco-item" data-bind="nextWorkoutTitle">Endurance aujourd'hui</p>
             <p class="dash-reco-item" data-bind="dashWorkoutLevel">Charge faible</p>
             <p class="dash-reco-item">Récupération OK</p>
             <p class="dash-reco-item" data-bind="dashWeatherCond">Bonne météo</p>
-            <button class="dash-reco-badge">Parfait pour progresser ! ✨</button>
+            <button class="dash-reco-badge" data-t="dash_perfect_progress">Parfait pour progresser ! ✨</button>
           </div>
         </section>
 
@@ -206,34 +206,34 @@
         <div class="dash-bottom-grid">
           <section class="dash-chart-card">
             <div class="dash-chart-header">
-              <span class="dash-chart-title">PROGRESSION</span>
+              <span class="dash-chart-title" data-t="dash_progression">PROGRESSION</span>
               <span id="chart-period-label" class="dash-chart-sub">10 semaines</span>
             </div>
             <canvas id="progress-chart" height="120"></canvas>
             <p class="chart-empty hidden" id="chart-empty">Enregistre ta première sortie.</p>
           </section>
           <section class="dash-mission-card">
-            <p class="dash-chart-title">MISSION SEMAINE</p>
+            <p class="dash-chart-title" data-t="dash_mission_week">MISSION SEMAINE</p>
             <div class="dash-mission-list" data-list="nextRace"></div>
             <div class="dash-mission-items">
               <div class="dash-mission-item">
                 <span class="dash-mi-check">✓</span>
-                <span class="dash-mi-label">Sorties</span>
+                <span class="dash-mi-label" data-t="dash_runs_label">Sorties</span>
                 <span class="dash-mi-val" data-bind="kpiWeek">—</span>
               </div>
               <div class="dash-mission-item">
                 <span class="dash-mi-check">✓</span>
-                <span class="dash-mi-label">Progression</span>
+                <span class="dash-mi-label" data-t="dash_progress_label">Progression</span>
                 <span class="dash-mi-val dash-orange" data-bind="kpiProgress">—</span>
               </div>
               <div class="dash-mission-item">
                 <span class="dash-mi-check dash-mi-circle"></span>
-                <span class="dash-mi-label">Objectif race</span>
+                <span class="dash-mi-label" data-t="dash_race_goal_label">Objectif race</span>
                 <span class="dash-mi-val" data-bind="kpiDays">—</span>
               </div>
             </div>
             <div class="dash-mission-footer">
-              <span>Progression</span>
+              <span data-t="dash_progress_label">Progression</span>
               <span class="dash-orange" data-bind="dashWeekPct">—</span>
             </div>
             <div class="dash-prep-bar" style="margin-top:4px"><span data-bind-style="dashWeekBar"></span></div>
@@ -242,7 +242,7 @@
 
         <!-- ── Partenaires ── -->
         <section class="sponsor-banner" style="margin:0 14px 16px">
-          <span class="sponsor-label">Partenaires</span>
+          <span class="sponsor-label" data-t="dash_partners">Partenaires</span>
           <div class="sponsor-logos">
             <a class="sponsor-logo" href="http://www.musherclub.ch/" target="_blank" rel="noopener"><img src="assets/sponsor-mcs.png" alt="Musher Club Suisse"/></a>
             <div class="sponsor-divider"></div>
@@ -262,16 +262,16 @@
             <button class="strava-back-btn" data-go="dashboard" aria-label="Retour">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-            <span class="strava-topbar-title">Sortie GPS</span>
+            <span class="strava-topbar-title" data-t="gps_session">Sortie GPS</span>
               <p class="strava-gps-dot" id="gps-status-dot" title="GPS"></p>
           </div>
-          <p class="strava-gps-status" id="gps-status">Recherche GPS…</p>
+          <p class="strava-gps-status" id="gps-status" data-t="gps_searching">Recherche GPS…</p>
         </div>
 
         <!-- Stats style Strava : distance hero + 3 secondaires -->
         <div class="strava-stats-panel">
           <div class="strava-stat-hero">
-            <span class="strava-stat-label">Distance</span>
+            <span class="strava-stat-label" data-t="gps_distance">Distance</span>
             <div class="strava-stat-value-row">
               <strong id="distance">0.00</strong>
               <span class="strava-stat-unit gps-dist-unit">km</span>
@@ -279,16 +279,16 @@
           </div>
           <div class="strava-stats-row">
             <div class="strava-stat-secondary">
-              <span class="strava-stat-label">Durée</span>
+              <span class="strava-stat-label" data-t="gps_duration">Durée</span>
               <strong id="duration">00:00</strong>
             </div>
             <div class="strava-stat-secondary strava-stat-center-border">
-              <span class="strava-stat-label" id="avg-label">Moy.</span>
+              <span class="strava-stat-label" id="avg-label" data-t="gps_avg">Moy.</span>
               <strong id="pace">--:--</strong>
               <span class="strava-stat-unit-small" id="pace-unit">min/km</span>
             </div>
             <div class="strava-stat-secondary">
-              <span class="strava-stat-label">Vitesse</span>
+              <span class="strava-stat-label" data-t="gps_speed">Vitesse</span>
               <strong id="speed">0.0</strong>
               <span class="strava-stat-unit-small gps-speed-unit">km/h</span>
             </div>
@@ -299,7 +299,7 @@
         <div style="position:relative;display:flex;justify-content:flex-end;align-items:center;gap:6px;padding:0 16px;margin-top:-4px">
           <button id="map-layer-btn" style="background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:8px;color:#555;padding:5px 12px;font-size:0.75rem;font-weight:800;cursor:pointer">🗺 Carte</button>
           <div id="map-layer-panel" style="display:none;position:absolute;top:36px;right:120px;z-index:200;background:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 6px 24px rgba(0,0,0,0.18);min-width:160px">
-            <p style="font-size:0.62rem;font-weight:900;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin:0 0 8px">Fond de carte</p>
+            <p style="font-size:0.62rem;font-weight:900;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin:0 0 8px" data-t="gps_map_background">Fond de carte</p>
             <div style="display:flex;flex-direction:column;gap:4px">
               <button class="map-layer-opt active" data-layer="osm">🗺 Standard</button>
               <button class="map-layer-opt" data-layer="satellite">🛰 Satellite</button>
@@ -308,7 +308,7 @@
           </div>
           <button id="gps-unit-btn" style="background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:8px;color:#555;padding:5px 12px;font-size:0.75rem;font-weight:800;cursor:pointer">⚙ Unités</button>
           <div id="gps-unit-panel" style="display:none;position:absolute;top:36px;right:16px;z-index:100;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 6px 24px rgba(0,0,0,0.18);min-width:200px">
-            <p style="font-size:0.65rem;font-weight:900;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin:0 0 10px">Unités GPS</p>
+            <p style="font-size:0.65rem;font-weight:900;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin:0 0 10px" data-t="gps_units_label">Unités GPS</p>
             <div style="display:flex;flex-direction:column;gap:10px">
               <div style="display:flex;align-items:center;justify-content:space-between">
                 <span style="font-size:0.82rem;font-weight:600;color:#333">Distance</span>
@@ -346,7 +346,7 @@
           </button>
           <button class="strava-finish-btn hidden" id="finish-run">
             <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><polyline points="20 6 9 17 4 12"/></svg>
-            Terminer
+            <span data-t="gps_finish">Terminer</span>
           </button>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin:4px 16px 8px">
@@ -357,21 +357,21 @@
           <button onclick="startLiveTracking()" type="button"
             style="background:#fc4c02;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
             <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><circle cx="12" cy="12" r="6"/></svg>
-            Partager en direct
+            <span data-t="gps_live_share">Partager en direct</span>
           </button>
         </div>
 
         <!-- Barre suivi en direct -->
         <div id="live-tracking-bar" style="display:none;align-items:center;gap:10px;margin:0 16px 10px;padding:10px 14px;background:#1a1a2e;border-radius:12px;border:1.5px solid #fc4c02">
           <span style="width:10px;height:10px;border-radius:50%;background:#fc4c02;flex-shrink:0;animation:pulse 1.2s infinite"></span>
-          <span style="font-size:0.82rem;color:#fff;font-weight:600;flex:1">Suivi en direct actif</span>
-          <button id="live-share-btn" type="button" style="background:#fc4c02;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:0.78rem;font-weight:700;cursor:pointer">Partager</button>
-          <button id="live-stop-btn" type="button" style="background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:0.78rem;cursor:pointer">Stop</button>
+          <span style="font-size:0.82rem;color:#fff;font-weight:600;flex:1" data-t="gps_live_active">Suivi en direct actif</span>
+          <button id="live-share-btn" type="button" style="background:#fc4c02;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:0.78rem;font-weight:700;cursor:pointer" data-t="gps_share">Partager</button>
+          <button id="live-stop-btn" type="button" style="background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:0.78rem;cursor:pointer" data-t="gps_stop">Stop</button>
         </div>
 
         <!-- Sélecteur engin -->
         <div class="engin-selector-row">
-          <span class="strava-section-label">Engin</span>
+          <span class="strava-section-label" data-t="gps_engin">Engin</span>
           <div class="engin-btns" id="engin-btns">
             <button class="engin-btn active" data-engin="Canicross" data-poids="0">🏃 Canicross</button>
             <button class="engin-btn" data-engin="Trottinette" data-poids="18">🛴 Trott.</button>
@@ -384,8 +384,8 @@
 
         <!-- Team du jour -->
         <div class="strava-team-row">
-          <span class="strava-section-label">Attelage du jour</span>
-          <button class="text-button" id="toggle-dog-picker-record">Modifier ✏️</button>
+          <span class="strava-section-label" data-t="gps_team_today">Attelage du jour</span>
+          <button class="text-button" id="toggle-dog-picker-record" data-t="gps_edit">Modifier ✏️</button>
         </div>
         <div class="sled-diagram" id="gps-sled-diagram"></div>
         <section class="dog-picker hidden" id="dog-picker-record" data-list="dogPicker" style="margin:8px 16px 4px"></section>
@@ -393,22 +393,22 @@
         <!-- Bilan post-sortie -->
         <section class="record-form hidden" id="post-run-form">
           <div class="section-heading compact">
-            <h2>Bilan de la sortie</h2>
-            <span>Auto + notes</span>
+            <h2 data-t="gps_run_summary">Bilan de la sortie</h2>
+            <span data-t="gps_auto_notes">Auto + notes</span>
           </div>
           <div class="form-grid">
             <label>
-              Type détecté
+              <span data-t="gps_detected_type">Type détecté</span>
               <input id="runType" readonly />
             </label>
             <label>
-              Météo auto
+              <span data-t="gps_auto_weather">Météo auto</span>
               <input id="weather" readonly />
             </label>
           </div>
           <div class="form-grid">
             <label>
-              Énergie
+              <span data-t="gps_energy">Énergie</span>
               <select id="energy">
                 <option value="5">5 - très bonne</option>
                 <option value="4" selected>4 - bonne</option>
@@ -418,7 +418,7 @@
               </select>
             </label>
             <label>
-              Récupération
+              <span data-t="gps_recovery">Récupération</span>
               <select id="recovery">
                 <option>Excellente</option>
                 <option selected>Bonne</option>
@@ -428,15 +428,15 @@
             </label>
           </div>
           <div class="check-row">
-            <label><input id="paw-check" type="checkbox" checked /> Pattes contrôlées</label>
-            <label><input id="hydrated" type="checkbox" checked /> Hydratation OK</label>
+            <label><input id="paw-check" type="checkbox" checked /> <span data-t="gps_paw_check">Pattes contrôlées</span></label>
+            <label><input id="hydrated" type="checkbox" checked /> <span data-t="gps_hydration">Hydratation OK</span></label>
           </div>
           <label>
-            Notes
+            <span data-t="gps_notes">Notes</span>
             <textarea id="notes" rows="3">Chiens calmes, bonne traction.</textarea>
           </label>
           <div style="display:flex;gap:10px;margin-top:4px">
-            <button class="primary-button" id="save-run" type="button" style="flex:2">Enregistrer la sortie</button>
+            <button class="primary-button" id="save-run" type="button" style="flex:2" data-t="gps_save_run">Enregistrer la sortie</button>
             <button class="secondary-button" id="share-run-btn" type="button" style="flex:1">📤 Partager</button>
           </div>
         </section>
@@ -467,19 +467,19 @@
         <div class="run-detail-stats">
           <div class="run-detail-stat">
             <span class="run-detail-stat-val" id="rd-km">—</span>
-            <span class="run-detail-stat-label">Distance</span>
+            <span class="run-detail-stat-label" data-t="rd_distance">Distance</span>
           </div>
           <div class="run-detail-stat">
             <span class="run-detail-stat-val" id="rd-duration">—</span>
-            <span class="run-detail-stat-label">Durée</span>
+            <span class="run-detail-stat-label" data-t="rd_duration">Durée</span>
           </div>
           <div class="run-detail-stat">
             <span class="run-detail-stat-val" id="rd-speed">—</span>
-            <span class="run-detail-stat-label">Vitesse moy.</span>
+            <span class="run-detail-stat-label" data-t="rd_avg_speed">Vitesse moy.</span>
           </div>
           <div class="run-detail-stat">
             <span class="run-detail-stat-val" id="rd-dogs">—</span>
-            <span class="run-detail-stat-label">Chiens</span>
+            <span class="run-detail-stat-label" data-t="rd_dogs">Chiens</span>
           </div>
           <div class="run-detail-stat" id="rd-elev-wrap" style="display:none">
             <span class="run-detail-stat-val" id="rd-elev">—</span>
@@ -490,19 +490,19 @@
         <!-- Infos -->
         <div class="run-detail-info">
           <div class="run-detail-row">
-            <span>Engin</span><span id="rd-engin">—</span>
+            <span data-t="rd_equipment">Engin</span><span id="rd-engin">—</span>
           </div>
           <div class="run-detail-row">
-            <span>Météo</span><span id="rd-weather">—</span>
+            <span data-t="rd_weather">Météo</span><span id="rd-weather">—</span>
           </div>
           <div class="run-detail-row">
-            <span>Énergie équipe</span><span id="rd-energy">—</span>
+            <span data-t="rd_team_energy">Énergie équipe</span><span id="rd-energy">—</span>
           </div>
           <div class="run-detail-row">
-            <span>Récupération</span><span id="rd-recovery">—</span>
+            <span data-t="rd_recovery">Récupération</span><span id="rd-recovery">—</span>
           </div>
           <div class="run-detail-row" id="rd-notes-row">
-            <span>Notes</span><span id="rd-notes">—</span>
+            <span data-t="rd_notes">Notes</span><span id="rd-notes">—</span>
           </div>
         </div>
       </section>
@@ -527,8 +527,8 @@
         <header class="topbar">
           <button class="round-button" data-go="vous" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg></button>
           <div>
-            <p class="eyebrow">Carnet</p>
-            <h1>Chiens</h1>
+            <p class="eyebrow" data-t="dogs_notebook">Carnet</p>
+            <h1 data-t="dogs_title">Chiens</h1>
           </div>
           <button class="round-button" data-action="toggleDogForm" aria-label="Ajouter">+</button>
         </header>
@@ -538,17 +538,17 @@
           <div style="display:flex;align-items:center;gap:14px;margin-bottom:4px">
             <div id="dog-photo-preview" style="width:70px;height:70px;border-radius:50%;background:#f0f0f0;border:2px dashed #ddd;flex-shrink:0;overflow:hidden"><img src="assets/dog-placeholder.png" style="width:100%;height:100%;object-fit:cover" alt="chien" /></div>
             <label style="flex:1;cursor:pointer">
-              <span style="font-size:0.8rem;font-weight:600;color:#fc4c02">📷 Ajouter une photo</span>
+              <span style="font-size:0.8rem;font-weight:600;color:#fc4c02" data-t="dogs_add_photo">📷 Ajouter une photo</span>
               <input id="dog-photo-input" type="file" accept="image/*" style="display:none" />
               <small style="display:block;color:#aaa;font-size:0.72rem;margin-top:2px">JPG, PNG — compressée automatiquement</small>
             </label>
           </div>
           <label>
-            Nom
+            <span data-t="dogs_name">Nom</span>
             <input id="dog-name" placeholder="Ex: Nova" />
           </label>
           <label>
-            Poste
+            <span data-t="dogs_position">Poste</span>
             <select id="dog-role">
               <option>Leader</option>
               <option>Swing</option>
@@ -558,38 +558,38 @@
           </label>
           <div class="form-grid">
             <label>
-              Date de naissance
+              <span data-t="dogs_birthdate">Date de naissance</span>
               <input id="dog-birthdate" type="date" />
             </label>
             <label>
-              Poids
+              <span data-t="dogs_weight">Poids</span>
               <input id="dog-weight" type="number" min="1" step="0.5" placeholder="22" />
             </label>
           </div>
           <div class="form-grid">
             <label>
-              Harnais
+              <span data-t="dogs_harness">Harnais</span>
               <input id="dog-harness" placeholder="Ex: M, Zero DC" />
             </label>
             <label>
-              Suivi veto
+              <span data-t="dogs_vet">Suivi veto</span>
               <input id="dog-vet" placeholder="Vaccin, controle, dent..." />
             </label>
           </div>
           <label>
-            Point de vigilance
+            <span data-t="dogs_health_note">Point de vigilance</span>
             <input id="dog-limitation" placeholder="Patte sensible, repos, digestion..." />
           </label>
           <label>
-            Note
+            <span data-t="dogs_note">Note</span>
             <input id="dog-note" placeholder="Energie, sante, caractere" />
           </label>
-          <button class="primary-button" id="dog-submit" type="submit">Ajouter</button>
+          <button class="primary-button" id="dog-submit" type="submit" data-t="dogs_add_btn">Ajouter</button>
         </form>
 
         <section class="section-heading spaced">
-          <h2>Sélection attelage</h2>
-          <span>Touche pour ajouter/enlever</span>
+          <h2 data-t="dogs_team_selection">Sélection attelage</h2>
+          <span data-t="dogs_tap_to_toggle">Touche pour ajouter/enlever</span>
         </section>
         <section class="dog-picker" data-list="dogPicker"></section>
 
@@ -597,21 +597,21 @@
 
         <!-- Calculateur de ration -->
         <section class="section-heading spaced" style="margin-top:8px">
-          <h2>Ration alimentaire</h2>
-          <button class="text-button" id="toggle-ration-calc" type="button">Calculer ▾</button>
+          <h2 data-t="dogs_ration">Ration alimentaire</h2>
+          <button class="text-button" id="toggle-ration-calc" type="button" data-t="dogs_calculate">Calculer ▾</button>
         </section>
         <div class="ration-calc hidden" id="ration-calc">
           <div class="ration-inputs">
             <label>
-              Poids du chien (kg)
+              <span data-t="dogs_dog_weight">Poids du chien (kg)</span>
               <input id="ration-weight" type="number" min="5" max="60" step="0.5" placeholder="25" />
             </label>
             <label>
-              Km cette semaine
+              <span data-t="dogs_km_week">Km cette semaine</span>
               <input id="ration-km" type="number" min="0" step="1" placeholder="0" />
             </label>
             <label>
-              Densité aliment (kcal/100g)
+              <span data-t="dogs_food_density">Densité aliment (kcal/100g)</span>
               <select id="ration-density">
                 <option value="320">Bas (320 kcal/100g) — croquettes entrée gamme</option>
                 <option value="360" selected>Moyen (360 kcal/100g) — standard musher</option>
@@ -620,7 +620,7 @@
               </select>
             </label>
           </div>
-          <button class="primary-button" id="calc-ration-btn" type="button" style="width:100%;margin-top:10px">Calculer</button>
+          <button class="primary-button" id="calc-ration-btn" type="button" style="width:100%;margin-top:10px" data-t="dogs_calc_btn">Calculer</button>
           <div class="ration-result hidden" id="ration-result"></div>
         </div>
       </section>
@@ -640,8 +640,8 @@
       <section class="screen" id="analytics">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Analyse saison</p>
-            <h1>Stats</h1>
+            <p class="eyebrow" data-t="analytics_season">Analyse saison</p>
+            <h1 data-t="analytics_stats">Stats</h1>
           </div>
           <button class="round-button" data-go="dashboard" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg></button>
         </header>
@@ -651,20 +651,20 @@
         </section>
 
         <section class="section-heading spaced">
-          <h2>Sante team</h2>
-          <span>Decision entrainement</span>
+          <h2 data-t="analytics_team_health">Sante team</h2>
+          <span data-t="analytics_training_decision">Decision entrainement</span>
         </section>
         <section class="team-health" data-list="teamHealth"></section>
 
         <section class="section-heading spaced">
-          <h2>Charge chiens</h2>
-          <span>7 derniers jours</span>
+          <h2 data-t="analytics_dog_load">Charge chiens</h2>
+          <span data-t="analytics_last_7_days">7 derniers jours</span>
         </section>
         <section class="load-list" data-list="dogLoads"></section>
 
         <section class="section-heading spaced">
-          <h2>Alertes</h2>
-          <span>Coach</span>
+          <h2 data-t="analytics_alerts">Alertes</h2>
+          <span data-t="analytics_coach">Coach</span>
         </section>
         <section class="alert-list" data-list="alerts"></section>
       </section>
@@ -672,25 +672,25 @@
       <section class="screen" id="race">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Mode competition</p>
-            <h1>Course</h1>
+            <p class="eyebrow" data-t="race_competition">Mode competition</p>
+            <h1 data-t="race_title">Course</h1>
           </div>
           <button class="round-button" data-go="settings" aria-label="Reglages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
         </header>
 
         <section class="race-search-panel">
-          <button class="secondary-button" id="missing-race-button" type="button">Signaler une course manquante</button>
+          <button class="secondary-button" id="missing-race-button" type="button" data-t="race_missing">Signaler une course manquante</button>
           <section class="race-search-results" data-list="raceSearchResults"></section>
         </section>
         <section id="admin-panel" hidden></section>
 
         <!-- Classement communautaire -->
         <section class="section-heading spaced" style="margin-top:20px">
-          <h2>Classement du mois</h2>
+          <h2 data-t="race_leaderboard">Classement du mois</h2>
           <span id="leaderboard-month"></span>
         </section>
         <div class="leaderboard-wrap" id="leaderboard-wrap">
-          <p class="leaderboard-loading">Chargement…</p>
+          <p class="leaderboard-loading" data-t="race_loading">Chargement…</p>
         </div>
       </section>
 
@@ -698,8 +698,8 @@
         <header class="topbar">
           <button class="round-button" data-go="vous" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg></button>
           <div>
-            <p class="eyebrow">Planning personnel</p>
-            <h1>Agenda</h1>
+            <p class="eyebrow" data-t="agenda_personal_planning">Planning personnel</p>
+            <h1 data-t="agenda_title">Agenda</h1>
           </div>
           <button class="round-button" data-action="toggleEventForm" aria-label="Ajouter">+</button>
         </header>
@@ -757,8 +757,8 @@
       <section class="screen" id="coach">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Entraînement intelligent</p>
-            <h1>Coach</h1>
+            <p class="eyebrow" data-t="coach_smart_training">Entraînement intelligent</p>
+            <h1 data-t="coach_title">Coach</h1>
           </div>
           <button class="round-button" data-go="dashboard" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg></button>
         </header>
@@ -771,8 +771,8 @@
       <section class="screen" id="community">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Mushers connect&eacute;&middot;e&middot;s</p>
-            <h1>R&eacute;seau</h1>
+            <p class="eyebrow" data-t="net_mushers_connected">Mushers connect&eacute;&middot;e&middot;s</p>
+            <h1 data-t="net_title">R&eacute;seau</h1>
           </div>
           <button id="community-refresh-btn" style="background:none;border:none;color:#fc4c02;font-size:1.4rem;cursor:pointer;padding:4px" title="Actualiser">&#x2193;</button>
         </header>
@@ -798,10 +798,10 @@
           </div>
           <!-- Onglets Fil / Defis / Clubs -->
           <div class="community-tabs">
-            <button class="community-tab active" data-tab="feed">Fil</button>
-            <button class="community-tab" data-tab="challenges">D&eacute;fis</button>
-            <button class="community-tab" data-tab="clubs">Clubs</button>
-            <button class="community-tab" data-tab="map">Carte</button>
+            <button class="community-tab active" data-tab="feed" data-t="net_feed_tab">Fil</button>
+            <button class="community-tab" data-tab="challenges" data-t="net_challenges_tab">D&eacute;fis</button>
+            <button class="community-tab" data-tab="clubs" data-t="net_clubs_tab">Clubs</button>
+            <button class="community-tab" data-tab="map" data-t="net_map_tab">Carte</button>
           </div>
 
           <!-- Fil -->
@@ -819,21 +819,21 @@
           <div id="community-tab-clubs" style="display:none">
             <div id="clubs-my-list"></div>
             <div class="clubs-actions">
-              <button id="clubs-create-btn" class="primary-button" style="width:100%;margin-bottom:10px">&#x2795; Cr&eacute;er un club</button>
+              <button id="clubs-create-btn" class="primary-button" style="width:100%;margin-bottom:10px" data-t="net_create_club">&#x2795; Cr&eacute;er un club</button>
               <div style="display:flex;gap:8px">
                 <input id="clubs-join-input" type="text" placeholder="Code invitation (ex: AB3K7P)" maxlength="6" style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:#fff;font-size:0.9rem;text-transform:uppercase;letter-spacing:2px"/>
-                <button id="clubs-join-btn" style="background:#fc4c02;border:none;border-radius:10px;padding:10px 16px;color:#fff;font-weight:700;cursor:pointer">Rejoindre</button>
+                <button id="clubs-join-btn" style="background:#fc4c02;border:none;border-radius:10px;padding:10px 16px;color:#fff;font-weight:700;cursor:pointer" data-t="net_join_club">Rejoindre</button>
               </div>
               <div id="clubs-join-msg" style="font-size:0.8rem;text-align:center;padding:6px 0;display:none"></div>
             </div>
             <!-- Modal creation club -->
             <div id="clubs-create-modal" style="display:none;background:#1a1a2e;border-radius:14px;padding:16px;margin-top:14px">
-              <p style="font-weight:700;margin:0 0 12px">Nouveau club</p>
+              <p style="font-weight:700;margin:0 0 12px" data-t="net_new_club">Nouveau club</p>
               <input id="clubs-create-name" type="text" placeholder="Nom du club" maxlength="60" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:#fff;font-size:0.9rem;margin-bottom:8px"/>
               <input id="clubs-create-desc" type="text" placeholder="Description (optionnel)" maxlength="200" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:#fff;font-size:0.9rem;margin-bottom:12px"/>
               <div style="display:flex;gap:8px">
-                <button id="clubs-create-confirm" style="flex:1;background:#fc4c02;border:none;border-radius:10px;padding:10px;color:#fff;font-weight:700;cursor:pointer">Cr&eacute;er</button>
-                <button id="clubs-create-cancel" style="background:rgba(255,255,255,0.1);border:none;border-radius:10px;padding:10px 14px;color:#fff;cursor:pointer">Annuler</button>
+                <button id="clubs-create-confirm" style="flex:1;background:#fc4c02;border:none;border-radius:10px;padding:10px;color:#fff;font-weight:700;cursor:pointer" data-t="net_club_confirm">Cr&eacute;er</button>
+                <button id="clubs-create-cancel" style="background:rgba(255,255,255,0.1);border:none;border-radius:10px;padding:10px 14px;color:#fff;cursor:pointer" data-t="btn_cancel">Annuler</button>
               </div>
             </div>
           <!-- Carte des mushers -->
@@ -841,11 +841,11 @@
             <div style="background:#1a1a2e;border-radius:14px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
               <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;cursor:pointer">
                 <input id="map-optin-toggle" type="checkbox" style="accent-color:#fc4c02;width:18px;height:18px"/>
-                Appara&icirc;tre sur la carte (r&eacute;gion seulement)
+                <span data-t="net_appear_map">Appara&icirc;tre sur la carte (r&eacute;gion seulement)</span>
               </label>
             </div>
             <div id="mushers-map" style="height:340px;border-radius:14px;overflow:hidden;background:#0d0d1a"></div>
-            <p style="font-size:0.72rem;color:#666;text-align:center;margin-top:8px">Position approch&eacute;e — seule ta r&eacute;gion est visible, pas ton adresse exacte.</p>
+            <p style="font-size:0.72rem;color:#666;text-align:center;margin-top:8px" data-t="net_approx_position">Position approch&eacute;e — seule ta r&eacute;gion est visible, pas ton adresse exacte.</p>
           </div>
         </div>
       </section>
@@ -853,21 +853,21 @@
       <section class="screen" id="advice">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Santé & performance</p>
-            <h1>Conseils</h1>
+            <p class="eyebrow" data-t="advice_health_perf">Santé & performance</p>
+            <h1 data-t="advice_title">Conseils</h1>
           </div>
           <button class="round-button" data-go="dashboard" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg></button>
         </header>
 
         <section class="advice-list">
           <article class="advice-card important">
-            <span>🚨 Important</span>
-            <h2>Signaux d'alerte à ne jamais ignorer</h2>
+            <span data-t="advice_important">🚨 Important</span>
+            <h2 data-t="advice_warning_title">Signaux d'alerte à ne jamais ignorer</h2>
             <p>Stoppe immédiatement si un chien boite, respire difficilement, devient faible, confus, vomit, bave excessivement ou présente des gencives sèches/collantes. En cas de doute : vétérinaire. Ces conseils ne remplacent pas un avis médical.</p>
           </article>
 
           <div class="advice-filter-bar">
-            <button class="advice-filter-btn active" data-advice-cat="">📋 Tous</button>
+            <button class="advice-filter-btn active" data-advice-cat="" data-t="advice_all">📋 Tous</button>
             <button class="advice-filter-btn" data-advice-cat="Nutrition">🍖 Nutrition</button>
             <button class="advice-filter-btn" data-advice-cat="Santé">🩺 Santé</button>
             <button class="advice-filter-btn" data-advice-cat="Conditions">❄️ Conditions</button>
@@ -883,8 +883,8 @@
       <section class="screen" id="settings">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Objectifs</p>
-            <h1>Saison</h1>
+            <p class="eyebrow" data-t="settings_objectives">Objectifs</p>
+            <h1 data-t="settings_season">Saison</h1>
           </div>
           <button class="round-button" data-go="dashboard" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg></button>
         </header>
@@ -892,32 +892,32 @@
         <form class="settings-form" id="settings-form">
 
           <section class="profile-settings">
-            <span>Mode saison</span>
+            <span data-t="settings_season_mode">Mode saison</span>
             <div class="mode-switch-settings">
               <button type="button" class="season-btn active" data-mode="winter">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 2v20M4.93 4.93l14.14 14.14M2 12h20M4.93 19.07l14.14-14.14"/></svg>
-                Hiver
+                <span data-t="settings_winter">Hiver</span>
               </button>
               <button type="button" class="season-btn" data-mode="summer">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                Eté
+                <span data-t="settings_summer">Eté</span>
               </button>
             </div>
           </section>
 
           <section class="profile-settings">
-            <span>Profil MushTrack</span>
+            <span data-t="settings_profile">Profil MushTrack</span>
             <label>
-              Pseudo
+              <span data-t="settings_pseudo">Pseudo</span>
               <input id="profile-name" placeholder="Ex: Mo" />
             </label>
             <div class="form-grid">
               <label>
-                Region
+                <span data-t="settings_region">Region</span>
                 <input id="profile-region" placeholder="Ex: Jura, Valais, Quebec" />
               </label>
               <label>
-                Niveau
+                <span data-t="settings_level">Niveau</span>
                 <select id="profile-level">
                   <option>Loisir</option>
                   <option>Competition</option>
@@ -927,20 +927,20 @@
               </label>
             </div>
             <label>
-              Disciplines
+              <span data-t="settings_disciplines">Disciplines</span>
               <input id="profile-disciplines" placeholder="Canicross, traineau, kart..." />
             </label>
           </section>
           <label>
-            Objectif km
+            <span data-t="settings_goal_km">Objectif km</span>
             <input id="goal-km" type="number" min="50" step="10" />
           </label>
           <label>
-            Date limite
+            <span data-t="settings_goal_date">Date limite</span>
             <input id="goal-date" type="date" />
           </label>
           <div class="preset-section">
-            <p class="preset-label">Présets rapides</p>
+            <p class="preset-label" data-t="settings_quick_presets">Présets rapides</p>
             <div class="preset-buttons">
               <button class="preset-btn" type="button" data-preset="sprint">🚀 Sprint 12 km</button>
               <button class="preset-btn" type="button" data-preset="mid">🏔️ Mid 80 km</button>
@@ -949,15 +949,15 @@
             </div>
           </div>
           <label>
-            Nom de la course objectif
+            <span data-t="settings_race_name">Nom de la course objectif</span>
             <input id="race-name" placeholder="Ex: Amundsen Race 250, La Grande Odyssée..." />
           </label>
           <label>
-            Date de la course
+            <span data-t="settings_race_date">Date de la course</span>
             <input id="race-date" type="date" />
           </label>
           <label>
-            Type de course
+            <span data-t="settings_race_type">Type de course</span>
             <select id="race-type">
               <option>Sprint</option>
               <option>Mid-distance</option>
@@ -967,10 +967,10 @@
             </select>
           </label>
           <label>
-            Distance de course (km)
+            <span data-t="settings_race_km">Distance de course (km)</span>
             <input id="race-km" type="number" min="5" step="5" />
           </label>
-          <button class="primary-button" type="submit">Mettre a jour</button>
+          <button class="primary-button" type="submit" data-t="settings_update">Mettre a jour</button>
         </form>
 
 
@@ -980,7 +980,7 @@
 
         <!-- Langue -->
         <section class="section-heading spaced" style="margin-top:20px">
-          <h2 data-t="label_language">Langue</h2>
+          <h2 data-t="settings_language">Langue</h2>
         </section>
         <div style="display:flex;gap:10px;margin-bottom:20px">
           <button class="lang-btn" data-lang="fr" style="flex:1;padding:10px;border-radius:10px;border:2px solid #fc4c02;font-size:1rem;font-weight:700;cursor:pointer;background:#fff4f0;color:#fc4c02">FR</button>
@@ -990,32 +990,32 @@
 
         <!-- Export PDF + CSV -->
         <section class="section-heading spaced" style="margin-top:20px">
-          <h2>Export données</h2>
+          <h2 data-t="settings_export_data">Export données</h2>
         </section>
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px">
-          <button class="secondary-button" id="export-pdf-btn" type="button" style="width:100%">
+          <button class="secondary-button" id="export-pdf-btn" type="button" style="width:100%" data-t="settings_export_pdf">
             📄 Rapport PDF (saison complète)
           </button>
-          <button class="secondary-button" id="export-csv-btn" type="button" style="width:100%">
+          <button class="secondary-button" id="export-csv-btn" type="button" style="width:100%" data-t="settings_export_csv">
             📊 Export CSV (sorties — pour entraîneur)
           </button>
         </div>
 
         <!-- Suppression compte RGPD -->
         <section class="section-heading spaced" style="margin-top:20px">
-          <h2>Données personnelles</h2>
-          <span>RGPD</span>
+          <h2 data-t="settings_personal_data">Données personnelles</h2>
+          <span data-t="settings_rgpd">RGPD</span>
         </section>
         <div style="background:#fff5f5;border-radius:14px;padding:16px;border:1.5px solid #fecaca;margin-bottom:24px">
-          <p style="font-size:0.82rem;color:#555;margin-bottom:12px">Supprime définitivement toutes tes données : sorties, chiens, profil et données Supabase. Cette action est irréversible.</p>
-          <button id="delete-account-btn" type="button" style="width:100%;padding:11px;background:#fff;color:#dc2626;border:1.5px solid #dc2626;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer">
+          <p style="font-size:0.82rem;color:#555;margin-bottom:12px" data-t="settings_delete_warning">Supprime définitivement toutes tes données : sorties, chiens, profil et données Supabase. Cette action est irréversible.</p>
+          <button id="delete-account-btn" type="button" style="width:100%;padding:11px;background:#fff;color:#dc2626;border:1.5px solid #dc2626;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer" data-t="settings_delete_btn">
             🗑️ Supprimer mon compte et mes données
           </button>
           <div id="delete-account-confirm" style="display:none;margin-top:10px">
-            <p style="font-size:0.82rem;color:#dc2626;font-weight:700;margin-bottom:8px">⚠️ Confirmes-tu la suppression définitive de toutes tes données ?</p>
+            <p style="font-size:0.82rem;color:#dc2626;font-weight:700;margin-bottom:8px" data-t="settings_delete_confirm_q">⚠️ Confirmes-tu la suppression définitive de toutes tes données ?</p>
             <div style="display:flex;gap:8px">
-              <button id="delete-account-cancel" type="button" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;font-weight:700;cursor:pointer">Annuler</button>
-              <button id="delete-account-confirm-btn" type="button" style="flex:1;padding:9px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">Oui, supprimer</button>
+              <button id="delete-account-cancel" type="button" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;font-weight:700;cursor:pointer" data-t="btn_cancel">Annuler</button>
+              <button id="delete-account-confirm-btn" type="button" style="flex:1;padding:9px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer" data-t="settings_delete_yes">Oui, supprimer</button>
             </div>
           </div>
           <div id="delete-account-status" style="display:none;font-size:0.8rem;text-align:center;margin-top:8px"></div>
@@ -1023,23 +1023,24 @@
 
         <!-- Profil public -->
         <section class="section-heading spaced" style="margin-top:20px">
-          <h2>Profil public</h2>
-          <span>Partage sponsors</span>
+          <h2 data-t="settings_public_profile">Profil public</h2>
+          <span data-t="settings_sponsors">Partage sponsors</span>
         </section>
         <div style="background:#f8f7ff;border-radius:14px;padding:16px;border:1.5px solid #e0dfff;margin-bottom:8px">
           <p style="font-size:0.82rem;color:#555;margin-bottom:12px">Crée une page publique avec tes stats, ton attelage et tes courses à venir — parfait pour les sponsors.</p>
-          <label style="font-size:0.8rem;font-weight:600;color:#6366f1;display:block;margin-bottom:4px">Ton slug (identifiant URL)
+          <label style="font-size:0.8rem;font-weight:600;color:#6366f1;display:block;margin-bottom:4px">
+            <span data-t="settings_slug_label">Ton slug (identifiant URL)</span>
             <input id="profile-slug" type="text" placeholder="ex: mo-rar" maxlength="40"
               style="display:block;margin-top:4px;padding:9px 12px;border:1.5px solid #c7d2fe;border-radius:10px;font-size:0.9rem;width:100%;box-sizing:border-box"/>
           </label>
           <p id="profile-url-preview" style="font-size:0.75rem;color:#6366f1;margin:6px 0 12px;word-break:break-all"></p>
-          <button id="publish-profile-btn" type="button" style="width:100%;padding:11px;background:#6366f1;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer">🌐 Publier mon profil</button>
+          <button id="publish-profile-btn" type="button" style="width:100%;padding:11px;background:#6366f1;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer" data-t="settings_publish">🌐 Publier mon profil</button>
           <div id="publish-status" style="font-size:0.8rem;text-align:center;margin-top:8px;color:#6366f1;display:none"></div>
         </div>
         <div id="profile-link-wrap" style="display:none;padding:12px 14px;background:#eefdf3;border-radius:10px;border:1px solid #bbf7d0;margin-bottom:24px">
-          <p style="font-size:0.8rem;font-weight:700;color:#16a34a;margin-bottom:6px">✅ Profil publié !</p>
+          <p style="font-size:0.8rem;font-weight:700;color:#16a34a;margin-bottom:6px" data-t="settings_published">✅ Profil publié !</p>
           <a id="profile-public-link" href="#" target="_blank" rel="noopener" style="font-size:0.82rem;color:#16a34a;word-break:break-all"></a>
-          <button id="copy-profile-link" type="button" style="display:block;margin-top:8px;width:100%;padding:8px;background:#fff;border:1.5px solid #16a34a;border-radius:8px;font-size:0.82rem;font-weight:700;color:#16a34a;cursor:pointer">📋 Copier le lien</button>
+          <button id="copy-profile-link" type="button" style="display:block;margin-top:8px;width:100%;padding:8px;background:#fff;border:1.5px solid #16a34a;border-radius:8px;font-size:0.82rem;font-weight:700;color:#16a34a;cursor:pointer" data-t="settings_copy_link">📋 Copier le lien</button>
         </div>
       </section>
 
@@ -1060,23 +1061,23 @@
       <section class="screen" id="vous">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Mon espace</p>
-            <h1>Vous</h1>
+            <p class="eyebrow" data-t="vous_my_space">Mon espace</p>
+            <h1 data-t="vous_title">Vous</h1>
           </div>
         </header>
         <!-- Sous-onglets -->
         <div class="vous-subtab-bar">
           <button class="vous-subtab active" data-you="agenda">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            Agenda
+            <span data-t="vous_agenda_tab">Agenda</span>
           </button>
           <button class="vous-subtab" data-you="dogs">
             <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" width="20" height="20"><circle cx="9" cy="4.5" r="2.2"/><circle cx="15" cy="4.5" r="2.2"/><circle cx="5.5" cy="9" r="2.2"/><circle cx="18.5" cy="9" r="2.2"/><path d="M12 22C8.5 22 5.5 19.5 5.5 16.5C5.5 14 7 12 9.5 11.5L11 9.5a1.4 1.4 0 0 1 2 0L14.5 11.5C17 12 18.5 14 18.5 16.5C18.5 19.5 15.5 22 12 22Z"/></svg>
-            Chiens
+            <span data-t="vous_dogs_tab">Chiens</span>
           </button>
           <button class="vous-subtab" data-you="enregistrement">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
-            Enregistrement
+            <span data-t="vous_records_tab">Enregistrement</span>
           </button>
         </div>
         <!-- Panneaux inline -->
@@ -1093,8 +1094,8 @@
           <section class="dog-list" data-list="dogs" style="padding:0 16px;margin:0 0 8px"></section>
           <!-- Calculateur de ration -->
           <section class="section-heading spaced" style="margin-top:8px">
-            <h2>Ration alimentaire</h2>
-            <button class="text-button" id="toggle-ration-calc-vous" type="button">Calculer ▾</button>
+            <h2 data-t="dogs_ration">Ration alimentaire</h2>
+            <button class="text-button" id="toggle-ration-calc-vous" type="button" data-t="dogs_calculate">Calculer ▾</button>
           </section>
           <div class="ration-calc hidden" id="ration-calc-vous">
             <div class="ration-inputs">
@@ -1128,19 +1129,19 @@
         </button>
         <button data-go="record">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          <span>GPS</span>
+          <span data-t="nav_gps">GPS</span>
         </button>
         <button data-go="community">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <span>Réseau</span>
+          <span data-t="nav_network">Réseau</span>
         </button>
         <button data-go="coach">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-          <span>Coach</span>
+          <span data-t="nav_coach">Coach</span>
         </button>
         <button data-go="vous">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span>Vous</span>
+          <span data-t="nav_you">Vous</span>
         </button>
         <button data-go="race">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1149,11 +1150,11 @@
             <rect x="4" y="4" width="5" height="4" fill="currentColor" stroke="none" opacity="0.7"/>
             <rect x="9" y="8" width="5" height="4" fill="currentColor" stroke="none" opacity="0.7"/>
           </svg>
-          <span>Course</span>
+          <span data-t="nav_race">Course</span>
         </button>
         <button data-go="advice">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span>Conseils</span>
+          <span data-t="nav_tips">Conseils</span>
         </button>
       </nav>
 
@@ -1162,8 +1163,8 @@
         <div class="coach-modal-inner">
           <div class="coach-modal-header">
             <div>
-              <p class="eyebrow">Coach MushTrack IA</p>
-              <h2 id="coach-modal-title">Analyse personnalisée</h2>
+              <p class="eyebrow" data-t="coach_ia">Coach MushTrack IA</p>
+              <h2 id="coach-modal-title" data-t="coach_personalized">Analyse personnalisée</h2>
             </div>
             <button class="round-button" id="coach-modal-close" aria-label="Fermer">✕</button>
           </div>
@@ -1171,7 +1172,7 @@
           <!-- Question libre -->
           <div class="coach-question-row hidden" id="coach-question-row">
             <textarea id="coach-question" rows="2" placeholder="Question précise (optionnel) — ex: Mon chien récupère mal, que faire ? Suis-je prêt pour l'Amundsen 250 ?"></textarea>
-            <button class="primary-button" id="coach-analyze-btn" type="button">
+            <button class="primary-button" id="coach-analyze-btn" type="button" data-t="coach_analyze">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
               Analyser
             </button>
