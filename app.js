@@ -1268,6 +1268,7 @@ function showScreen(id) {
   }
 
   if (id === "race") {
+    communityLastKey = ""; // force refetch participations à chaque visite
     fetchRaceRadar();
   }
 
