@@ -6594,7 +6594,7 @@ function renderCoach() {
   }
   vetAlerts.sort((a, b) => a.days - b.days);
 
-  const phaseColor = PHASE_COLORS[plan.phase] || "#fc4c02";
+  const phaseColor = state.seasonMode === "summer" ? "#22c55e" : "#3b82f6";
 
   el.innerHTML = `
     <!-- En-tête objectif -->
