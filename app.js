@@ -1446,7 +1446,8 @@ function render() {
     const offset = circ - (woLoad / 100) * circ;
     gaugeEl.style.strokeDasharray = `${circ}`;
     gaugeEl.style.strokeDashoffset = `${offset}`;
-    gaugeEl.style.stroke = woLoad < 35 ? "#22c55e" : woLoad < 65 ? "#f59e0b" : "#fc4c02";
+    const sc = state.seasonMode === "summer" ? "#22c55e" : "#3b82f6";
+    gaugeEl.style.stroke = woLoad < 35 ? sc : woLoad < 65 ? "#f59e0b" : "#fc4c02";
   }
 
   // Résumé équipe
@@ -1624,9 +1625,11 @@ function renderProgressChart() {
   const gap    = chartW / WEEKS;
 
   // Ligne cible
+  const sc = state.seasonMode === "summer" ? "#22c55e" : "#3b82f6";
+  const scLight = state.seasonMode === "summer" ? "#16a34a" : "#2563eb";
   const targetY = PAD_TOP + chartH * (1 - target / maxKm);
   ctx.setLineDash([4, 3]);
-  ctx.strokeStyle = "#22c55e";
+  ctx.strokeStyle = sc;
   ctx.lineWidth = 1;
   ctx.globalAlpha = 0.4;
   ctx.beginPath();
@@ -1650,14 +1653,14 @@ function renderProgressChart() {
     const isCurrentWeek = i === WEEKS - 1;
 
     // Barre
-    ctx.fillStyle = isCurrentWeek ? "#22c55e" : (wk.km >= target ? "#16a34a" : "#c8dff5");
+    ctx.fillStyle = isCurrentWeek ? sc : (wk.km >= target ? scLight : "#c8dff5");
     ctx.beginPath();
     ctx.roundRect(x, y, barW, bh, [3, 3, 0, 0]);
     ctx.fill();
 
     // Valeur km au-dessus si > 0
     if (wk.km > 0) {
-      ctx.fillStyle = isCurrentWeek ? "#16a34a" : "#666";
+      ctx.fillStyle = isCurrentWeek ? scLight : "#666";
       ctx.font = `bold ${9}px system-ui`;
       ctx.textAlign = "center";
       ctx.fillText(Math.round(wk.km), x + barW / 2, y - 3);

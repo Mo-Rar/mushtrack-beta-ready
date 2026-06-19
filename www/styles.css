@@ -1,3 +1,16 @@
+:root {
+  --season-color: #3b82f6;
+  --season-color-light: #60a5fa;
+}
+body.mode-summer {
+  --season-color: #22c55e;
+  --season-color-light: #4ade80;
+}
+body.mode-winter {
+  --season-color: #3b82f6;
+  --season-color-light: #60a5fa;
+}
+
 * {
   -webkit-user-select: none;
   user-select: none;
@@ -3582,7 +3595,7 @@ textarea {
 }
 .dash-prep-bar span {
   display: block; height: 100%;
-  background: linear-gradient(90deg, #22c55e, #4ade80);
+  background: linear-gradient(90deg, var(--season-color), var(--season-color-light));
   border-radius: 99px; width: 0%; transition: width .4s;
 }
 .dash-prep-phase { display: none; }
@@ -3602,7 +3615,7 @@ textarea {
 .dash-workout-left { flex: 1; }
 .dash-eyebrow-green {
   font-size: 0.6rem; font-weight: 900; letter-spacing: .1em;
-  color: #22c55e; text-transform: uppercase; margin: 0 0 5px;
+  color: var(--season-color); text-transform: uppercase; margin: 0 0 5px;
 }
 .dash-workout-title {
   display: block; font-size: 1.1rem; font-weight: 900;
@@ -3713,7 +3726,7 @@ textarea {
 .dash-dog-name {
   font-size: 0.9rem; font-weight: 900; color: #111; margin: 0;
 }
-.dash-dog-dot { color: #22c55e; font-size: 0.7rem; }
+.dash-dog-dot { color: var(--season-color); font-size: 0.7rem; }
 .dash-dog-health { font-size: 0.72rem; color: #888; margin: 0; }
 .dash-energy-row {
   display: flex; align-items: center; gap: 6px; margin-top: 4px;
@@ -3725,17 +3738,17 @@ textarea {
 }
 .dash-energy-track span {
   display: block; height: 100%;
-  background: linear-gradient(90deg, #22c55e, #86efac);
+  background: linear-gradient(90deg, var(--season-color), var(--season-color-light));
   border-radius: 99px; width: 0%; transition: width .4s;
 }
-.dash-energy-pct { color: #22c55e !important; font-weight: 800; }
+.dash-energy-pct { color: var(--season-color) !important; font-weight: 800; }
 /* Tile météo */
 .dash-tile-temp {
   font-size: 1.5rem; font-weight: 900; color: #111; letter-spacing: -0.03em; line-height: 1;
 }
 .dash-tile-wind { font-size: 0.65rem; color: #555; margin: 2px 0 0; font-weight: 600; }
 .dash-tile-ground { font-size: 0.65rem; color: #555; margin: 1px 0 0; font-weight: 600; }
-.dash-tile-cond { font-size: 0.62rem; color: #22c55e; margin: 3px 0 0; font-weight: 800; }
+.dash-tile-cond { font-size: 0.62rem; color: var(--season-color); margin: 3px 0 0; font-weight: 800; }
 /* Tile semaine */
 .dash-tile-km { font-size: 1.25rem; font-weight: 900; color: #111; letter-spacing: -0.03em; }
 .dash-tile-target { font-size: 0.6rem; color: #aaa; margin: 2px 0 4px; }
@@ -3744,10 +3757,10 @@ textarea {
 }
 .dash-week-bar span {
   display: block; height: 100%;
-  background: linear-gradient(90deg, #22c55e, #86efac);
+  background: linear-gradient(90deg, var(--season-color), var(--season-color-light));
   border-radius: 99px; width: 0%; transition: width .4s;
 }
-.dash-week-pct { font-size: 0.7rem; font-weight: 800; color: #22c55e; margin-top: 3px; display: block; }
+.dash-week-pct { font-size: 0.7rem; font-weight: 800; color: var(--season-color); margin-top: 3px; display: block; }
 /* Tile streak */
 .dash-tile-streak { font-size: 1.25rem; font-weight: 900; color: #111; letter-spacing: -0.03em; }
 .dash-tile-streak-sub { font-size: 0.6rem; color: #aaa; margin: 0 0 5px; }
