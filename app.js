@@ -4058,12 +4058,9 @@ function renderRaceSearch() {
     const countriesHtml = Object.entries(byCountry)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([country, races]) => {
-        const codeMatch = country.match(/^([a-z]{2})\s/i);
-        const code = codeMatch ? codeMatch[1].toUpperCase() : "";
-        const flag = code.length === 2
-          ? code.replace(/./g, c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65))
-          : "🏁";
-        const label = code ? country.slice(code.length + 1) : country;
+        const emojiMatch = country.match(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})\s*/u);
+        const flag  = emojiMatch ? emojiMatch[1] : "🏁";
+        const label = emojiMatch ? country.slice(emojiMatch[0].length) : country;
         return `
         <div class="race-country-group">
           <button class="race-country-header" type="button" data-country="${country}" aria-expanded="false">
