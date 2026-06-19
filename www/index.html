@@ -126,7 +126,7 @@
           </div>
           <div class="dash-workout-btns">
             <button class="dash-start-btn" data-go="record">▶ DÉMARRER LA SÉANCE</button>
-            <button class="dash-detail-btn" data-go="plan">Voir le détail ›</button>
+            <button class="dash-detail-btn" data-go="agenda">Voir le détail ›</button>
           </div>
         </section>
 
@@ -135,7 +135,7 @@
           <!-- Tile 1 : équipe -->
           <div class="dash-tile">
             <div class="dash-tile-head">
-              <svg class="dash-tile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <svg class="dash-tile-icon tile-icon-orange" viewBox="0 0 24 24" fill="#fc4c02" stroke="none"><ellipse cx="4.5" cy="6" rx="1.7" ry="2.4"/><ellipse cx="9" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="15" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="19.5" cy="6" rx="1.7" ry="2.4"/><path d="M12 9c-4.5 0-7.5 2.8-7.5 6.2 0 2.2 1.8 4.2 4 4.6 1 .2 2 .2 3.5.2s2.5 0 3.5-.2c2.2-.4 4-2.4 4-4.6C19.5 11.8 16.5 9 12 9z"/></svg>
               <span class="dash-tile-label">ATTELAGE</span>
             </div>
             <strong class="dash-tile-team-count" data-bind="dashDogCount">—</strong>
@@ -143,23 +143,24 @@
             <div class="dash-energy-row">
               <span>Énergie moy.</span>
               <div class="dash-energy-track"><span data-bind-style="dashDogEnergy"></span></div>
-              <span data-bind="dashDogEnergyPct">—</span>
+              <span class="dash-energy-pct" data-bind="dashDogEnergyPct">—</span>
             </div>
           </div>
           <!-- Tile 2 : conditions -->
           <div class="dash-tile">
             <div class="dash-tile-head">
-              <svg class="dash-tile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+              <svg class="dash-tile-icon tile-icon-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
               <span class="dash-tile-label">CONDITIONS</span>
             </div>
             <strong class="dash-tile-temp" data-bind="dashWeatherTemp">—</strong>
             <p class="dash-tile-wind" data-bind="dashWeatherWind">—</p>
+            <p class="dash-tile-ground" data-bind="dashWeatherGround">—</p>
             <p class="dash-tile-cond" data-bind="dashWeatherCond">—</p>
           </div>
           <!-- Tile 3 : cette semaine -->
           <div class="dash-tile">
             <div class="dash-tile-head">
-              <svg class="dash-tile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              <svg class="dash-tile-icon tile-icon-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
               <span class="dash-tile-label">CETTE SEMAINE</span>
             </div>
             <strong class="dash-tile-km" data-bind="kpiWeek">0 km</strong>
@@ -170,7 +171,7 @@
           <!-- Tile 4 : série -->
           <div class="dash-tile">
             <div class="dash-tile-head">
-              <svg class="dash-tile-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              <svg class="dash-tile-icon tile-icon-orange" viewBox="0 0 24 24" fill="#fc4c02" stroke="#fc4c02" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
               <span class="dash-tile-label">SÉRIE</span>
             </div>
             <strong class="dash-tile-streak" data-bind="dashStreak">0 jours</strong>
@@ -263,7 +264,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
             <span class="strava-topbar-title">Sortie GPS</span>
-            <p class="strava-gps-dot" id="gps-status-dot" title="GPS"></p>
+              <p class="strava-gps-dot" id="gps-status-dot" title="GPS"></p>
           </div>
           <p class="strava-gps-status" id="gps-status">Recherche GPS…</p>
         </div>
@@ -274,7 +275,7 @@
             <span class="strava-stat-label">Distance</span>
             <div class="strava-stat-value-row">
               <strong id="distance">0.00</strong>
-              <span class="strava-stat-unit">km</span>
+              <span class="strava-stat-unit gps-dist-unit">km</span>
             </div>
           </div>
           <div class="strava-stats-row">
@@ -283,14 +284,47 @@
               <strong id="duration">00:00</strong>
             </div>
             <div class="strava-stat-secondary strava-stat-center-border">
-              <span class="strava-stat-label">Allure</span>
+              <span class="strava-stat-label" id="avg-label">Moy.</span>
               <strong id="pace">--:--</strong>
-              <span class="strava-stat-unit-small">min/km</span>
+              <span class="strava-stat-unit-small" id="pace-unit">min/km</span>
             </div>
             <div class="strava-stat-secondary">
               <span class="strava-stat-label">Vitesse</span>
               <strong id="speed">0.0</strong>
-              <span class="strava-stat-unit-small">km/h</span>
+              <span class="strava-stat-unit-small gps-speed-unit">km/h</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bouton unités GPS + fond de carte -->
+        <div style="position:relative;display:flex;justify-content:flex-end;align-items:center;gap:6px;padding:0 16px;margin-top:-4px">
+          <button id="map-layer-btn" style="background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:8px;color:#555;padding:5px 12px;font-size:0.75rem;font-weight:800;cursor:pointer">🗺 Carte</button>
+          <div id="map-layer-panel" style="display:none;position:absolute;top:36px;right:120px;z-index:200;background:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 6px 24px rgba(0,0,0,0.18);min-width:160px">
+            <p style="font-size:0.62rem;font-weight:900;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin:0 0 8px">Fond de carte</p>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <button class="map-layer-opt active" data-layer="osm">🗺 Standard</button>
+              <button class="map-layer-opt" data-layer="satellite">🛰 Satellite</button>
+              <button class="map-layer-opt" data-layer="topo">⛰ Relief</button>
+            </div>
+          </div>
+          <button id="gps-unit-btn" style="background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:8px;color:#555;padding:5px 12px;font-size:0.75rem;font-weight:800;cursor:pointer">⚙ Unités</button>
+          <div id="gps-unit-panel" style="display:none;position:absolute;top:36px;right:16px;z-index:100;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 6px 24px rgba(0,0,0,0.18);min-width:200px">
+            <p style="font-size:0.65rem;font-weight:900;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin:0 0 10px">Unités GPS</p>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:0.82rem;font-weight:600;color:#333">Distance</span>
+                <div style="display:flex;gap:5px">
+                  <button class="gps-unit-toggle active" id="unit-km">km</button>
+                  <button class="gps-unit-toggle" id="unit-mi">mi</button>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:0.82rem;font-weight:600;color:#333">Vitesse</span>
+                <div style="display:flex;gap:5px">
+                  <button class="gps-unit-toggle active" id="unit-kmh">km/h</button>
+                  <button class="gps-unit-toggle" id="unit-pace">min/km</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -312,6 +346,19 @@
         </div>
         <div class="sled-diagram" id="gps-sled-diagram"></div>
         <section class="dog-picker hidden" id="dog-picker-record" data-list="dogPicker" style="margin:8px 16px 4px"></section>
+
+        <!-- Sélecteur engin -->
+        <div class="engin-selector-row">
+          <span class="strava-section-label">Engin</span>
+          <div class="engin-btns" id="engin-btns">
+            <button class="engin-btn active" data-engin="Canicross" data-poids="0">🏃 Canicross</button>
+            <button class="engin-btn" data-engin="Trottinette" data-poids="18">🛴 Trott.</button>
+            <button class="engin-btn" data-engin="VTT" data-poids="18">🚵 VTT</button>
+            <button class="engin-btn" data-engin="Kart" data-poids="100"><img src="assets/icon-kart.svg" class="engin-icon" alt="kart"/> Kart</button>
+            <button class="engin-btn" data-engin="ATV" data-poids="200"><img src="assets/icon-atv.svg" class="engin-icon" alt="ATV"/> ATV</button>
+            <button class="engin-btn" data-engin="Traîneau" data-poids="18"><img src="assets/icon-traineau.svg" class="engin-icon" alt="traîneau"/> Traîneau</button>
+          </div>
+        </div>
 
         <!-- Bouton record rond style Strava -->
         <div class="strava-record-wrap">
@@ -397,12 +444,6 @@
         <!-- Canvas caché pour la carte de partage -->
         <canvas id="share-canvas" style="display:none" width="900" height="500"></canvas>
 
-        <!-- Historique -->
-        <div class="strava-history-header">
-          <span class="strava-section-label">Activités</span>
-          <button id="manual-run-button" class="text-button" type="button">+ Ajouter</button>
-        </div>
-        <section class="run-list gps-history" data-list="runs"></section>
       </section>
 
       <!-- ── Détail sortie ── -->
@@ -446,6 +487,9 @@
         <!-- Infos -->
         <div class="run-detail-info">
           <div class="run-detail-row">
+            <span>Engin</span><span id="rd-engin">—</span>
+          </div>
+          <div class="run-detail-row">
             <span>Météo</span><span id="rd-weather">—</span>
           </div>
           <div class="run-detail-row">
@@ -478,6 +522,7 @@
 
       <section class="screen" id="dogs">
         <header class="topbar">
+          <button class="round-button" data-go="vous" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg></button>
           <div>
             <p class="eyebrow">Carnet</p>
             <h1>Chiens</h1>
@@ -488,7 +533,7 @@
         <form class="add-form hidden" id="dog-form">
           <!-- Photo de profil -->
           <div style="display:flex;align-items:center;gap:14px;margin-bottom:4px">
-            <div id="dog-photo-preview" style="width:70px;height:70px;border-radius:50%;background:#f0f0f0;border:2px dashed #ddd;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;overflow:hidden">🐕</div>
+            <div id="dog-photo-preview" style="width:70px;height:70px;border-radius:50%;background:#f0f0f0;border:2px dashed #ddd;flex-shrink:0;overflow:hidden"><img src="assets/dog-placeholder.png" style="width:100%;height:100%;object-fit:cover" alt="chien" /></div>
             <label style="flex:1;cursor:pointer">
               <span style="font-size:0.8rem;font-weight:600;color:#fc4c02">📷 Ajouter une photo</span>
               <input id="dog-photo-input" type="file" accept="image/*" style="display:none" />
@@ -654,6 +699,7 @@
 
       <section class="screen" id="agenda">
         <header class="topbar">
+          <button class="round-button" data-go="vous" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg></button>
           <div>
             <p class="eyebrow">Planning personnel</p>
             <h1>Agenda</h1>
@@ -960,14 +1006,6 @@
         </form>
         <section class="reminder-list" id="reminder-list"></section>
 
-        <!-- Unités -->
-        <section class="section-heading spaced" style="margin-top:20px">
-          <h2>Unités</h2>
-        </section>
-        <div style="display:flex;gap:10px;margin-bottom:20px">
-          <button class="unit-btn" data-unit="km" style="flex:1;padding:10px;border-radius:10px;border:2px solid #fc4c02;font-size:1rem;font-weight:700;cursor:pointer;background:#fff4f0;color:#fc4c02">km</button>
-          <button class="unit-btn" data-unit="mi" style="flex:1;padding:10px;border-radius:10px;border:2px solid #ddd;font-size:1rem;font-weight:700;cursor:pointer;background:#fff;color:#555">miles</button>
-        </div>
 
         <!-- Contact d'urgence -->
         <div id="emergency-contact-section"></div>
@@ -1037,49 +1075,64 @@
         </div>
       </section>
 
+      <!-- ── Écran Enregistrement (historique activités) ── -->
+      <section class="screen" id="vous-enregistrement">
+        <header class="topbar">
+          <button class="round-button" data-go="vous" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div>
+            <p class="eyebrow">Historique</p>
+            <h1>Enregistrement</h1>
+          </div>
+          <button class="round-button" id="manual-run-button-vous" type="button" onclick="document.getElementById('manual-run-button').click()">+ Ajouter</button>
+        </header>
+        <section class="run-list gps-history" data-list="runs"></section>
+      </section>
+
+      <!-- ── Écran Vous ── -->
+      <section class="screen" id="vous">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Mon espace</p>
+            <h1>Vous</h1>
+          </div>
+        </header>
+        <!-- Sous-onglets -->
+        <div class="vous-subtab-bar">
+          <button class="vous-subtab active" data-you="agenda">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Agenda
+          </button>
+          <button class="vous-subtab" data-you="dogs">
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" width="20" height="20"><circle cx="9" cy="4.5" r="2.2"/><circle cx="15" cy="4.5" r="2.2"/><circle cx="5.5" cy="9" r="2.2"/><circle cx="18.5" cy="9" r="2.2"/><path d="M12 22C8.5 22 5.5 19.5 5.5 16.5C5.5 14 7 12 9.5 11.5L11 9.5a1.4 1.4 0 0 1 2 0L14.5 11.5C17 12 18.5 14 18.5 16.5C18.5 19.5 15.5 22 12 22Z"/></svg>
+            Chiens
+          </button>
+          <button class="vous-subtab" data-you="vous-enregistrement">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
+            Enregistrement
+          </button>
+        </div>
+      </section>
+
       <nav class="bottom-nav">
         <button class="active" data-go="dashboard">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           <span data-t="nav_dashboard">Accueil</span>
         </button>
         <button data-go="record">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           <span>Activités</span>
         </button>
         <button data-go="community">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           <span>Réseau</span>
         </button>
-        <button data-go="dogs">
-          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" width="20" height="20">
-            <circle cx="9" cy="4.5" r="2.2"/>
-            <circle cx="15" cy="4.5" r="2.2"/>
-            <circle cx="5.5" cy="9" r="2.2"/>
-            <circle cx="18.5" cy="9" r="2.2"/>
-            <path d="M12 22C8.5 22 5.5 19.5 5.5 16.5C5.5 14 7 12 9.5 11.5L11 9.5a1.4 1.4 0 0 1 2 0L14.5 11.5C17 12 18.5 14 18.5 16.5C18.5 19.5 15.5 22 12 22Z"/>
-          </svg>
-          <span data-t="nav_dogs">Chiens</span>
-        </button>
-        <button data-go="race">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4v16"/>
-            <path d="M4 4h10l-3 4 3 4H4"/>
-            <rect x="4" y="4" width="5" height="4" fill="currentColor" stroke="none" opacity="0.7"/>
-            <rect x="9" y="8" width="5" height="4" fill="currentColor" stroke="none" opacity="0.7"/>
-          </svg>
-          <span data-t="nav_races">Course</span>
-        </button>
-        <button data-go="agenda">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          <span>Agenda</span>
-        </button>
         <button data-go="coach">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
           <span>Coach</span>
         </button>
-        <button data-go="advice">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span>Conseils</span>
+        <button data-go="vous">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Vous</span>
         </button>
       </nav>
 
@@ -1095,7 +1148,7 @@
           </div>
 
           <!-- Question libre -->
-          <div class="coach-question-row" id="coach-question-row">
+          <div class="coach-question-row hidden" id="coach-question-row">
             <textarea id="coach-question" rows="2" placeholder="Question précise (optionnel) — ex: Mon chien récupère mal, que faire ? Suis-je prêt pour l'Amundsen 250 ?"></textarea>
             <button class="primary-button" id="coach-analyze-btn" type="button">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
