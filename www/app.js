@@ -2731,6 +2731,16 @@ function openRunDetail(index) {
     if (run.engin && run.engin !== "Canicross") enginEl.textContent = `${run.engin} · ${chargeIndiv} kg/chien`;
     else enginEl.textContent = "Canicross";
   }
+  const elevWrap = document.getElementById("rd-elev-wrap");
+  const elevEl = document.getElementById("rd-elev");
+  if (elevWrap && elevEl) {
+    if (run.elevationGain > 0) {
+      elevEl.textContent = `+${run.elevationGain} m`;
+      elevWrap.style.display = "";
+    } else {
+      elevWrap.style.display = "none";
+    }
+  }
   document.getElementById("rd-weather").textContent = run.weather || "—";
   document.getElementById("rd-energy").textContent = run.energy ? run.energy + " / 5" : "—";
   document.getElementById("rd-recovery").textContent = run.recovery || "—";
