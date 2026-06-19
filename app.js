@@ -5172,9 +5172,30 @@ function initMap(lat = 46.8182, lon = 8.2275) {
 
   map = L.map("map").setView([lat, lon], 13);
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "OpenStreetMap"
-  }).addTo(map);
+  const MAP_LAYERS = {
+    osm:       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }),
+    satellite: L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, attribution: "© Esri" }),
+    topo:      L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { maxZoom: 17, attribution: "© OpenTopoMap" }),
+    dark:      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { maxZoom: 19, subdomains: "abcd", attribution: "© CartoDB" })
+  };
+
+  let activeLayer = MAP_LAYERS.osm;
+  activeLayer.addTo(map);
+
+  document.querySelectorAll(".map-layer-opt").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.layer;
+      if (!MAP_LAYERS[key]) return;
+      map.removeLayer(activeLayer);
+      activeLayer = MAP_LAYERS[key];
+      activeLayer.addTo(map);
+      document.querySelectorAll(".map-layer-opt").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      layerPanel.style.display = "none";
+    });
+  });
+
+  document.addEventListener("click", () => { if (layerPanel) layerPanel.style.display = "none"; });
 
   marker = L.marker([lat, lon]).addTo(map);
 
@@ -5555,6 +5576,16 @@ function saveCurrentRun() {
 navButtons.forEach((button) => {
   button.addEventListener("click", () => showScreen(button.dataset.go));
 });
+
+// ── Sélecteur fond de carte ─────────────────────────────────────
+const mapLayerBtn   = document.getElementById("map-layer-btn");
+const mapLayerPanel = document.getElementById("map-layer-panel");
+
+mapLayerBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  mapLayerPanel.style.display = mapLayerPanel.style.display === "none" ? "block" : "none";
+});
+mapLayerPanel?.addEventListener("click", e => e.stopPropagation());
 
 // ── Panneau unités GPS ──────────────────────────────────────────
 const gpsUnitBtn   = document.getElementById("gps-unit-btn");
