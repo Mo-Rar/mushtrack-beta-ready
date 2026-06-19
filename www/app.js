@@ -4058,9 +4058,18 @@ function renderRaceSearch() {
     const countriesHtml = Object.entries(byCountry)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([country, races]) => {
+        const COUNTRY_CODES = {
+          "France":"fr","Suisse":"ch","Norvège":"no","Suède":"se","États-Unis":"us",
+          "Canada":"ca","Italie":"it","Royaume-Uni":"gb","Pays-Bas":"nl","Irlande":"ie",
+          "Allemagne":"de","Belgique":"be","Espagne":"es","Autriche":"at","Finlande":"fi",
+          "Russie":"ru","Pologne":"pl","Rép. Tchèque":"cz"
+        };
         const spaceIdx = country.indexOf(" ");
-        const flag  = spaceIdx > 0 ? country.slice(0, spaceIdx) : "🏁";
         const label = spaceIdx > 0 ? country.slice(spaceIdx + 1) : country;
+        const code  = COUNTRY_CODES[label];
+        const flag  = code
+          ? `<img src="https://flagcdn.com/24x18/${code}.png" alt="${label}" style="width:24px;height:18px;border-radius:2px;object-fit:cover">`
+          : `<span style="font-size:1.2rem">🏁</span>`;
         return `
         <div class="race-country-group">
           <button class="race-country-header" type="button" data-country="${country}" aria-expanded="false">
