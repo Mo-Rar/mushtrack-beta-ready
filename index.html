@@ -338,27 +338,6 @@
           <span id="weather-desc">—</span>
         </div>
 
-        <!-- Team du jour -->
-        <div class="strava-team-row">
-          <span class="strava-section-label">Attelage du jour</span>
-          <button class="text-button" id="toggle-dog-picker-record">Modifier ✏️</button>
-        </div>
-        <div class="sled-diagram" id="gps-sled-diagram"></div>
-        <section class="dog-picker hidden" id="dog-picker-record" data-list="dogPicker" style="margin:8px 16px 4px"></section>
-
-        <!-- Sélecteur engin -->
-        <div class="engin-selector-row">
-          <span class="strava-section-label">Engin</span>
-          <div class="engin-btns" id="engin-btns">
-            <button class="engin-btn active" data-engin="Canicross" data-poids="0">🏃 Canicross</button>
-            <button class="engin-btn" data-engin="Trottinette" data-poids="18">🛴 Trott.</button>
-            <button class="engin-btn" data-engin="VTT" data-poids="18">🚵 VTT</button>
-            <button class="engin-btn" data-engin="Kart" data-poids="100"><img src="assets/icon-kart.svg" class="engin-icon" alt="kart"/> Kart</button>
-            <button class="engin-btn" data-engin="ATV" data-poids="200"><img src="assets/icon-atv.svg" class="engin-icon" alt="ATV"/> ATV</button>
-            <button class="engin-btn" data-engin="Traîneau" data-poids="18"><img src="assets/icon-traineau.svg" class="engin-icon" alt="traîneau"/> Traîneau</button>
-          </div>
-        </div>
-
         <!-- Bouton record rond style Strava -->
         <div class="strava-record-wrap">
           <button class="strava-record-btn" id="record-button" aria-label="Démarrer">
@@ -388,6 +367,27 @@
           <span style="font-size:0.82rem;color:#fff;font-weight:600;flex:1">Suivi en direct actif</span>
           <button id="live-share-btn" type="button" style="background:#fc4c02;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:0.78rem;font-weight:700;cursor:pointer">Partager</button>
           <button id="live-stop-btn" type="button" style="background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:0.78rem;cursor:pointer">Stop</button>
+        </div>
+
+        <!-- Team du jour -->
+        <div class="strava-team-row">
+          <span class="strava-section-label">Attelage du jour</span>
+          <button class="text-button" id="toggle-dog-picker-record">Modifier ✏️</button>
+        </div>
+        <div class="sled-diagram" id="gps-sled-diagram"></div>
+        <section class="dog-picker hidden" id="dog-picker-record" data-list="dogPicker" style="margin:8px 16px 4px"></section>
+
+        <!-- Sélecteur engin -->
+        <div class="engin-selector-row">
+          <span class="strava-section-label">Engin</span>
+          <div class="engin-btns" id="engin-btns">
+            <button class="engin-btn active" data-engin="Canicross" data-poids="0">🏃 Canicross</button>
+            <button class="engin-btn" data-engin="Trottinette" data-poids="18">🛴 Trott.</button>
+            <button class="engin-btn" data-engin="VTT" data-poids="18">🚵 VTT</button>
+            <button class="engin-btn" data-engin="Kart" data-poids="100"><img src="assets/icon-kart.svg" class="engin-icon" alt="kart"/> Kart</button>
+            <button class="engin-btn" data-engin="ATV" data-poids="200"><img src="assets/icon-atv.svg" class="engin-icon" alt="ATV"/> ATV</button>
+            <button class="engin-btn" data-engin="Traîneau" data-poids="18"><img src="assets/icon-traineau.svg" class="engin-icon" alt="traîneau"/> Traîneau</button>
+          </div>
         </div>
 
         <!-- Bilan post-sortie -->
