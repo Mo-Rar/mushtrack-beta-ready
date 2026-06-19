@@ -1473,7 +1473,7 @@ function render() {
   const wo = getNextWorkout();
   const woKm = wo.km || 5;
   const enginDefaultPace = { Canicross: 5.0, Trottinette: 2.4, VTT: 2.4, Traîneau: 3.0, Kart: 3.33, ATV: 3.33 };
-  const activeEngin = document.querySelector(".engin-btn.active")?.dataset.engin || "Canicross";
+  const activeEngin = state.selectedEngin || document.querySelector(".engin-btn.active")?.dataset.engin || "Canicross";
   // Calcul de l'allure réelle basée sur les sorties enregistrées avec cet engin
   const runsForEngin = (state.runs || []).filter(r =>
     (r.engin || "Canicross") === activeEngin && r.distance > 0 && r.duration > 0
@@ -5778,8 +5778,18 @@ document.querySelectorAll(".engin-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".engin-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
+    state.selectedEngin = btn.dataset.engin;
+    saveState();
   });
 });
+// Restaurer l'engin sélectionné au chargement
+if (state.selectedEngin) {
+  const saved = document.querySelector(`.engin-btn[data-engin="${state.selectedEngin}"]`);
+  if (saved) {
+    document.querySelectorAll(".engin-btn").forEach(b => b.classList.remove("active"));
+    saved.classList.add("active");
+  }
+}
 
 // Bouton "Modifier" attelage dans l'écran GPS
 document.querySelector("#toggle-dog-picker-record")?.addEventListener("click", () => {
