@@ -5577,6 +5577,16 @@ navButtons.forEach((button) => {
   button.addEventListener("click", () => showScreen(button.dataset.go));
 });
 
+// ── Sous-onglets Vous ───────────────────────────────────────────
+document.querySelectorAll(".vous-subtab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const target = btn.dataset.you;
+    document.querySelectorAll(".vous-subtab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    showScreen(target);
+  });
+});
+
 // ── Sélecteur fond de carte ─────────────────────────────────────
 const mapLayerBtn   = document.getElementById("map-layer-btn");
 const mapLayerPanel = document.getElementById("map-layer-panel");

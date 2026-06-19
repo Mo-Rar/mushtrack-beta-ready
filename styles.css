@@ -3889,6 +3889,36 @@ textarea {
 .bottom-nav button.active { color: #fc4c02; }
 .bottom-nav button.active svg { stroke-width: 2.4; }
 
+/* ── Écran Vous ─────────────────────────────────────────────── */
+.vous-subtab-bar {
+  display: flex;
+  border-bottom: 2px solid #f0f0f0;
+  margin: 0;
+}
+.vous-subtab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 14px 8px 12px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #999;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+  margin-bottom: -2px;
+}
+.vous-subtab.active {
+  color: #fc4c02;
+  border-bottom-color: #fc4c02;
+}
+.vous-subtab svg { opacity: 0.6; }
+.vous-subtab.active svg { opacity: 1; }
+
 /* ── Autres screens — elevation cards ──────────────────────── */
 .quick-stats article {
   border-radius: 16px; box-shadow: 0 3px 14px rgba(0,0,0,0.07);
