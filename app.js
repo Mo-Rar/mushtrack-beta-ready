@@ -6475,6 +6475,57 @@ document.getElementById("calc-ration-btn")?.addEventListener("click", () => {
     </div>
   `;
 });
+// ── Calculateur ration (panneau Vous) ────────────────────────────────────────
+document.getElementById("toggle-ration-calc-vous")?.addEventListener("click", () => {
+  const panel = document.getElementById("ration-calc-vous");
+  if (!panel) return;
+  panel.classList.toggle("hidden");
+  document.getElementById("toggle-ration-calc-vous").textContent =
+    panel.classList.contains("hidden") ? "Calculer ▾" : "Fermer ▴";
+  if (!panel.classList.contains("hidden")) {
+    const avgWeight = state.dogs.length
+      ? state.dogs.reduce((s, d) => s + Number(d.weight || 0), 0) / state.dogs.length : 0;
+    const monday = new Date(); monday.setDate(monday.getDate() - monday.getDay() + 1); monday.setHours(0,0,0,0);
+    const weekKm = Math.round(state.runs.filter(r => { const d = new Date(r.date); return d >= monday; }).reduce((s, r) => s + Number(r.km || 0), 0));
+    const weightEl = document.getElementById("ration-weight-vous");
+    const kmEl     = document.getElementById("ration-km-vous");
+    if (weightEl && !weightEl.value) weightEl.value = Math.round(avgWeight * 2) / 2;
+    if (kmEl     && !kmEl.value)     kmEl.value = weekKm;
+  }
+});
+
+document.getElementById("calc-ration-btn-vous")?.addEventListener("click", () => {
+  const weight  = parseFloat(document.getElementById("ration-weight-vous")?.value || 0);
+  const km      = parseFloat(document.getElementById("ration-km-vous")?.value || 0);
+  const density = parseFloat(document.getElementById("ration-density-vous")?.value || 360);
+  const result  = document.getElementById("ration-result-vous");
+  if (!weight || !result) return;
+  const season   = state.seasonMode || "winter";
+  const raceType = state.raceType   || "";
+  const { grams, totalKcal, maint, exercise, baseLabel } = calcRation(weight, km, density, season, raceType);
+  const intensity = km === 0 ? "repos complet" : km < 20 ? "faible activité" : km < 50 ? "activité modérée" : "haute performance";
+  result.classList.remove("hidden");
+  result.innerHTML = `
+    <div class="ration-output">
+      <div class="ration-main">
+        <span class="ration-label">Ration journalière recommandée</span>
+        <strong class="ration-value">${grams} g / jour</strong>
+        <small>${totalKcal} kcal/jour · ${intensity}</small>
+      </div>
+      <div class="ration-breakdown">
+        <span>🏠 Maintenance</span><span>${maint} kcal</span>
+        <span>🏃 Exercice</span><span>${exercise} kcal</span>
+        <span style="grid-column:1/-1;font-size:0.75rem;color:#888;margin-top:4px">${baseLabel}</span>
+      </div>
+      ${state.dogs.length > 1 ? `
+      <div class="ration-team">
+        <strong>Pour tout l'attelage (${state.dogs.length} chiens)</strong>
+        <span>${Math.round(grams * state.dogs.length / 100) * 100} g/jour total</span>
+      </div>` : ""}
+      <p class="ration-note">⚠️ Indicatif uniquement. Ajuste selon l'état corporel et consulte ton vétérinaire.</p>
+    </div>
+  `;
+});
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Mode Coach ───────────────────────────────────────────────────────────────

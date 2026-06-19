@@ -1483,12 +1483,15 @@ function render() {
     const wind = wx.windspeed ?? wx.wind ?? 0;
     bindText("dashWeatherWind", `Vent ${wind < 10 ? "faible" : wind < 25 ? "modéré" : "fort"}`);
     const temp = wx.temperature ?? wx.temp ?? 15;
+    const groundLabel = temp < -2 ? "Sol enneigé" : temp < 2 ? "Sol gelé" : "Sol sec";
+    bindText("dashWeatherGround", groundLabel);
     const condLabel = temp < -5 ? "Froid intense" : temp < 5 ? "Conditions froides" : temp < 20 ? "Conditions idéales" : "Chaud";
     bindText("dashWeatherCond", condLabel);
     bindText("dashWeatherCondClass", temp >= 5 && temp < 20 ? "green" : "orange");
   } else {
     bindText("dashWeatherTemp", "—");
     bindText("dashWeatherWind", "—");
+    bindText("dashWeatherGround", "—");
     bindText("dashWeatherCond", "Météo non chargée");
   }
 
@@ -1737,15 +1740,15 @@ function attachLongPress(element, callback) {
 }
 
 function renderDogs() {
-  const list = document.querySelector('[data-list="dogs"]');
-  if (!list) return;
+  const lists = document.querySelectorAll('[data-list="dogs"]');
+  if (!lists.length) return;
 
-  list.innerHTML = state.dogs.map((dog) => {
+  const html = state.dogs.map((dog) => {
     const load = getDogRecentKm(dog.id);
     const readiness = getDogReadiness(dog);
     const photoHtml = dog.photoDataUrl
       ? `<img src="${dog.photoDataUrl}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #fc4c02" alt="${dog.name}" />`
-      : `<div style="width:44px;height:44px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">🐕</div>`;
+      : `<img src="assets/dog-placeholder.png" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="chien" />`;
     return `
     <article class="dog-card ${readiness.level}" data-open-dog="${dog.id}">
       <div style="display:flex;align-items:center;gap:12px">
@@ -1765,29 +1768,30 @@ function renderDogs() {
     </article>
   `}).join("");
 
-  list.querySelectorAll("[data-open-dog]").forEach((card) => {
-    card.addEventListener("click", () => {
-      if (card.classList.contains("show-actions")) return;
-      activeDogId = card.dataset.openDog;
-      showScreen("dog-detail");
+  lists.forEach(list => {
+    list.innerHTML = html || `<p class="empty-state">Aucun chien enregistré.</p>`;
+    list.querySelectorAll("[data-open-dog]").forEach((card) => {
+      card.addEventListener("click", () => {
+        if (card.classList.contains("show-actions")) return;
+        activeDogId = card.dataset.openDog;
+        showScreen("dog-detail");
+      });
+      attachLongPress(card, () => {
+        document.querySelectorAll(".dog-card.show-actions").forEach(c => c.classList.remove("show-actions"));
+        card.classList.add("show-actions");
+      });
     });
-    attachLongPress(card, () => {
-      document.querySelectorAll(".dog-card.show-actions").forEach(c => c.classList.remove("show-actions"));
-      card.classList.add("show-actions");
+    list.querySelectorAll("[data-edit-dog]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        editDog(button.dataset.editDog);
+      });
     });
-  });
-
-  list.querySelectorAll("[data-edit-dog]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      editDog(button.dataset.editDog);
-    });
-  });
-
-  list.querySelectorAll("[data-delete-dog]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      deleteDog(button.dataset.deleteDog);
+    list.querySelectorAll("[data-delete-dog]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        deleteDog(button.dataset.deleteDog);
+      });
     });
   });
 }
@@ -1994,7 +1998,7 @@ function renderDogProfile() {
         <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
           ${dog.photoDataUrl
             ? `<img src="${dog.photoDataUrl}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:3px solid rgba(255,255,255,0.4)" alt="${dog.name}" />`
-            : `<div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0">🐕</div>`}
+            : `<img src="assets/dog-placeholder.png" style="width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:3px solid rgba(255,255,255,0.4)" alt="chien" />`}
           <div>
             <span>${dog.role}</span>
             <strong>${Math.round(dog.km)} km saison</strong>
@@ -2624,6 +2628,15 @@ function openRunDetail(index) {
   document.getElementById("rd-duration").textContent = h > 0 ? `${h}h${String(m).padStart(2,"0")}` : `${m} min`;
 
   // Infos
+  const enginEl = document.getElementById("rd-engin");
+  if (enginEl) {
+    const poids = run.enginPoids ?? 0;
+    const nbChiens = (run.team?.length) || 1;
+    const chargeIndiv = run.engin && run.engin !== "Canicross" ? Math.round((poids + 75) / nbChiens) : 0;
+    enginEl.textContent = run.engin || "Canicross" + (chargeIndiv > 0 ? ` · ${chargeIndiv} kg/chien` : "");
+    if (run.engin && run.engin !== "Canicross") enginEl.textContent = `${run.engin} · ${chargeIndiv} kg/chien`;
+    else enginEl.textContent = "Canicross";
+  }
   document.getElementById("rd-weather").textContent = run.weather || "—";
   document.getElementById("rd-energy").textContent = run.energy ? run.energy + " / 5" : "—";
   document.getElementById("rd-recovery").textContent = run.recovery || "—";
@@ -2673,7 +2686,7 @@ function openRunDetail(index) {
 }
 
 // Boutons écran détail
-document.getElementById("run-detail-back")?.addEventListener("click", () => navigateTo("record"));
+document.getElementById("run-detail-back")?.addEventListener("click", () => showScreen("record"));
 document.getElementById("run-detail-delete")?.addEventListener("click", () => {
   if (_runDetailIndex === null) return;
   if (!confirm("Supprimer cette activité ?")) return;
@@ -4592,17 +4605,17 @@ function renderAdminPanel() {
 const EVENT_ICONS = { veto:"🏥", osteo:"💆", sortie:"🐕", entrainement:"🏃", materiel:"🛒", course:"🏁", autre:"📌", race:"🏁" };
 
 function renderAgenda() {
-  const list = document.querySelector('[data-list="agenda"]');
-  if (!list) return;
+  const lists = document.querySelectorAll('[data-list="agenda"]');
+  if (!lists.length) return;
 
   const items = [...state.agenda].sort((a, b) => new Date(a.date) - new Date(b.date));
 
   if (items.length === 0) {
-    list.innerHTML = `<p class="empty-state">Agenda vide — ajoute un événement avec + ou valide une course dans l'onglet Course.</p>`;
+    lists.forEach(l => { l.innerHTML = `<p class="empty-state">Agenda vide — ajoute un événement avec + ou valide une course dans l'onglet Course.</p>`; });
     return;
   }
 
-  list.innerHTML = items.map((item) => {
+  const agendaHtml = items.map((item) => {
     const days = daysUntil(item.date);
     const status = days < 0 ? "Passé" : days === 0 ? "Aujourd'hui !" : `Dans ${days} jour${days > 1 ? "s" : ""}`;
     const isRace = item.kind === "race" || item.sourceId;
@@ -4670,6 +4683,10 @@ function renderAgenda() {
       </article>
     `;
   }).join("");
+
+  lists.forEach(list => { list.innerHTML = agendaHtml; });
+
+  lists.forEach(list => {
 
   // Modifier
   list.querySelectorAll("[data-agenda-edit]").forEach(btn => {
@@ -4831,6 +4848,8 @@ function renderAgenda() {
       }
     });
   });
+
+  }); // fin lists.forEach
 }
 
 function renderOpenRuns() {
@@ -5160,9 +5179,30 @@ function initMap(lat = 46.8182, lon = 8.2275) {
 
   map = L.map("map").setView([lat, lon], 13);
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "OpenStreetMap"
-  }).addTo(map);
+  const MAP_LAYERS = {
+    osm:       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }),
+    satellite: L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, attribution: "© Esri" }),
+    topo:      L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { maxZoom: 17, attribution: "© OpenTopoMap" }),
+    dark:      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { maxZoom: 19, subdomains: "abcd", attribution: "© CartoDB" })
+  };
+
+  let activeLayer = MAP_LAYERS.osm;
+  activeLayer.addTo(map);
+
+  document.querySelectorAll(".map-layer-opt").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.layer;
+      if (!MAP_LAYERS[key]) return;
+      map.removeLayer(activeLayer);
+      activeLayer = MAP_LAYERS[key];
+      activeLayer.addTo(map);
+      document.querySelectorAll(".map-layer-opt").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      layerPanel.style.display = "none";
+    });
+  });
+
+  document.addEventListener("click", () => { if (layerPanel) layerPanel.style.display = "none"; });
 
   marker = L.marker([lat, lon]).addTo(map);
 
@@ -5258,8 +5298,34 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs) {
   const hours = seconds / 3600;
   const calcSpeed = hours > 0 ? distance / hours : 0;
   const displaySpeed = gpsSpeedMs && gpsSpeedMs > 0 ? gpsSpeedMs * 3.6 : calcSpeed;
-  distanceEl.textContent = distance.toFixed(2);
-  speedEl.textContent = displaySpeed.toFixed(1);
+  updateGpsDisplay(distance, displaySpeed);
+}
+
+function updateGpsDisplay(distKm, speedKmh) {
+  const useMi   = state.gpsUnitMi  || false;
+  const usePace = state.gpsSpeedPace || false;
+  const dist    = useMi ? distKm * 0.621371 : distKm;
+  distanceEl.textContent = dist.toFixed(2);
+  document.querySelectorAll(".gps-dist-unit").forEach(el => el.textContent = useMi ? "mi" : "km");
+
+  if (usePace) {
+    const paceEl = document.querySelector("#pace");
+    const paceUnitEl = document.querySelector("#pace-unit");
+    const paceLabel = document.querySelector("#pace-label");
+    if (speedKmh > 0.5 && distKm > 0) {
+      const minPerUnit = useMi ? (1 / (speedKmh * 0.621371)) * 60 : (1 / speedKmh) * 60;
+      const pMin = Math.floor(minPerUnit);
+      const pSec = Math.round((minPerUnit - pMin) * 60);
+      if (paceEl) paceEl.textContent = `${pMin}:${String(pSec).padStart(2,"0")}`;
+      if (paceUnitEl) paceUnitEl.textContent = useMi ? "min/mi" : "min/km";
+    }
+    speedEl.textContent = "—";
+    if (paceLabel) paceLabel.textContent = "Allure";
+  } else {
+    const spd = useMi ? speedKmh * 0.621371 : speedKmh;
+    speedEl.textContent = spd.toFixed(1);
+    document.querySelectorAll(".gps-speed-unit").forEach(el => el.textContent = useMi ? "mph" : "km/h");
+  }
 }
 
 async function startGPS() {
@@ -5360,13 +5426,24 @@ function toggleRecording() {
   timer = setInterval(() => {
     seconds += 1;
     durationEl.textContent = formatDuration(seconds);
-    // Allure (pace) en min/km
     const paceEl = document.querySelector("#pace");
-    if (paceEl && distance > 0) {
-      const minPerKm = seconds / 60 / distance;
-      const pMin = Math.floor(minPerKm);
-      const pSec = Math.round((minPerKm - pMin) * 60);
-      paceEl.textContent = `${pMin}:${String(pSec).padStart(2, "0")}`;
+    const paceUnitEl = document.querySelector("#pace-unit");
+    const usePace = state.gpsSpeedPace || false;
+    const useMi   = state.gpsUnitMi   || false;
+    if (usePace) {
+      // Afficher allure min/km ou min/mi
+      if (paceEl && distance > 0) {
+        const distUnit = useMi ? distance * 0.621371 : distance;
+        const minPerUnit = (seconds / 60) / distUnit;
+        const pMin = Math.floor(minPerUnit);
+        const pSec = Math.round((minPerUnit - pMin) * 60);
+        paceEl.textContent = `${pMin}:${String(pSec).padStart(2, "0")}`;
+        if (paceUnitEl) paceUnitEl.textContent = useMi ? "min/mi" : "min/km";
+      }
+    } else {
+      // Afficher km/h ou mph — vitesse calculée depuis distance/temps
+      if (paceEl) paceEl.textContent = "--:--";
+      if (paceUnitEl) paceUnitEl.textContent = useMi ? "mph" : "km/h";
     }
   }, 1000);
 
@@ -5465,6 +5542,7 @@ function saveCurrentRun() {
   const temp = typeof state.planWeather === "object" && state.planWeather
     ? state.planWeather.temperature ?? null
     : null;
+  const activeEnginBtn = document.querySelector(".engin-btn.active");
   const run = {
     date: new Date().toISOString().slice(0, 10),
     type: document.querySelector("#runType").value,
@@ -5478,7 +5556,9 @@ function saveCurrentRun() {
     recovery: document.querySelector("#recovery").value,
     paws: document.querySelector("#paw-check").checked,
     hydrated: document.querySelector("#hydrated").checked,
-    notes: document.querySelector("#notes").value
+    notes: document.querySelector("#notes").value,
+    engin: activeEnginBtn?.dataset.engin || "Canicross",
+    enginPoids: Number(activeEnginBtn?.dataset.poids || 0)
   };
 
   state.runs.unshift(run);
@@ -5502,6 +5582,74 @@ function saveCurrentRun() {
 
 navButtons.forEach((button) => {
   button.addEventListener("click", () => showScreen(button.dataset.go));
+});
+
+// ── Sous-onglets Vous ───────────────────────────────────────────
+document.querySelectorAll(".vous-subtab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const target = btn.dataset.you;
+    document.querySelectorAll(".vous-subtab").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".vous-panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    const panel = document.getElementById("vous-panel-" + target);
+    if (panel) panel.classList.add("active");
+  });
+});
+
+// ── Sélecteur fond de carte ─────────────────────────────────────
+const mapLayerBtn   = document.getElementById("map-layer-btn");
+const mapLayerPanel = document.getElementById("map-layer-panel");
+
+mapLayerBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  mapLayerPanel.style.display = mapLayerPanel.style.display === "none" ? "block" : "none";
+});
+mapLayerPanel?.addEventListener("click", e => e.stopPropagation());
+
+// ── Panneau unités GPS ──────────────────────────────────────────
+const gpsUnitBtn   = document.getElementById("gps-unit-btn");
+const gpsUnitPanel = document.getElementById("gps-unit-panel");
+
+gpsUnitBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  gpsUnitPanel.style.display = gpsUnitPanel.style.display === "none" ? "block" : "none";
+});
+document.addEventListener("click", () => {
+  if (gpsUnitPanel) gpsUnitPanel.style.display = "none";
+});
+gpsUnitPanel?.addEventListener("click", e => e.stopPropagation());
+
+function applyGpsUnitUI() {
+  const usePace = state.gpsSpeedPace || false;
+  const useMi   = state.gpsUnitMi   || false;
+  // Labels unités
+  const paceUnit = document.getElementById("pace-unit");
+  const avgLabel = document.getElementById("avg-label");
+  const speedUnit = document.querySelector(".gps-speed-unit");
+  if (paceUnit)  paceUnit.textContent = usePace ? (useMi ? "min/mi" : "min/km") : (useMi ? "mph" : "km/h");
+  if (avgLabel)  avgLabel.textContent = usePace ? "Moy. allure" : "Moy. vitesse";
+  if (speedUnit) speedUnit.textContent = useMi ? "mph" : "km/h";
+  document.querySelectorAll(".gps-dist-unit").forEach(el => el.textContent = useMi ? "mi" : "km");
+  // Boutons actifs
+  document.getElementById("unit-km")?.classList.toggle("active", !useMi);
+  document.getElementById("unit-mi")?.classList.toggle("active",  useMi);
+  document.getElementById("unit-kmh")?.classList.toggle("active", !usePace);
+  document.getElementById("unit-pace")?.classList.toggle("active",  usePace);
+}
+
+document.getElementById("unit-km")?.addEventListener("click",   () => { state.gpsUnitMi = false;  saveState(); applyGpsUnitUI(); });
+document.getElementById("unit-mi")?.addEventListener("click",   () => { state.gpsUnitMi = true;   saveState(); applyGpsUnitUI(); });
+document.getElementById("unit-kmh")?.addEventListener("click",  () => { state.gpsSpeedPace = false; saveState(); applyGpsUnitUI(); });
+document.getElementById("unit-pace")?.addEventListener("click", () => { state.gpsSpeedPace = true;  saveState(); applyGpsUnitUI(); });
+
+applyGpsUnitUI();
+
+// Sélecteur engin
+document.querySelectorAll(".engin-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".engin-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+  });
 });
 
 // Bouton "Modifier" attelage dans l'écran GPS
@@ -5742,10 +5890,21 @@ const coachQuestion = document.querySelector("#coach-question");
 
 document.querySelector("#open-coach-btn")?.addEventListener("click", () => {
   coachModal.classList.remove("hidden");
-  // Réinitialise si pas encore de résultat
+  document.getElementById("coach-question-row")?.classList.add("hidden");
+  document.getElementById("coach-modal-title").textContent = "Analyse complète";
   if (!coachResult.dataset.hasResult) {
     coachResult.innerHTML = buildCoachWelcome();
+    requestCoachAnalysis();
   }
+});
+
+document.querySelector("#open-coach-question-btn")?.addEventListener("click", () => {
+  coachModal.classList.remove("hidden");
+  document.getElementById("coach-question-row")?.classList.remove("hidden");
+  document.getElementById("coach-modal-title").textContent = "Poser une question";
+  coachResult.innerHTML = "";
+  delete coachResult.dataset.hasResult;
+  setTimeout(() => document.getElementById("coach-question")?.focus(), 100);
 });
 
 document.querySelector("#coach-modal-close")?.addEventListener("click", () => {
@@ -5826,6 +5985,19 @@ function buildLocalCoachReport() {
   const daysLeft  = raceDate ? daysUntil(raceDate) : null;
   const level     = state.profile?.level || "Amateur";
 
+  // ── Engins utilisés ──
+  const ENGIN_POIDS = { "Canicross": 0, "Trottinette": 18, "VTT": 18, "Kart": 100, "ATV": 200, "Traîneau": 18 };
+  const enginStats = {};
+  runs.forEach(r => {
+    const engin = r.engin || "Canicross";
+    const poids = r.enginPoids ?? ENGIN_POIDS[engin] ?? 0;
+    if (!enginStats[engin]) enginStats[engin] = { count: 0, km: 0, poids };
+    enginStats[engin].count++;
+    enginStats[engin].km += Number(r.km || 0);
+  });
+  const enginPrincipal = Object.entries(enginStats).sort((a, b) => b[1].km - a[1].km)[0];
+  const chargePrincipale = enginPrincipal ? enginPrincipal[1].poids : 0;
+
   // ── Statistiques de base ──
   const totalKm     = runs.reduce((s, r) => s + Number(r.km || 0), 0);
   const runCount    = runs.length;
@@ -5868,6 +6040,32 @@ function buildLocalCoachReport() {
     evalColor = "🟠";
   }
 
+  // ── Charge de traction par chien ──
+  // Charge totale = poids engin + musher (75 kg sauf canicross où le musher court)
+  const POIDS_MUSHER = 75;
+  function chargeParChien(run) {
+    const engin = run.engin || "Canicross";
+    const poidsEngin = run.enginPoids ?? ENGIN_POIDS[engin] ?? 0;
+    const poidsTotal = engin === "Canicross" ? 0 : poidsEngin + POIDS_MUSHER;
+    const nbChiens = (run.team || []).length || 1;
+    return Math.round(poidsTotal / nbChiens);
+  }
+  const chargesMoyennes = runs.map(r => chargeParChien(r));
+  const chargeMoyGlobale = chargesMoyennes.length > 0 ? Math.round(chargesMoyennes.reduce((a,b)=>a+b,0)/chargesMoyennes.length) : 0;
+  const chargeMax = chargesMoyennes.length > 0 ? Math.max(...chargesMoyennes) : 0;
+  // Charge par chien pour les 4 dernières semaines
+  const charge4w = runs4w.map(r => chargeParChien(r));
+  const chargeMoy4w = charge4w.length > 0 ? Math.round(charge4w.reduce((a,b)=>a+b,0)/charge4w.length) : 0;
+
+  // Seuils : >50 kg/chien = charge lourde, >25 = charge modérée, sinon légère
+  function niveauCharge(kg) { return kg > 50 ? "lourde" : kg > 25 ? "modérée" : kg > 0 ? "légère" : "nulle (canicross)"; }
+  function conseildRecupCharge(kg) {
+    if (kg > 50) return "Avec une charge lourde (quad), les tendons et épaules sont fortement sollicités. Prévoir 48h de récupération entre deux séances intenses.";
+    if (kg > 25) return "Charge modérée (kart) : les chiens travaillent significativement. Alterner avec des sorties légères ou du canicross.";
+    if (kg > 0)  return "Charge légère (trott./vélo/traîneau) : équivalent à un travail d'endurance standard. Bien géré.";
+    return "Canicross : pas de charge mécanique. Excellent pour la vitesse et la condition cardio.";
+  }
+
   // ── Section 2 : Tendances ──
   const trends = [];
   if (runCount >= 3) {
@@ -5881,13 +6079,17 @@ function buildLocalCoachReport() {
     }
   }
   if (avgSpeed > 0) {
-    if (avgSpeed < 12) trends.push("🐢 Vitesse moyenne basse (" + avgSpeed.toFixed(1) + " km/h) — normal en endurance, mais veille à intégrer des sorties plus dynamiques.");
-    else if (avgSpeed >= 16) trends.push("⚡ Bonne vitesse moyenne (" + avgSpeed.toFixed(1) + " km/h) — pense à équilibrer avec des sorties longues et lentes.");
-    else trends.push("✅ Vitesse moyenne correcte : " + avgSpeed.toFixed(1) + " km/h.");
+    if (avgSpeed < 12) trends.push(`🐢 Vitesse moyenne basse (${avgSpeed.toFixed(1)} km/h)${chargeMoyGlobale > 25 ? ` — compréhensible avec une charge ${niveauCharge(chargeMoyGlobale)}, mais intègre des sorties canicross ou trottinette pour travailler la vitesse.` : " — normal en endurance, mais intègre des sorties plus dynamiques."}`);
+    else if (avgSpeed >= 16) trends.push(`⚡ Bonne vitesse moyenne (${avgSpeed.toFixed(1)} km/h)${chargeMoyGlobale > 50 ? " — remarquable avec la charge quad !" : ""} — équilibre avec des sorties longues et lentes.`);
+    else trends.push(`✅ Vitesse moyenne correcte : ${avgSpeed.toFixed(1)} km/h.`);
   }
   if (avgEnergy !== null) {
-    if (avgEnergy < 3) trends.push("😴 Énergie moyenne faible (" + avgEnergy.toFixed(1) + "/5) — les chiens donnent des signes de fatigue. Augmente les jours de repos.");
-    else if (avgEnergy >= 4) trends.push("💪 Énergie des chiens au beau fixe (" + avgEnergy.toFixed(1) + "/5) — attelage en forme.");
+    if (avgEnergy < 3) trends.push(`😴 Énergie moyenne faible (${avgEnergy.toFixed(1)}/5)${chargeMoyGlobale > 50 ? " — la charge quad est très exigeante, augmente les jours de repos à 48-72h." : " — signes de fatigue. Augmente les jours de repos."}`);
+    else if (avgEnergy >= 4) trends.push(`💪 Énergie des chiens au beau fixe (${avgEnergy.toFixed(1)}/5) — attelage en forme.`);
+  }
+  // Tendance charge
+  if (enginPrincipal) {
+    trends.push(`🛠️ Charge moy. par chien : <strong>${chargeMoy4w > 0 ? chargeMoy4w + " kg" : "nulle"}</strong> (${enginPrincipal[0]}, ${niveauCharge(chargePrincipale)}) — ${conseildRecupCharge(chargePrincipale)}`);
   }
   if (runs4w.length < 3) trends.push("📅 Moins de 3 sorties sur 4 semaines — la régularité est la clé pour progresser.");
   if (trends.length === 0) trends.push("Pas encore assez de données pour analyser les tendances.");
@@ -5897,17 +6099,25 @@ function buildLocalCoachReport() {
 
   // ── Section 4 : Chiens ──
   const dogAdvice = [];
+  const nbChiensAttelage = (state.selectedDogIds || []).length || dogs.length || 1;
   if (dogs.length === 0) {
     dogAdvice.push("Aucun chien enregistré. Ajoute tes chiens dans l'onglet Chiens pour des conseils personnalisés.");
   } else {
+    // Conseil global charge / nb chiens
+    if (enginPrincipal && chargePrincipale > 0) {
+      const chargeIndiv = Math.round(chargePrincipale / nbChiensAttelage);
+      dogAdvice.push(`⚖️ Avec ${nbChiensAttelage} chien(s) et un ${enginPrincipal[0]} (${chargePrincipale} kg), chaque chien tire <strong>${chargeIndiv} kg</strong> — charge ${niveauCharge(chargeIndiv)} par individu.`);
+      if (chargeIndiv > 40) dogAdvice.push("🔴 Charge individuelle élevée : surveille particulièrement les épaules, poignets et tendons après chaque sortie. Temps de récupération : 48–72h minimum.");
+      else if (chargeIndiv > 20) dogAdvice.push("🟡 Charge individuelle modérée : surveille l'appétit et la démarche le lendemain. Un jour de repos entre deux séances est recommandé.");
+    }
     dogs.forEach((dog) => {
       const age = Number(dog.age || 0);
       const sig = dog.healthSignal || "ok";
-      if (age >= 8) dogAdvice.push(`🐕 ${dog.name} (${age} ans) : chien sénior — réduis les sorties longues, surveille les articulations et augmente la récupération.`);
-      else if (age <= 1) dogAdvice.push(`🐕 ${dog.name} (${age} an) : jeune chien — limite à 20-30 min par sortie, pas de longue distance avant 18 mois.`);
-      if (sig === "fatigue" || sig === "blessure") dogAdvice.push(`⚠️ ${dog.name} signalé en ${sig} — repos obligatoire, consulte un vétérinaire si ça dure.`);
+      if (age >= 8) dogAdvice.push(`🐕 ${dog.name} (${age} ans) : chien sénior — réduis les sorties longues${chargePrincipale > 50 ? ", évite le quad avec un sénior" : ""}. Surveille les articulations.`);
+      else if (age <= 1) dogAdvice.push(`🐕 ${dog.name} (${age} an) : jeune chien — limite à 20-30 min${chargePrincipale > 25 ? ", pas de kart/quad avant 18 mois" : ""}. Les articulations ne sont pas encore ossifiées.`);
+      if (sig === "fatigue" || sig === "blessure") dogAdvice.push(`⚠️ ${dog.name} signalé en ${sig} — repos obligatoire${chargePrincipale > 0 ? ", pas de sortie avec charge tant que non rétabli" : ""}. Consulte un vétérinaire si ça dure.`);
     });
-    if (dogAdvice.length === 0) dogAdvice.push("Chiens dans de bonnes conditions. Continue à surveiller leur énergie et leur appétit après chaque sortie.");
+    if (dogAdvice.length === 0 || (dogAdvice.length === 1 && dogAdvice[0].startsWith("⚖️"))) dogAdvice.push("Chiens dans de bonnes conditions. Continue à surveiller leur énergie et leur appétit après chaque sortie.");
   }
 
   // ── Section 5 : Actions prioritaires ──
@@ -5919,21 +6129,26 @@ function buildLocalCoachReport() {
     if (runs1w.length === 0) actions.push("Aucune sortie cette semaine — reprends dès que possible avec une sortie facile.");
     if (daysLeft !== null && daysLeft <= 14 && daysLeft > 0) actions.push(`Course dans ${daysLeft} jours — réduction du volume à 50%, sorties courtes et vives uniquement.`);
     if (dogs.some((d) => d.healthSignal === "fatigue" || d.healthSignal === "blessure")) actions.push("Mettre au repos les chiens signalés fatigués ou blessés avant toute prochaine sortie.");
+    // Conseil engin si charge lourde
+    if (chargeMoyGlobale > 50) actions.push(`Quad (200 kg) utilisé régulièrement : alterner avec des sorties trottinette ou canicross pour laisser récupérer les tendons.`);
+    else if (chargeMoyGlobale > 25) actions.push(`Kart (100 kg) : bien équilibrer avec des sorties légères. 1 sortie lourde pour 2 sorties légères est un bon ratio.`);
     if (actions.length < 3 && avgSpeed > 0 && avgSpeed < 12) actions.push("Intègre une sortie avec des intervals courts (3 × 3 min rapides) pour améliorer la vitesse.");
-    if (actions.length < 3) actions.push("Maintiens la régularité : 3 à 4 sorties par semaine est plus efficace que 1 longue sortie par semaine.");
+    if (actions.length < 3) actions.push("Maintiens la régularité : 3 à 4 sorties par semaine est plus efficace qu'une longue sortie par semaine.");
   }
 
-  // ── Section 6 : Alerte ──
+  // ── Section 6 : Alertes ──
   const alerts = [];
   if (daysLeft !== null && daysLeft < 0) alerts.push(`La date de course ${raceName} est dépassée. Mets à jour ta course objectif dans les Paramètres.`);
   if (weeklyRatio > 1.5) alerts.push(`Volume très élevé cette semaine (${km1w.toFixed(0)} km). Risque de surcharge — insère 2 jours de repos complets.`);
   if (runCount > 0 && runs.every((r) => !r.energy)) alerts.push("Pense à noter l'énergie de tes chiens après chaque sortie — ça permet de détecter la fatigue tôt.");
+  if (chargeMax > 50 && avgEnergy !== null && avgEnergy < 3) alerts.push("⚠️ Charge quad + énergie faible : combinaison à risque. Réduire le volume et la charge immédiatement.");
 
   // ── Rendu HTML ──
   return `
     <h4>🎯 Évaluation actuelle</h4>
     <p>${evalColor} ${evalNote}</p>
     <p><strong>${totalKm.toFixed(0)} km</strong> totaux · <strong>${runCount}</strong> sortie(s) · vitesse moy. <strong>${avgSpeed > 0 ? avgSpeed.toFixed(1) + " km/h" : "—"}</strong>${daysLeft !== null ? ` · <strong>${daysLeft > 0 ? "J-" + daysLeft : "Course passée"}</strong> avant ${raceName}` : ""}</p>
+    ${enginPrincipal ? `<p>🛠️ Engin principal : <strong>${enginPrincipal[0]}</strong>${chargePrincipale > 0 ? ` (${chargePrincipale} kg de charge)` : " (pas de charge)"}${Object.keys(enginStats).length > 1 ? ` · aussi : ${Object.keys(enginStats).filter(e => e !== enginPrincipal[0]).join(", ")}` : ""}</p>` : ""}
 
     <h4>📊 Analyse des tendances</h4>
     <ul>${trends.map((t) => `<li>${t}</li>`).join("")}</ul>
@@ -6238,6 +6453,57 @@ document.getElementById("calc-ration-btn")?.addEventListener("click", () => {
   const { grams, totalKcal, maint, exercise, baseLabel } = calcRation(weight, km, density, season, raceType);
   const intensity = km === 0 ? "repos complet" : km < 20 ? "faible activité" : km < 50 ? "activité modérée" : "haute performance";
 
+  result.classList.remove("hidden");
+  result.innerHTML = `
+    <div class="ration-output">
+      <div class="ration-main">
+        <span class="ration-label">Ration journalière recommandée</span>
+        <strong class="ration-value">${grams} g / jour</strong>
+        <small>${totalKcal} kcal/jour · ${intensity}</small>
+      </div>
+      <div class="ration-breakdown">
+        <span>🏠 Maintenance</span><span>${maint} kcal</span>
+        <span>🏃 Exercice</span><span>${exercise} kcal</span>
+        <span style="grid-column:1/-1;font-size:0.75rem;color:#888;margin-top:4px">${baseLabel}</span>
+      </div>
+      ${state.dogs.length > 1 ? `
+      <div class="ration-team">
+        <strong>Pour tout l'attelage (${state.dogs.length} chiens)</strong>
+        <span>${Math.round(grams * state.dogs.length / 100) * 100} g/jour total</span>
+      </div>` : ""}
+      <p class="ration-note">⚠️ Indicatif uniquement. Ajuste selon l'état corporel et consulte ton vétérinaire.</p>
+    </div>
+  `;
+});
+// ── Calculateur ration (panneau Vous) ────────────────────────────────────────
+document.getElementById("toggle-ration-calc-vous")?.addEventListener("click", () => {
+  const panel = document.getElementById("ration-calc-vous");
+  if (!panel) return;
+  panel.classList.toggle("hidden");
+  document.getElementById("toggle-ration-calc-vous").textContent =
+    panel.classList.contains("hidden") ? "Calculer ▾" : "Fermer ▴";
+  if (!panel.classList.contains("hidden")) {
+    const avgWeight = state.dogs.length
+      ? state.dogs.reduce((s, d) => s + Number(d.weight || 0), 0) / state.dogs.length : 0;
+    const monday = new Date(); monday.setDate(monday.getDate() - monday.getDay() + 1); monday.setHours(0,0,0,0);
+    const weekKm = Math.round(state.runs.filter(r => { const d = new Date(r.date); return d >= monday; }).reduce((s, r) => s + Number(r.km || 0), 0));
+    const weightEl = document.getElementById("ration-weight-vous");
+    const kmEl     = document.getElementById("ration-km-vous");
+    if (weightEl && !weightEl.value) weightEl.value = Math.round(avgWeight * 2) / 2;
+    if (kmEl     && !kmEl.value)     kmEl.value = weekKm;
+  }
+});
+
+document.getElementById("calc-ration-btn-vous")?.addEventListener("click", () => {
+  const weight  = parseFloat(document.getElementById("ration-weight-vous")?.value || 0);
+  const km      = parseFloat(document.getElementById("ration-km-vous")?.value || 0);
+  const density = parseFloat(document.getElementById("ration-density-vous")?.value || 360);
+  const result  = document.getElementById("ration-result-vous");
+  if (!weight || !result) return;
+  const season   = state.seasonMode || "winter";
+  const raceType = state.raceType   || "";
+  const { grams, totalKcal, maint, exercise, baseLabel } = calcRation(weight, km, density, season, raceType);
+  const intensity = km === 0 ? "repos complet" : km < 20 ? "faible activité" : km < 50 ? "activité modérée" : "haute performance";
   result.classList.remove("hidden");
   result.innerHTML = `
     <div class="ration-output">

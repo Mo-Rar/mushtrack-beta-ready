@@ -1122,7 +1122,28 @@
           <div class="vous-panel-toolbar">
             <button class="text-button" onclick="showScreen('dogs')">+ Ajouter</button>
           </div>
-          <section class="dog-list" data-list="dogs" style="padding:0 16px"></section>
+          <section class="dog-list" data-list="dogs" style="padding:0 16px;margin:0 0 8px"></section>
+          <!-- Calculateur de ration -->
+          <section class="section-heading spaced" style="margin-top:8px">
+            <h2>Ration alimentaire</h2>
+            <button class="text-button" id="toggle-ration-calc-vous" type="button">Calculer ▾</button>
+          </section>
+          <div class="ration-calc hidden" id="ration-calc-vous">
+            <div class="ration-inputs">
+              <label>Poids du chien (kg)<input id="ration-weight-vous" type="number" min="5" max="60" step="0.5" placeholder="25"/></label>
+              <label>Km cette semaine<input id="ration-km-vous" type="number" min="0" step="1" placeholder="0"/></label>
+              <label>Densité aliment (kcal/100g)
+                <select id="ration-density-vous">
+                  <option value="320">Bas (320 kcal/100g) — croquettes entrée gamme</option>
+                  <option value="360" selected>Moyen (360 kcal/100g) — standard musher</option>
+                  <option value="222">Élevé — viande Vom — 222 kcal/100g</option>
+                  <option value="480">Très élevé — 480 kcal/100g (haute performance)</option>
+                </select>
+              </label>
+            </div>
+            <button class="primary-button" id="calc-ration-btn-vous" type="button" style="width:100%;margin-top:10px">Calculer</button>
+            <div class="ration-result hidden" id="ration-result-vous"></div>
+          </div>
         </div>
         <div class="vous-panel" id="vous-panel-enregistrement">
           <div class="vous-panel-toolbar">
