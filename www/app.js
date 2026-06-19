@@ -3937,14 +3937,7 @@ function buildAlerts() {
   const context = getPlanContext();
   if (context.weatherRisk) alerts.push({ level: "danger", label: "Meteo", text: context.weatherRisk });
   if (context.daysToRace <= 7) alerts.push({ level: "info", label: "Course", text: "Course proche. Diminuer le volume, garder les chiens frais et verifier le materiel." });
-  // Alerte surcharge : règle des 10%
-  const now = Date.now();
-  const kmThisWeek = state.runs.filter(r => r.date && now - new Date(`${r.date}T12:00:00`).getTime() < 7*86400000).reduce((s,r) => s+(r.km||0), 0);
-  const kmLastWeek = state.runs.filter(r => { const age = now - new Date(`${r.date}T12:00:00`).getTime(); return r.date && age >= 7*86400000 && age < 14*86400000; }).reduce((s,r) => s+(r.km||0), 0);
-  if (kmLastWeek > 2 && kmThisWeek > kmLastWeek * 1.10) {
-    alerts.push({ level: "danger", label: "⚠️ Surcharge", text: `Volume cette semaine (${kmThisWeek.toFixed(1)} km) dépasse de plus de 10% la semaine précédente (${kmLastWeek.toFixed(1)} km). Risque de blessure — prévoir récupération.` });
-  }
-  return alerts.slice(0, 8);
+  return alerts.slice(0, 7);
 }
 
 function getDogRecentKm(id, days = 7) {
