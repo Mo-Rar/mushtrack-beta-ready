@@ -5060,7 +5060,15 @@ function renderRaceInterestSummary(race) {
   </div>`;
 }
 
+function requireProfile() {
+  if (state.profile?.name && state.profile.name.trim()) return true;
+  showSyncBadge("👤 Complète ton profil pour participer !");
+  setTimeout(() => showScreen("vous"), 1200);
+  return false;
+}
+
 async function toggleRaceInterest(id) {
+  if (!requireProfile()) return;
   const merged = mergeRaceSources([...remoteRaceCatalog, ...raceCatalog, ...state.missingRaceReports]);
   const race = merged.find((item) => item.id === id);
   const willBeInterested = !state.raceInterests[id];
@@ -5197,6 +5205,7 @@ function getReliabilityLabel(value) {
 }
 
 async function importRaceToAgenda(id) {
+  if (!requireProfile()) return;
   const race = mergeRaceSources([...remoteRaceCatalog, ...raceCatalog, ...state.missingRaceReports])
     .find((item) => item.id === id);
   if (!race || !race.date) return;
