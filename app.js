@@ -1,4 +1,4 @@
-// ── Supabase Auth ──────────────────────────────────────────────
+﻿// ── Supabase Auth ──────────────────────────────────────────────
 const SUPABASE_URL = "https://ipfnldjrpocceptavvaf.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwZm5sZGpycG9jY2VwdGF2dmFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDk0MTQsImV4cCI6MjA5NjYyNTQxNH0.FVkq0EooacG7lETDAwxJ-ArocxUYFVZVfhxdhyWFhrI";
 let supabase = null;
@@ -1067,7 +1067,254 @@ const TRANSLATIONS = {
     common_duration: "Durée",
     common_notes: "Notes",
     common_week: "semaines",
-    logout: "Déconnexion"
+    logout: "Déconnexion",
+    // --- Runs ---
+    run_duration_label: "Durée",
+    run_pace_label: "min/km",
+    run_speed_label: "Vitesse",
+    run_energy_label: "Énergie",
+    run_paws_ok: "Pattes OK",
+    run_paws_check: "Pattes à vérifier",
+    run_hydration_ok: "Hydratation OK",
+    run_hydration_low: "Hydratation à renforcer",
+    run_no_note: "Aucune note ajoutée.",
+    run_edit_btn: "Modifier",
+    run_delete_btn: "Supprimer",
+    run_empty: "Aucune sortie enregistrée.",
+    run_gps_short: "Trace GPS trop courte",
+    run_gps_miniature: "Trace GPS miniature",
+    // --- Dashboard ---
+    dash_no_run: "Aucune sortie enregistrée",
+    dash_last_run_today: "Dernière sortie : aujourd'hui 🟢",
+    dash_last_run_yesterday: "Dernière sortie : hier 🟢",
+    dash_last_run_days: "Dernière sortie il y a {n} jours",
+    dash_last_run_days_red: "Dernière sortie il y a {n} jours 🔴",
+    dash_last_run_days_yellow: "Dernière sortie il y a {n} jours 🟡",
+    dash_km_remaining: "{km} {unit} restants, environ {weekly} {unit} par semaine.",
+    dash_today: "Aujourd'hui !",
+    dash_selected_count: "{n} sélectionnés",
+    dash_no_dogs: "Aucun chien",
+    dash_add_dogs: "Ajoute tes chiens",
+    dash_team_ready: "Prêts ✅",
+    dash_team_ok: "En forme 🟡",
+    dash_team_watch: "Surveiller 🔴",
+    dash_dog_watch: "Surveiller",
+    dash_dog_rest: "Au repos",
+    dash_dog_good: "Bonne forme",
+    dash_dog_repos: "repos",
+    dash_weather_weak_wind: "Vent faible",
+    dash_weather_moderate_wind: "Vent modéré",
+    dash_weather_strong_wind: "Vent fort",
+    dash_weather_snow: "Sol enneigé",
+    dash_weather_frozen: "Sol gelé",
+    dash_weather_dry: "Sol sec",
+    dash_weather_very_cold: "Froid intense",
+    dash_weather_cold: "Conditions froides",
+    dash_weather_ideal: "Conditions idéales",
+    dash_weather_hot: "Chaud",
+    dash_weather_na: "Météo non chargée",
+    dash_streak_label: "jours",
+    dash_streak_great: "Garde le rythme !",
+    dash_streak_good: "Belle série !",
+    dash_streak_start: "C'est parti !",
+    dash_streak_go: "Lance-toi !",
+    dash_week_label: "Cette sem.",
+    dash_level_easy: "Facile",
+    dash_level_moderate: "Modéré",
+    dash_level_hard: "Difficile",
+    dash_load_low: "Faible",
+    dash_load_moderate: "Modéré",
+    dash_load_high: "Élevé",
+    dash_badges_label: "Badges",
+    dash_badges_obtained: "obtenus",
+    dash_hero_prepare: "Tu prépares {race} ({km} km) dans <strong>{days} jour{s}</strong>.",
+    dash_hero_past: "La course est passée — mets à jour ton objectif dans Paramètres.",
+    dash_hero_no_goal: "Configure ta course objectif dans Paramètres.",
+    dash_hero_team_pct: "Attelage prêt à <strong>{pct} %</strong> {emoji}.",
+    dash_hero_session: "Séance recommandée : <strong>{title}</strong>.",
+    // --- GPS status ---
+    gps_active: "GPS actif — ±{acc}m",
+    gps_searching_acc: "GPS: recherche précision (±{acc}m)…",
+    // --- Race ---
+    race_finished: "Terminée",
+    race_days_before: "J-{n}",
+    race_distance_variable: "Distance variable",
+    race_surface_variable: "Surface variable",
+    race_interested_btn: "Je suis intéressé",
+    race_interested_active: "⭐ Intéressé",
+    race_add_btn: "Ajouter",
+    race_participating_btn: "✓ Participe",
+    race_be_first: "Sois le premier à marquer ton intérêt pour cette course ! ⭐",
+    race_participating_label: "✓ Participe",
+    race_interested_label: "⭐ Intéressé",
+    race_pinned_label: "⭐ Mes courses sélectionnées",
+    race_count_singular: "course",
+    race_count_plural: "courses",
+    race_none_found: "Aucune course trouvée. Essaie une région plus large comme Europe, USA, Canada, Suède ou Amundsen.",
+    race_reliability_official: "Confirmée officielle",
+    race_reliability_calendar: "Calendrier public",
+    race_reliability_watch: "À surveiller",
+    race_reliability_user: "Signalée",
+    race_reliability_unknown: "À vérifier",
+    race_save_btn: "💾 Enregistrer",
+    // --- Agenda ---
+    agenda_empty: "Agenda vide — ajoute un événement avec + ou valide une course dans l'onglet Course.",
+    agenda_passed: "Passé",
+    agenda_today: "Aujourd'hui !",
+    agenda_in_days: "Dans {n} jour{s}",
+    agenda_no_title: "Sans titre",
+    agenda_event: "Événement",
+    agenda_result_label: "🏆 Résultat de course",
+    agenda_result_btn: "🏆 Résultat",
+    agenda_result_edit_btn: "✏️ Résultat",
+    agenda_edit_btn: "✏️ Modifier",
+    agenda_delete_btn: "🗑 Supprimer",
+    agenda_close_btn: "✖ Fermer",
+    agenda_save_btn: "💾 Enregistrer",
+    agenda_cancel_btn: "Annuler",
+    agenda_checklist_label: "☑️ Checklist pré-course",
+    // --- Dog profile ---
+    dog_no_note: "Aucune note pour ce chien.",
+    dog_km_season: "km saison",
+    dog_charge_label: "Charge individuelle",
+    dog_7days: "7 jours",
+    dog_30days: "30 jours",
+    dog_fatigue: "Fatigue",
+    dog_last_recovery: "Dernière bonne récupération il y a {n} jour{s}",
+    dog_birth: "Naissance",
+    dog_age: "Âge",
+    dog_age_years: "{n} ans",
+    dog_avg_energy: "Énergie moy.",
+    dog_recovery: "Récupération",
+    dog_harness: "Harnais",
+    dog_harness_na: "À noter",
+    dog_health_today: "État du jour",
+    dog_health_notebook: "Carnet santé",
+    dog_paws_ok: "Pattes OK",
+    dog_paws_check: "Pattes À vérifier",
+    dog_vigilance: "Point de vigilance",
+    dog_nothing: "Rien de particulier",
+    dog_vet_info: "Ajoute les infos véto, blessures ou repos.",
+    dog_vet_tracking: "Suivi véto : {info}",
+    dog_weight_evolution: "Évolution du poids",
+    dog_health_history: "Historique santé",
+    dog_no_event: "Aucun événement enregistré.",
+    dog_load_high: "Charge haute",
+    dog_load_ok: "Charge correcte",
+    dog_no_run: "Pas encore de sortie pour {name}.",
+    dog_km_week: "km cette semaine",
+    dog_weight_hint: "Modifie le poids pour voir l'évolution",
+    dog_weight_label: "Poids",
+    dog_fatigue_low: "Faible",
+    dog_fatigue_normal: "Normal",
+    dog_fatigue_high: "Élevé",
+    dog_fatigue_very_high: "Très élevé",
+    // --- Health events ---
+    health_overdue: "En retard de {n} j",
+    health_today: "Aujourd'hui !",
+    health_in_days: "Dans {n} jour{s}",
+    health_vaccin: "Vaccin",
+    health_vermifuge: "Vermifuge",
+    health_next_due: "Prochain rappel",
+    health_save_btn: "Enregistrer",
+    health_cancel_btn: "Annuler",
+    // --- Community/Feed ---
+    net_feed_empty: "Aucune activité partagée pour l'instant.\nSois le premier ! 🐕",
+    net_feed_error: "Erreur de chargement",
+    net_sharing: "Partage en cours…",
+    net_upload_photo: "Upload photo…",
+    net_unavailable: "⚠️ Réseau non disponible",
+    net_error: "❌ Erreur",
+    net_dog_count_s: "chien",
+    net_dog_count_p: "chiens",
+    net_activities: "activité",
+    net_activities_p: "activités",
+    // --- Coach ---
+    coach_ready: "Prêt à analyser ton entraînement",
+    coach_refresh: "🔄 Actualiser l'analyse",
+    coach_analyze_btn: "Analyser",
+    coach_local_free: "Coach MushTrack local · gratuit",
+    coach_deload_week: "📉 SEMAINE DÉCHARGE",
+    coach_weeks: "semaines",
+    coach_km_week: "km/sem cible",
+    coach_km_done: "km cette sem.",
+    coach_level_label: "Niveau",
+    coach_progress_label: "Progression",
+    coach_volume_4w: "Volume 4 semaines (km)",
+    coach_week_plan: "Plan de la semaine",
+    coach_tip: "Conseil du coach",
+    coach_dogs_watch: "Chiens à surveiller",
+    coach_monthly: "Rapport mensuel",
+    coach_weather_perf: "Météo & performance",
+    coach_no_run_month: "Aucune sortie ce mois-ci.",
+    coach_best_run: "meilleure sortie",
+    coach_recovery_avg: "récupération moy.",
+    coach_run_count_s: "sortie",
+    coach_run_count_p: "sorties",
+    coach_weather_data_low: "Pas encore assez de données.",
+    coach_weather_data_hint: "La température est enregistrée automatiquement à chaque sortie.",
+    coach_weather_runs_analyzed: "Km moyen par tranche de température — {n} sorties analysées",
+    coach_weather_best: "🎯 Meilleure condition : {range}°C à {end}°C ({avg} km en moyenne)",
+    coach_vet_vaccin: "Vaccin",
+    coach_vet_vermifuge: "Vermifuge",
+    coach_vet_overdue: "En retard de {n}j",
+    coach_vet_today: "Aujourd'hui !",
+    coach_vet_in_days: "Dans {n} jour{s}",
+    coach_deload_note: " Cette semaine est une semaine de décharge — volume réduit de 25% pour permettre la supercompensation.",
+    // --- Reminders ---
+    reminder_none: "Aucun rappel configuré.",
+    reminder_overdue: "En retard de {n} j",
+    reminder_today: "Aujourd'hui !",
+    reminder_tomorrow: "Demain",
+    reminder_in_days: "Dans {n} jour{s}",
+    reminder_repeat: "répète tous les {n} j",
+    // --- Sync badges ---
+    badge_data_reset: "⚠️ Données locales réinitialisées suite à une erreur",
+    badge_synced: "☁️ Données synchronisées depuis le cloud",
+    badge_race_deleted: "🗑️ Course supprimée",
+    badge_race_updated: "✅ Course mise à jour",
+    badge_complete_profile: "👤 Complète ton profil pour participer !",
+    badge_participation_cancelled: "🗑️ Participation annulée",
+    badge_participation_confirmed: "🏁 Participation confirmée !",
+    badge_agenda_modified: "✏️ Modifié",
+    badge_event_added: "✅ Événement ajouté",
+    // --- Team health ---
+    health_team_coach: "Décision coach",
+    health_team_team_ok: "Attelage du jour cohérent si la météo reste favorable.",
+    health_team_watch: "Attention attelage : {names} à surveiller.",
+    health_team_ready: "{n} prêt(s)",
+    health_team_dose: "{n} à doser",
+    health_team_rest: "{n} repos/surveillance",
+    health_team_empty: "Ajoute des chiens pour obtenir le tableau santé.",
+    // --- Dog loads ---
+    dog_load_high_label: "charge haute",
+    dog_load_low_label: "à remettre au travail",
+    dog_load_ok_label: "équilibre",
+    // --- Alerts ---
+    alert_none: "Aucune alerte. La charge semble bien répartie.",
+    // --- Map ---
+    map_start: "Départ",
+    map_finish: "Arrivée",
+    // --- Dog ---
+    dog_birth_na: "Date non renseignée",
+    // --- Coach welcome ---
+    coach_welcome_desc: "Je vais analyser tes <strong>{runs} sortie(s)</strong>, tes <strong>{dogs} chien(s)</strong> et tes <strong>{km} km</strong> enregistrés pour te donner un rapport détaillé vers ton objectif <strong>{race} {rkm} km</strong>.",
+    coach_welcome_li1: "Évaluation de ta condition actuelle",
+    coach_welcome_li2: "Plan d'entraînement 4 semaines personnalisé",
+    coach_welcome_li3: "Conseils spécifiques pour tes chiens",
+    coach_welcome_li4: "Actions prioritaires cette semaine",
+    coach_welcome_li5: "Alertes si quelque chose doit être corrigé",
+    coach_welcome_hint: "Analyse 100 % locale · gratuite · instantanée.",
+    // --- Settings ---
+    settings_no_race: "Aucune course",
+    settings_add_race: "Ajoute une course pour construire ta saison.",
+    run_select_dogs_hint: "Appuie sur Modifier ✏️ pour sélectionner tes chiens.",
+    coach_no_advice: "Aucun conseil dans cette catégorie.",
+    net_no_comments: "Aucun commentaire. Sois le premier !",
+    net_no_participant: "Aucun participant",
+    net_join_run: "Je participe",
+    net_leave_run: "Je ne participe plus",
+    net_no_open_run: "Aucune sortie ouverte. Crée une sortie pour trouver des personnes motivées près de chez toi."
   },
   en: {
     nav_dashboard: "Home",
@@ -1327,7 +1574,254 @@ const TRANSLATIONS = {
     common_duration: "Duration",
     common_notes: "Notes",
     common_week: "weeks",
-    logout: "Sign out"
+    logout: "Sign out",
+    // --- Runs ---
+    run_duration_label: "Duration",
+    run_pace_label: "min/km",
+    run_speed_label: "Speed",
+    run_energy_label: "Energy",
+    run_paws_ok: "Paws OK",
+    run_paws_check: "Paws to check",
+    run_hydration_ok: "Hydration OK",
+    run_hydration_low: "Hydration needs improvement",
+    run_no_note: "No note added.",
+    run_edit_btn: "Edit",
+    run_delete_btn: "Delete",
+    run_empty: "No run recorded yet.",
+    run_gps_short: "GPS trace too short",
+    run_gps_miniature: "GPS miniature trace",
+    // --- Dashboard ---
+    dash_no_run: "No run recorded",
+    dash_last_run_today: "Last run: today 🟢",
+    dash_last_run_yesterday: "Last run: yesterday 🟢",
+    dash_last_run_days: "Last run {n} days ago",
+    dash_last_run_days_red: "Last run {n} days ago 🔴",
+    dash_last_run_days_yellow: "Last run {n} days ago 🟡",
+    dash_km_remaining: "{km} {unit} remaining, about {weekly} {unit} per week.",
+    dash_today: "Today!",
+    dash_selected_count: "{n} selected",
+    dash_no_dogs: "No dogs",
+    dash_add_dogs: "Add your dogs",
+    dash_team_ready: "Ready ✅",
+    dash_team_ok: "In shape 🟡",
+    dash_team_watch: "Watch 🔴",
+    dash_dog_watch: "Monitor",
+    dash_dog_rest: "At rest",
+    dash_dog_good: "In good shape",
+    dash_dog_repos: "rest",
+    dash_weather_weak_wind: "Light wind",
+    dash_weather_moderate_wind: "Moderate wind",
+    dash_weather_strong_wind: "Strong wind",
+    dash_weather_snow: "Snow-covered ground",
+    dash_weather_frozen: "Frozen ground",
+    dash_weather_dry: "Dry ground",
+    dash_weather_very_cold: "Intense cold",
+    dash_weather_cold: "Cold conditions",
+    dash_weather_ideal: "Ideal conditions",
+    dash_weather_hot: "Hot",
+    dash_weather_na: "Weather not loaded",
+    dash_streak_label: "days",
+    dash_streak_great: "Keep it up!",
+    dash_streak_good: "Great streak!",
+    dash_streak_start: "Here we go!",
+    dash_streak_go: "Get started!",
+    dash_week_label: "This week",
+    dash_level_easy: "Easy",
+    dash_level_moderate: "Moderate",
+    dash_level_hard: "Hard",
+    dash_load_low: "Low",
+    dash_load_moderate: "Moderate",
+    dash_load_high: "High",
+    dash_badges_label: "Badges",
+    dash_badges_obtained: "earned",
+    dash_hero_prepare: "You're preparing {race} ({km} km) in <strong>{days} day{s}</strong>.",
+    dash_hero_past: "The race is over — update your goal in Settings.",
+    dash_hero_no_goal: "Set your target race in Settings.",
+    dash_hero_team_pct: "Team ready at <strong>{pct}%</strong> {emoji}.",
+    dash_hero_session: "Recommended session: <strong>{title}</strong>.",
+    // --- GPS status ---
+    gps_active: "GPS active — ±{acc}m",
+    gps_searching_acc: "GPS: searching precision (±{acc}m)…",
+    // --- Race ---
+    race_finished: "Finished",
+    race_days_before: "D-{n}",
+    race_distance_variable: "Variable distance",
+    race_surface_variable: "Variable surface",
+    race_interested_btn: "I'm interested",
+    race_interested_active: "⭐ Interested",
+    race_add_btn: "Add",
+    race_participating_btn: "✓ Participating",
+    race_be_first: "Be the first to mark your interest in this race! ⭐",
+    race_participating_label: "✓ Participating",
+    race_interested_label: "⭐ Interested",
+    race_pinned_label: "⭐ My selected races",
+    race_count_singular: "race",
+    race_count_plural: "races",
+    race_none_found: "No race found. Try a broader region like Europe, USA, Canada, Sweden or Amundsen.",
+    race_reliability_official: "Official confirmed",
+    race_reliability_calendar: "Public calendar",
+    race_reliability_watch: "To monitor",
+    race_reliability_user: "Reported",
+    race_reliability_unknown: "To verify",
+    race_save_btn: "💾 Save",
+    // --- Agenda ---
+    agenda_empty: "Empty agenda — add an event with + or confirm a race in the Race tab.",
+    agenda_passed: "Past",
+    agenda_today: "Today!",
+    agenda_in_days: "In {n} day{s}",
+    agenda_no_title: "No title",
+    agenda_event: "Event",
+    agenda_result_label: "🏆 Race result",
+    agenda_result_btn: "🏆 Result",
+    agenda_result_edit_btn: "✏️ Result",
+    agenda_edit_btn: "✏️ Edit",
+    agenda_delete_btn: "🗑 Delete",
+    agenda_close_btn: "✖ Close",
+    agenda_save_btn: "💾 Save",
+    agenda_cancel_btn: "Cancel",
+    agenda_checklist_label: "☑️ Pre-race checklist",
+    // --- Dog profile ---
+    dog_no_note: "No note for this dog.",
+    dog_km_season: "km season",
+    dog_charge_label: "Individual load",
+    dog_7days: "7 days",
+    dog_30days: "30 days",
+    dog_fatigue: "Fatigue",
+    dog_last_recovery: "Last good recovery {n} day{s} ago",
+    dog_birth: "Birth",
+    dog_age: "Age",
+    dog_age_years: "{n} years",
+    dog_avg_energy: "Avg. energy",
+    dog_recovery: "Recovery",
+    dog_harness: "Harness",
+    dog_harness_na: "To note",
+    dog_health_today: "Today's status",
+    dog_health_notebook: "Health notebook",
+    dog_paws_ok: "Paws OK",
+    dog_paws_check: "Paws to check",
+    dog_vigilance: "Watch point",
+    dog_nothing: "Nothing particular",
+    dog_vet_info: "Add vet info, injuries or rest notes.",
+    dog_vet_tracking: "Vet tracking: {info}",
+    dog_weight_evolution: "Weight evolution",
+    dog_health_history: "Health history",
+    dog_no_event: "No event recorded.",
+    dog_load_high: "High load",
+    dog_load_ok: "Good load",
+    dog_no_run: "No run yet for {name}.",
+    dog_km_week: "km this week",
+    dog_weight_hint: "Edit weight to see evolution",
+    dog_weight_label: "Weight",
+    dog_fatigue_low: "Low",
+    dog_fatigue_normal: "Normal",
+    dog_fatigue_high: "High",
+    dog_fatigue_very_high: "Very high",
+    // --- Health events ---
+    health_overdue: "Overdue by {n} d",
+    health_today: "Today!",
+    health_in_days: "In {n} day{s}",
+    health_vaccin: "Vaccine",
+    health_vermifuge: "Dewormer",
+    health_next_due: "Next reminder",
+    health_save_btn: "Save",
+    health_cancel_btn: "Cancel",
+    // --- Community/Feed ---
+    net_feed_empty: "No activity shared yet.\nBe the first! 🐕",
+    net_feed_error: "Loading error",
+    net_sharing: "Sharing…",
+    net_upload_photo: "Uploading photo…",
+    net_unavailable: "⚠️ Network unavailable",
+    net_error: "❌ Error",
+    net_dog_count_s: "dog",
+    net_dog_count_p: "dogs",
+    net_activities: "activity",
+    net_activities_p: "activities",
+    // --- Coach ---
+    coach_ready: "Ready to analyze your training",
+    coach_refresh: "🔄 Refresh analysis",
+    coach_analyze_btn: "Analyze",
+    coach_local_free: "Coach MushTrack local · free",
+    coach_deload_week: "📉 DELOAD WEEK",
+    coach_weeks: "weeks",
+    coach_km_week: "km/week target",
+    coach_km_done: "km this week",
+    coach_level_label: "Level",
+    coach_progress_label: "Progress",
+    coach_volume_4w: "4-week volume (km)",
+    coach_week_plan: "Weekly plan",
+    coach_tip: "Coach tip",
+    coach_dogs_watch: "Dogs to monitor",
+    coach_monthly: "Monthly report",
+    coach_weather_perf: "Weather & performance",
+    coach_no_run_month: "No run this month.",
+    coach_best_run: "best run",
+    coach_recovery_avg: "avg. recovery",
+    coach_run_count_s: "run",
+    coach_run_count_p: "runs",
+    coach_weather_data_low: "Not enough data yet.",
+    coach_weather_data_hint: "Temperature is recorded automatically at each run.",
+    coach_weather_runs_analyzed: "Avg km per temperature range — {n} runs analyzed",
+    coach_weather_best: "🎯 Best condition: {range}°C to {end}°C ({avg} km average)",
+    coach_vet_vaccin: "Vaccine",
+    coach_vet_vermifuge: "Dewormer",
+    coach_vet_overdue: "Overdue by {n}d",
+    coach_vet_today: "Today!",
+    coach_vet_in_days: "In {n} day{s}",
+    coach_deload_note: " This is a deload week — volume reduced by 25% to allow supercompensation.",
+    // --- Reminders ---
+    reminder_none: "No reminders set.",
+    reminder_overdue: "Overdue by {n} d",
+    reminder_today: "Today!",
+    reminder_tomorrow: "Tomorrow",
+    reminder_in_days: "In {n} day{s}",
+    reminder_repeat: "repeats every {n} d",
+    // --- Sync badges ---
+    badge_data_reset: "⚠️ Local data reset due to an error",
+    badge_synced: "☁️ Data synced from cloud",
+    badge_race_deleted: "🗑️ Race deleted",
+    badge_race_updated: "✅ Race updated",
+    badge_complete_profile: "👤 Complete your profile to participate!",
+    badge_participation_cancelled: "🗑️ Participation cancelled",
+    badge_participation_confirmed: "🏁 Participation confirmed!",
+    badge_agenda_modified: "✏️ Modified",
+    badge_event_added: "✅ Event added",
+    // --- Team health ---
+    health_team_coach: "Coach decision",
+    health_team_team_ok: "Today's team consistent if weather stays favorable.",
+    health_team_watch: "Team alert: {names} to monitor.",
+    health_team_ready: "{n} ready",
+    health_team_dose: "{n} to manage",
+    health_team_rest: "{n} rest/watch",
+    health_team_empty: "Add dogs to get the health dashboard.",
+    // --- Dog loads ---
+    dog_load_high_label: "high load",
+    dog_load_low_label: "needs more work",
+    dog_load_ok_label: "balanced",
+    // --- Alerts ---
+    alert_none: "No alerts. Load seems well distributed.",
+    // --- Map ---
+    map_start: "Start",
+    map_finish: "Finish",
+    // --- Dog ---
+    dog_birth_na: "Date not entered",
+    // --- Coach welcome ---
+    coach_welcome_desc: "I'll analyze your <strong>{runs} run(s)</strong>, <strong>{dogs} dog(s)</strong> and <strong>{km} km</strong> recorded to give you a detailed report toward your goal <strong>{race} {rkm} km</strong>.",
+    coach_welcome_li1: "Assessment of your current fitness",
+    coach_welcome_li2: "Personalized 4-week training plan",
+    coach_welcome_li3: "Specific advice for your dogs",
+    coach_welcome_li4: "Priority actions this week",
+    coach_welcome_li5: "Alerts if something needs correcting",
+    coach_welcome_hint: "100% local analysis · free · instant.",
+    // --- Settings ---
+    settings_no_race: "No race",
+    settings_add_race: "Add a race to build your season.",
+    run_select_dogs_hint: "Tap Edit ✏️ to select your dogs.",
+    coach_no_advice: "No advice in this category.",
+    net_no_comments: "No comments. Be the first!",
+    net_no_participant: "No participants",
+    net_join_run: "Join",
+    net_leave_run: "Leave",
+    net_no_open_run: "No open runs. Create a run to find motivated people near you."
   },
   de: {
     nav_dashboard: "Startseite",
@@ -1587,7 +2081,254 @@ const TRANSLATIONS = {
     common_duration: "Dauer",
     common_notes: "Notizen",
     common_week: "Wochen",
-    logout: "Abmelden"
+    logout: "Abmelden",
+    // --- Runs ---
+    run_duration_label: "Dauer",
+    run_pace_label: "min/km",
+    run_speed_label: "Geschwindigkeit",
+    run_energy_label: "Energie",
+    run_paws_ok: "Pfoten OK",
+    run_paws_check: "Pfoten prüfen",
+    run_hydration_ok: "Hydration OK",
+    run_hydration_low: "Hydration verbessern",
+    run_no_note: "Keine Notiz hinzugefügt.",
+    run_edit_btn: "Bearbeiten",
+    run_delete_btn: "Löschen",
+    run_empty: "Noch keine Ausfahrt aufgezeichnet.",
+    run_gps_short: "GPS-Spur zu kurz",
+    run_gps_miniature: "GPS-Miniaturkarte",
+    // --- Dashboard ---
+    dash_no_run: "Keine Ausfahrt aufgezeichnet",
+    dash_last_run_today: "Letzte Ausfahrt: heute 🟢",
+    dash_last_run_yesterday: "Letzte Ausfahrt: gestern 🟢",
+    dash_last_run_days: "Letzte Ausfahrt vor {n} Tagen",
+    dash_last_run_days_red: "Letzte Ausfahrt vor {n} Tagen 🔴",
+    dash_last_run_days_yellow: "Letzte Ausfahrt vor {n} Tagen 🟡",
+    dash_km_remaining: "{km} {unit} verbleibend, ca. {weekly} {unit} pro Woche.",
+    dash_today: "Heute!",
+    dash_selected_count: "{n} ausgewählt",
+    dash_no_dogs: "Keine Hunde",
+    dash_add_dogs: "Füge deine Hunde hinzu",
+    dash_team_ready: "Bereit ✅",
+    dash_team_ok: "In Form 🟡",
+    dash_team_watch: "Beobachten 🔴",
+    dash_dog_watch: "Beobachten",
+    dash_dog_rest: "In Ruhe",
+    dash_dog_good: "In guter Form",
+    dash_dog_repos: "Ruhe",
+    dash_weather_weak_wind: "Schwacher Wind",
+    dash_weather_moderate_wind: "Mäßiger Wind",
+    dash_weather_strong_wind: "Starker Wind",
+    dash_weather_snow: "Schneebedeckter Boden",
+    dash_weather_frozen: "Gefrorener Boden",
+    dash_weather_dry: "Trockener Boden",
+    dash_weather_very_cold: "Intensiver Frost",
+    dash_weather_cold: "Kalte Bedingungen",
+    dash_weather_ideal: "Ideale Bedingungen",
+    dash_weather_hot: "Heiß",
+    dash_weather_na: "Wetter nicht geladen",
+    dash_streak_label: "Tage",
+    dash_streak_great: "Weiter so!",
+    dash_streak_good: "Tolle Serie!",
+    dash_streak_start: "Los geht's!",
+    dash_streak_go: "Fang an!",
+    dash_week_label: "Diese Woche",
+    dash_level_easy: "Einfach",
+    dash_level_moderate: "Moderat",
+    dash_level_hard: "Schwer",
+    dash_load_low: "Niedrig",
+    dash_load_moderate: "Moderat",
+    dash_load_high: "Hoch",
+    dash_badges_label: "Badges",
+    dash_badges_obtained: "erhalten",
+    dash_hero_prepare: "Du bereitest {race} ({km} km) in <strong>{days} Tag{s}</strong> vor.",
+    dash_hero_past: "Das Rennen ist vorbei — aktualisiere dein Ziel in den Einstellungen.",
+    dash_hero_no_goal: "Lege dein Zielrennen in den Einstellungen fest.",
+    dash_hero_team_pct: "Team bereit zu <strong>{pct}%</strong> {emoji}.",
+    dash_hero_session: "Empfohlene Einheit: <strong>{title}</strong>.",
+    // --- GPS status ---
+    gps_active: "GPS aktiv — ±{acc}m",
+    gps_searching_acc: "GPS: Präzision suchen (±{acc}m)…",
+    // --- Race ---
+    race_finished: "Beendet",
+    race_days_before: "T-{n}",
+    race_distance_variable: "Variable Distanz",
+    race_surface_variable: "Variabler Untergrund",
+    race_interested_btn: "Ich bin interessiert",
+    race_interested_active: "⭐ Interessiert",
+    race_add_btn: "Hinzufügen",
+    race_participating_btn: "✓ Teilnahme",
+    race_be_first: "Sei der Erste, der sein Interesse an diesem Rennen markiert! ⭐",
+    race_participating_label: "✓ Teilnahme",
+    race_interested_label: "⭐ Interessiert",
+    race_pinned_label: "⭐ Meine ausgewählten Rennen",
+    race_count_singular: "Rennen",
+    race_count_plural: "Rennen",
+    race_none_found: "Kein Rennen gefunden. Versuche eine breitere Region wie Europa, USA, Kanada, Schweden oder Amundsen.",
+    race_reliability_official: "Offiziell bestätigt",
+    race_reliability_calendar: "Öffentlicher Kalender",
+    race_reliability_watch: "Zu beobachten",
+    race_reliability_user: "Gemeldet",
+    race_reliability_unknown: "Zu prüfen",
+    race_save_btn: "💾 Speichern",
+    // --- Agenda ---
+    agenda_empty: "Leere Agenda — füge ein Ereignis mit + hinzu oder bestätige ein Rennen im Rennen-Tab.",
+    agenda_passed: "Vergangen",
+    agenda_today: "Heute!",
+    agenda_in_days: "In {n} Tag{s}",
+    agenda_no_title: "Kein Titel",
+    agenda_event: "Ereignis",
+    agenda_result_label: "🏆 Rennergebnis",
+    agenda_result_btn: "🏆 Ergebnis",
+    agenda_result_edit_btn: "✏️ Ergebnis",
+    agenda_edit_btn: "✏️ Bearbeiten",
+    agenda_delete_btn: "🗑 Löschen",
+    agenda_close_btn: "✖ Schließen",
+    agenda_save_btn: "💾 Speichern",
+    agenda_cancel_btn: "Abbrechen",
+    agenda_checklist_label: "☑️ Vor-Rennen-Checkliste",
+    // --- Dog profile ---
+    dog_no_note: "Keine Notiz für diesen Hund.",
+    dog_km_season: "km Saison",
+    dog_charge_label: "Individuelle Last",
+    dog_7days: "7 Tage",
+    dog_30days: "30 Tage",
+    dog_fatigue: "Ermüdung",
+    dog_last_recovery: "Letzte gute Erholung vor {n} Tag{s}",
+    dog_birth: "Geburt",
+    dog_age: "Alter",
+    dog_age_years: "{n} Jahre",
+    dog_avg_energy: "Durchschn. Energie",
+    dog_recovery: "Erholung",
+    dog_harness: "Geschirr",
+    dog_harness_na: "Noch nicht notiert",
+    dog_health_today: "Heutiger Status",
+    dog_health_notebook: "Gesundheitsnotizbuch",
+    dog_paws_ok: "Pfoten OK",
+    dog_paws_check: "Pfoten prüfen",
+    dog_vigilance: "Beobachtungspunkt",
+    dog_nothing: "Nichts Besonderes",
+    dog_vet_info: "Tierarztinfos, Verletzungen oder Ruhephasen hinzufügen.",
+    dog_vet_tracking: "Tierarzt: {info}",
+    dog_weight_evolution: "Gewichtsentwicklung",
+    dog_health_history: "Gesundheitsgeschichte",
+    dog_no_event: "Kein Ereignis aufgezeichnet.",
+    dog_load_high: "Hohe Last",
+    dog_load_ok: "Gute Last",
+    dog_no_run: "Noch keine Ausfahrt für {name}.",
+    dog_km_week: "km diese Woche",
+    dog_weight_hint: "Gewicht bearbeiten, um die Entwicklung zu sehen",
+    dog_weight_label: "Gewicht",
+    dog_fatigue_low: "Niedrig",
+    dog_fatigue_normal: "Normal",
+    dog_fatigue_high: "Hoch",
+    dog_fatigue_very_high: "Sehr hoch",
+    // --- Health events ---
+    health_overdue: "Überfällig um {n} T",
+    health_today: "Heute!",
+    health_in_days: "In {n} Tag{s}",
+    health_vaccin: "Impfung",
+    health_vermifuge: "Wurmmittel",
+    health_next_due: "Nächste Erinnerung",
+    health_save_btn: "Speichern",
+    health_cancel_btn: "Abbrechen",
+    // --- Community/Feed ---
+    net_feed_empty: "Noch keine Aktivität geteilt.\nSei der Erste! 🐕",
+    net_feed_error: "Ladefehler",
+    net_sharing: "Teilen…",
+    net_upload_photo: "Foto hochladen…",
+    net_unavailable: "⚠️ Netzwerk nicht verfügbar",
+    net_error: "❌ Fehler",
+    net_dog_count_s: "Hund",
+    net_dog_count_p: "Hunde",
+    net_activities: "Aktivität",
+    net_activities_p: "Aktivitäten",
+    // --- Coach ---
+    coach_ready: "Bereit, dein Training zu analysieren",
+    coach_refresh: "🔄 Analyse aktualisieren",
+    coach_analyze_btn: "Analysieren",
+    coach_local_free: "Coach MushTrack lokal · kostenlos",
+    coach_deload_week: "📉 ENTLASTUNGSWOCHE",
+    coach_weeks: "Wochen",
+    coach_km_week: "km/Woche Ziel",
+    coach_km_done: "km diese Woche",
+    coach_level_label: "Niveau",
+    coach_progress_label: "Fortschritt",
+    coach_volume_4w: "4-Wochen-Volumen (km)",
+    coach_week_plan: "Wochenplan",
+    coach_tip: "Coach-Tipp",
+    coach_dogs_watch: "Hunde beobachten",
+    coach_monthly: "Monatsbericht",
+    coach_weather_perf: "Wetter & Leistung",
+    coach_no_run_month: "Keine Ausfahrt diesen Monat.",
+    coach_best_run: "beste Ausfahrt",
+    coach_recovery_avg: "Durchschn. Erholung",
+    coach_run_count_s: "Ausfahrt",
+    coach_run_count_p: "Ausfahrten",
+    coach_weather_data_low: "Noch nicht genug Daten.",
+    coach_weather_data_hint: "Die Temperatur wird automatisch bei jeder Ausfahrt aufgezeichnet.",
+    coach_weather_runs_analyzed: "Durchschn. km pro Temperaturbereich — {n} Ausfahrten analysiert",
+    coach_weather_best: "🎯 Beste Bedingung: {range}°C bis {end}°C ({avg} km Durchschnitt)",
+    coach_vet_vaccin: "Impfung",
+    coach_vet_vermifuge: "Wurmmittel",
+    coach_vet_overdue: "Überfällig um {n}T",
+    coach_vet_today: "Heute!",
+    coach_vet_in_days: "In {n} Tag{s}",
+    coach_deload_note: " Diese Woche ist eine Entlastungswoche — Volumen um 25% reduziert für Superkompensation.",
+    // --- Reminders ---
+    reminder_none: "Keine Erinnerungen konfiguriert.",
+    reminder_overdue: "Überfällig um {n} T",
+    reminder_today: "Heute!",
+    reminder_tomorrow: "Morgen",
+    reminder_in_days: "In {n} Tag{s}",
+    reminder_repeat: "wiederholt alle {n} T",
+    // --- Sync badges ---
+    badge_data_reset: "⚠️ Lokale Daten aufgrund eines Fehlers zurückgesetzt",
+    badge_synced: "☁️ Daten aus der Cloud synchronisiert",
+    badge_race_deleted: "🗑️ Rennen gelöscht",
+    badge_race_updated: "✅ Rennen aktualisiert",
+    badge_complete_profile: "👤 Vervollständige dein Profil zur Teilnahme!",
+    badge_participation_cancelled: "🗑️ Teilnahme abgebrochen",
+    badge_participation_confirmed: "🏁 Teilnahme bestätigt!",
+    badge_agenda_modified: "✏️ Geändert",
+    badge_event_added: "✅ Ereignis hinzugefügt",
+    // --- Team health ---
+    health_team_coach: "Coach-Entscheidung",
+    health_team_team_ok: "Heutiges Team kohärent, wenn das Wetter günstig bleibt.",
+    health_team_watch: "Team-Warnung: {names} beobachten.",
+    health_team_ready: "{n} bereit",
+    health_team_dose: "{n} dosieren",
+    health_team_rest: "{n} Ruhe/Beobachtung",
+    health_team_empty: "Füge Hunde hinzu, um das Gesundheits-Dashboard zu erhalten.",
+    // --- Dog loads ---
+    dog_load_high_label: "hohe Last",
+    dog_load_low_label: "braucht mehr Arbeit",
+    dog_load_ok_label: "ausgewogen",
+    // --- Alerts ---
+    alert_none: "Keine Warnungen. Die Last scheint gut verteilt.",
+    // --- Map ---
+    map_start: "Start",
+    map_finish: "Ziel",
+    // --- Dog ---
+    dog_birth_na: "Datum nicht eingetragen",
+    // --- Coach welcome ---
+    coach_welcome_desc: "Ich analysiere deine <strong>{runs} Ausfahrt(en)</strong>, <strong>{dogs} Hund(e)</strong> und <strong>{km} km</strong> für einen detaillierten Bericht zu deinem Ziel <strong>{race} {rkm} km</strong>.",
+    coach_welcome_li1: "Bewertung deiner aktuellen Kondition",
+    coach_welcome_li2: "Personalisierter 4-Wochen-Trainingsplan",
+    coach_welcome_li3: "Spezifische Ratschläge für deine Hunde",
+    coach_welcome_li4: "Prioritäre Maßnahmen diese Woche",
+    coach_welcome_li5: "Warnungen, wenn etwas korrigiert werden muss",
+    coach_welcome_hint: "100 % lokale Analyse · kostenlos · sofortig.",
+    // --- Settings ---
+    settings_no_race: "Kein Rennen",
+    settings_add_race: "Füge ein Rennen hinzu, um deine Saison aufzubauen.",
+    run_select_dogs_hint: "Tippe auf Bearbeiten ✏️, um deine Hunde auszuwählen.",
+    coach_no_advice: "Kein Rat in dieser Kategorie.",
+    net_no_comments: "Keine Kommentare. Sei der Erste!",
+    net_no_participant: "Kein Teilnehmer",
+    net_join_run: "Mitmachen",
+    net_leave_run: "Nicht mehr mitmachen",
+    net_no_open_run: "Keine offenen Ausfahrten. Erstelle eine Ausfahrt, um motivierte Leute in der Nähe zu finden."
   }
 };
 
@@ -1646,7 +2387,7 @@ function loadState() {
   } catch (err) {
     console.warn("MushTrack: localStorage corrompu, reset vers état par défaut.", err);
     // Badge visible pour prévenir l'utilisateur
-    setTimeout(() => showSyncBadge("⚠️ Données locales réinitialisées suite à une erreur"), 1500);
+    setTimeout(() => showSyncBadge(t("badge_data_reset")), 1500);
     localStorage.removeItem("mushtrack-state");
     return structuredClone(defaultState);
   }
@@ -1738,7 +2479,7 @@ function getDogAge(dog) {
 }
 
 function formatDogBirthdate(value) {
-  if (!value) return "Date non renseignee";
+  if (!value) return t('dog_birth_na');
   return new Date(`${value}T12:00:00`).toLocaleDateString("fr-CH", {
     day: "2-digit",
     month: "short",
@@ -1903,7 +2644,7 @@ async function syncFromSupabase() {
         state.cloudUpdatedAt = remoteTs;
         localStorage.setItem("mushtrack-state", JSON.stringify(state));
         render();
-        showSyncBadge("☁️ Données synchronisées depuis le cloud");
+        showSyncBadge(t("badge_synced"));
       }
     }
   } catch (err) {
@@ -2051,17 +2792,17 @@ function buildHeroSentence(daysLeft, teamPct, workoutTitle) {
   const raceKm   = state.raceKm || "—";
   const parts    = [];
   if (daysLeft !== null && daysLeft > 0) {
-    parts.push(`Tu prépares ${raceName} (${raceKm} km) dans <strong>${daysLeft} jour${daysLeft > 1 ? "s" : ""}</strong>.`);
+    parts.push(t('dash_hero_prepare').replace('{race}', raceName).replace('{km}', raceKm).replace('{days}', daysLeft).replace('{s}', daysLeft > 1 ? "s" : ""));
   } else if (daysLeft !== null && daysLeft <= 0) {
-    parts.push(`La course est passée — mets à jour ton objectif dans Paramètres.`);
+    parts.push(t('dash_hero_past'));
   } else {
-    parts.push(`Configure ta course objectif dans Paramètres.`);
+    parts.push(t('dash_hero_no_goal'));
   }
   if (teamPct !== null) {
     const emoji = teamPct >= 80 ? "🟢" : teamPct >= 50 ? "🟡" : "🔴";
-    parts.push(`Attelage prêt à <strong>${teamPct} %</strong> ${emoji}.`);
+    parts.push(t('dash_hero_team_pct').replace('{pct}', teamPct).replace('{emoji}', emoji));
   }
-  parts.push(`Séance recommandée : <strong>${workoutTitle || "endurance"}</strong>.`);
+  parts.push(t('dash_hero_session').replace('{title}', workoutTitle || "endurance"));
   return parts.join(" ");
 }
 // ─────────────────────────────────────────────────────────────
@@ -2077,14 +2818,14 @@ function render() {
   const distUnit = isMi ? "mi" : "km";
   bindText("seasonKm", isMi ? Math.round(kmToMi(seasonKm)) : Math.round(seasonKm));
   bindText("goalKm", isMi ? Math.round(kmToMi(state.goalKm)) : state.goalKm);
-  bindText("goalMessage", `${isMi ? Math.round(kmToMi(remainingKm)) : remainingKm.toFixed(0)} ${distUnit} restants, environ ${isMi ? Math.round(kmToMi(weeklyNeed)) : weeklyNeed} ${distUnit} par semaine.`);
+  bindText("goalMessage", t('dash_km_remaining').replace('{km}', isMi ? Math.round(kmToMi(remainingKm)) : remainingKm.toFixed(0)).replace('{unit}', distUnit).replace('{weekly}', isMi ? Math.round(kmToMi(weeklyNeed)) : weeklyNeed).replace('{unit}', distUnit));
   bindText("weekKm", isMi ? kmToMi(getWeekKm()).toFixed(1) : getWeekKm().toFixed(1));
   bindText("avgSpeed", getAvgSpeed().toFixed(1));
   bindText("runCount", state.runs.length);
   bindText("dogCount", state.dogs.length);
   bindText("raceType", state.raceType);
   bindText("raceKm", isMi ? Math.round(kmToMi(state.raceKm)) : state.raceKm);
-  bindText("selectedCount", `${state.selectedDogIds.length} selectionnes`);
+  bindText("selectedCount", t('dash_selected_count').replace('{n}', state.selectedDogIds.length));
   bindText("coachTitle", getCoachInsight().title);
   bindText("coachText", getCoachInsight().text);
   // Compteur "Dernière sortie il y a X jours"
@@ -2092,11 +2833,11 @@ function render() {
     ? [...state.runs].sort((a, b) => new Date(b.date) - new Date(a.date))[0].date
     : null;
   const lastRunDaysAgo = lastRunDate ? daysUntil(lastRunDate) * -1 : null;
-  const lastRunLabel = lastRunDate === null ? "Aucune sortie enregistrée"
-    : lastRunDaysAgo === 0 ? "Dernière sortie : aujourd'hui 🟢"
-    : lastRunDaysAgo === 1 ? "Dernière sortie : hier 🟢"
-    : lastRunDaysAgo <= 4  ? `Dernière sortie il y a ${lastRunDaysAgo} jours 🟡`
-    : `Dernière sortie il y a ${lastRunDaysAgo} jours 🔴`;
+  const lastRunLabel = lastRunDate === null ? t('dash_no_run')
+    : lastRunDaysAgo === 0 ? t('dash_last_run_today')
+    : lastRunDaysAgo === 1 ? t('dash_last_run_yesterday')
+    : lastRunDaysAgo <= 4  ? t('dash_last_run_days_yellow').replace('{n}', lastRunDaysAgo)
+    : t('dash_last_run_days_red').replace('{n}', lastRunDaysAgo);
   bindText("lastRunLabel", lastRunLabel);
   bindText("raceReadiness", getRaceReadiness());
 
@@ -2109,21 +2850,21 @@ function render() {
   bindText("kpiProgress", `${progress} %`);
   // Course objectif
   const daysLeft = state.raceDate ? daysUntil(state.raceDate) : null;
-  bindText("kpiDays", daysLeft === null ? "—" : daysLeft === 0 ? "Aujourd'hui !" : `J−${daysLeft}`);
+  bindText("kpiDays", daysLeft === null ? "—" : daysLeft === 0 ? t('dash_today') : `J−${daysLeft}`);
   bindText("kpiRaceName", state.raceName || state.raceType || "—");
   // Attelage
   const teamPct = getTeamReadinessPct();
   if (teamPct !== null) {
     bindText("kpiTeam", `${teamPct} %`);
-    bindText("kpiTeamSub", `${state.dogs.length} chien${state.dogs.length > 1 ? "s" : ""} · ${teamPct >= 80 ? "Prêts ✅" : teamPct >= 50 ? "En forme 🟡" : "Surveiller 🔴"}`);
+    bindText("kpiTeamSub", `${state.dogs.length} ${state.dogs.length > 1 ? t('net_dog_count_p') : t('net_dog_count_s')} · ${teamPct >= 80 ? t('dash_team_ready') : teamPct >= 50 ? t('dash_team_ok') : t('dash_team_watch')}`);
   } else {
     bindText("kpiTeam", "—");
-    bindText("kpiTeamSub", "Ajoute tes chiens");
+    bindText("kpiTeamSub", t('dash_add_dogs'));
   }
   // Cette semaine
   const weekPct = Math.min(100, Math.round(weekKmVal / targetKmVal * 100));
   bindText("kpiWeek", `${weekKmVal.toFixed(1)} km`);
-  bindText("kpiWeekSub", `Objectif : ${targetKmVal} km`);
+  bindText("kpiWeekSub", `${t('dash_race_goal_label')} : ${targetKmVal} km`);
   bindText("dashWeekPct", `${weekPct} %`);
   const dashWeekBarEl = document.querySelector('[data-bind-style="dashWeekBar"]');
   if (dashWeekBarEl) dashWeekBarEl.style.width = `${weekPct}%`;
@@ -2168,9 +2909,9 @@ function render() {
     enginPace = enginDefaultPace[activeEngin] ?? 4.5;
   }
   const woTime = woKm > 0 ? Math.round(woKm * enginPace) : null;
-  const woLevel = woKm <= 8 ? "Facile" : woKm <= 18 ? "Modéré" : "Difficile";
+  const woLevel = woKm <= 8 ? t('dash_level_easy') : woKm <= 18 ? t('dash_level_moderate') : t('dash_level_hard');
   const woLoad = Math.min(95, Math.round(woKm * 3.2));
-  const woLoadLabel = woLoad < 35 ? "Faible" : woLoad < 65 ? "Modéré" : "Élevé";
+  const woLoadLabel = woLoad < 35 ? t('dash_load_low') : woLoad < 65 ? t('dash_load_moderate') : t('dash_load_high');
   bindText("dashWorkoutKm", `${woKm} km`);
   bindText("dashWorkoutTime", woTime ? `${woTime} min` : "—");
   bindText("dashWorkoutLevel", woLevel);
@@ -2193,8 +2934,8 @@ function render() {
     .filter(Boolean);
   const teamCount = teamDogs.length;
   if (teamCount === 0) {
-    bindText("dashDogCount", "Aucun chien");
-    bindText("dashDogHealth", "Ajoute tes chiens");
+    bindText("dashDogCount", t('dash_no_dogs'));
+    bindText("dashDogHealth", t('dash_add_dogs'));
     bindText("dashDogEnergyPct", "—");
     const dogEnergyEl = document.querySelector('[data-bind-style="dashDogEnergy"]');
     if (dogEnergyEl) dogEnergyEl.style.width = "0%";
@@ -2203,7 +2944,7 @@ function render() {
     const sig = dog.healthSignal || "OK";
     const energy = sig === "Attention" ? 45 : sig === "Repos" ? 25 : 82;
     bindText("dashDogCount", dog.name);
-    bindText("dashDogHealth", sig === "Attention" ? "Surveiller" : sig === "Repos" ? "Au repos" : "Bonne forme");
+    bindText("dashDogHealth", sig === "Attention" ? t('dash_dog_watch') : sig === "Repos" ? t('dash_dog_rest') : t('dash_dog_good'));
     bindText("dashDogEnergyPct", `${energy} %`);
     const dogEnergyEl = document.querySelector('[data-bind-style="dashDogEnergy"]');
     if (dogEnergyEl) dogEnergyEl.style.width = `${energy}%`;
@@ -2216,11 +2957,11 @@ function render() {
       return s === "Attention" ? 45 : s === "Repos" ? 25 : 82;
     });
     const avgEnergy = Math.round(energies.reduce((a,b)=>a+b,0) / energies.length);
-    bindText("dashDogCount", `${teamCount} chiens`);
+    bindText("dashDogCount", `${teamCount} ${t('net_dog_count_p')}`);
     const parts = [];
     if (nbOk > 0) parts.push(`${nbOk} OK`);
     if (nbAttention > 0) parts.push(`${nbAttention} ⚠`);
-    if (nbRepos > 0) parts.push(`${nbRepos} repos`);
+    if (nbRepos > 0) parts.push(`${nbRepos} ${t('dash_dog_repos')}`);
     bindText("dashDogHealth", parts.join(" · "));
     bindText("dashDogEnergyPct", `${avgEnergy} %`);
     const dogEnergyEl = document.querySelector('[data-bind-style="dashDogEnergy"]');
@@ -2232,18 +2973,18 @@ function render() {
   if (wx) {
     bindText("dashWeatherTemp", `${Math.round(wx.temperature ?? wx.temp ?? 0)} °C`);
     const wind = wx.windspeed ?? wx.wind ?? 0;
-    bindText("dashWeatherWind", `Vent ${wind < 10 ? "faible" : wind < 25 ? "modéré" : "fort"}`);
+    bindText("dashWeatherWind", wind < 10 ? t('dash_weather_weak_wind') : wind < 25 ? t('dash_weather_moderate_wind') : t('dash_weather_strong_wind'));
     const temp = wx.temperature ?? wx.temp ?? 15;
-    const groundLabel = temp < -2 ? "Sol enneigé" : temp < 2 ? "Sol gelé" : "Sol sec";
+    const groundLabel = temp < -2 ? t('dash_weather_snow') : temp < 2 ? t('dash_weather_frozen') : t('dash_weather_dry');
     bindText("dashWeatherGround", groundLabel);
-    const condLabel = temp < -5 ? "Froid intense" : temp < 5 ? "Conditions froides" : temp < 20 ? "Conditions idéales" : "Chaud";
+    const condLabel = temp < -5 ? t('dash_weather_very_cold') : temp < 5 ? t('dash_weather_cold') : temp < 20 ? t('dash_weather_ideal') : t('dash_weather_hot');
     bindText("dashWeatherCond", condLabel);
     bindText("dashWeatherCondClass", temp >= 5 && temp < 20 ? "green" : "orange");
   } else {
     bindText("dashWeatherTemp", "—");
     bindText("dashWeatherWind", "—");
     bindText("dashWeatherGround", "—");
-    bindText("dashWeatherCond", "Météo non chargée");
+    bindText("dashWeatherCond", t('dash_weather_na'));
   }
 
   // Série de jours consécutifs
@@ -2257,8 +2998,8 @@ function render() {
     }));
     while (runDays.has(cursor.toDateString())) { streak++; cursor.setDate(cursor.getDate()-1); }
   }
-  bindText("dashStreak", `${streak || 0} jours`);
-  bindText("dashStreakSub", streak >= 7 ? "Garde le rythme !" : streak >= 3 ? "Belle série !" : streak === 1 ? "C'est parti !" : "Lance-toi !");
+  bindText("dashStreak", `${streak || 0} ${t('dash_streak_label')}`);
+  bindText("dashStreakSub", streak >= 7 ? t('dash_streak_great') : streak >= 3 ? t('dash_streak_good') : streak === 1 ? t('dash_streak_start') : t('dash_streak_go'));
   // Render des dots série
   const dotsEl = document.querySelector(".dash-streak-dots");
   if (dotsEl) {
@@ -2315,7 +3056,7 @@ function renderBadges() {
   }).join("");
   el.innerHTML = `
     <div style="padding:0 16px 4px">
-      <p style="font-size:0.62rem;font-weight:900;letter-spacing:.08em;color:#bbb;text-transform:uppercase;margin:0 0 10px">🏅 Badges — ${earned.length}/${BADGES.length} obtenus</p>
+      <p style="font-size:0.62rem;font-weight:900;letter-spacing:.08em;color:#bbb;text-transform:uppercase;margin:0 0 10px">🏅 ${t('dash_badges_label')} — ${earned.length}/${BADGES.length} ${t('dash_badges_obtained')}</p>
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px 6px">${allBadges}</div>
     </div>`;
 }
@@ -2427,7 +3168,7 @@ function renderProgressChart() {
     ctx.fillStyle = "#bbb";
     ctx.font = `${9}px system-ui`;
     ctx.textAlign = "center";
-    ctx.fillText(isCurrentWeek ? "Cette sem." : wk.label, x + barW / 2, H - 5);
+    ctx.fillText(isCurrentWeek ? t('dash_week_label') : wk.label, x + barW / 2, H - 5);
   });
 }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2533,7 +3274,7 @@ function renderDogs() {
       </div>
       <strong>${Math.round(dog.km)} km</strong>
       <div class="load-meter"><span style="width:${Math.min(100, load * 2)}%"></span></div>
-      <small>${load.toFixed(1)} km cette semaine - ${readiness.text}</small>
+      <small>${load.toFixed(1)} ${t('dog_km_week')} - ${readiness.text}</small>
       <div class="card-actions">
         <button class="secondary-button" data-edit-dog="${dog.id}" type="button">${t('dogs_edit_btn')}</button>
         <button class="danger-button" data-delete-dog="${dog.id}" type="button">${t('dogs_delete_btn')}</button>
@@ -2698,7 +3439,7 @@ function buildWeightSparkline(dog) {
   const history = (dog.weightHistory || []).slice(-12); // 12 derniers points max
   const current = dog.weight || 0;
   if (history.length < 2) {
-    return `<span>Poids</span><b>${current} kg</b><small style="color:#aaa;font-size:0.72rem;display:block">Modifie le poids pour voir l'évolution</small>`;
+    return `<span>${t('dog_weight_label')}</span><b>${current} kg</b><small style="color:#aaa;font-size:0.72rem;display:block">${t('dog_weight_hint')}</small>`;
   }
   const weights = history.map((h) => h.weight);
   const min = Math.min(...weights);
@@ -2749,7 +3490,7 @@ function renderDogProfile() {
   const recentNotes  = runs.filter(r => r.notes).slice(0, 2)
     .map(r => `${formatDate(r.date)} : ${r.notes}`).join("<br>") || "Aucune note récente.";
 
-  const fatigueLabel = fatigue < 0.6 ? "Faible" : fatigue < 1.0 ? "Normal" : fatigue < 1.4 ? "Élevé" : "Très élevé";
+  const fatigueLabel = fatigue < 0.6 ? t('dog_fatigue_low') : fatigue < 1.0 ? t('dog_fatigue_normal') : fatigue < 1.4 ? t('dog_fatigue_high') : t('dog_fatigue_very_high');
   const fatigueColor = fatigue < 0.6 ? "#888" : fatigue < 1.0 ? "#2f8f46" : fatigue < 1.4 ? "#e8a020" : "#d94040";
   const formEmoji    = health.level === "danger" ? "🔴" : health.level === "warning" ? "🟡" : "🟢";
 
@@ -2774,8 +3515,8 @@ function renderDogProfile() {
             : `<img src="assets/dog-placeholder.png" style="width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:3px solid rgba(255,255,255,0.4)" alt="chien" />`}
           <div>
             <span>${dog.role}</span>
-            <strong>${Math.round(dog.km)} km saison</strong>
-            <p>${dog.note || "Aucune note pour ce chien."}</p>
+            <strong>${Math.round(dog.km)} ${t('dog_km_season')}</strong>
+            <p>${dog.note || t('dog_no_note')}</p>
           </div>
         </div>
         <div style="text-align:center;flex-shrink:0;font-size:2rem;line-height:1">${formEmoji}
@@ -2786,64 +3527,64 @@ function renderDogProfile() {
 
     <!-- Charge individuelle -->
     <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:10px;border:1px solid #f0f0f0;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
-      <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0 0 12px">Charge individuelle</p>
+      <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0 0 12px">${t('dog_charge_label')}</p>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
         <div>
           <div style="font-size:1.1rem;font-weight:800;color:#1a1a1a">${recentKm.toFixed(0)} km</div>
-          <div style="font-size:0.7rem;color:#999">7 jours</div>
+          <div style="font-size:0.7rem;color:#999">${t('dog_7days')}</div>
         </div>
         <div>
           <div style="font-size:1.1rem;font-weight:800;color:#1a1a1a">${km30.toFixed(0)} km</div>
-          <div style="font-size:0.7rem;color:#999">30 jours</div>
+          <div style="font-size:0.7rem;color:#999">${t('dog_30days')}</div>
         </div>
         <div>
           <div style="font-size:1.1rem;font-weight:800;color:${fatigueColor}">${fatigueLabel}</div>
-          <div style="font-size:0.7rem;color:#999">Fatigue</div>
+          <div style="font-size:0.7rem;color:#999">${t('dog_fatigue')}</div>
         </div>
       </div>
       ${daysSinceRest !== null
-        ? `<p style="font-size:0.78rem;color:#888;margin:10px 0 0;text-align:center">Dernière bonne récupération il y a ${daysSinceRest} jour${daysSinceRest > 1 ? "s" : ""}</p>`
+        ? `<p style="font-size:0.78rem;color:#888;margin:10px 0 0;text-align:center">${t('dog_last_recovery').replace('{n}', daysSinceRest).replace('{s}', daysSinceRest > 1 ? "s" : "")}</p>`
         : ""}
     </div>
 
     <section class="profile-grid">
-      <article><span>Naissance</span><b>${formatDogBirthdate(dog.birthdate)}</b></article>
-      <article><span>Âge</span><b>${getDogAge(dog)} ans</b></article>
+      <article><span>${t('dog_birth')}</span><b>${formatDogBirthdate(dog.birthdate)}</b></article>
+      <article><span>${t('dog_age')}</span><b>${t('dog_age_years').replace('{n}', getDogAge(dog))}</b></article>
       <article>${buildWeightSparkline(dog)}</article>
-      <article><span>Énergie moy.</span><b>${avgEnergy ? avgEnergy.toFixed(1) : "—"}/5</b></article>
-      <article><span>Récupération</span><b>${lastRecovery}</b></article>
-      <article><span>Harnais</span><b>${dog.harness || "À noter"}</b></article>
+      <article><span>${t('dog_avg_energy')}</span><b>${avgEnergy ? avgEnergy.toFixed(1) : "—"}/5</b></article>
+      <article><span>${t('dog_recovery')}</span><b>${lastRecovery}</b></article>
+      <article><span>${t('dog_harness')}</span><b>${dog.harness || t('dog_harness_na')}</b></article>
     </section>
 
     <section class="dog-health-grid">
       <article class="dog-health ${health.level}">
-        <span>État du jour</span>
+        <span>${t('dog_health_today')}</span>
         <b>${health.title}</b>
         <p>${health.text}</p>
       </article>
       <article>
-        <span>Carnet santé</span>
-        <b>Pattes ${pawStatus}</b>
+        <span>${t('dog_health_notebook')}</span>
+        <b>${pawStatus === "OK" ? t('dog_paws_ok') : t('dog_paws_check')}</b>
         <p>${recentNotes}</p>
       </article>
       <article class="${dog.limitation ? "danger" : ""}">
-        <span>Point de vigilance</span>
-        <b>${dog.limitation || "Rien de particulier"}</b>
-        <p>${dog.vet ? `Suivi véto : ${dog.vet}` : "Ajoute les infos véto, blessures ou repos."}</p>
+        <span>${t('dog_vigilance')}</span>
+        <b>${dog.limitation || t('dog_nothing')}</b>
+        <p>${dog.vet ? t('dog_vet_tracking').replace('{info}', dog.vet) : t('dog_vet_info')}</p>
       </article>
     </section>
 
     <!-- Graphique poids -->
     ${(dog.weightHistory || []).length >= 2 ? `
     <div style="margin-bottom:18px">
-      <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0 0 8px">Évolution du poids</p>
+      <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0 0 8px">${t('dog_weight_evolution')}</p>
       <canvas id="weight-chart-${dog.id}" width="800" height="160" style="width:100%;border-radius:12px;background:#f9f9f9"></canvas>
     </div>` : ""}
 
     <!-- Historique santé -->
     <div style="margin-bottom:10px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0">Historique santé</p>
+        <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0">${t('dog_health_history')}</p>
         <button type="button" id="add-health-event-btn" style="font-size:0.78rem;color:#fc4c02;background:none;border:none;font-weight:700;cursor:pointer">+ Ajouter</button>
       </div>
       ${upcomingReminders.length > 0 ? `
@@ -2852,8 +3593,8 @@ function renderDogProfile() {
           <div class="vet-reminder ${e.days < 0 ? "overdue" : e.days <= 14 ? "urgent" : ""}">
             <span>${healthIcons[e.type]}</span>
             <div>
-              <strong>${e.type === "vaccin" ? "Vaccin" : "Vermifuge"} — ${e.notes || ""}</strong>
-              <small>${e.days < 0 ? `En retard de ${Math.abs(e.days)} j` : e.days === 0 ? "Aujourd'hui !" : `Dans ${e.days} jour${e.days > 1 ? "s" : ""}`}</small>
+              <strong>${e.type === "vaccin" ? t('health_vaccin') : t('health_vermifuge')} — ${e.notes || ""}</strong>
+              <small>${e.days < 0 ? t('health_overdue').replace('{n}', Math.abs(e.days)) : e.days === 0 ? t('health_today') : t('health_in_days').replace('{n}', e.days).replace('{s}', e.days > 1 ? "s" : "")}</small>
             </div>
           </div>`).join("")}
       </div>` : ""}
@@ -2870,16 +3611,16 @@ function renderDogProfile() {
         <input id="health-event-date" type="date" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem" />
         <textarea id="health-event-notes" placeholder="Description (ex: Rage + Parvo, Dr Martin...)" rows="2" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem;resize:none"></textarea>
         <label id="health-next-due-wrap" style="display:flex;flex-direction:column;gap:4px;font-size:0.82rem;color:#666;font-weight:600">
-          Prochain rappel
+          ${t('health_next_due')}
           <input id="health-event-next-due" type="date" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem;font-weight:400" />
         </label>
         <div style="display:flex;gap:8px">
-          <button type="submit" style="flex:1;padding:9px;background:#fc4c02;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">Enregistrer</button>
-          <button type="button" id="health-event-cancel" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;cursor:pointer">Annuler</button>
+          <button type="submit" style="flex:1;padding:9px;background:#fc4c02;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">${t('health_save_btn')}</button>
+          <button type="button" id="health-event-cancel" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;cursor:pointer">${t('health_cancel_btn')}</button>
         </div>
       </form>
       ${healthHistory.length === 0
-        ? `<p style="font-size:0.82rem;color:#aaa;text-align:center;padding:12px">Aucun événement enregistré.</p>`
+        ? `<p style="font-size:0.82rem;color:#aaa;text-align:center;padding:12px">${t('dog_no_event')}</p>`
         : healthHistory.slice().reverse().map((evt, i) => `
           <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:#fff;border-radius:10px;border:1px solid #f0f0f0;margin-bottom:6px">
             <span style="font-size:1.2rem">${healthIcons[evt.type] || "📌"}</span>
@@ -2894,7 +3635,7 @@ function renderDogProfile() {
 
     <article class="advice-card ${recentKm > 45 ? "important" : ""}">
       <span>Coach</span>
-      <h2>${recentKm > 45 ? "Charge haute" : "Charge correcte"}</h2>
+      <h2>${recentKm > 45 ? t('dog_load_high') : t('dog_load_ok')}</h2>
       <p>${getDogAdvice(dog, recentKm, lastRun)}</p>
     </article>
 
@@ -2903,11 +3644,11 @@ function renderDogProfile() {
         <article>
           <div>
             <b>${run.type}</b>
-            <span>${formatDate(run.date)} · ${run.recovery} · énergie ${run.energy}/5</span>
+            <span>${formatDate(run.date)} · ${run.recovery} · ${t('run_energy_label')} ${run.energy}/5</span>
           </div>
           <strong>${Number(run.km).toFixed(1)} km</strong>
         </article>
-      `).join("") || `<p class="empty-state">Pas encore de sortie pour ${dog.name}.</p>`}
+      `).join("") || `<p class="empty-state">${t('dog_no_run').replace('{name}', dog.name)}</p>`}
     </section>
   `;
 
@@ -3037,7 +3778,7 @@ function renderSelectedTeam() {
   const dogs = state.dogs.filter((dog) => state.selectedDogIds.includes(dog.id));
   list.innerHTML = dogs.length
     ? dogs.map((dog) => `<span class="chip">${dog.name}</span>`).join("")
-    : `<p class="empty-state">Appuie sur Modifier ✏️ pour sélectionner tes chiens.</p>`;
+    : `<p class="empty-state">${t('run_select_dogs_hint')}</p>`;
 }
 
 function renderTeamSlots() {
@@ -3234,11 +3975,11 @@ function renderRuns() {
           </div>
           <div class="run-stat">
             <span class="run-stat-value">${dur}</span>
-            <span class="run-stat-label">Durée</span>
+            <span class="run-stat-label">${t('run_duration_label')}</span>
           </div>
           <div class="run-stat">
             <span class="run-stat-value">${paceStr}</span>
-            <span class="run-stat-label">min/km</span>
+            <span class="run-stat-label">${t('run_pace_label')}</span>
           </div>
           ${run.elevationGain > 0 ? `<div class="run-stat">
             <span class="run-stat-value">+${run.elevationGain}</span>
@@ -3246,14 +3987,14 @@ function renderRuns() {
           </div>` : ""}
         </div>
         <div class="run-details">
-          <span>Vitesse ${speed} km/h</span>
-          <span>Énergie ${run.energy || "-"}/5</span>
-          <span>Pattes ${run.paws ? "OK" : "à vérifier"}</span>
-          <span>Hydratation ${run.hydrated ? "OK" : "à renforcer"}</span>
-          <p>${run.notes || "Aucune note ajoutée."}</p>
+          <span>${t('run_speed_label')} ${speed} km/h</span>
+          <span>${t('run_energy_label')} ${run.energy || "-"}/5</span>
+          <span>${run.paws ? t('run_paws_ok') : t('run_paws_check')}</span>
+          <span>${run.hydrated ? t('run_hydration_ok') : t('run_hydration_low')}</span>
+          <p>${run.notes || t('run_no_note')}</p>
           <div class="card-actions">
-            <button class="secondary-button" data-run-option="${index}" type="button">Modifier</button>
-            <button class="danger-button" data-delete-run="${index}" type="button">Supprimer</button>
+            <button class="secondary-button" data-run-option="${index}" type="button">${t('run_edit_btn')}</button>
+            <button class="danger-button" data-delete-run="${index}" type="button">${t('run_delete_btn')}</button>
           </div>
         </div>
       </article>
@@ -3261,7 +4002,7 @@ function renderRuns() {
   }).join("");
 
   document.querySelectorAll('[data-list="runs"]').forEach((list) => {
-    list.innerHTML = runsHtml || `<p class="empty-state">Aucune sortie enregistree.</p>`;
+    list.innerHTML = runsHtml || `<p class="empty-state">${t('run_empty')}</p>`;
 
     list.querySelectorAll("[data-run-index]").forEach((card) => {
       card.addEventListener("click", (e) => {
@@ -3295,7 +4036,7 @@ function renderRoutePreview(path) {
   const points = path
     .map((point) => Array.isArray(point) ? point : [point.lat, point.lon ?? point.lng])
     .filter(([lat, lng]) => Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)));
-  if (points.length < 2) return `<div class="route-preview empty">Trace GPS trop courte</div>`;
+  if (points.length < 2) return `<div class="route-preview empty">${t('run_gps_short')}</div>`;
 
   const lats = points.map(([lat]) => Number(lat));
   const lngs = points.map(([, lng]) => Number(lng));
@@ -3314,7 +4055,7 @@ function renderRoutePreview(path) {
   const lastPoint = svgPoints[svgPoints.length - 1].split(",");
 
   return `
-    <div class="route-preview" aria-label="Trace GPS miniature">
+    <div class="route-preview" aria-label="${t('run_gps_miniature')}">
       <svg viewBox="0 0 100 60" role="img">
         <path d="M8 52 L92 8" opacity="0.08"></path>
         <polyline points="${svgPoints.join(" ")}"></polyline>
@@ -3342,14 +4083,14 @@ function renderTeamHealth() {
   const restCount = dogs.filter((item) => item.readiness.level === "danger").length;
   const selectedRisks = dogs.filter((item) => state.selectedDogIds.includes(item.dog.id) && item.readiness.level !== "ok");
   const decision = selectedRisks.length
-    ? `Attention attelage : ${selectedRisks.map((item) => item.dog.name).join(", ")} a surveiller.`
-    : "Attelage du jour coherent si la meteo reste favorable.";
+    ? t('health_team_watch').replace('{names}', selectedRisks.map((item) => item.dog.name).join(", "))
+    : t('health_team_team_ok');
 
   list.innerHTML = `
     <article class="health-summary">
-      <span>Decision coach</span>
+      <span>${t('health_team_coach')}</span>
       <b>${decision}</b>
-      <p>${readyCount} pret(s), ${watchCount} a doser, ${restCount} repos/surveillance.</p>
+      <p>${t('health_team_ready').replace('{n}', readyCount)}, ${t('health_team_dose').replace('{n}', watchCount)}, ${t('health_team_rest').replace('{n}', restCount)}.</p>
     </article>
     <section class="health-grid">
       ${dogs.map(({ dog, readiness, load }) => `
@@ -3358,7 +4099,7 @@ function renderTeamHealth() {
           <b>${dog.name}</b>
           <small>${readiness.title} - ${load.toFixed(1)} km / 7 j</small>
         </article>
-      `).join("") || `<p class="empty-state">Ajoute des chiens pour obtenir le tableau sante.</p>`}
+      `).join("") || `<p class="empty-state">${t('health_team_empty')}</p>`}
     </section>
   `;
 }
@@ -3397,7 +4138,8 @@ function openRunDetail(index) {
   document.getElementById("run-detail-date").textContent = formatDate(run.date);
   document.getElementById("rd-km").textContent = (run.km || 0).toFixed(2) + " km";
   document.getElementById("rd-speed").textContent = (run.speed || 0).toFixed(1) + " km/h";
-  document.getElementById("rd-dogs").textContent = (run.team?.length || 0) + " chien(s)";
+  const dogCount_ = run.team?.length || 0;
+  document.getElementById("rd-dogs").textContent = dogCount_ + " " + (dogCount_ > 1 ? t('net_dog_count_p') : t('net_dog_count_s'));
 
   // Durée estimée
   const durMin = run.km && run.speed > 0 ? Math.round(run.km / run.speed * 60) : 0;
@@ -3462,10 +4204,10 @@ function openRunDetail(index) {
 
       // Marqueur départ (vert)
       L.circleMarker(path[0], { radius: 8, fillColor: "#22c55e", color: "#fff", weight: 2, fillOpacity: 1 })
-        .bindTooltip("Départ").addTo(_runDetailMap);
+        .bindTooltip(t('map_start')).addTo(_runDetailMap);
       // Marqueur arrivée (orange)
       L.circleMarker(path[path.length-1], { radius: 8, fillColor: "#fc4c02", color: "#fff", weight: 2, fillOpacity: 1 })
-        .bindTooltip("Arrivée").addTo(_runDetailMap);
+        .bindTooltip(t('map_finish')).addTo(_runDetailMap);
     }
 
     _runDetailMap.invalidateSize();
@@ -3505,7 +4247,7 @@ function renderDogLoads() {
       <article class="load-row ${level}">
         <div>
           <b>${dog.name}</b>
-          <span>${dog.role} - ${level === "high" ? "charge haute" : level === "low" ? "a remettre au travail" : "equilibre"}</span>
+          <span>${dog.role} - ${level === "high" ? t('dog_load_high_label') : level === "low" ? t('dog_load_low_label') : t('dog_load_ok_label')}</span>
         </div>
         <strong>${load.toFixed(1)} km</strong>
       </article>
@@ -3522,7 +4264,7 @@ function renderAlerts() {
       <span>${alert.label}</span>
       <p>${alert.text}</p>
     </article>
-  `).join("") || `<p class="empty-state">Aucune alerte. La charge semble bien repartie.</p>`;
+  `).join("") || `<p class="empty-state">${t('alert_none')}</p>`;
 }
 
 // ── Conseils chiens sportifs — banque de 30 conseils ─────────────────────────
@@ -4272,7 +5014,7 @@ function renderWebAdvice() {
     // Mode filtre : affiche tous les conseils de la catégorie
     const filtered = ADVICE_BANK.filter((t) => getAdviceCategory(t.label) === activeAdviceCategory);
     list.innerHTML = filtered.length === 0
-      ? `<p class="empty-state">Aucun conseil dans cette catégorie.</p>`
+      ? `<p class="empty-state">${t('coach_no_advice')}</p>`
       : filtered.map((tip) => `
           <article class="advice-card web-tip">
             <span>${tip.label}</span>
@@ -4288,7 +5030,7 @@ function renderWebAdvice() {
     const todayTips = [ADVICE_BANK[idx1], ADVICE_BANK[idx2]];
     const nextChangeDay = (periodIndex + 1) * 2;
     const daysLeft = nextChangeDay - daysSinceEpoch;
-    const nextLabel = daysLeft <= 1 ? "Demain" : `Dans ${daysLeft} jours`;
+    const nextLabel = daysLeft <= 1 ? t('reminder_tomorrow') : t('reminder_in_days').replace('{n}', daysLeft).replace('{s}', daysLeft > 1 ? 's' : '');
     list.innerHTML = `
       <div class="advice-rotation-info">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
@@ -4771,7 +5513,7 @@ function renderRaceSearch() {
   function buildRaceCard(race, pinned = false) {
     const dateText = formatFullDate(race.date);
     const dLeft = daysUntil(race.date);
-    const status = dLeft < 0 ? "Terminée" : `J-${dLeft}`;
+    const status = dLeft < 0 ? t('race_finished') : t('race_days_before').replace('{n}', dLeft);
     const pinnedBadge = pinned ? `<span class="race-pinned-badge">⭐ Selectionnee</span>` : "";
     const adminBtns = isAdmin ? `
       <button class="admin-race-edit-btn text-button" data-admin-edit="${race.id}" type="button" title="Modifier">✏️</button>
@@ -4790,14 +5532,14 @@ function renderRaceSearch() {
         </div>
         <strong>${race.type}</strong>
         <div class="agenda-meta">
-          <span>${race.distance ? `${race.distance} km` : "Distance variable"}</span>
-          <span>${race.surface || "Surface variable"}</span>
+          <span>${race.distance ? `${race.distance} km` : t('race_distance_variable')}</span>
+          <span>${race.surface || t('race_surface_variable')}</span>
         </div>
         ${race.notes ? `<p>${race.notes}</p>` : ""}
         <div class="race-result-actions">
           <button class="secondary-button" data-open-race-source="${race.id}" type="button">Source</button>
-          <button class="secondary-button${state.raceInterests[race.id] ? " btn-interested" : ""}" data-race-interest="${race.id}" type="button">${state.raceInterests[race.id] ? "⭐ Interesse" : "Je suis interesse"}</button>
-          <button class="${state.agenda.some(a => a.sourceId === race.id) ? "btn-participe" : "primary-button"}" data-import-race="${race.id}" type="button">${state.agenda.some(a => a.sourceId === race.id) ? "✓ Participe" : "Ajouter"}</button>
+          <button class="secondary-button${state.raceInterests[race.id] ? " btn-interested" : ""}" data-race-interest="${race.id}" type="button">${state.raceInterests[race.id] ? t('race_interested_active') : t('race_interested_btn')}</button>
+          <button class="${state.agenda.some(a => a.sourceId === race.id) ? "btn-participe" : "primary-button"}" data-import-race="${race.id}" type="button">${state.agenda.some(a => a.sourceId === race.id) ? t('race_participating_btn') : t('race_add_btn')}</button>
         </div>
         ${renderRaceInterestSummary(race)}
         <div class="admin-edit-form hidden" data-edit-form="${race.id}">
@@ -4807,8 +5549,8 @@ function renderRaceSearch() {
           <input class="admin-edit-distance" type="number" placeholder="Distance km" value="${race.distance || ""}" />
           <input class="admin-edit-notes"    placeholder="Notes"     value="${race.notes || ""}" />
           <div style="display:flex;gap:8px;margin-top:6px">
-            <button class="primary-button admin-edit-save" data-save-edit="${race.id}" type="button">💾 Enregistrer</button>
-            <button class="secondary-button admin-edit-cancel" data-cancel-edit="${race.id}" type="button">Annuler</button>
+            <button class="primary-button admin-edit-save" data-save-edit="${race.id}" type="button">${t('race_save_btn')}</button>
+            <button class="secondary-button admin-edit-cancel" data-cancel-edit="${race.id}" type="button">${t('btn_cancel')}</button>
           </div>
         </div>
       </article>
@@ -4816,7 +5558,7 @@ function renderRaceSearch() {
   }
 
   if (results.length === 0) {
-    list.innerHTML = radarMeta + `<p class="empty-state">Aucune course trouvee. Essaie une region plus large comme Europe, USA, Canada, Suede ou Amundsen.</p>`;
+    list.innerHTML = radarMeta + `<p class="empty-state">${t('race_none_found')}</p>`;
   } else {
     // Séparer les courses sélectionnées (intérêt marqué) des autres
     const pinned = results.filter((r) => state.raceInterests[r.id]);
@@ -4835,7 +5577,7 @@ function renderRaceSearch() {
     if (pinned.length > 0) {
       pinnedHtml = `
         <div class="pinned-races-section">
-          <p class="pinned-races-title">⭐ Mes courses selectionnees (${pinned.length})</p>
+          <p class="pinned-races-title">${t('race_pinned_label')} (${pinned.length})</p>
           ${pinned.map((r) => buildRaceCard(r, true)).join("")}
         </div>
       `;
@@ -4862,7 +5604,7 @@ function renderRaceSearch() {
           <button class="race-country-header" type="button" data-country="${country}" aria-expanded="false">
             <span class="race-country-flag">${flag}</span>
             <h3>${label}</h3>
-            <span class="race-count-badge">${races.length} course${races.length > 1 ? "s" : ""}</span>
+            <span class="race-count-badge">${races.length} ${races.length > 1 ? t('race_count_plural') : t('race_count_singular')}</span>
             <svg class="country-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div class="race-country-body" hidden>
@@ -4979,7 +5721,7 @@ async function adminDeleteRace(id) {
   }
   delete state.raceInterests[id];
   saveState();
-  showSyncBadge("🗑️ Course supprimée");
+  showSyncBadge(t("badge_race_deleted"));
 }
 
 // ── Logique admin : modifier une course ──────────────────────────────────────
@@ -5012,7 +5754,7 @@ async function adminUpdateRace(id, updates) {
       fetchRaceRadar();
     }
   }
-  showSyncBadge("✅ Course mise à jour");
+  showSyncBadge(t("badge_race_updated"));
 }
 
 function renderRaceInterestSummary(race) {
@@ -5042,19 +5784,19 @@ function renderRaceInterestSummary(race) {
   const hasAnything = interestedList.length > 0 || participantsList.length > 0;
   if (!hasAnything) {
     return `<div class="race-community-summary empty">
-      <p>Sois le premier à marquer ton intérêt pour cette course ! ⭐</p>
+      <p>${t('race_be_first')}</p>
     </div>`;
   }
 
   return `<div class="race-community-summary">
     ${participantsList.length > 0 ? `
       <div class="race-community-group participants">
-        <span class="community-label">✓ Participe (${participantsList.length})</span>
+        <span class="community-label">${t('race_participating_label')} (${participantsList.length})</span>
         <span class="community-names">${participantsList.join(" · ")}</span>
       </div>` : ""}
     ${interestedList.length > 0 ? `
       <div class="race-community-group interested">
-        <span class="community-label">⭐ Intéressé (${interestedList.length})</span>
+        <span class="community-label">${t('race_interested_label')} (${interestedList.length})</span>
         <span class="community-names">${interestedList.join(" · ")}</span>
       </div>` : ""}
   </div>`;
@@ -5062,7 +5804,7 @@ function renderRaceInterestSummary(race) {
 
 function requireProfile() {
   if (state.profile?.name && state.profile.name.trim()) return true;
-  showSyncBadge("👤 Complète ton profil pour participer !");
+  showSyncBadge(t("badge_complete_profile"));
   setTimeout(() => showScreen("vous"), 1200);
   return false;
 }
@@ -5197,11 +5939,11 @@ function getReliabilityRank(value) {
 
 function getReliabilityLabel(value) {
   return {
-    official: "Confirmee officielle",
-    calendar: "Calendrier public",
-    watch: "A surveiller",
-    user: "Signalee"
-  }[value] || "A verifier";
+    official: t('race_reliability_official'),
+    calendar: t('race_reliability_calendar'),
+    watch: t('race_reliability_watch'),
+    user: t('race_reliability_user')
+  }[value] || t('race_reliability_unknown');
 }
 
 async function importRaceToAgenda(id) {
@@ -5236,7 +5978,7 @@ async function importRaceToAgenda(id) {
       if (data.configured && data.interests) communityInterests = { ...communityInterests, ...data.interests };
     } catch { /* hors ligne, pas grave */ }
     renderRaceSearch();
-    showSyncBadge("🗑️ Participation annulée");
+    showSyncBadge(t("badge_participation_cancelled"));
     return;
   }
 
@@ -5273,7 +6015,7 @@ async function importRaceToAgenda(id) {
     if (data.configured && data.interests) communityInterests = { ...communityInterests, ...data.interests };
   } catch { /* hors ligne, pas grave */ }
   renderRaceSearch();
-  showSyncBadge("🏁 Participation confirmée !");
+  showSyncBadge(t("badge_participation_confirmed"));
 }
 
 // Email de l'admin (toi) — seul ce compte peut approuver les courses
@@ -5421,18 +6163,18 @@ function renderAgenda() {
   const items = [...state.agenda].sort((a, b) => new Date(a.date) - new Date(b.date));
 
   if (items.length === 0) {
-    lists.forEach(l => { l.innerHTML = `<p class="empty-state">Agenda vide — ajoute un événement avec + ou valide une course dans l'onglet Course.</p>`; });
+    lists.forEach(l => { l.innerHTML = `<p class="empty-state">${t('agenda_empty')}</p>`; });
     return;
   }
 
   const agendaHtml = items.map((item) => {
     const days = daysUntil(item.date);
-    const status = days < 0 ? "Passé" : days === 0 ? "Aujourd'hui !" : `Dans ${days} jour${days > 1 ? "s" : ""}`;
+    const status = days < 0 ? t('agenda_passed') : days === 0 ? t('agenda_today') : t('agenda_in_days').replace('{n}', days).replace('{s}', days > 1 ? "s" : "");
     const isRace = item.kind === "race" || item.sourceId;
     const icon = EVENT_ICONS[item.category || (isRace ? "race" : "autre")] || "📌";
     const subtitle = isRace
       ? `${item.type || ""} · ${item.distance ? item.distance + " km" : ""} · ${item.location || ""}`
-      : item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : "Événement";
+      : item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : t('agenda_event');
     const notesHtml = item.notes ? `<p style="margin:6px 0 0;font-size:0.82rem;color:#666">${item.notes}</p>` : "";
 
     // Formulaire d'édition inline
@@ -5446,7 +6188,7 @@ function renderAgenda() {
           <span style="font-size:1.6rem;line-height:1">${icon}</span>
           <div style="flex:1;min-width:0">
             <p style="margin:0;font-size:0.75rem;color:${days < 0 ? "#aaa" : days <= 7 ? "#fc4c02" : "#666"};font-weight:600">${status} · ${formatFullDate(item.date)}</p>
-            <h3 style="margin:2px 0 4px;font-size:1rem;font-weight:700">${item.name || item.title || "Sans titre"}</h3>
+            <h3 style="margin:2px 0 4px;font-size:1rem;font-weight:700">${item.name || item.title || t('agenda_no_title')}</h3>
             <p style="margin:0;font-size:0.8rem;color:#888">${subtitle}</p>
             ${notesHtml}
           </div>
@@ -5462,13 +6204,13 @@ function renderAgenda() {
         </div>` : ""}
         ${isRace && days >= 0 ? renderRaceChecklist(item) : ""}
         <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-          ${isRace && days < 0 ? `<button data-agenda-result="${item.id}" type="button" style="flex:1;min-width:100px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #1a7a4a;border-radius:8px;background:#fff;color:#1a7a4a;cursor:pointer">${item.result ? "✏️ Résultat" : "🏆 Résultat"}</button>` : ""}
-          ${isRace && days >= 0 ? `<button data-checklist-toggle="${item.id}" type="button" style="flex:1;min-width:100px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #6366f1;border-radius:8px;background:#fff;color:#6366f1;cursor:pointer">☑️ Checklist</button>` : ""}
-          <button data-agenda-edit="${item.id}" type="button" style="flex:1;min-width:80px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #fc4c02;border-radius:8px;background:#fff;color:#fc4c02;cursor:pointer">✏️ Modifier</button>
-          <button data-agenda-delete="${item.id}" type="button" style="flex:1;min-width:80px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#999;cursor:pointer">🗑 Supprimer</button>
+          ${isRace && days < 0 ? `<button data-agenda-result="${item.id}" type="button" style="flex:1;min-width:100px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #1a7a4a;border-radius:8px;background:#fff;color:#1a7a4a;cursor:pointer">${item.result ? t('agenda_result_edit_btn') : t('agenda_result_btn')}</button>` : ""}
+          ${isRace && days >= 0 ? `<button data-checklist-toggle="${item.id}" type="button" style="flex:1;min-width:100px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #6366f1;border-radius:8px;background:#fff;color:#6366f1;cursor:pointer">${t('agenda_checklist_label')}</button>` : ""}
+          <button data-agenda-edit="${item.id}" type="button" style="flex:1;min-width:80px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #fc4c02;border-radius:8px;background:#fff;color:#fc4c02;cursor:pointer">${t('agenda_edit_btn')}</button>
+          <button data-agenda-delete="${item.id}" type="button" style="flex:1;min-width:80px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#999;cursor:pointer">${t('agenda_delete_btn')}</button>
         </div>
         <form data-result-form="${item.id}" style="display:none;flex-direction:column;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #eee">
-          <p style="margin:0 0 4px;font-size:0.78rem;font-weight:700;color:#1a7a4a;text-transform:uppercase;letter-spacing:.05em">🏆 Résultat de course</p>
+          <p style="margin:0 0 4px;font-size:0.78rem;font-weight:700;color:#1a7a4a;text-transform:uppercase;letter-spacing:.05em">${t('agenda_result_label')}</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <label style="font-size:0.8rem;font-weight:600;color:#555">Classement<input name="rank" type="text" value="${item.result?.rank || ""}" placeholder="Ex: 3" style="display:block;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem;width:100%;box-sizing:border-box"/></label>
             <label style="font-size:0.8rem;font-weight:600;color:#555">/ Participants<input name="totalParticipants" type="text" value="${item.result?.totalParticipants || ""}" placeholder="Ex: 42" style="display:block;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem;width:100%;box-sizing:border-box"/></label>
@@ -5476,8 +6218,8 @@ function renderAgenda() {
           <label style="font-size:0.8rem;font-weight:600;color:#555">Temps<input name="time" type="text" value="${item.result?.time || ""}" placeholder="Ex: 1h23m45s" style="display:block;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem"/></label>
           <label style="font-size:0.8rem;font-weight:600;color:#555">Note personnelle<input name="notes" type="text" value="${item.result?.notes || ""}" placeholder="Super course, conditions parfaites..." style="display:block;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem"/></label>
           <div style="display:flex;gap:8px">
-            <button type="submit" style="flex:1;padding:9px;background:#1a7a4a;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">Enregistrer</button>
-            <button type="button" data-result-cancel="${item.id}" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;cursor:pointer">Annuler</button>
+            <button type="submit" style="flex:1;padding:9px;background:#1a7a4a;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">${t('health_save_btn')}</button>
+            <button type="button" data-result-cancel="${item.id}" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;cursor:pointer">${t('agenda_cancel_btn')}</button>
           </div>
         </form>
         <form data-agenda-edit-form="${item.id}" style="display:none;flex-direction:column;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #eee">
@@ -5486,8 +6228,8 @@ function renderAgenda() {
           ${!isRace ? `<select name="category" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem">${catOptions}</select>` : ""}
           <textarea name="notes" placeholder="Notes..." style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem;min-height:56px">${item.notes || ""}</textarea>
           <div style="display:flex;gap:8px">
-            <button type="submit" style="flex:1;padding:9px;background:#fc4c02;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">💾 Enregistrer</button>
-            <button type="button" data-agenda-cancel="${item.id}" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;cursor:pointer">Annuler</button>
+            <button type="submit" style="flex:1;padding:9px;background:#fc4c02;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">${t('agenda_save_btn')}</button>
+            <button type="button" data-agenda-cancel="${item.id}" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;cursor:pointer">${t('agenda_cancel_btn')}</button>
           </div>
         </form>
       </article>
@@ -5505,8 +6247,8 @@ function renderAgenda() {
       const form = list.querySelector(`[data-agenda-edit-form="${id}"]`);
       const open = form.style.display !== "none";
       list.querySelectorAll("[data-agenda-edit-form]").forEach(f => { f.style.display = "none"; });
-      list.querySelectorAll("[data-agenda-edit]").forEach(b => { b.textContent = "✏️ Modifier"; });
-      if (!open) { form.style.display = "flex"; btn.textContent = "✖ Fermer"; }
+      list.querySelectorAll("[data-agenda-edit]").forEach(b => { b.textContent = t('agenda_edit_btn'); });
+      if (!open) { form.style.display = "flex"; btn.textContent = t('agenda_close_btn'); }
     });
   });
 
@@ -5515,7 +6257,7 @@ function renderAgenda() {
     btn.addEventListener("click", () => {
       const id = btn.dataset.agendaCancel;
       list.querySelector(`[data-agenda-edit-form="${id}"]`).style.display = "none";
-      list.querySelector(`[data-agenda-edit="${id}"]`).textContent = "✏️ Modifier";
+      list.querySelector(`[data-agenda-edit="${id}"]`).textContent = t('agenda_edit_btn');
     });
   });
 
@@ -5536,7 +6278,7 @@ function renderAgenda() {
           ...(fd.get("category") ? { category: fd.get("category") } : {})
         };
         saveState();
-        showSyncBadge("✏️ Modifié");
+        showSyncBadge(t("badge_agenda_modified"));
       }
       renderAgenda();
     });
@@ -5710,12 +6452,12 @@ function renderOpenRuns() {
         </div>
         <p>${run.notes || "Sortie ouverte pour avancer avec son chien."}</p>
         <div class="open-run-participants">
-          ${participants.map((person) => `<span>${person}</span>`).join("") || `<span>Aucun participant</span>`}
+          ${participants.map((person) => `<span>${person}</span>`).join("") || `<span>${t('net_no_participant')}</span>`}
         </div>
-        <button class="${joined ? "secondary-button" : "primary-button"}" data-join-open-run="${run.id}" type="button">${joined ? "Je ne participe plus" : "Je participe"}</button>
+        <button class="${joined ? "secondary-button" : "primary-button"}" data-join-open-run="${run.id}" type="button">${joined ? t('net_leave_run') : t('net_join_run')}</button>
       </article>
     `;
-  }).join("") || `<p class="empty-state">Aucune sortie ouverte. Cree une sortie pour trouver des personnes motivees pres de chez toi.</p>`);
+  }).join("") || `<p class="empty-state">${t('net_no_open_run')}</p>`);
 
   list.querySelectorAll("[data-join-open-run]").forEach((button) => {
     button.addEventListener("click", () => toggleOpenRunJoin(button.dataset.joinOpenRun));
@@ -5813,7 +6555,7 @@ function renderNextRace() {
   if (!list) return;
   const next = getNextAgendaRace();
   if (!next) {
-    list.innerHTML = `<article><span>Agenda</span><strong>Aucune course</strong><p>Ajoute une course pour construire ta saison.</p></article>`;
+    list.innerHTML = `<article><span>Agenda</span><strong>${t('settings_no_race')}</strong><p>${t('settings_add_race')}</p></article>`;
     return;
   }
   const days = daysUntil(next.date);
@@ -6083,7 +6825,7 @@ function isCapacitorNative() {
 
 function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
   if (accuracy > 50) {
-    updateMapPosition(lat, lon, `GPS: recherche précision (±${Math.round(accuracy)}m)…`);
+    updateMapPosition(lat, lon, t('gps_searching_acc').replace('{acc}', Math.round(accuracy)));
     return;
   }
   if (lastPosition) {
@@ -6095,7 +6837,7 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
     if (moved < 0.005) return;
   }
 
-  updateMapPosition(lat, lon, `GPS actif — ±${Math.round(accuracy)}m`);
+  updateMapPosition(lat, lon, t('gps_active').replace('{acc}', Math.round(accuracy)));
   if (altitude !== null && altitude !== undefined) {
     if (lastAltitude !== null && altitude - lastAltitude > 1) {
       elevationGain += altitude - lastAltitude;
@@ -6581,7 +7323,7 @@ document.querySelector("#event-form")?.addEventListener("submit", (e) => {
   e.target.classList.add("hidden");
   saveState();
   renderAgenda();
-  showSyncBadge("✅ Événement ajouté");
+  showSyncBadge(t("badge_event_added"));
 });
 
 dogForm.addEventListener("submit", (event) => {
@@ -6762,16 +7504,16 @@ function buildCoachWelcome() {
       <div class="coach-welcome-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="#fc4c02" stroke-width="1.8" width="40" height="40"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-1-5h2v2h-2zm0-8h2v6h-2z"/></svg>
       </div>
-      <h3>Prêt à analyser ton entraînement</h3>
-      <p>Je vais analyser tes <strong>${runCount} sortie(s)</strong>, tes <strong>${dogCount} chien(s)</strong> et tes <strong>${totalKm} km</strong> enregistrés pour te donner un rapport détaillé vers ton objectif <strong>${settingsRaceName} ${raceKm} km</strong>.</p>
+      <h3>${t('coach_ready')}</h3>
+      <p>${t('coach_welcome_desc').replace('{runs}', runCount).replace('{dogs}', dogCount).replace('{km}', totalKm).replace('{race}', settingsRaceName).replace('{rkm}', raceKm)}</p>
       <ul class="coach-welcome-list">
-        <li>📊 Évaluation de ta condition actuelle</li>
-        <li>🗓️ Plan d'entraînement 4 semaines personnalisé</li>
-        <li>🐕 Conseils spécifiques pour tes chiens</li>
-        <li>⚡ Actions prioritaires cette semaine</li>
-        <li>⚠️ Alertes si quelque chose doit être corrigé</li>
+        <li>📊 ${t('coach_welcome_li1')}</li>
+        <li>🗓️ ${t('coach_welcome_li2')}</li>
+        <li>🐕 ${t('coach_welcome_li3')}</li>
+        <li>⚡ ${t('coach_welcome_li4')}</li>
+        <li>⚠️ ${t('coach_welcome_li5')}</li>
       </ul>
-      <p class="coach-welcome-hint">Analyse 100&nbsp;% locale · gratuite · instantanée.</p>
+      <p class="coach-welcome-hint">${t('coach_welcome_hint')}</p>
     </div>
   `;
 }
@@ -6787,11 +7529,11 @@ function requestCoachAnalysis() {
     coachResult.innerHTML = `
       <div class="coach-analysis">
         <div class="coach-analysis-meta">
-          <span>Analyse du ${new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</span>
-          <span>Coach MushTrack local · gratuit</span>
+          <span>${new Date().toLocaleDateString(state.lang === 'de' ? 'de-DE' : state.lang === 'en' ? 'en-GB' : 'fr-FR', { day: "numeric", month: "long", year: "numeric" })}</span>
+          <span>${t('coach_local_free')}</span>
         </div>
         <div class="coach-analysis-text">${report}</div>
-        <button class="secondary-button coach-refresh-btn" id="coach-refresh-btn" type="button">🔄 Actualiser l'analyse</button>
+        <button class="secondary-button coach-refresh-btn" id="coach-refresh-btn" type="button">${t('coach_refresh')}</button>
       </div>
     `;
     coachResult.dataset.hasResult = "1";
@@ -6799,7 +7541,7 @@ function requestCoachAnalysis() {
       delete coachResult.dataset.hasResult;
       coachResult.innerHTML = buildCoachWelcome();
       btn.disabled = false;
-      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Analyser`;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>${t('coach_analyze_btn')}`;
     });
     btn.disabled = false;
     btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Analyser`;
@@ -7404,28 +8146,28 @@ function renderCoach() {
     <div style="background:linear-gradient(135deg,#1a1a2e,${phaseColor});border-radius:16px;padding:18px;color:#fff;margin:16px 0 12px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
         <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;opacity:.75">${PHASE_LABELS[plan.phase]}</p>
-        ${plan.isDeloadWeek ? `<span style="background:rgba(255,255,255,0.2);border-radius:8px;padding:2px 8px;font-size:0.68rem;font-weight:700">📉 SEMAINE DÉCHARGE</span>` : ""}
+        ${plan.isDeloadWeek ? `<span style="background:rgba(255,255,255,0.2);border-radius:8px;padding:2px 8px;font-size:0.68rem;font-weight:700">${t('coach_deload_week')}</span>` : ""}
       </div>
       <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:8px">${plan.raceName || "Objectif saison"}</h2>
       <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px">
-        <div><strong style="font-size:1.4rem">${plan.weeksLeft}</strong><span style="font-size:0.78rem;opacity:.8;margin-left:4px">semaines</span></div>
-        <div><strong style="font-size:1.4rem">${plan.weekTarget}</strong><span style="font-size:0.78rem;opacity:.8;margin-left:4px">km/sem cible</span></div>
-        <div><strong style="font-size:1.4rem">${plan.weekDone.toFixed(0)}</strong><span style="font-size:0.78rem;opacity:.8;margin-left:4px">km cette sem.</span></div>
+        <div><strong style="font-size:1.4rem">${plan.weeksLeft}</strong><span style="font-size:0.78rem;opacity:.8;margin-left:4px">${t('coach_weeks')}</span></div>
+        <div><strong style="font-size:1.4rem">${plan.weekTarget}</strong><span style="font-size:0.78rem;opacity:.8;margin-left:4px">${t('coach_km_week')}</span></div>
+        <div><strong style="font-size:1.4rem">${plan.weekDone.toFixed(0)}</strong><span style="font-size:0.78rem;opacity:.8;margin-left:4px">${t('coach_km_done')}</span></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <span style="font-size:0.75rem;opacity:.8">Niveau : <strong>${plan.trainingLevel}</strong></span>
-        ${plan.progressPct !== null ? `<span style="font-size:0.75rem;opacity:.8">· Progression : <strong>${plan.progressPct > 0 ? "+" : ""}${plan.progressPct}%</strong> vs sem. passée</span>` : ""}
+        <span style="font-size:0.75rem;opacity:.8">${t('coach_level_label')} : <strong>${plan.trainingLevel}</strong></span>
+        ${plan.progressPct !== null ? `<span style="font-size:0.75rem;opacity:.8">· ${t('coach_progress_label')} : <strong>${plan.progressPct > 0 ? "+" : ""}${plan.progressPct}%</strong> vs sem. passée</span>` : ""}
       </div>
     </div>
 
     <!-- Graphique 4 semaines -->
     <div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid #f0f0f0">
-      <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;color:#999;font-weight:700;margin-bottom:10px">Volume 4 semaines (km)</p>
+      <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;color:#999;font-weight:700;margin-bottom:10px">${t('coach_volume_4w')}</p>
       <div style="display:flex;align-items:flex-end;gap:6px;height:60px">
         ${(() => {
           const weeks4 = plan.weeklyKm.slice(4); // 4 dernières semaines
           const maxK   = Math.max(...weeks4, 1);
-          const labels = ["S-3","S-2","S-1","Cette sem."];
+          const labels = ["S-3","S-2","S-1", t('dash_week_label')];
           return weeks4.map((k, i) => {
             const h   = Math.round((k / maxK) * 52);
             const col = i === 3 ? phaseColor : "#e5e7eb";
@@ -7447,14 +8189,14 @@ function renderCoach() {
         <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:${v.days < 0 ? "#fff1f1" : v.days <= 3 ? "#fff8f0" : "#f0fff4"};border-radius:12px;border:1px solid ${v.days < 0 ? "#fca5a5" : v.days <= 3 ? "#fdba74" : "#86efac"};margin-bottom:6px">
           <span style="font-size:1.3rem">${v.type === "vaccin" ? "💉" : "🐛"}</span>
           <div>
-            <strong style="font-size:0.88rem">${v.type === "vaccin" ? "Vaccin" : "Vermifuge"} — ${v.dog}</strong>
-            <small style="display:block;font-size:0.75rem;color:#666">${v.days < 0 ? `En retard de ${Math.abs(v.days)}j` : v.days === 0 ? "Aujourd'hui !" : `Dans ${v.days} jour${v.days > 1 ? "s" : ""}`}${v.notes ? " · " + v.notes : ""}</small>
+            <strong style="font-size:0.88rem">${v.type === "vaccin" ? t('coach_vet_vaccin') : t('coach_vet_vermifuge')} — ${v.dog}</strong>
+            <small style="display:block;font-size:0.75rem;color:#666">${v.days < 0 ? t('coach_vet_overdue').replace('{n}', Math.abs(v.days)) : v.days === 0 ? t('coach_vet_today') : t('coach_vet_in_days').replace('{n}', v.days).replace('{s}', v.days > 1 ? "s" : "")}${v.notes ? " · " + v.notes : ""}</small>
           </div>
         </div>`).join("")}
     </div>` : ""}
 
     <!-- Plan hebdo -->
-    <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;color:#999;font-weight:700;margin-bottom:8px">Plan de la semaine</p>
+    <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;color:#999;font-weight:700;margin-bottom:8px">${t('coach_week_plan')}</p>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
       ${plan.days.map((day, i) => {
         const date = new Date(today); date.setDate(today.getDate() - today.getDay() + 1 + i);
@@ -7484,13 +8226,13 @@ function renderCoach() {
 
     <!-- Conseil du coach -->
     <div style="background:#f8f9ff;border-radius:14px;padding:16px;border-left:4px solid ${phaseColor};margin-bottom:16px">
-      <p style="font-size:0.72rem;font-weight:700;color:${phaseColor};text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Conseil du coach</p>
+      <p style="font-size:0.72rem;font-weight:700;color:${phaseColor};text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">${t('coach_tip')}</p>
       <p style="font-size:0.88rem;color:#444;line-height:1.5">${plan.advice}</p>
     </div>
 
     <!-- Chiens à surveiller -->
     ${plan.dogAlerts.length ? `
-    <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;color:#999;font-weight:700;margin-bottom:8px">Chiens à surveiller</p>
+    <p style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;color:#999;font-weight:700;margin-bottom:8px">${t('coach_dogs_watch')}</p>
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px">
       ${plan.dogAlerts.map(a => `
         <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border-radius:12px;border:1px solid #f0f0f0">
@@ -7501,13 +8243,13 @@ function renderCoach() {
 
     <!-- Rapport mensuel -->
     <div style="margin-bottom:20px">
-      <p style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:8px">Rapport mensuel</p>
+      <p style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:8px">${t('coach_monthly')}</p>
       ${renderMonthlyReport()}
     </div>
 
     <!-- Corrélation météo/performance -->
     <div style="margin-bottom:20px">
-      <p style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:8px">Météo & performance</p>
+      <p style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:8px">${t('coach_weather_perf')}</p>
       ${renderWeatherCorrelation()}
     </div>
   `;
@@ -7535,12 +8277,12 @@ function renderMonthlyReport() {
   const avgRecov  = monthRuns.filter(r => r.recovery).length
     ? monthRuns.filter(r => r.recovery).reduce((s, r) => s + (r.recovery === "excellent" ? 3 : r.recovery === "good" ? 2 : 1), 0) / monthRuns.filter(r => r.recovery).length
     : null;
-  const recovLabel = avgRecov ? (avgRecov >= 2.5 ? "Excellente" : avgRecov >= 1.5 ? "Bonne" : "Faible") : "—";
+  const recovLabel = avgRecov ? (avgRecov >= 2.5 ? t('gps_recovery_excellent') : avgRecov >= 1.5 ? t('gps_recovery_good') : t('dash_load_low')) : "—";
   const recovColor = avgRecov ? (avgRecov >= 2.5 ? "#22c55e" : avgRecov >= 1.5 ? "#f59e0b" : "#ef4444") : "#888";
   const diff      = prevKm ? Math.round(((totalKm - prevKm) / prevKm) * 100) : null;
   const monthName = now.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 
-  if (!monthRuns.length) return `<div style="background:#f9f9f9;border-radius:14px;padding:16px;text-align:center;color:#aaa;font-size:0.85rem">Aucune sortie ce mois-ci.</div>`;
+  if (!monthRuns.length) return `<div style="background:#f9f9f9;border-radius:14px;padding:16px;text-align:center;color:#aaa;font-size:0.85rem">${t('coach_no_run_month')}</div>`;
 
   return `
     <div style="background:#f9f9f9;border-radius:14px;padding:16px">
@@ -7552,15 +8294,15 @@ function renderMonthlyReport() {
         </div>
         <div style="background:#fff;border-radius:10px;padding:10px;text-align:center">
           <div style="font-size:1.4rem;font-weight:800;color:#333">${monthRuns.length}</div>
-          <div style="font-size:0.7rem;color:#888">sortie${monthRuns.length > 1 ? "s" : ""}</div>
+          <div style="font-size:0.7rem;color:#888">${monthRuns.length > 1 ? t('coach_run_count_p') : t('coach_run_count_s')}</div>
         </div>
         <div style="background:#fff;border-radius:10px;padding:10px;text-align:center">
           <div style="font-size:1.1rem;font-weight:800;color:#333">${bestRun ? Number(bestRun.km).toFixed(1) + " km" : "—"}</div>
-          <div style="font-size:0.7rem;color:#888">meilleure sortie${bestRun ? " · " + new Date(bestRun.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : ""}</div>
+          <div style="font-size:0.7rem;color:#888">${t('coach_best_run')}${bestRun ? " · " + new Date(bestRun.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : ""}</div>
         </div>
         <div style="background:#fff;border-radius:10px;padding:10px;text-align:center">
           <div style="font-size:1.1rem;font-weight:800;color:${recovColor}">${recovLabel}</div>
-          <div style="font-size:0.7rem;color:#888">récupération moy.</div>
+          <div style="font-size:0.7rem;color:#888">${t('coach_recovery_avg')}</div>
         </div>
       </div>
     </div>`;
@@ -7568,7 +8310,7 @@ function renderMonthlyReport() {
 
 function renderWeatherCorrelation() {
   const runsWithTemp = state.runs.filter(r => r.temp !== null && r.temp !== undefined && r.km);
-  if (runsWithTemp.length < 3) return `<div style="background:#f9f9f9;border-radius:14px;padding:16px;text-align:center;color:#aaa;font-size:0.85rem">Pas encore assez de données.<br><small>La température est enregistrée automatiquement à chaque sortie.</small></div>`;
+  if (runsWithTemp.length < 3) return `<div style="background:#f9f9f9;border-radius:14px;padding:16px;text-align:center;color:#aaa;font-size:0.85rem">${t('coach_weather_data_low')}<br><small>${t('coach_weather_data_hint')}</small></div>`;
 
   // Grouper par tranche de 5°C
   const buckets = {};
@@ -7600,9 +8342,9 @@ function renderWeatherCorrelation() {
 
   return `
     <div style="background:#f9f9f9;border-radius:14px;padding:16px">
-      <p style="font-size:0.78rem;color:#444;margin:0 0 12px">Km moyen par tranche de température — ${runsWithTemp.length} sorties analysées</p>
+      <p style="font-size:0.78rem;color:#444;margin:0 0 12px">${t('coach_weather_runs_analyzed').replace('{n}', runsWithTemp.length)}</p>
       ${bars}
-      ${best ? `<p style="font-size:0.78rem;color:#fc4c02;font-weight:700;margin:10px 0 0">🎯 Meilleure condition : ${best.k >= 0 ? "+" : ""}${best.k}°C à ${best.k + 4}°C (${best.avg.toFixed(1)} km en moyenne)</p>` : ""}
+      ${best ? `<p style="font-size:0.78rem;color:#fc4c02;font-weight:700;margin:10px 0 0">${t('coach_weather_best').replace('{range}', (best.k >= 0 ? "+" : "") + best.k).replace('{end}', best.k + 4).replace('{avg}', best.avg.toFixed(1))}</p>` : ""}
     </div>`;
 }
 
@@ -7759,7 +8501,7 @@ function renderReminders() {
   const today = new Date(); today.setHours(0,0,0,0);
 
   if (reminders.length === 0) {
-    list.innerHTML = `<p class="empty-state" style="font-size:0.83rem;color:#aaa;padding:8px 0">Aucun rappel configuré.</p>`;
+    list.innerHTML = `<p class="empty-state" style="font-size:0.83rem;color:#aaa;padding:8px 0">${t('reminder_none')}</p>`;
     return;
   }
 
@@ -7767,14 +8509,14 @@ function renderReminders() {
     const due  = new Date(r.date + "T12:00:00");
     const days = Math.round((due - today) / 86400000);
     const badge = days < 0 ? "overdue" : days <= 3 ? "urgent" : days <= 14 ? "soon" : "";
-    const label = days < 0 ? `En retard de ${Math.abs(days)} j`
-      : days === 0 ? "Aujourd'hui !"
-      : days === 1 ? "Demain"
-      : `Dans ${days} jour${days > 1 ? "s" : ""}`;
+    const label = days < 0 ? t('reminder_overdue').replace('{n}', Math.abs(days))
+      : days === 0 ? t('reminder_today')
+      : days === 1 ? t('reminder_tomorrow')
+      : t('reminder_in_days').replace('{n}', days).replace('{s}', days > 1 ? "s" : "");
     return `<div class="reminder-item ${badge}">
       <div class="reminder-body">
         <strong>${r.title}</strong>
-        <small>${label}${r.interval ? ` · répète tous les ${r.interval} j` : ""}</small>
+        <small>${label}${r.interval ? ` · ${t('reminder_repeat').replace('{n}', r.interval)}` : ""}</small>
       </div>
       <button class="reminder-del" data-del-reminder="${i}" type="button">✕</button>
     </div>`;
@@ -8371,7 +9113,7 @@ document.getElementById("community-share-btn")?.addEventListener("click", async 
   const btn = document.getElementById("community-share-btn");
   if (!lastSharedRun) return;
   btn.disabled = true;
-  btn.textContent = "Partage en cours…";
+  btn.textContent = t("net_sharing");
 
   const dogs = (lastSharedRun.team || [])
     .map(id => { const d = state.dogs.find(dd => dd.id === id); return d ? d.name : ""; })
@@ -8380,7 +9122,7 @@ document.getElementById("community-share-btn")?.addEventListener("click", async 
   let photoUrl = "";
   try {
     if (selectedPhotoFile) {
-      btn.textContent = "Upload photo…";
+      btn.textContent = t("net_upload_photo");
       photoUrl = await uploadFeedPhoto(selectedPhotoFile, state.deviceId);
     }
 
@@ -8403,14 +9145,14 @@ document.getElementById("community-share-btn")?.addEventListener("click", async 
     });
     const data = await res.json();
     if (data.configured === false) {
-      btn.textContent = "⚠️ Réseau non disponible";
+      btn.textContent = t("net_unavailable");
       return;
     }
     selectedPhotoFile = null;
     document.getElementById("community-share-banner").style.display = "none";
     await fetchFeed();
   } catch (e) {
-    btn.textContent = "❌ Erreur";
+    btn.textContent = t("net_error");
     console.error(e);
   } finally {
     btn.disabled = false;
@@ -8434,10 +9176,10 @@ async function fetchFeed() {
     }
 
     feedPosts = data.posts || [];
-    if (statusEl) { statusEl.style.display = "block"; statusEl.textContent = `${feedPosts.length} activité${feedPosts.length !== 1 ? "s" : ""}`; }
+    if (statusEl) { statusEl.style.display = "block"; statusEl.textContent = `${feedPosts.length} ${feedPosts.length !== 1 ? t('net_activities_p') : t('net_activities')}`; }
     renderFeed();
   } catch (e) {
-    if (feedEl) feedEl.innerHTML = `<p style="color:#d94040;text-align:center;padding:20px 0;font-size:0.85rem">Erreur de chargement</p>`;
+    if (feedEl) feedEl.innerHTML = `<p style="color:#d94040;text-align:center;padding:20px 0;font-size:0.85rem">${t('net_feed_error')}</p>`;
   } finally {
     feedLoading = false;
   }
@@ -8448,7 +9190,7 @@ function renderFeed() {
   if (!feedEl) return;
 
   if (!feedPosts.length) {
-    feedEl.innerHTML = `<p style="color:#aaa;text-align:center;padding:60px 0;font-size:0.85rem">Aucune activité partagée pour l'instant.<br>Sois le premier ! 🐕</p>`;
+    feedEl.innerHTML = `<p style="color:#aaa;text-align:center;padding:60px 0;font-size:0.85rem">${t('net_feed_empty').replace('\n', '<br>')}</p>`;
     return;
   }
 
@@ -8476,7 +9218,7 @@ function renderFeed() {
         <div class="feed-stat"><span>${Number(post.km || 0).toFixed(1)}</span><small>km</small></div>
         ${mins ? `<div class="feed-stat"><span>${mins}</span><small>min</small></div>` : ""}
         ${pace ? `<div class="feed-stat"><span>${pace}</span><small>min/km</small></div>` : ""}
-        ${post.dog_count ? `<div class="feed-stat"><span>${post.dog_count}</span><small>chien${post.dog_count > 1 ? "s" : ""}</small></div>` : ""}
+        ${post.dog_count ? `<div class="feed-stat"><span>${post.dog_count}</span><small>${post.dog_count > 1 ? t('net_dog_count_p') : t('net_dog_count_s')}</small></div>` : ""}
       </div>
 
       ${post.photo_url ? `<div class="feed-photo"><img src="${post.photo_url}" alt="Photo sortie" loading="lazy"/></div>` : ""}
@@ -8559,7 +9301,7 @@ async function loadComments(postId, section, toggleBtn) {
         <small>${formatTimeAgo(c.created_at)}</small>
         ${isMe ? `<button class="feed-comment-delete" data-delete-comment="${c.id}">✕</button>` : ""}
       </div>`;
-    }).join("") || `<p class="feed-comment-empty">Aucun commentaire. Sois le premier !</p>`;
+    }).join("") || `<p class="feed-comment-empty">${t('net_no_comments')}</p>`;
 
     section.innerHTML = `
       <div class="feed-comments-list">${html}</div>
