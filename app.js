@@ -6299,57 +6299,132 @@ async function importRaceToAgenda(id) {
 // Email de l'admin (toi) — seul ce compte peut approuver les courses
 const ADMIN_EMAIL = "morardjuan@hotmail.com";
 
-async function reportMissingRace() {
-  const name = prompt("Nom de la course manquante");
-  if (!name) return;
-  const location = prompt("Pays / region / lieu", "A verifier") || "A verifier";
-  const type = prompt("Type: Sprint, Mid-distance, Longue distance, Canicross, Dryland, Skijoring", "A verifier") || "A verifier";
-  const date = prompt("Date si connue, format AAAA-MM-JJ", "") || "";
-  const url = prompt("Lien source si tu l'as", "") || "";
+function reportMissingRace() {
+  document.getElementById("missing-race-overlay")?.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "missing-race-overlay";
+  overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;display:flex;align-items:flex-end";
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;padding:20px 20px 32px;max-height:92vh;overflow-y:auto;box-sizing:border-box">
+      <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 16px"></div>
+      <h3 style="margin:0 0 4px;font-size:1.1rem;font-weight:700">Signaler une course manquante</h3>
+      <p style="margin:0 0 18px;font-size:0.8rem;color:#999">Elle sera ajoutée après validation.</p>
+
+      <label style="display:block;margin-bottom:12px">
+        <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Nom de la course <span style="color:#fc4c02">*</span></div>
+        <input id="mr-name" type="text" placeholder="ex: Laponie Race 120" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 12px;font-size:0.95rem;box-sizing:border-box">
+      </label>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <label>
+          <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Type <span style="color:#fc4c02">*</span></div>
+          <select id="mr-type" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 8px;font-size:0.88rem;box-sizing:border-box;background:#fff">
+            <option value="">— choisir —</option>
+            <option value="Sprint">Sprint</option>
+            <option value="Mid-distance">Mid-distance</option>
+            <option value="Longue distance">Longue distance</option>
+            <option value="Canicross">Canicross</option>
+            <option value="Dryland">Dryland</option>
+            <option value="Skijoring">Skijoring</option>
+          </select>
+        </label>
+        <label>
+          <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Distance (km)</div>
+          <input id="mr-distance" type="number" min="1" placeholder="ex: 120" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 12px;font-size:0.95rem;box-sizing:border-box">
+        </label>
+      </div>
+
+      <label style="display:block;margin-bottom:12px">
+        <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Pays / Région / Lieu <span style="color:#fc4c02">*</span></div>
+        <input id="mr-location" type="text" placeholder="ex: Rovaniemi, Finlande" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 12px;font-size:0.95rem;box-sizing:border-box">
+      </label>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <label>
+          <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Date (si connue)</div>
+          <input id="mr-date" type="date" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 8px;font-size:0.88rem;box-sizing:border-box">
+        </label>
+        <label>
+          <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Surface</div>
+          <select id="mr-surface" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 8px;font-size:0.88rem;box-sizing:border-box;background:#fff">
+            <option value="Neige">Neige</option>
+            <option value="Dryland">Dryland</option>
+            <option value="Trail">Trail</option>
+            <option value="Neige Dryland">Neige + Dryland</option>
+          </select>
+        </label>
+      </div>
+
+      <label style="display:block;margin-bottom:12px">
+        <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Lien / Site officiel</div>
+        <input id="mr-url" type="url" placeholder="https://..." style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 12px;font-size:0.95rem;box-sizing:border-box">
+      </label>
+
+      <label style="display:block;margin-bottom:20px">
+        <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Notes (infos complémentaires)</div>
+        <textarea id="mr-notes" rows="2" placeholder="Formats, dates alternatives, historique..." style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 12px;font-size:0.88rem;box-sizing:border-box;resize:none;font-family:inherit"></textarea>
+      </label>
+
+      <div id="mr-error" style="color:#e53e3e;font-size:0.82rem;margin-bottom:10px;display:none"></div>
+
+      <button onclick="submitMissingRace()" style="width:100%;background:#fc4c02;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;margin-bottom:10px">Envoyer</button>
+      <button onclick="document.getElementById('missing-race-overlay').remove()" style="width:100%;background:none;border:none;color:#999;font-size:0.9rem;cursor:pointer;padding:8px">Annuler</button>
+    </div>`;
+
+  overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  setTimeout(() => document.getElementById("mr-name")?.focus(), 50);
+}
+
+async function submitMissingRace() {
+  const name     = document.getElementById("mr-name")?.value?.trim();
+  const type     = document.getElementById("mr-type")?.value;
+  const location = document.getElementById("mr-location")?.value?.trim();
+  const date     = document.getElementById("mr-date")?.value || null;
+  const distance = Number(document.getElementById("mr-distance")?.value) || 0;
+  const surface  = document.getElementById("mr-surface")?.value || "A verifier";
+  const url      = document.getElementById("mr-url")?.value?.trim() || null;
+  const notes    = document.getElementById("mr-notes")?.value?.trim() || "";
+
+  const errEl = document.getElementById("mr-error");
+  if (!name || !type || !location) {
+    errEl.textContent = "Merci de remplir le nom, le type et le lieu.";
+    errEl.style.display = "block";
+    return;
+  }
+  errEl.style.display = "none";
 
   const report = {
     id: `pending-${Date.now()}`,
-    name,
-    date: date || null,
-    type,
-    distance: 0,
-    region: location,
-    location,
-    url: url || null,
+    name, date, type, distance,
+    region: location, location, url,
     reliability: "user",
     source: "Signalee",
-    surface: "A verifier",
-    notes: "",
+    surface, notes,
     status: "pending"
   };
 
-  // Envoi dans Supabase avec status pending
   if (supabase) {
     try {
       await supabase.from("mushtrack_races").insert([{
-        id: report.id,
-        name: report.name,
-        date: report.date,
-        type: report.type,
-        region: report.region,
-        location: report.location,
-        url: report.url,
-        reliability: "user",
-        source: "Signalee",
-        surface: "A verifier",
-        notes: report.notes,
-        status: "pending"
+        id: report.id, name, date, type, region: location,
+        location, url, reliability: "user", source: "Signalee",
+        surface, notes, status: "pending"
       }]);
-      alert(`Merci ! "${name}" a ete soumise et sera visible apres validation par l'administrateur.`);
-    } catch (e) {
-      alert("Erreur lors de l'envoi. La course sera sauvegardee localement.");
+      document.getElementById("missing-race-overlay")?.remove();
+      showSyncBadge(`Merci ! "${name}" soumise pour validation.`);
+    } catch {
       state.missingRaceReports.unshift(report);
       saveState();
+      document.getElementById("missing-race-overlay")?.remove();
+      showSyncBadge(`"${name}" sauvegardée localement.`);
     }
   } else {
     state.missingRaceReports.unshift(report);
     saveState();
-    alert(`Merci ! "${name}" a ete soumise et sera visible apres validation.`);
+    document.getElementById("missing-race-overlay")?.remove();
+    showSyncBadge(`Merci ! "${name}" soumise pour validation.`);
   }
   renderRaceSearch();
 }
