@@ -772,6 +772,7 @@ const defaultState = {
   missingRaceReports: [],
   dogs: [],
   selectedDogIds: [],
+  runDogRoles: {},
   runs: [],
   seasons: [],
   planWeather: null,
@@ -4042,15 +4043,38 @@ function renderDogProfile() {
   });
 }
 
+const DOG_ROLES_CYCLE = ["Leader", "Swing", "Team", "Wheel"];
+const DOG_ROLE_SHORT  = { Leader: "L", Swing: "S", Team: "T", Wheel: "W" };
+const DOG_ROLE_COLOR  = { Leader: "#fc4c02", Swing: "#3b82f6", Team: "#22c55e", Wheel: "#8b5cf6" };
+
 function renderDogPicker() {
   document.querySelectorAll('[data-list="dogPicker"]').forEach(list => {
     list.innerHTML = state.dogs.map((dog) => {
       const selected = state.selectedDogIds.includes(dog.id);
-      return `<button class="${selected ? "selected" : ""}" data-dog-id="${dog.id}">${dog.name}</button>`;
+      const role = selected ? (state.runDogRoles[dog.id] || dog.role || "Team") : null;
+      const badge = selected
+        ? `<span class="dog-role-badge" data-role-dog="${dog.id}" style="background:${DOG_ROLE_COLOR[role] || '#888'};color:#fff;border-radius:4px;padding:1px 5px;font-size:0.65rem;font-weight:800;margin-left:4px;cursor:pointer">${DOG_ROLE_SHORT[role] || role[0]}</span>`
+        : "";
+      return `<button class="${selected ? "selected" : ""}" data-dog-id="${dog.id}">${dog.name}${badge}</button>`;
     }).join("");
 
     list.querySelectorAll("button").forEach((button) => {
-      button.addEventListener("click", () => toggleDogSelection(button.dataset.dogId));
+      button.addEventListener("click", (e) => {
+        if (e.target.dataset.roleDog) return; // géré séparément
+        toggleDogSelection(button.dataset.dogId);
+      });
+    });
+
+    list.querySelectorAll("[data-role-dog]").forEach((badge) => {
+      badge.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = badge.dataset.roleDog;
+        const current = state.runDogRoles[id] || state.dogs.find(d => d.id === id)?.role || "Team";
+        const idx = DOG_ROLES_CYCLE.indexOf(current);
+        state.runDogRoles[id] = DOG_ROLES_CYCLE[(idx + 1) % DOG_ROLES_CYCLE.length];
+        saveState();
+        renderDogPicker();
+      });
     });
   });
 }
@@ -7401,6 +7425,7 @@ function toggleDogSelection(id) {
   const isSelected = state.selectedDogIds.includes(id);
   if (isSelected) {
     state.selectedDogIds = state.selectedDogIds.filter((dogId) => dogId !== id);
+    delete (state.runDogRoles || {})[id];
     // Retirer le chien du schéma attelage
     if (state.teamPositions) {
       const entry = Object.entries(state.teamPositions).find(([, v]) => v === id);
@@ -7847,6 +7872,7 @@ function saveCurrentRun() {
     elevationGain: pendingRunSummary.elevationGain || 0,
     path: gpsPath,
     team: [...state.selectedDogIds],
+    teamRoles: { ...state.runDogRoles },
     weather: document.querySelector("#weather").value,
     temp,
     energy: Number(document.querySelector("#energy").value),
