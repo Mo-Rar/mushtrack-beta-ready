@@ -4342,7 +4342,7 @@ function saveNewSeason() {
   const name = document.getElementById("season-name-input")?.value?.trim();
   const startDate = document.getElementById("season-start-input")?.value;
   if (!name || !startDate) return;
-  const newSeason = { id: uid(), name, startDate, endDate: null };
+  const newSeason = { id: createDeviceId(), name, startDate, endDate: null };
   state.seasons = [...state.seasons, newSeason];
   saveState();
   document.getElementById("season-form-overlay")?.remove();
