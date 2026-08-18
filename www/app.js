@@ -206,7 +206,7 @@ const raceCatalog = [
     date: "",
     type: "Sprint",
     distance: 12,
-    region: "International Europe USA Canada World",
+    region: "International Europe World",
     location: "Europe / monde",
     source: "IFSS",
     reliability: "official",
@@ -257,46 +257,46 @@ const raceCatalog = [
     notes: "Course par etapes du 9 au 21 janvier 2027 selon le site officiel."
   },
   {
-    id: "yukon-quest-2027",
-    name: "Yukon Quest",
-    date: "2027-02-06",
-    type: "Longue distance",
-    distance: 550,
-    region: "Canada Yukon Whitehorse North America",
-    location: "Whitehorse, Yukon, Canada",
-    source: "Yukon Quest",
-    reliability: "official",
-    surface: "Neige",
-    url: "https://yukonquest.com/",
-    notes: "Retour annonce en 2027 avec formats YQ550 et YQ300."
-  },
-  {
-    id: "iditarod-source",
-    name: "Iditarod Trail Sled Dog Race",
+    id: "skj-calendar",
+    name: "Calendrier SKJ Finlande",
     date: "",
     type: "Longue distance",
-    distance: 1000,
-    region: "USA Alaska Anchorage Nome North America",
-    location: "Alaska, USA",
-    source: "Iditarod",
+    distance: 20,
+    region: "Finlande Finland Laponie Lapland Rovaniemi Scandinavia Europe",
+    location: "Finlande",
+    source: "SKJ",
     reliability: "official",
     surface: "Neige",
-    url: "https://iditarod.com/",
-    notes: "Source officielle a surveiller pour dates, inscriptions et reglements."
+    url: "https://www.skj.fi/",
+    notes: "Fédération finlandaise de mushing (Suomen Koiraajokiurheilijoiden liitto). Calendrier national complet."
   },
   {
-    id: "asdra-source",
-    name: "ASDRA Alaska race schedule",
-    date: "",
-    type: "Sprint",
-    distance: 12,
-    region: "USA Alaska Anchorage North America",
-    location: "Alaska, USA",
-    source: "ASDRA",
+    id: "rovaniemi300-2027",
+    name: "Rovaniemi 300",
+    date: "2027-02-13",
+    type: "Longue distance",
+    distance: 300,
+    region: "Finlande Finland Rovaniemi Lapland Laponie Scandinavia Europe",
+    location: "Rovaniemi, Finlande",
+    source: "Rovaniemi 300",
     reliability: "official",
     surface: "Neige",
-    url: "https://asdra.org/",
-    notes: "Calendrier sprint et courses locales en Alaska."
+    url: "https://www.rovaniemi300.fi/",
+    notes: "Course de traîneaux en Laponie finlandaise. Formats 300 km et 100 km. Février 2027."
+  },
+  {
+    id: "yllas-sleddog-2027",
+    name: "Ylläs Sled Dog Race",
+    date: "2027-03-06",
+    type: "Mid-distance",
+    distance: 120,
+    region: "Finlande Finland Yllas Ylläs Lapland Laponie Scandinavia Europe",
+    location: "Ylläs, Finlande",
+    source: "Ylläs Sleddog",
+    reliability: "watch",
+    surface: "Neige",
+    url: "https://www.yllassleddog.fi/",
+    notes: "Course de traîneaux en Laponie finlandaise. Formats 60 km et 120 km. Mars 2027."
   },
   {
     id: "cuvery-2026",
@@ -534,7 +534,7 @@ const raceCatalog = [
     date: "",
     type: "Sprint",
     distance: 20,
-    region: "International Europe USA Canada World",
+    region: "International Europe World",
     location: "Europe / monde",
     source: "WSA",
     reliability: "official",
@@ -719,34 +719,6 @@ const raceCatalog = [
     notes: "Course de traineau en Norvège. 400 km et 170 km. Départ de Røros. Février 2027."
   },
   {
-    id: "iditarod-2027",
-    name: "Iditarod Trail Sled Dog Race",
-    date: "2027-03-06",
-    type: "Longue distance",
-    distance: 1600,
-    region: "Alaska USA United States America",
-    location: "Anchorage → Nome, Alaska",
-    source: "Iditarod",
-    reliability: "official",
-    surface: "Neige",
-    url: "https://iditarod.com/",
-    notes: "La course de traineau la plus célèbre au monde. ~1600 km à travers l'Alaska. Mars 2027."
-  },
-  {
-    id: "yukon-quest-2027",
-    name: "Yukon Quest International",
-    date: "2027-02-01",
-    type: "Longue distance",
-    distance: 1600,
-    region: "Canada Yukon Whitehorse Alaska USA",
-    location: "Whitehorse, Yukon → Fairbanks, Alaska",
-    source: "Yukon Quest",
-    reliability: "official",
-    surface: "Neige",
-    url: "https://yukonquest.com/",
-    notes: "Course de traineau de 1600 km entre le Yukon (Canada) et l'Alaska (USA). Février 2027."
-  },
-  {
     id: "grande-odyssee-2027",
     name: "La Grande Odyssée Savoie Mont-Blanc",
     date: "2027-01-08",
@@ -800,7 +772,9 @@ const defaultState = {
   missingRaceReports: [],
   dogs: [],
   selectedDogIds: [],
+  runDogRoles: {},
   runs: [],
+  seasons: [],
   planWeather: null,
   planWeatherUpdatedAt: null,
   reminders: [],
@@ -1037,8 +1011,103 @@ const TRANSLATIONS = {
     vous_agenda_tab: "Agenda",
     vous_dogs_tab: "Chiens",
     vous_records_tab: "Enregistrement",
+    vous_saisons_tab: "Saisons",
     vous_history: "Historique",
     vous_add: "+ Ajouter",
+    dash_hello: "Bonjour,",
+    advice_cat_sante: "Santé",
+    advice_cat_training: "Entraînement",
+    advice_cat_equipment: "Équipement",
+    advice_cat_competition: "Compétition",
+    advice_cat_behavior: "Comportement",
+    coach_insight_watch_title: "À surveiller",
+    coach_insight_low_title: "Relancer doucement",
+    coach_insight_low_text: "Volume bas cette semaine. Prévoir une sortie facile avant d'augmenter.",
+    coach_insight_ok_title: "Progression propre",
+    coach_insight_ok_text: "Charge stable. Garde une semaine légère toutes les 3 à 4 semaines.",
+    coach_charge_label: "Charge",
+    coach_charge_week: "km cette semaine",
+    coach_plan_adjusted: "Plan ajusté selon tes sorties.",
+    coach_plan_lightened: "Plan allégé automatiquement.",
+    zone_effort_label: "Zones d'effort — semaine", zone_no_runs: "Aucune sortie cette semaine",
+    zone_easy: "Légère", zone_moderate: "Modérée", zone_intensive: "Intensive", zone_max: "Maximale",
+    coach_phase_base: "Phase de base",
+    coach_phase_build: "Construction",
+    coach_phase_peak: "Pic de forme",
+    coach_phase_taper: "Affûtage",
+    coach_day_sun: "Dim", coach_day_mon: "Lun", coach_day_tue: "Mar",
+    coach_day_wed: "Mer", coach_day_thu: "Jeu", coach_day_fri: "Ven", coach_day_sat: "Sam",
+    plan_long_run: "Sortie longue économique",
+    plan_endurance: "Endurance progressive",
+    plan_intervals: "Intervalles courts",
+    plan_recov_note: "⚠️ Récupération à surveiller.",
+    plan_next_km: "{n} km recommandés (moyenne récente : {avg} km).",
+    // --- Alertes chiens ---
+    alert_overload: "{name} est à {km} km sur 7 jours. Prévoir repos ou récupération.",
+    alert_underload: "{name} a peu travaillé cette semaine. Bon candidat pour une sortie facile.",
+    alert_paws: "Contrôle les coussinets de {name} avant la prochaine sortie.",
+    alert_low_energy: "{name} a eu une énergie basse. Prévoir repos ou sortie très facile.",
+    alert_recovery: "Récupération à surveiller pour {name}. Note appétit, démarche et motivation.",
+    alert_limitation: "{name} a un point de vigilance noté : {text}",
+    alert_selected_danger: "{name} est sélectionné mais son statut conseille prudence ou repos.",
+    alert_heat: "Température élevée détectée. Éviter l'intensité, vérifier coussinets et hydrater.",
+    alert_hydration: "Dernière sortie marquée avec hydratation incomplète.",
+    alert_race_soon: "Course proche. Diminuer le volume, garder les chiens frais et vérifier le matériel.",
+    alert_label_paws: "Pattes {name}", alert_label_energy: "Énergie {name}",
+    alert_label_recovery: "Récupération {name}", alert_label_team: "Attelage",
+    alert_label_heat: "Chaleur", alert_label_hydration: "Hydratation",
+    alert_label_race: "Course", alert_label_weather: "Météo",
+    // --- Plan hebdo ---
+    plan_action_weather_title: "Adapter à la météo",
+    plan_action_weather_text: "Réduire l'intensité, choisir les heures fraîches et transformer la séance dure en endurance facile.",
+    plan_action_taper_title: "Affûter sans fatiguer",
+    plan_action_taper_text: "Garder une sortie courte avec quelques relances, puis privilégier repos, pattes et matériel.",
+    plan_action_overload_title: "Semaine trop chargée",
+    plan_action_overload_text: "Baisser le volume de 20 à 30 % et laisser les chiens récupérer avant de remettre de l'intensité.",
+    plan_action_underload_title: "Relancer proprement",
+    plan_action_underload_text: "Programmer une sortie facile, puis augmenter seulement si la récupération reste bonne.",
+    plan_action_ok_title: "Progression stable",
+    plan_action_ok_text: "Conserver le plan, noter la météo après sortie et ajuster la prochaine séance selon l'énergie de la team.",
+    // --- Descriptions séances ---
+    focus_race_soon: "Course proche : affûtage, volume réduit, rappel court et team fraîche.",
+    focus_weather_summer: "canicross facile, eau, ombre et coussinets.",
+    focus_weather_winter: "allure contrôlée, pattes et récupération.",
+    focus_rest_summer: "Semaine légère, coussinets, hydratation, chaleur à surveiller.",
+    focus_rest_winter: "Semaine légère, contrôle fatigue, soins des pattes.",
+    focus_sprint_summer: "Intervalles courts tôt le matin, départs propres, récupération active.",
+    focus_sprint_a: "Intervalles courts, départs, récupération active.",
+    focus_sprint_b: "Vitesse propre, virages, ordres leaders.",
+    focus_long_summer: "Rando-course tractée, pauses eau, allure économique.",
+    focus_long_a: "Back-to-back, alimentation, allure économique.",
+    focus_long_b: "Sortie longue, pause contrôlée, mental de team.",
+    focus_mid_summer: "Endurance facile, dénivelé doux, traction régulière.",
+    focus_mid_a: "Côtes courtes, endurance, retour calme.",
+    focus_mid_b: "Endurance progressive, allure stable.",
+    // --- Sessions types ---
+    session_endurance: "Endurance", session_long: "Sortie longue", session_sprint: "Sprint",
+    session_recup: "Récupération", session_rest: "Repos", session_technique: "Technique",
+    session_endurance_desc: "70–80% effort max, rythme conversationnel",
+    session_long_desc: "Pace lent, hydratation toutes les 8–10 km",
+    session_sprint_desc: "Intervalles 2–3 km haute intensité",
+    session_recup_desc: "Allure douce, pattes et harnais contrôlés",
+    session_rest_desc: "Jeu libre, massage, observation",
+    session_technique_desc: "Commandes, départs, dépassements",
+    // --- Coach advice ---
+    coach_advice_base: "Phase de base : priorité au volume à basse intensité (70–80% de l'effort max). Objectif {km} km avec les deux sorties longues du week-end en back-to-back. Progression de 8%/sem maximum.",
+    coach_advice_build: "Construction en cours — {weeks} semaines avant la course. Intègre les intervalles (sprint) et conserve les back-to-back du week-end. Si un chien refuse le départ ou mange moins, réduis son volume de 20% cette semaine.",
+    coach_advice_peak: "Phase de pointe ! {weeks} semaines avant {race}. Fais au moins une sortie à l'allure de course. Les back-to-back samedi-dimanche simulent la fatigue accumulée. Contrôle les pattes après chaque sortie.",
+    coach_advice_taper: "Affûtage final — réduis le volume de 40–50% mais garde l'intensité courte. Tes chiens doivent arriver frais et motivés. Prépare le matériel, fais la checklist pré-course. Plus qu'à gérer l'excitation au départ !",
+    coach_deload_note: " Cette semaine est une semaine de décharge — volume réduit de 25% pour permettre la supercompensation.",
+    coach_dog_fatigue_high: "Fatigue élevée — réduire le volume cette semaine",
+    coach_dog_fatigue_watch: "Charge normale — surveiller la récupération",
+    // --- Contact urgence ---
+    sos_title: "Contact d'urgence", sos_label: "SOS terrain",
+    sos_desc: "En cas de SOS sur le terrain, un appel est passé directement à ce contact.",
+    sos_name: "Nom", sos_phone: "Téléphone",
+    sos_save: "Enregistrer le contact", sos_saved: "✅ Contact enregistré",
+    sos_none: "Aucun contact d'urgence configuré.\nVa dans Paramètres > Contact d'urgence.",
+    // --- Rotation tips ---
+    advice_new: "Nouveau conseil",
     // --- Analytics ---
     analytics_season: "Analyse saison",
     analytics_stats: "Stats",
@@ -1140,14 +1209,19 @@ const TRANSLATIONS = {
     race_days_before: "J-{n}",
     race_distance_variable: "Distance variable",
     race_surface_variable: "Surface variable",
-    race_interested_btn: "Je suis intéressé",
-    race_interested_active: "⭐ Intéressé",
+    race_interested_btn: "🎯 Mes souhaits",
+    race_interested_active: "🎯 Dans mes souhaits",
     race_add_btn: "Ajouter",
     race_participating_btn: "✓ Participe",
     race_be_first: "Sois le premier à marquer ton intérêt pour cette course ! ⭐",
     race_participating_label: "✓ Participe",
     race_interested_label: "⭐ Intéressé",
     race_pinned_label: "⭐ Mes courses sélectionnées",
+    race_wishlist_label: "🎯 Ma liste de souhaits",
+    race_wishlist_share: "Partager",
+    race_wishlist_share_title: "Mes courses souhaitées — MushTrack",
+    race_wishlist_copied: "Liste copiée dans le presse-papier !",
+    race_wishlist_filter: "Mes souhaits",
     race_count_singular: "course",
     race_count_plural: "courses",
     race_none_found: "Aucune course trouvée. Essaie une région plus large comme Europe, USA, Canada, Suède ou Amundsen.",
@@ -1196,7 +1270,7 @@ const TRANSLATIONS = {
     dog_nothing: "Rien de particulier",
     dog_vet_info: "Ajoute les infos véto, blessures ou repos.",
     dog_vet_tracking: "Suivi véto : {info}",
-    dog_weight_evolution: "Évolution du poids",
+    dog_weight_add: "Peser", dog_weight_evolution: "Évolution du poids",
     dog_health_history: "Historique santé",
     dog_no_event: "Aucun événement enregistré.",
     dog_load_high: "Charge haute",
@@ -1544,8 +1618,103 @@ const TRANSLATIONS = {
     vous_agenda_tab: "Agenda",
     vous_dogs_tab: "Dogs",
     vous_records_tab: "Records",
+    vous_saisons_tab: "Seasons",
     vous_history: "History",
     vous_add: "+ Add",
+    dash_hello: "Hello,",
+    advice_cat_sante: "Health",
+    advice_cat_training: "Training",
+    advice_cat_equipment: "Equipment",
+    advice_cat_competition: "Competition",
+    advice_cat_behavior: "Behavior",
+    coach_insight_watch_title: "Watch out",
+    coach_insight_low_title: "Ramp up gently",
+    coach_insight_low_text: "Low volume this week. Plan an easy run before increasing.",
+    coach_insight_ok_title: "Clean progression",
+    coach_insight_ok_text: "Stable load. Keep a light week every 3–4 weeks.",
+    coach_charge_label: "Load",
+    coach_charge_week: "km this week",
+    coach_plan_adjusted: "Plan adjusted to your runs.",
+    coach_plan_lightened: "Plan lightened automatically.",
+    zone_effort_label: "Effort zones — this week", zone_no_runs: "No runs this week",
+    zone_easy: "Easy", zone_moderate: "Moderate", zone_intensive: "Intensive", zone_max: "Maximum",
+    coach_phase_base: "Base phase",
+    coach_phase_build: "Build phase",
+    coach_phase_peak: "Peak phase",
+    coach_phase_taper: "Taper",
+    coach_day_sun: "Sun", coach_day_mon: "Mon", coach_day_tue: "Tue",
+    coach_day_wed: "Wed", coach_day_thu: "Thu", coach_day_fri: "Fri", coach_day_sat: "Sat",
+    plan_long_run: "Easy long run",
+    plan_endurance: "Progressive endurance",
+    plan_intervals: "Short intervals",
+    plan_recov_note: "⚠️ Recovery to monitor.",
+    plan_next_km: "{n} km recommended (recent avg: {avg} km).",
+    // Dog alerts
+    alert_overload: "{name} is at {km} km over 7 days. Plan rest or recovery.",
+    alert_underload: "{name} worked little this week. Good candidate for an easy run.",
+    alert_paws: "Check {name}'s paws before the next run.",
+    alert_low_energy: "{name} had low energy. Plan rest or a very easy run.",
+    alert_recovery: "Recovery to watch for {name}. Note appetite, gait and motivation.",
+    alert_limitation: "{name} has a noted watchpoint: {text}",
+    alert_selected_danger: "{name} is selected but status advises caution or rest.",
+    alert_heat: "High temperature detected. Avoid intensity, check paws and hydrate.",
+    alert_hydration: "Last run marked with incomplete hydration.",
+    alert_race_soon: "Race coming up. Reduce volume, keep dogs fresh and check gear.",
+    alert_label_paws: "Paws {name}", alert_label_energy: "Energy {name}",
+    alert_label_recovery: "Recovery {name}", alert_label_team: "Team",
+    alert_label_heat: "Heat", alert_label_hydration: "Hydration",
+    alert_label_race: "Race", alert_label_weather: "Weather",
+    // Weekly plan
+    plan_action_weather_title: "Adapt to weather",
+    plan_action_weather_text: "Reduce intensity, choose cooler hours and turn the hard session into easy endurance.",
+    plan_action_taper_title: "Taper without fatigue",
+    plan_action_taper_text: "Keep one short run with a few surges, then prioritise rest, paws and gear.",
+    plan_action_overload_title: "Week too heavy",
+    plan_action_overload_text: "Drop volume by 20–30% and let the dogs recover before adding intensity again.",
+    plan_action_underload_title: "Ramp up cleanly",
+    plan_action_underload_text: "Schedule an easy run, then increase only if recovery stays good.",
+    plan_action_ok_title: "Stable progression",
+    plan_action_ok_text: "Stick to the plan, log weather after each run and adjust the next session to team energy.",
+    // Session descriptions
+    focus_race_soon: "Race soon: taper, reduced volume, short reminder and fresh team.",
+    focus_weather_summer: "easy canicross, water, shade and paw check.",
+    focus_weather_winter: "controlled pace, paws and recovery.",
+    focus_rest_summer: "Light week, paw care, hydration, watch for heat.",
+    focus_rest_winter: "Light week, monitor fatigue, paw care.",
+    focus_sprint_summer: "Short intervals early morning, clean starts, active recovery.",
+    focus_sprint_a: "Short intervals, starts, active recovery.",
+    focus_sprint_b: "Clean speed, turns, leader commands.",
+    focus_long_summer: "Pulled trail run, water breaks, economic pace.",
+    focus_long_a: "Back-to-back, fuelling, economic pace.",
+    focus_long_b: "Long run, controlled break, team mindset.",
+    focus_mid_summer: "Easy endurance, gentle elevation, steady pull.",
+    focus_mid_a: "Short hills, endurance, calm return.",
+    focus_mid_b: "Progressive endurance, steady pace.",
+    // Session types
+    session_endurance: "Endurance", session_long: "Long run", session_sprint: "Sprint",
+    session_recup: "Recovery", session_rest: "Rest", session_technique: "Technique",
+    session_endurance_desc: "70–80% max effort, conversational pace",
+    session_long_desc: "Easy pace, hydration every 8–10 km",
+    session_sprint_desc: "2–3 km high-intensity intervals",
+    session_recup_desc: "Easy pace, paws and harness check",
+    session_rest_desc: "Free play, massage, observation",
+    session_technique_desc: "Commands, starts, overtaking",
+    // Coach advice
+    coach_advice_base: "Base phase: focus on low-intensity volume (70–80% max effort). Target {km} km with two long back-to-back weekend runs. Max 8% progression per week.",
+    coach_advice_build: "Build phase — {weeks} weeks to race. Add sprint intervals and keep back-to-back weekends. If a dog refuses to start or eats less, cut their volume by 20% this week.",
+    coach_advice_peak: "Peak phase! {weeks} weeks to {race}. Do at least one race-pace run. Saturday–Sunday back-to-back simulates accumulated fatigue. Check paws after every run.",
+    coach_advice_taper: "Final taper — cut volume 40–50% but keep short intensity. Your dogs must arrive fresh and motivated. Prep gear, do the pre-race checklist. Just manage the start-line excitement!",
+    coach_deload_note: " This week is a deload week — volume reduced 25% to allow supercompensation.",
+    coach_dog_fatigue_high: "High fatigue — reduce volume this week",
+    coach_dog_fatigue_watch: "Normal load — monitor recovery",
+    // Emergency contact
+    sos_title: "Emergency contact", sos_label: "Field SOS",
+    sos_desc: "In case of a field SOS, a call is placed directly to this contact.",
+    sos_name: "Name", sos_phone: "Phone",
+    sos_save: "Save contact", sos_saved: "✅ Contact saved",
+    sos_none: "No emergency contact configured.\nGo to Settings > Emergency contact.",
+    // Rotation tips
+    advice_new: "New tip",
     // Analytics
     analytics_season: "Season analysis",
     analytics_stats: "Stats",
@@ -1647,14 +1816,19 @@ const TRANSLATIONS = {
     race_days_before: "D-{n}",
     race_distance_variable: "Variable distance",
     race_surface_variable: "Variable surface",
-    race_interested_btn: "I'm interested",
-    race_interested_active: "⭐ Interested",
+    race_interested_btn: "🎯 Wishlist",
+    race_interested_active: "🎯 In my wishlist",
     race_add_btn: "Add",
     race_participating_btn: "✓ Participating",
     race_be_first: "Be the first to mark your interest in this race! ⭐",
     race_participating_label: "✓ Participating",
     race_interested_label: "⭐ Interested",
     race_pinned_label: "⭐ My selected races",
+    race_wishlist_label: "🎯 My race wishlist",
+    race_wishlist_share: "Share",
+    race_wishlist_share_title: "My race wishlist — MushTrack",
+    race_wishlist_copied: "List copied to clipboard!",
+    race_wishlist_filter: "My wishlist",
     race_count_singular: "race",
     race_count_plural: "races",
     race_none_found: "No race found. Try a broader region like Europe, USA, Canada, Sweden or Amundsen.",
@@ -1703,7 +1877,7 @@ const TRANSLATIONS = {
     dog_nothing: "Nothing particular",
     dog_vet_info: "Add vet info, injuries or rest notes.",
     dog_vet_tracking: "Vet tracking: {info}",
-    dog_weight_evolution: "Weight evolution",
+    dog_weight_add: "Weigh", dog_weight_evolution: "Weight evolution",
     dog_health_history: "Health history",
     dog_no_event: "No event recorded.",
     dog_load_high: "High load",
@@ -2051,8 +2225,103 @@ const TRANSLATIONS = {
     vous_agenda_tab: "Agenda",
     vous_dogs_tab: "Hunde",
     vous_records_tab: "Aufzeichnungen",
+    vous_saisons_tab: "Saisons",
     vous_history: "Verlauf",
     vous_add: "+ Hinzufügen",
+    dash_hello: "Hallo,",
+    advice_cat_sante: "Gesundheit",
+    advice_cat_training: "Training",
+    advice_cat_equipment: "Ausrüstung",
+    advice_cat_competition: "Wettkampf",
+    advice_cat_behavior: "Verhalten",
+    coach_insight_watch_title: "Achtung",
+    coach_insight_low_title: "Sanft steigern",
+    coach_insight_low_text: "Niedriges Volumen diese Woche. Eine leichte Einheit einplanen.",
+    coach_insight_ok_title: "Saubere Progression",
+    coach_insight_ok_text: "Stabile Last. Alle 3–4 Wochen eine leichte Woche einplanen.",
+    coach_charge_label: "Last",
+    coach_charge_week: "km diese Woche",
+    coach_plan_adjusted: "Plan an deine Läufe angepasst.",
+    coach_plan_lightened: "Plan automatisch reduziert.",
+    zone_effort_label: "Belastungszonen — diese Woche", zone_no_runs: "Keine Ausfahrten diese Woche",
+    zone_easy: "Leicht", zone_moderate: "Moderat", zone_intensive: "Intensiv", zone_max: "Maximal",
+    coach_phase_base: "Grundlagenphase",
+    coach_phase_build: "Aufbauphase",
+    coach_phase_peak: "Formhoch",
+    coach_phase_taper: "Tapering",
+    coach_day_sun: "So", coach_day_mon: "Mo", coach_day_tue: "Di",
+    coach_day_wed: "Mi", coach_day_thu: "Do", coach_day_fri: "Fr", coach_day_sat: "Sa",
+    plan_long_run: "Langer lockerer Lauf",
+    plan_endurance: "Progressive Ausdauer",
+    plan_intervals: "Kurze Intervalle",
+    plan_recov_note: "⚠️ Erholung beobachten.",
+    plan_next_km: "{n} km empfohlen (letzter Schnitt: {avg} km).",
+    // Hunde-Alarme
+    alert_overload: "{name} hat {km} km in 7 Tagen. Erholung oder Ruhe einplanen.",
+    alert_underload: "{name} hat diese Woche wenig gearbeitet. Guter Kandidat für eine leichte Einheit.",
+    alert_paws: "Pfoten von {name} vor der nächsten Einheit kontrollieren.",
+    alert_low_energy: "{name} hatte niedrige Energie. Ruhe oder sehr leichte Einheit einplanen.",
+    alert_recovery: "Erholung bei {name} beobachten. Appetit, Gang und Motivation notieren.",
+    alert_limitation: "{name} hat einen notierten Wachpunkt: {text}",
+    alert_selected_danger: "{name} ist ausgewählt, aber Status empfiehlt Vorsicht oder Ruhe.",
+    alert_heat: "Hohe Temperatur erkannt. Intensität vermeiden, Pfoten prüfen und hydrieren.",
+    alert_hydration: "Letzte Einheit mit unvollständiger Hydration markiert.",
+    alert_race_soon: "Rennen steht bevor. Volumen reduzieren, Hunde frisch halten und Ausrüstung prüfen.",
+    alert_label_paws: "Pfoten {name}", alert_label_energy: "Energie {name}",
+    alert_label_recovery: "Erholung {name}", alert_label_team: "Gespann",
+    alert_label_heat: "Hitze", alert_label_hydration: "Hydration",
+    alert_label_race: "Rennen", alert_label_weather: "Wetter",
+    // Wochenplan
+    plan_action_weather_title: "An Wetter anpassen",
+    plan_action_weather_text: "Intensität reduzieren, kühlere Stunden wählen, harte Einheit in leichte Ausdauer umwandeln.",
+    plan_action_taper_title: "Tapering ohne Ermüdung",
+    plan_action_taper_text: "Eine kurze Einheit mit ein paar Sprints, dann Ruhe, Pfoten und Ausrüstung priorisieren.",
+    plan_action_overload_title: "Woche zu schwer",
+    plan_action_overload_text: "Volumen um 20–30 % senken und Hunde erholen lassen, bevor Intensität wieder steigt.",
+    plan_action_underload_title: "Sauber steigern",
+    plan_action_underload_text: "Eine leichte Einheit einplanen, dann nur erhöhen wenn die Erholung gut bleibt.",
+    plan_action_ok_title: "Stabile Progression",
+    plan_action_ok_text: "Plan beibehalten, Wetter nach Einheit notieren und nächste Einheit nach Teamenergie anpassen.",
+    // Einheitsbeschreibungen
+    focus_race_soon: "Rennen nah: Tapering, reduziertes Volumen, kurze Erinnerung und frisches Team.",
+    focus_weather_summer: "leichter Canicross, Wasser, Schatten und Pfotenkontrolle.",
+    focus_weather_winter: "kontrolliertes Tempo, Pfoten und Erholung.",
+    focus_rest_summer: "Leichte Woche, Pfoten, Hydration, Hitze beobachten.",
+    focus_rest_winter: "Leichte Woche, Ermüdung kontrollieren, Pfotenpflege.",
+    focus_sprint_summer: "Kurze Intervalle früh morgens, saubere Starts, aktive Erholung.",
+    focus_sprint_a: "Kurze Intervalle, Starts, aktive Erholung.",
+    focus_sprint_b: "Saubere Geschwindigkeit, Kurven, Leader-Befehle.",
+    focus_long_summer: "Gezogener Trailrun, Wasserpausen, ökonomisches Tempo.",
+    focus_long_a: "Back-to-back, Verpflegung, ökonomisches Tempo.",
+    focus_long_b: "Langer Lauf, kontrollierte Pause, Team-Mentalität.",
+    focus_mid_summer: "Leichte Ausdauer, sanftes Gelände, regelmäßiger Zug.",
+    focus_mid_a: "Kurze Hügel, Ausdauer, ruhige Rückkehr.",
+    focus_mid_b: "Progressive Ausdauer, stabiles Tempo.",
+    // Einheitstypen
+    session_endurance: "Ausdauer", session_long: "Langer Lauf", session_sprint: "Sprint",
+    session_recup: "Erholung", session_rest: "Ruhe", session_technique: "Technik",
+    session_endurance_desc: "70–80% maximale Anstrengung, Konversationstempo",
+    session_long_desc: "Langsames Tempo, Hydration alle 8–10 km",
+    session_sprint_desc: "2–3 km Hochintervalle",
+    session_recup_desc: "Leichtes Tempo, Pfoten und Gurtzeug prüfen",
+    session_rest_desc: "Freies Spiel, Massage, Beobachtung",
+    session_technique_desc: "Befehle, Starts, Überholen",
+    // Coach-Ratschläge
+    coach_advice_base: "Grundlagenphase: Fokus auf geringes Volumen (70–80% max). Ziel {km} km mit zwei langen Back-to-Back-Wochenendläufen. Max. 8% Steigerung pro Woche.",
+    coach_advice_build: "Aufbauphase — {weeks} Wochen bis zum Rennen. Sprint-Intervalle einbauen, Back-to-Back-Wochenenden beibehalten. Verweigert ein Hund den Start oder frisst weniger, Volumen um 20% reduzieren.",
+    coach_advice_peak: "Formhoch! {weeks} Wochen bis {race}. Mindestens einen Renntempolauf einbauen. Sa-So Back-to-Back simuliert kumulierte Müdigkeit. Pfoten nach jeder Einheit prüfen.",
+    coach_advice_taper: "Endgültiges Tapering — Volumen 40–50% reduzieren, kurze Intensität beibehalten. Hunde müssen frisch und motiviert ankommen. Ausrüstung vorbereiten, Pre-Race-Checkliste abarbeiten.",
+    coach_deload_note: " Diese Woche ist eine Entlastungswoche — Volumen um 25% reduziert für Superkompensation.",
+    coach_dog_fatigue_high: "Hohe Müdigkeit — Volumen diese Woche reduzieren",
+    coach_dog_fatigue_watch: "Normale Last — Erholung beobachten",
+    // Notfallkontakt
+    sos_title: "Notfallkontakt", sos_label: "Feld-SOS",
+    sos_desc: "Bei einem Feld-SOS wird direkt dieser Kontakt angerufen.",
+    sos_name: "Name", sos_phone: "Telefon",
+    sos_save: "Kontakt speichern", sos_saved: "✅ Kontakt gespeichert",
+    sos_none: "Kein Notfallkontakt konfiguriert.\nGehe zu Einstellungen > Notfallkontakt.",
+    // Tipp-Rotation
+    advice_new: "Neuer Tipp",
     // Analytics
     analytics_season: "Saisonanalyse",
     analytics_stats: "Stats",
@@ -2154,14 +2423,19 @@ const TRANSLATIONS = {
     race_days_before: "T-{n}",
     race_distance_variable: "Variable Distanz",
     race_surface_variable: "Variabler Untergrund",
-    race_interested_btn: "Ich bin interessiert",
-    race_interested_active: "⭐ Interessiert",
+    race_interested_btn: "🎯 Wunschliste",
+    race_interested_active: "🎯 Auf meiner Wunschliste",
     race_add_btn: "Hinzufügen",
     race_participating_btn: "✓ Teilnahme",
     race_be_first: "Sei der Erste, der sein Interesse an diesem Rennen markiert! ⭐",
     race_participating_label: "✓ Teilnahme",
     race_interested_label: "⭐ Interessiert",
     race_pinned_label: "⭐ Meine ausgewählten Rennen",
+    race_wishlist_label: "🎯 Meine Wunschliste",
+    race_wishlist_share: "Teilen",
+    race_wishlist_share_title: "Meine Wunschrennen — MushTrack",
+    race_wishlist_copied: "Liste in die Zwischenablage kopiert!",
+    race_wishlist_filter: "Meine Wünsche",
     race_count_singular: "Rennen",
     race_count_plural: "Rennen",
     race_none_found: "Kein Rennen gefunden. Versuche eine breitere Region wie Europa, USA, Kanada, Schweden oder Amundsen.",
@@ -2210,7 +2484,7 @@ const TRANSLATIONS = {
     dog_nothing: "Nichts Besonderes",
     dog_vet_info: "Tierarztinfos, Verletzungen oder Ruhephasen hinzufügen.",
     dog_vet_tracking: "Tierarzt: {info}",
-    dog_weight_evolution: "Gewichtsentwicklung",
+    dog_weight_add: "Wiegen", dog_weight_evolution: "Gewichtsentwicklung",
     dog_health_history: "Gesundheitsgeschichte",
     dog_no_event: "Kein Ereignis aufgezeichnet.",
     dog_load_high: "Hohe Last",
@@ -2453,6 +2727,7 @@ function normalizeState(value) {
   value.planWeather ||= null;
   value.planWeatherUpdatedAt ||= null;
   if (!Array.isArray(value.reminders)) value.reminders = [];
+  if (!Array.isArray(value.seasons)) value.seasons = [];
   if (!value.lang) value.lang = "fr";
   value.emergencyContact ||= { name: "", phone: "" };
   value.forecast ||= {};
@@ -2480,7 +2755,7 @@ function getDogAge(dog) {
 
 function formatDogBirthdate(value) {
   if (!value) return t('dog_birth_na');
-  return new Date(`${value}T12:00:00`).toLocaleDateString("fr-CH", {
+  return new Date(`${value}T12:00:00`).toLocaleDateString(getLangLocale(), {
     day: "2-digit",
     month: "short",
     year: "numeric"
@@ -2710,6 +2985,13 @@ function showScreen(id, pushHistory = true) {
   }
   if (id === "community") {
     initCommunity();
+  }
+  if (id === "vous") {
+    // Init cartes seulement si le sous-onglet enregistrement est déjà actif
+    const enregPanel = document.getElementById("vous-panel-enregistrement");
+    if (enregPanel && enregPanel.classList.contains("active")) {
+      setTimeout(() => initRoutePreviews(), 80);
+    }
   }
 }
 
@@ -3278,7 +3560,7 @@ function renderDogs() {
     const readiness = getDogReadiness(dog);
     const photoHtml = dog.photoDataUrl
       ? `<img src="${dog.photoDataUrl}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #fc4c02" alt="${dog.name}" />`
-      : `<img src="assets/dog-placeholder.png" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="chien" />`;
+      : `<div style="width:44px;height:44px;border-radius:50%;flex-shrink:0;background:#f0ede9;border:2px solid #e0dbd5;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:#bbb">${dog.name.charAt(0).toUpperCase()}</div>`;
     return `
     <article class="dog-card ${readiness.level}" data-open-dog="${dog.id}">
       <div style="display:flex;align-items:center;gap:12px">
@@ -3512,7 +3794,7 @@ function renderDogProfile() {
         <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
           ${dog.photoDataUrl
             ? `<img src="${dog.photoDataUrl}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:3px solid rgba(255,255,255,0.4)" alt="${dog.name}" />`
-            : `<img src="assets/dog-placeholder.png" style="width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:3px solid rgba(255,255,255,0.4)" alt="chien" />`}
+            : `<div style="width:64px;height:64px;border-radius:50%;flex-shrink:0;background:rgba(255,255,255,0.15);border:3px solid rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;color:rgba(255,255,255,0.7)">${dog.name.charAt(0).toUpperCase()}</div>`}
           <div>
             <span>${dog.role}</span>
             <strong>${Math.round(dog.km)} ${t('dog_km_season')}</strong>
@@ -3575,11 +3857,23 @@ function renderDogProfile() {
     </section>
 
     <!-- Graphique poids -->
-    ${(dog.weightHistory || []).length >= 2 ? `
     <div style="margin-bottom:18px">
-      <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0 0 8px">${t('dog_weight_evolution')}</p>
-      <canvas id="weight-chart-${dog.id}" width="800" height="160" style="width:100%;border-radius:12px;background:#f9f9f9"></canvas>
-    </div>` : ""}
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0">${t('dog_weight_evolution')}</p>
+        <button type="button" id="add-weight-btn" style="font-size:0.78rem;color:#fc4c02;background:none;border:none;font-weight:700;cursor:pointer">+ ${t('dog_weight_add')}</button>
+      </div>
+      <form id="weight-add-form" style="display:none;flex-direction:column;gap:8px;background:#fff;border-radius:12px;padding:12px;border:1px solid #f0f0f0;margin-bottom:10px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="weight-add-date" type="date" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem" />
+          <input id="weight-add-value" type="number" step="0.1" min="1" max="100" placeholder="kg" style="width:80px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem;text-align:center" />
+        </div>
+        <div style="display:flex;gap:8px">
+          <button type="submit" style="flex:1;padding:9px;background:#fc4c02;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">${t('health_save_btn')}</button>
+          <button type="button" id="weight-add-cancel" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;cursor:pointer">${t('health_cancel_btn')}</button>
+        </div>
+      </form>
+      ${(dog.weightHistory || []).length >= 2 ? `<canvas id="weight-chart-${dog.id}" width="800" height="160" style="width:100%;border-radius:12px;background:#f9f9f9"></canvas>` : `<p style="font-size:0.82rem;color:#aaa;text-align:center;padding:12px">${t('dog_weight_hint')}</p>`}
+    </div>
 
     <!-- Historique santé -->
     <div style="margin-bottom:10px">
@@ -3661,6 +3955,35 @@ function renderDogProfile() {
   // Graphique poids
   drawWeightChart(dog);
 
+  // Bouton + Peser
+  const addWeightBtn = list.querySelector("#add-weight-btn");
+  const weightForm = list.querySelector("#weight-add-form");
+  addWeightBtn?.addEventListener("click", () => {
+    weightForm.style.display = weightForm.style.display === "none" ? "flex" : "none";
+    if (weightForm.style.display !== "none") {
+      list.querySelector("#weight-add-date").value = new Date().toISOString().slice(0, 10);
+      list.querySelector("#weight-add-value").value = dog.weight || "";
+    }
+  });
+  list.querySelector("#weight-add-cancel")?.addEventListener("click", () => {
+    weightForm.style.display = "none";
+  });
+  weightForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const dogIdx = state.dogs.findIndex(d => d.id === dog.id);
+    if (dogIdx === -1) return;
+    const w = parseFloat(list.querySelector("#weight-add-value").value);
+    const d = list.querySelector("#weight-add-date").value;
+    if (!w || !d) return;
+    state.dogs[dogIdx].weightHistory = state.dogs[dogIdx].weightHistory || [];
+    state.dogs[dogIdx].weightHistory.push({ date: d, weight: w });
+    state.dogs[dogIdx].weightHistory.sort((a, b) => a.date.localeCompare(b.date));
+    if (state.dogs[dogIdx].weightHistory.length > 52) state.dogs[dogIdx].weightHistory = state.dogs[dogIdx].weightHistory.slice(-52);
+    state.dogs[dogIdx].weight = w;
+    saveState();
+    renderDogProfile();
+  });
+
   // Bouton + Ajouter événement santé
   const addBtn = list.querySelector("#add-health-event-btn");
   const healthForm = list.querySelector("#health-event-form");
@@ -3720,13 +4043,16 @@ function renderDogProfile() {
   });
 }
 
+const DOG_ROLES_CYCLE = ["Leader", "Swing", "Team", "Wheel"];
+const DOG_ROLE_SHORT  = { Leader: "L", Swing: "S", Team: "T", Wheel: "W" };
+const DOG_ROLE_COLOR  = { Leader: "#fc4c02", Swing: "#3b82f6", Team: "#22c55e", Wheel: "#8b5cf6" };
+
 function renderDogPicker() {
   document.querySelectorAll('[data-list="dogPicker"]').forEach(list => {
     list.innerHTML = state.dogs.map((dog) => {
       const selected = state.selectedDogIds.includes(dog.id);
       return `<button class="${selected ? "selected" : ""}" data-dog-id="${dog.id}">${dog.name}</button>`;
     }).join("");
-
     list.querySelectorAll("button").forEach((button) => {
       button.addEventListener("click", () => toggleDogSelection(button.dataset.dogId));
     });
@@ -3797,18 +4123,18 @@ function renderTeamSlots() {
   renderSledDiagram();
 }
 
-// ── Schéma attelage drag & drop ───────────────────────────────
-let _dragDogId   = null;
-let _dragFromSlot = null;
+// ── Schéma attelage ───────────────────────────────────────────
+let _dragDogId = null, _dragFromSlot = null, _dragFromReserve = false;
+let _sledEditMode = false;
 
-// Génère les paires [clé, label] pour n chiens sélectionnés
-function getSledPositions(dogCount) {
-  const pairs = Math.max(1, Math.ceil(dogCount / 2));
-  if (pairs === 1) return [["leader","Leader"]];
-  if (pairs === 2) return [["leader","Leader"],["wheel","Wheel"]];
-  const list = [["leader","Leader"],["swing","Swing"]];
-  for (let i = 2; i < pairs - 1; i++) list.push([`team${i-1}`, `Team ${i-1}`]);
-  list.push(["wheel","Wheel"]);
+const SLED_ROLE_MAP = { leader:"Leader", swing:"Swing", team:"Team", wheel:"Wheel" };
+
+function getSledPositions(pairs) {
+  pairs = Math.max(2, pairs);
+  if (pairs === 2) return [["leader","LEADER"],["wheel","WHEEL"]];
+  const list = [["leader","LEADER"],["swing","SWING"]];
+  for (let i = 2; i < pairs - 1; i++) list.push([`team${i-1}`,`TEAM ${i-1}`]);
+  list.push(["wheel","WHEEL"]);
   return list;
 }
 
@@ -3817,141 +4143,186 @@ function renderSledDiagram() {
   if (!containers.length) return;
   if (!state.teamPositions) state.teamPositions = {};
 
-  const selectedCount = (state.selectedDogIds || []).length;
+  const placedIds  = new Set(Object.values(state.teamPositions).filter(Boolean));
+  const totalDogs  = state.dogs.length;
+  const pairs      = Math.max(2, Math.ceil((placedIds.size + 2) / 2));
+  const positions  = getSledPositions(Math.min(pairs, Math.ceil(totalDogs / 2) + 1));
+  const allSlots   = positions.flatMap(([k]) => [`${k}-l`, `${k}-r`]);
 
-  // Génère les clés et labels selon le nombre de paires
-  function getPositions() { return getSledPositions(selectedCount); }
+  // Sync selectedDogIds
+  state.selectedDogIds = [...placedIds];
 
-  // Nettoyer les slots obsolètes et réassigner les chiens orphelins
-  const orderedSlots = getPositions().flatMap(([k]) => [`${k}-l`, `${k}-r`]);
-  const validSlots = new Set(orderedSlots);
-  Object.keys(state.teamPositions).forEach(slot => {
-    if (!validSlots.has(slot)) delete state.teamPositions[slot];
-  });
-  const assigned = new Set(Object.values(state.teamPositions));
-  (state.selectedDogIds || []).forEach(id => {
-    if (!assigned.has(id)) {
-      const free = orderedSlots.find(s => !state.teamPositions[s]);
-      if (free) { state.teamPositions[free] = id; assigned.add(id); }
-    }
-  });
+  const reserveDogs = state.dogs.filter(d => !placedIds.has(d.id));
 
   function dogInSlot(key, side) {
     const id = state.teamPositions[`${key}-${side}`];
     return id ? state.dogs.find(d => d.id === id) : null;
   }
 
-  function formEmoji(dog) {
-    if (!dog) return "";
-    const signal = dog.healthSignal || "";
-    return signal === "Attention" || signal === "Repos" ? "🔴" : "🟢";
+  function makeSlot(dog, slot) {
+    if (dog) {
+      return `<div class="sd-slot sd-filled" data-slot="${slot}">
+        <span class="sd-dog-name">${dog.name}</span>
+        <button class="sd-remove" type="button" onclick="removeFromSlot('${slot}')">×</button>
+      </div>`;
+    }
+    return `<div class="sd-slot sd-empty" data-slot="${slot}">
+      <span class="sd-plus">＋</span>
+    </div>`;
   }
 
   function buildHTML() {
-    const rows = getPositions().map(([key, label]) => {
-      const left  = dogInSlot(key, "l");
-      const right = dogInSlot(key, "r");
-      const slotL = `${key}-l`, slotR = `${key}-r`;
-      const makeSlot = (dog, slot) => {
-        const occupied = !!dog;
-        return `<div class="sled-slot ${occupied?"filled":"empty"}" data-slot="${slot}"
-               ondragover="if(!${occupied})event.preventDefault();${occupied}?void 0:this.classList.add('drag-over')"
-               ondragleave="this.classList.remove('drag-over')"
-               ondrop="handleSlotDrop(event,'${slot}')">
-            ${dog
-              ? `<span class="sled-dog" draggable="true" ondragstart="handleDogDragStart(event,'${dog.id}','${slot}')">${formEmoji(dog)} ${dog.name}<button type="button" class="sled-remove" onclick="removeFromSlot('${slot}')">✕</button></span>`
-              : `<span class="sled-empty-label">+</span>`}
-          </div>`;
-      };
-      return `<div class="sled-row">${makeSlot(left,slotL)}<div class="sled-position-label">${label}</div>${makeSlot(right,slotR)}</div>`;
-    }).join("");
-    return `<div class="sled-schema">${rows}</div>`;
+    if (!_sledEditMode) {
+      // Mode affichage : position → chips orange, sans boutons
+      if (!placedIds.size) return `<p style="color:#bbb;font-size:.82rem;padding:6px 0">Aucun chien sélectionné</p>`;
+      const rows = positions.map(([key, label]) => {
+        const l = dogInSlot(key, "l"), r = dogInSlot(key, "r");
+        if (!l && !r) return "";
+        const chip = d => d ? `<span style="background:#fc4c02;color:#fff;border-radius:8px;padding:4px 12px;font-size:.8rem;font-weight:700">${d.name}</span>` : "";
+        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+          <span style="font-size:.6rem;font-weight:800;letter-spacing:.07em;color:#bbb;width:46px;text-align:right;flex-shrink:0">${label}</span>
+          ${chip(l)}${chip(r)}
+        </div>`;
+      }).join("");
+      return `<div style="padding:6px 0">${rows}</div>`;
+    }
+
+    // Mode édition : tableau complet avec réserve
+    const rows = positions.map(([key, label]) => `
+      <div class="sd-row">
+        <span class="sd-label">${label}</span>
+        ${makeSlot(dogInSlot(key,"l"), `${key}-l`)}
+        ${makeSlot(dogInSlot(key,"r"), `${key}-r`)}
+      </div>`).join("");
+
+    const reserve = reserveDogs.length ? `
+      <div class="sd-reserve-wrap">
+        <span class="sd-reserve-label">Réserve</span>
+        <div class="sd-reserve">
+          ${reserveDogs.map(d => `<button class="sd-reserve-dog" data-rid="${d.id}" type="button">${d.name}</button>`).join("")}
+        </div>
+      </div>` : "";
+
+    return `<div class="sd-board">${rows}${reserve}</div>`;
   }
 
   containers.forEach(container => {
     container.innerHTML = buildHTML();
 
-    // Touch drag (mobile)
-    let touchDogId = null, touchFromSlot = null, touchClone = null, touchHoverSlot = null;
+    // Tap réserve → première case vide
+    container.querySelectorAll(".sd-reserve-dog").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.rid;
+        const free = allSlots.find(s => !state.teamPositions[s]);
+        if (!free) return;
+        state.teamPositions[free] = id;
+        updateRoleFromSlot(free, id);
+        saveState(); renderSledDiagram();
+      });
+    });
 
-    container.querySelectorAll(".sled-dog[draggable='true']").forEach(dogEl => {
-      dogEl.addEventListener("touchstart", e => {
-        const slot = dogEl.closest("[data-slot]");
-        touchFromSlot = slot ? slot.dataset.slot : null;
-        touchDogId = touchFromSlot ? state.teamPositions[touchFromSlot] : null;
-        touchHoverSlot = null;
-        touchClone = dogEl.cloneNode(true);
-        touchClone.style.cssText = "position:fixed;opacity:.75;pointer-events:none;z-index:9999;font-size:0.85rem;background:#fc4c02;color:#fff;padding:6px 10px;border-radius:8px;transform:translate(-50%,-50%)";
-        document.body.appendChild(touchClone);
+    // Touch drag (mobile) — plaques placées
+    let tDogId = null, tFromSlot = null, tClone = null, tHoverSlot = null;
+    container.querySelectorAll(".sd-filled").forEach(el => {
+      el.addEventListener("touchstart", e => {
+        tFromSlot = el.dataset.slot;
+        tDogId = state.teamPositions[tFromSlot] || null;
+        tHoverSlot = null;
+        tClone = document.createElement("div");
+        const dog = state.dogs.find(d => d.id === tDogId);
+        tClone.textContent = dog?.name || "";
+        tClone.style.cssText = "position:fixed;opacity:.8;pointer-events:none;z-index:9999;font-size:.9rem;font-weight:700;background:#fc4c02;color:#fff;padding:8px 14px;border-radius:10px;transform:translate(-50%,-50%)";
+        document.body.appendChild(tClone);
       }, { passive: true });
 
-      dogEl.addEventListener("touchmove", e => {
-        if (!touchClone) return;
+      el.addEventListener("touchmove", e => {
+        if (!tClone) return;
         const t = e.touches[0];
-        touchClone.style.left = t.clientX + "px";
-        touchClone.style.top  = t.clientY + "px";
-        // Détecter le slot sous le doigt en masquant le clone
-        touchClone.style.visibility = "hidden";
+        tClone.style.left = t.clientX + "px";
+        tClone.style.top  = t.clientY + "px";
+        tClone.style.visibility = "hidden";
         const under = document.elementFromPoint(t.clientX, t.clientY);
-        touchClone.style.visibility = "visible";
-        touchHoverSlot = under?.closest("[data-slot]")?.dataset?.slot || null;
+        tClone.style.visibility = "visible";
+        tHoverSlot = under?.closest("[data-slot]")?.dataset?.slot || null;
+        container.querySelectorAll(".sd-slot").forEach(s => s.classList.remove("sd-drag-over"));
+        if (tHoverSlot) container.querySelector(`[data-slot="${tHoverSlot}"]`)?.classList.add("sd-drag-over");
         e.preventDefault();
       }, { passive: false });
 
-      dogEl.addEventListener("touchend", e => {
-        if (touchClone) { touchClone.remove(); touchClone = null; }
-        const toSlot = touchHoverSlot;
-        touchHoverSlot = null;
-        if (toSlot && touchDogId && toSlot !== touchFromSlot) {
-          const occupant = state.teamPositions[toSlot];
-          if (touchFromSlot) {
-            if (occupant) state.teamPositions[touchFromSlot] = occupant;
-            else delete state.teamPositions[touchFromSlot];
-          }
-          state.teamPositions[toSlot] = touchDogId;
-          saveState();
-          renderSledDiagram();
+      el.addEventListener("touchend", () => {
+        if (tClone) { tClone.remove(); tClone = null; }
+        container.querySelectorAll(".sd-slot").forEach(s => s.classList.remove("sd-drag-over"));
+        if (tHoverSlot && tDogId && tHoverSlot !== tFromSlot) {
+          const occupant = state.teamPositions[tHoverSlot];
+          if (occupant) state.teamPositions[tFromSlot] = occupant;
+          else delete state.teamPositions[tFromSlot];
+          state.teamPositions[tHoverSlot] = tDogId;
+          updateRoleFromSlot(tHoverSlot, tDogId);
+          saveState(); renderSledDiagram();
         }
-        touchDogId = null; touchFromSlot = null;
+        tDogId = null; tFromSlot = null; tHoverSlot = null;
       });
+    });
+
+    // Desktop drag & drop
+    container.querySelectorAll(".sd-filled").forEach(el => {
+      el.setAttribute("draggable", "true");
+      el.addEventListener("dragstart", e => {
+        _dragDogId = state.teamPositions[el.dataset.slot];
+        _dragFromSlot = el.dataset.slot;
+        _dragFromReserve = false;
+        e.dataTransfer.setData("text/plain", _dragDogId);
+      });
+    });
+    container.querySelectorAll(".sd-reserve-dog").forEach(btn => {
+      btn.setAttribute("draggable", "true");
+      btn.addEventListener("dragstart", e => {
+        _dragDogId = btn.dataset.rid;
+        _dragFromSlot = null;
+        _dragFromReserve = true;
+        e.dataTransfer.setData("text/plain", _dragDogId);
+      });
+    });
+    container.querySelectorAll(".sd-slot").forEach(slot => {
+      slot.addEventListener("dragover", e => { e.preventDefault(); slot.classList.add("sd-drag-over"); });
+      slot.addEventListener("dragleave", () => slot.classList.remove("sd-drag-over"));
+      slot.addEventListener("drop", e => { e.preventDefault(); handleSlotDrop(e, slot.dataset.slot); });
     });
   });
 }
 
+function updateRoleFromSlot(slot, dogId) {
+  const posKey = slot.split("-")[0];
+  const role = SLED_ROLE_MAP[posKey] || "Team";
+  const idx = state.dogs.findIndex(d => d.id === dogId);
+  if (idx !== -1) state.dogs[idx].role = role;
+}
+
 function handleDogDragStart(event, dogId, fromSlot) {
-  _dragDogId    = dogId;
-  _dragFromSlot = fromSlot || null;
+  _dragDogId = dogId; _dragFromSlot = fromSlot || null; _dragFromReserve = false;
   event.dataTransfer.setData("text/plain", dogId);
 }
 
 function handleSlotDrop(event, toSlot) {
   event.preventDefault();
-  document.querySelectorAll(".sled-slot").forEach(s => s.classList.remove("drag-over"));
+  document.querySelectorAll(".sd-slot").forEach(s => s.classList.remove("sd-drag-over"));
   const dogId = _dragDogId || event.dataTransfer.getData("text/plain");
-  if (!dogId) return;
-  if (!state.teamPositions) state.teamPositions = {};
-  // Inverser si l'emplacement cible est occupé
+  if (!dogId || !state.teamPositions) return;
   const occupant = state.teamPositions[toSlot];
   if (_dragFromSlot) {
     if (occupant && occupant !== dogId) state.teamPositions[_dragFromSlot] = occupant;
     else delete state.teamPositions[_dragFromSlot];
   }
   state.teamPositions[toSlot] = dogId;
-  _dragDogId = null; _dragFromSlot = null;
-  // Met à jour le rôle du chien
-  const roleMap = { leader:"Leader", swing:"Swing", team:"Team", wheel:"Wheel" };
-  const posKey  = toSlot.split("-")[0];
-  const dogIdx  = state.dogs.findIndex(d => d.id === dogId);
-  if (dogIdx !== -1) state.dogs[dogIdx].role = roleMap[posKey] || state.dogs[dogIdx].role;
-  saveState();
-  renderSledDiagram();
+  updateRoleFromSlot(toSlot, dogId);
+  _dragDogId = null; _dragFromSlot = null; _dragFromReserve = false;
+  saveState(); renderSledDiagram();
 }
 
 function removeFromSlot(slot) {
   if (!state.teamPositions) return;
   delete state.teamPositions[slot];
-  saveState();
-  renderSledDiagram();
+  saveState(); renderSledDiagram();
 }
 // ─────────────────────────────────────────────────────────────
 
@@ -3982,7 +4353,7 @@ function renderRuns() {
             <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
           </button>
         </div>
-        ${hasTrace ? renderRoutePreview(run.path) : ""}
+        ${hasTrace ? renderRoutePreview(run.path, index) : ""}
         <div class="run-card-stats">
           <div class="run-stat">
             <span class="run-stat-value">${km}</span>
@@ -4052,6 +4423,9 @@ function renderRuns() {
       });
     });
   });
+
+  // Mini-cartes Leaflet dans les cartes d'activité
+  requestAnimationFrame(() => initRoutePreviews());
 }
 
 function openShareSheet(index) {
@@ -4158,56 +4532,198 @@ ${trkpts}
   }
 }
 
-function renderRoutePreview(path) {
+function renderRoutePreview(path, index) {
   const points = path
     .map((point) => Array.isArray(point) ? point : [point.lat, point.lon ?? point.lng ?? point.longitude])
     .filter(([lat, lng]) => Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)));
   if (points.length < 2) return "";
+  return `<div class="route-preview" data-run-idx="${index}"></div>`;
+}
 
-  const W = 300, H = 100, PAD = 14;
-  const lats = points.map(([lat]) => Number(lat));
-  const lngs = points.map(([, lng]) => Number(lng));
-  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
-  const latRange = maxLat - minLat || 0.0001;
-  const lngRange = maxLng - minLng || 0.0001;
+function initRoutePreviews() {
+  // Détruit toutes les anciennes instances Leaflet
+  Object.values(_routeMapInstances).forEach(m => { try { m.remove(); } catch {} });
+  Object.keys(_routeMapInstances).forEach(k => delete _routeMapInstances[k]);
 
-  // Garde les proportions réelles du tracé
-  const scaleX = (W - PAD * 2) / lngRange;
-  const scaleY = (H - PAD * 2) / latRange;
-  const scale  = Math.min(scaleX, scaleY);
-  const offX   = (W - lngRange * scale) / 2;
-  const offY   = (H - latRange * scale) / 2;
+  // N'initialise que les éléments visibles (offsetWidth > 0)
+  document.querySelectorAll('.route-preview[data-run-idx]').forEach(el => {
+    if (el.offsetWidth === 0) return;
+    const index = Number(el.dataset.runIdx);
+    const run = state.runs[index];
+    if (!run || !Array.isArray(run.path)) return;
 
-  const svgPts = points.map(([lat, lng]) => {
-    const x = offX + (Number(lng) - minLng) * scale;
-    const y = H - offY - (Number(lat) - minLat) * scale;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
+    const points = run.path
+      .map(p => Array.isArray(p) ? [p[0], p[1]] : [p.lat, p.lon ?? p.lng ?? p.longitude])
+      .filter(([lat, lng]) => Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)))
+      .map(([lat, lng]) => [Number(lat), Number(lng)]);
+    if (points.length < 2) return;
+
+    delete el._leaflet_id;
+    el.innerHTML = "";
+
+    const map = L.map(el, {
+      zoomControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      touchZoom: false,
+      keyboard: false,
+      attributionControl: false,
+    });
+    _routeMapInstances[`${index}_${el.closest('[data-list]')?.dataset?.list || 'x'}`] = map;
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18 }).addTo(map);
+
+    const polyline = L.polyline(points, { color: "#fc4c02", weight: 3.5, opacity: 0.9 }).addTo(map);
+    map.fitBounds(polyline.getBounds(), { padding: [12, 12] });
+
+    const startIcon = L.divIcon({ className: "", html: '<div style="width:10px;height:10px;background:#22c55e;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.4)"></div>', iconSize: [10, 10], iconAnchor: [5, 5] });
+    const endIcon   = L.divIcon({ className: "", html: '<div style="width:12px;height:12px;background:#fc4c02;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.4)"></div>', iconSize: [12, 12], iconAnchor: [6, 6] });
+    L.marker(points[0], { icon: startIcon }).addTo(map);
+    L.marker(points[points.length - 1], { icon: endIcon }).addTo(map);
   });
+}
 
-  const [fx, fy] = svgPts[0].split(",");
-  const [lx, ly] = svgPts[svgPts.length - 1].split(",");
-  const pts = svgPts.join(" ");
+// ─── Saisons ────────────────────────────────────────────────────────────────
 
-  return `
-    <div class="route-preview">
-      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="2.5" result="blur"/>
-            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-        <!-- halo sous le tracé -->
-        <polyline points="${pts}" fill="none" stroke="#fc4c02" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>
-        <!-- tracé principal -->
-        <polyline points="${pts}" fill="none" stroke="#fc4c02" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
-        <!-- point départ -->
-        <circle cx="${fx}" cy="${fy}" r="5" fill="#22c55e" stroke="#fff" stroke-width="2"/>
-        <!-- point arrivée -->
-        <circle cx="${lx}" cy="${ly}" r="6" fill="#fc4c02" stroke="#fff" stroke-width="2"/>
-      </svg>
+function getSeasonRuns(season) {
+  return state.runs.filter(r => {
+    if (!r.date) return false;
+    if (r.date < season.startDate) return false;
+    if (season.endDate && r.date > season.endDate) return false;
+    return true;
+  });
+}
+
+function renderSeasons() {
+  const container = document.getElementById("vous-panel-saisons");
+  if (!container) return;
+
+  const activeSeason = state.seasons.find(s => !s.endDate);
+  const today = new Date().toISOString().slice(0, 10);
+
+  let html = `<div style="padding:12px 16px 24px">`;
+
+  // ── Saison active ──
+  if (activeSeason) {
+    const runs = getSeasonRuns(activeSeason);
+    const km = runs.reduce((s, r) => s + Number(r.km || 0), 0);
+    const dogSet = new Set(runs.flatMap(r => r.team || []));
+    const types = [...new Set(runs.map(r => r.type).filter(Boolean))];
+    html += `
+      <div style="background:linear-gradient(135deg,#fc4c02,#e03a00);border-radius:16px;padding:16px;color:#fff;margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:0.7rem;opacity:0.8;text-transform:uppercase;letter-spacing:.05em">Saison en cours</div>
+            <div style="font-size:1.1rem;font-weight:700;margin:2px 0 8px">${activeSeason.name}</div>
+            <div style="font-size:0.75rem;opacity:0.85">Début : ${formatDate(activeSeason.startDate)}</div>
+          </div>
+          <button onclick="endSeason('${activeSeason.id}')" style="background:rgba(255,255,255,0.22);border:none;border-radius:10px;color:#fff;font-size:0.8rem;font-weight:600;padding:6px 12px;cursor:pointer">Terminer</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;background:rgba(0,0,0,0.15);border-radius:10px;padding:12px">
+          <div style="text-align:center"><div style="font-size:1.4rem;font-weight:800">${km.toFixed(0)}</div><div style="font-size:0.7rem;opacity:0.8">km</div></div>
+          <div style="text-align:center"><div style="font-size:1.4rem;font-weight:800">${runs.length}</div><div style="font-size:0.7rem;opacity:0.8">sorties</div></div>
+          <div style="text-align:center"><div style="font-size:1.4rem;font-weight:800">${dogSet.size}</div><div style="font-size:0.7rem;opacity:0.8">chiens</div></div>
+        </div>
+        ${types.length ? `<div style="margin-top:10px;font-size:0.72rem;opacity:0.85">${types.join(" · ")}</div>` : ""}
+      </div>`;
+  } else {
+    html += `
+      <button onclick="openNewSeasonForm()" style="width:100%;border:2px dashed #fc4c02;border-radius:14px;padding:18px;background:none;color:#fc4c02;font-weight:600;font-size:0.95rem;cursor:pointer;margin-bottom:20px">
+        + Démarrer une nouvelle saison
+      </button>`;
+  }
+
+  // ── Saisons terminées ──
+  const pastSeasons = state.seasons.filter(s => s.endDate).sort((a, b) => b.startDate.localeCompare(a.startDate));
+  if (pastSeasons.length) {
+    html += `<div style="font-size:0.75rem;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Historique</div>`;
+    pastSeasons.forEach(s => {
+      const runs = getSeasonRuns(s);
+      const km = runs.reduce((acc, r) => acc + Number(r.km || 0), 0);
+      const dogSet = new Set(runs.flatMap(r => r.team || []));
+      const types = [...new Set(runs.map(r => r.type).filter(Boolean))];
+      html += `
+        <div style="background:var(--card-bg,#fff);border-radius:14px;border:1px solid #eee;padding:14px 16px;margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div>
+              <div style="font-weight:700;font-size:0.95rem">${s.name}</div>
+              <div style="font-size:0.72rem;color:#999">${formatDate(s.startDate)} → ${formatDate(s.endDate)}</div>
+            </div>
+            <button onclick="deleteSeason('${s.id}')" title="Supprimer" style="background:none;border:none;color:#ccc;font-size:1.1rem;cursor:pointer;padding:4px">✕</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#f8f8f8;border-radius:10px;padding:10px">
+            <div style="text-align:center"><div style="font-size:1.2rem;font-weight:800;color:#fc4c02">${km.toFixed(0)}</div><div style="font-size:0.7rem;color:#999">km</div></div>
+            <div style="text-align:center"><div style="font-size:1.2rem;font-weight:800;color:#fc4c02">${runs.length}</div><div style="font-size:0.7rem;color:#999">sorties</div></div>
+            <div style="text-align:center"><div style="font-size:1.2rem;font-weight:800;color:#fc4c02">${dogSet.size}</div><div style="font-size:0.7rem;color:#999">chiens</div></div>
+          </div>
+          ${types.length ? `<div style="margin-top:8px;font-size:0.72rem;color:#888">${types.join(" · ")}</div>` : ""}
+        </div>`;
+    });
+  } else if (!activeSeason) {
+    html += `<p style="color:#bbb;text-align:center;font-size:0.85rem;margin-top:20px">Aucune saison enregistrée</p>`;
+  }
+
+  if (activeSeason) {
+    html += `<button onclick="openNewSeasonForm()" style="width:100%;border:2px dashed #ddd;border-radius:14px;padding:12px;background:none;color:#999;font-size:0.85rem;cursor:pointer;margin-top:4px">
+      + Préparer la prochaine saison (terminer l'actuelle d'abord)
+    </button>`;
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+function openNewSeasonForm() {
+  const today = new Date().toISOString().slice(0, 10);
+  const overlay = document.createElement("div");
+  overlay.id = "season-form-overlay";
+  overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;display:flex;align-items:flex-end";
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;padding:24px;max-height:80vh;overflow-y:auto">
+      <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 18px"></div>
+      <h3 style="margin:0 0 18px;font-size:1.1rem">Nouvelle saison</h3>
+      <label style="display:block;margin-bottom:14px">
+        <div style="font-size:0.8rem;color:#666;margin-bottom:4px">Nom de la saison</div>
+        <input id="season-name-input" type="text" value="Saison ${new Date().getFullYear()}-${new Date().getFullYear()+1}" style="width:100%;border:1px solid #ddd;border-radius:10px;padding:10px 12px;font-size:1rem;box-sizing:border-box">
+      </label>
+      <label style="display:block;margin-bottom:20px">
+        <div style="font-size:0.8rem;color:#666;margin-bottom:4px">Date de début</div>
+        <input id="season-start-input" type="date" value="${today}" style="width:100%;border:1px solid #ddd;border-radius:10px;padding:10px 12px;font-size:1rem;box-sizing:border-box">
+      </label>
+      <button onclick="saveNewSeason()" style="width:100%;background:#fc4c02;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;margin-bottom:10px">Démarrer la saison</button>
+      <button onclick="document.getElementById('season-form-overlay').remove()" style="width:100%;background:none;border:none;color:#999;font-size:0.9rem;cursor:pointer;padding:8px">Annuler</button>
     </div>`;
+  overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.style.opacity = "1");
+  document.getElementById("season-name-input").focus();
+}
+
+function saveNewSeason() {
+  const name = document.getElementById("season-name-input")?.value?.trim();
+  const startDate = document.getElementById("season-start-input")?.value;
+  if (!name || !startDate) return;
+  const newSeason = { id: createDeviceId(), name, startDate, endDate: null };
+  state.seasons = [...state.seasons, newSeason];
+  saveState();
+  document.getElementById("season-form-overlay")?.remove();
+  renderSeasons();
+}
+
+function endSeason(id) {
+  if (!confirm("Terminer cette saison ?")) return;
+  const today = new Date().toISOString().slice(0, 10);
+  state.seasons = state.seasons.map(s => s.id === id ? { ...s, endDate: today } : s);
+  saveState();
+  renderSeasons();
+}
+
+function deleteSeason(id) {
+  if (!confirm("Supprimer cette saison ? (les activités ne sont pas supprimées)")) return;
+  state.seasons = state.seasons.filter(s => s.id !== id);
+  saveState();
+  renderSeasons();
 }
 
 function renderAnalytics() {
@@ -4284,6 +4800,21 @@ function openRunDetail(index) {
   document.getElementById("rd-speed").textContent = (run.speed || 0).toFixed(1) + " km/h";
   const dogCount_ = run.team?.length || 0;
   document.getElementById("rd-dogs").textContent = dogCount_ + " " + (dogCount_ > 1 ? t('net_dog_count_p') : t('net_dog_count_s'));
+  const rdTeam = document.getElementById("rd-team");
+  const rdTeamList = document.getElementById("rd-team-list");
+  if (rdTeam && rdTeamList && run.team?.length) {
+    const roleOrder = ["Leader", "Swing", "Team", "Wheel"];
+    const sorted = [...run.team]
+      .map(id => ({ dog: state.dogs.find(d => d.id === id), role: run.teamRoles?.[id] || state.dogs.find(d => d.id === id)?.role || "Team" }))
+      .filter(e => e.dog)
+      .sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role));
+    rdTeamList.innerHTML = sorted.map(({ dog, role }) =>
+      `<div style="font-size:0.85rem;color:#333"><strong>${dog.name}</strong> — ${role}</div>`
+    ).join("");
+    rdTeam.style.display = "";
+  } else if (rdTeam) {
+    rdTeam.style.display = "none";
+  }
 
   // Durée estimée
   const durMin = run.km && run.speed > 0 ? Math.round(run.km / run.speed * 60) : 0;
@@ -5186,7 +5717,7 @@ function renderWebAdvice() {
     list.innerHTML = `
       <div class="advice-rotation-info">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
-        Nouveau conseil : ${nextLabel} · ${periodIndex % total + 1}/${total}
+        ${t('advice_new')} : ${nextLabel} · ${periodIndex % total + 1}/${total}
       </div>
       ${todayTips.map((tip) => `
         <article class="advice-card web-tip">
@@ -5220,12 +5751,12 @@ function buildPlan() {
 
 function getWeekFocus(index, isRest, context = getPlanContext()) {
   const summer = state.seasonMode === "summer";
-  if (context.daysToRace <= 10 && index === 0) return "Course proche: affutage, volume reduit, rappel court et team fraiche.";
-  if (context.weatherRisk) return `${context.weatherRisk}. Seance adaptee: ${summer ? "canicross facile, eau, ombre et coussinets." : "allure controlee, pattes et recuperation."}`;
-  if (isRest) return summer ? "Semaine legere, coussinets, hydratation, chaleur a surveiller." : "Semaine legere, controle fatigue, soins des pattes.";
-  if (state.raceType === "Sprint") return summer ? "Intervalles courts tot le matin, departs propres, recuperation active." : index % 2 ? "Intervalles courts, departs, recuperation active." : "Vitesse propre, virages, ordres leaders.";
-  if (state.raceType === "Longue distance") return summer ? "Rando-course tractee, pauses eau, allure economique." : index % 2 ? "Back-to-back, alimentation, allure economique." : "Sortie longue, pause controlee, mental de team.";
-  return summer ? "Endurance facile, denivele doux, traction reguliere." : index % 2 ? "Cotes courtes, endurance, retour calme." : "Endurance progressive, allure stable.";
+  if (context.daysToRace <= 10 && index === 0) return t('focus_race_soon');
+  if (context.weatherRisk) return `${context.weatherRisk}. ${summer ? t('focus_weather_summer') : t('focus_weather_winter')}`;
+  if (isRest) return summer ? t('focus_rest_summer') : t('focus_rest_winter');
+  if (state.raceType === "Sprint") return summer ? t('focus_sprint_summer') : index % 2 ? t('focus_sprint_a') : t('focus_sprint_b');
+  if (state.raceType === "Longue distance") return summer ? t('focus_long_summer') : index % 2 ? t('focus_long_a') : t('focus_long_b');
+  return summer ? t('focus_mid_summer') : index % 2 ? t('focus_mid_a') : t('focus_mid_b');
 }
 
 function getNextWorkout() {
@@ -5251,19 +5782,17 @@ function getNextWorkout() {
   const context = getPlanContext();
   if (context.volumeFactor < 1) nextKm = Math.max(4, Math.round(nextKm * context.volumeFactor));
 
-  // Type de séance selon discipline
-  const label = state.raceType === "Sprint" ? "Intervalles courts"
-    : state.raceType === "Longue distance" ? "Sortie longue économique"
-    : "Endurance progressive";
+  const label = state.raceType === "Sprint" ? t('plan_intervals')
+    : state.raceType === "Longue distance" ? t('plan_long_run')
+    : t('plan_endurance');
 
-  // Alerte récupération
   const lastRecov = state.runs[0]?.recovery || "";
   const recovNote = (lastRecov === "Difficile" || lastRecov === "A surveiller")
-    ? " ⚠️ Récupération à surveiller." : "";
+    ? " " + t('plan_recov_note') : "";
 
   return {
     title: label,
-    text: `${nextKm} km recommandés (moyenne récente : ${Math.round(avgKm)} km).${recovNote}`,
+    text: t('plan_next_km').replace('{n}', nextKm).replace('{avg}', Math.round(avgKm)) + recovNote,
     km: nextKm
   };
 }
@@ -5325,6 +5854,37 @@ function getPlanContext() {
   };
 }
 
+const ENGIN_COEF = { "Traîneau": 1.8, "ATV": 2.5, "Kart": 1.5, "VTT": 1.2, "Trottinette": 1.2, "Canicross": 1.2 };
+
+function getWeekEffortZones() {
+  const now = new Date();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  monday.setHours(0, 0, 0, 0);
+
+  const weekRuns = state.runs.filter(r => new Date(r.date) >= monday);
+
+  const zones = [
+    { label: t('zone_easy'),      color: "#22c55e", score: 0 },
+    { label: t('zone_moderate'),  color: "#3b82f6", score: 0 },
+    { label: t('zone_intensive'), color: "#f97316", score: 0 },
+    { label: t('zone_max'),       color: "#ef4444", score: 0 },
+  ];
+
+  weekRuns.forEach(r => {
+    const km = Number(r.km || 0);
+    const elev = Number(r.elevation || r.elevGain || 0);
+    const coef = ENGIN_COEF[r.engin] || 1.2;
+    const score = km * coef + elev * 0.01;
+    if (score < 8)       zones[0].score += score;
+    else if (score < 18) zones[1].score += score;
+    else if (score < 30) zones[2].score += score;
+    else                 zones[3].score += score;
+  });
+
+  return zones;
+}
+
 function renderPlanInsights() {
   const list = document.querySelector('[data-list="planInsights"]');
   if (!list) return;
@@ -5341,6 +5901,17 @@ function renderPlanInsights() {
     ? `MAJ ${formatDateTime(state.planWeatherUpdatedAt)}`
     : "MAJ automatique";
 
+  const zones = getWeekEffortZones();
+  const zoneTotal = zones.reduce((s, z) => s + z.score, 0) || 1;
+  const zoneBar = zones.map(z => {
+    const pct = Math.round((z.score / zoneTotal) * 100);
+    return pct > 0 ? `<div style="flex:${pct};background:${z.color};height:100%;border-radius:3px;position:relative" title="${z.label} ${pct}%"></div>` : "";
+  }).join("");
+  const zoneLegend = zones.filter(z => z.score > 0).map(z => {
+    const pct = Math.round((z.score / zoneTotal) * 100);
+    return `<span style="display:flex;align-items:center;gap:3px;font-size:0.72rem;color:#555"><span style="width:8px;height:8px;border-radius:50%;background:${z.color};display:inline-block"></span>${z.label} ${pct}%</span>`;
+  }).join("");
+
   list.innerHTML = `
     <article class="plan-signal ${context.riskLevel}">
       <span>Date du jour</span>
@@ -5353,15 +5924,20 @@ function renderPlanInsights() {
       <small>${context.weatherRisk || updateText}</small>
     </article>
     <article class="plan-signal ${context.loadRatio > 1.25 ? "danger" : "ok"}">
-      <span>Charge</span>
-      <b>${context.weekKm.toFixed(1)} km cette semaine</b>
-      <small>${context.loadRatio > 1.25 ? "Plan allege automatiquement." : "Plan ajuste selon tes sorties."}</small>
+      <span>${t('coach_charge_label')}</span>
+      <b>${context.weekKm.toFixed(1)} ${t('coach_charge_week')}</b>
+      <small>${context.loadRatio > 1.25 ? t('coach_plan_lightened') : t('coach_plan_adjusted')}</small>
+    </article>
+    <article class="plan-signal ok" style="grid-column:1/-1">
+      <span>${t('zone_effort_label')}</span>
+      <div style="display:flex;gap:3px;height:10px;border-radius:4px;overflow:hidden;margin:6px 0 4px;background:#f0f0f0">${zoneTotal > 0 ? zoneBar : '<div style="flex:1;background:#e5e5e5;height:100%;border-radius:3px"></div>'}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px">${zoneTotal > 0 ? zoneLegend : `<span style="font-size:0.72rem;color:#aaa">${t('zone_no_runs')}</span>`}</div>
     </article>
   `;
 }
 
 function formatDateTime(value) {
-  return new Date(value).toLocaleString("fr-CH", {
+  return new Date(value).toLocaleString(getLangLocale(), {
     day: "2-digit",
     month: "short",
     hour: "2-digit",
@@ -5373,10 +5949,10 @@ function getCoachInsight() {
   const alerts = buildAlerts();
   const weekKm = getWeekKm();
   if (alerts.some((alert) => alert.level === "danger")) {
-    return { title: "A surveiller", text: alerts.find((alert) => alert.level === "danger").text };
+    return { title: t('coach_insight_watch_title'), text: alerts.find((alert) => alert.level === "danger").text };
   }
-  if (weekKm < 20) return { title: "Relancer doucement", text: "Volume bas cette semaine. Prevoir une sortie facile avant d'augmenter." };
-  return { title: "Progression propre", text: "Charge stable. Garde une semaine legere toutes les 3 a 4 semaines." };
+  if (weekKm < 20) return { title: t('coach_insight_low_title'), text: t('coach_insight_low_text') };
+  return { title: t('coach_insight_ok_title'), text: t('coach_insight_ok_text') };
 }
 
 function getDogAdvice(dog, recentKm, lastRun) {
@@ -5466,39 +6042,11 @@ function getDogReadiness(dog) {
 }
 
 function getWeeklyPlanActions(context) {
-  if (context.weatherRisk) {
-    return {
-      level: "danger",
-      title: "Adapter a la meteo",
-      text: "Reduire l'intensite, choisir les heures fraiches et transformer la seance dure en endurance facile."
-    };
-  }
-  if (context.daysToRace <= 10) {
-    return {
-      level: "light",
-      title: "Affuter sans fatiguer",
-      text: "Garder une sortie courte avec quelques relances, puis privilegier repos, pattes et materiel."
-    };
-  }
-  if (context.loadRatio > 1.25) {
-    return {
-      level: "danger",
-      title: "Semaine trop chargee",
-      text: "Baisser le volume de 20 a 30 pourcent et laisser les chiens recuperer avant de remettre de l'intensite."
-    };
-  }
-  if (context.weekKm < 12) {
-    return {
-      level: "light",
-      title: "Relancer proprement",
-      text: "Programmer une sortie facile, puis augmenter seulement si la recuperation reste bonne."
-    };
-  }
-  return {
-    level: "ok",
-    title: "Progression stable",
-    text: "Conserver le plan, noter la meteo apres sortie et ajuster la prochaine seance selon l'energie de la team."
-  };
+  if (context.weatherRisk) return { level: "danger", title: t('plan_action_weather_title'), text: t('plan_action_weather_text') };
+  if (context.daysToRace <= 10) return { level: "light", title: t('plan_action_taper_title'), text: t('plan_action_taper_text') };
+  if (context.loadRatio > 1.25) return { level: "danger", title: t('plan_action_overload_title'), text: t('plan_action_overload_text') };
+  if (context.weekKm < 12) return { level: "light", title: t('plan_action_underload_title'), text: t('plan_action_underload_text') };
+  return { level: "ok", title: t('plan_action_ok_title'), text: t('plan_action_ok_text') };
 }
 
 function buildAlerts() {
@@ -5508,22 +6056,22 @@ function buildAlerts() {
     const runs = state.runs.filter((run) => run.team.includes(dog.id));
     const lastRun = runs[0];
     const readiness = getDogReadiness(dog);
-    if (load > 45) alerts.push({ level: "danger", label: dog.name, text: `${dog.name} est a ${load.toFixed(1)} km sur 7 jours. Prevoir repos ou recuperation.` });
-    if (load < 6) alerts.push({ level: "info", label: dog.name, text: `${dog.name} a peu travaille cette semaine. Bon candidat pour une sortie facile.` });
-    if (lastRun && !lastRun.paws) alerts.push({ level: "danger", label: `Pattes ${dog.name}`, text: `Controle les coussinets de ${dog.name} avant la prochaine sortie.` });
-    if (lastRun && Number(lastRun.energy || 5) <= 2) alerts.push({ level: "danger", label: `Energie ${dog.name}`, text: `${dog.name} a eu une energie basse. Prevoir repos ou sortie tres facile.` });
-    if (lastRun && lastRun.recovery === "A surveiller") alerts.push({ level: "info", label: `Recuperation ${dog.name}`, text: `Recuperation a surveiller pour ${dog.name}. Note appetit, demarche et motivation.` });
-    if (dog.limitation) alerts.push({ level: "danger", label: `Suivi ${dog.name}`, text: `${dog.name} a un point de vigilance note : ${dog.limitation}` });
+    if (load > 45) alerts.push({ level: "danger", label: dog.name, text: t('alert_overload').replace('{name}', dog.name).replace('{km}', load.toFixed(1)) });
+    if (load < 6) alerts.push({ level: "info", label: dog.name, text: t('alert_underload').replace('{name}', dog.name) });
+    if (lastRun && !lastRun.paws) alerts.push({ level: "danger", label: t('alert_label_paws').replace('{name}', dog.name), text: t('alert_paws').replace('{name}', dog.name) });
+    if (lastRun && Number(lastRun.energy || 5) <= 2) alerts.push({ level: "danger", label: t('alert_label_energy').replace('{name}', dog.name), text: t('alert_low_energy').replace('{name}', dog.name) });
+    if (lastRun && lastRun.recovery === "A surveiller") alerts.push({ level: "info", label: t('alert_label_recovery').replace('{name}', dog.name), text: t('alert_recovery').replace('{name}', dog.name) });
+    if (dog.limitation) alerts.push({ level: "danger", label: dog.name, text: t('alert_limitation').replace('{name}', dog.name).replace('{text}', dog.limitation) });
     if (state.selectedDogIds.includes(dog.id) && readiness.level === "danger") {
-      alerts.push({ level: "danger", label: "Attelage", text: `${dog.name} est selectionne mais son statut conseille prudence ou repos.` });
+      alerts.push({ level: "danger", label: t('alert_label_team'), text: t('alert_selected_danger').replace('{name}', dog.name) });
     }
   });
   const heatRisk = state.seasonMode === "summer" && state.runs[0]?.weather?.match(/[2-9][0-9]/);
-  if (heatRisk) alerts.push({ level: "danger", label: "Chaleur", text: "Temperature elevee detectee. Eviter intensite, verifier coussinets et hydrater." });
-  if (state.runs[0] && !state.runs[0].hydrated) alerts.push({ level: "danger", label: "Hydratation", text: "Derniere sortie marquee avec hydratation incomplete." });
+  if (heatRisk) alerts.push({ level: "danger", label: t('alert_label_heat'), text: t('alert_heat') });
+  if (state.runs[0] && !state.runs[0].hydrated) alerts.push({ level: "danger", label: t('alert_label_hydration'), text: t('alert_hydration') });
   const context = getPlanContext();
-  if (context.weatherRisk) alerts.push({ level: "danger", label: "Meteo", text: context.weatherRisk });
-  if (context.daysToRace <= 7) alerts.push({ level: "info", label: "Course", text: "Course proche. Diminuer le volume, garder les chiens frais et verifier le materiel." });
+  if (context.weatherRisk) alerts.push({ level: "danger", label: t('alert_label_weather'), text: context.weatherRisk });
+  if (context.daysToRace <= 7) alerts.push({ level: "info", label: t('alert_label_race'), text: t('alert_race_soon') });
   return alerts.slice(0, 7);
 }
 
@@ -5656,7 +6204,8 @@ function renderRaceSearch() {
     } else if (period === "past" && !race.date) {
       periodMatch = false; // pas de date = pas une archive
     }
-    return typeMatch && regionMatch && surfaceMatch && reliabilityMatch && distanceMatch && periodMatch;
+    const wishlistMatch = !_wishlistFilterActive || state.raceInterests[race.id];
+    return typeMatch && regionMatch && surfaceMatch && reliabilityMatch && distanceMatch && periodMatch && wishlistMatch;
   }).sort((a, b) => getReliabilityRank(a.reliability) - getReliabilityRank(b.reliability));
 
   const radarMeta = ""; // radar supprimé
@@ -5724,12 +6273,15 @@ function renderRaceSearch() {
       byCountry[country].push(race);
     });
 
-    // Section courses sélectionnées
+    // Section liste de souhaits
     let pinnedHtml = "";
     if (pinned.length > 0) {
       pinnedHtml = `
         <div class="pinned-races-section">
-          <p class="pinned-races-title">${t('race_pinned_label')} (${pinned.length})</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <p class="pinned-races-title" style="margin:0">${t('race_wishlist_label')} (${pinned.length})</p>
+            <button type="button" id="share-wishlist-btn" style="font-size:0.78rem;color:#fc4c02;background:none;border:1px solid #fc4c02;border-radius:8px;padding:4px 10px;font-weight:700;cursor:pointer">📤 ${t('race_wishlist_share')}</button>
+          </div>
           ${pinned.map((r) => buildRaceCard(r, true)).join("")}
         </div>
       `;
@@ -5778,6 +6330,18 @@ function renderRaceSearch() {
       });
     });
   }
+
+  // Partager la liste de souhaits
+  list.querySelector("#share-wishlist-btn")?.addEventListener("click", () => {
+    const pinned = results.filter((r) => state.raceInterests[r.id]);
+    const lines = pinned.map(r => `🏁 ${r.name}${r.date ? " — " + r.date : ""}${r.location ? " (" + r.location + ")" : ""}`);
+    const text = `${t('race_wishlist_share_title')}\n\n${lines.join("\n")}\n\n— MushTrack`;
+    if (navigator.share) {
+      navigator.share({ title: t('race_wishlist_label'), text }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(text).then(() => alert(t('race_wishlist_copied')));
+    }
+  });
 
   list.querySelectorAll("[data-open-race-source]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -6173,57 +6737,132 @@ async function importRaceToAgenda(id) {
 // Email de l'admin (toi) — seul ce compte peut approuver les courses
 const ADMIN_EMAIL = "morardjuan@hotmail.com";
 
-async function reportMissingRace() {
-  const name = prompt("Nom de la course manquante");
-  if (!name) return;
-  const location = prompt("Pays / region / lieu", "A verifier") || "A verifier";
-  const type = prompt("Type: Sprint, Mid-distance, Longue distance, Canicross, Dryland, Skijoring", "A verifier") || "A verifier";
-  const date = prompt("Date si connue, format AAAA-MM-JJ", "") || "";
-  const url = prompt("Lien source si tu l'as", "") || "";
+function reportMissingRace() {
+  document.getElementById("missing-race-overlay")?.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "missing-race-overlay";
+  overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;display:flex;align-items:flex-end";
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;padding:20px 20px 32px;max-height:92vh;overflow-y:auto;box-sizing:border-box">
+      <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 16px"></div>
+      <h3 style="margin:0 0 4px;font-size:1.1rem;font-weight:700">Signaler une course manquante</h3>
+      <p style="margin:0 0 18px;font-size:0.8rem;color:#999">Elle sera ajoutée après validation.</p>
+
+      <label style="display:block;margin-bottom:12px">
+        <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Nom de la course <span style="color:#fc4c02">*</span></div>
+        <input id="mr-name" type="text" placeholder="ex: Laponie Race 120" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 12px;font-size:0.95rem;box-sizing:border-box">
+      </label>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <label>
+          <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Type <span style="color:#fc4c02">*</span></div>
+          <select id="mr-type" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 8px;font-size:0.88rem;box-sizing:border-box;background:#fff">
+            <option value="">— choisir —</option>
+            <option value="Sprint">Sprint</option>
+            <option value="Mid-distance">Mid-distance</option>
+            <option value="Longue distance">Longue distance</option>
+            <option value="Canicross">Canicross</option>
+            <option value="Dryland">Dryland</option>
+            <option value="Skijoring">Skijoring</option>
+          </select>
+        </label>
+        <label>
+          <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Distance (km)</div>
+          <input id="mr-distance" type="number" min="1" placeholder="ex: 120" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 12px;font-size:0.95rem;box-sizing:border-box">
+        </label>
+      </div>
+
+      <label style="display:block;margin-bottom:12px">
+        <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Pays / Région / Lieu <span style="color:#fc4c02">*</span></div>
+        <input id="mr-location" type="text" placeholder="ex: Rovaniemi, Finlande" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 12px;font-size:0.95rem;box-sizing:border-box">
+      </label>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <label>
+          <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Date (si connue)</div>
+          <input id="mr-date" type="date" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 8px;font-size:0.88rem;box-sizing:border-box">
+        </label>
+        <label>
+          <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Surface</div>
+          <select id="mr-surface" style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 8px;font-size:0.88rem;box-sizing:border-box;background:#fff">
+            <option value="Neige">Neige</option>
+            <option value="Dryland">Dryland</option>
+            <option value="Trail">Trail</option>
+            <option value="Neige Dryland">Neige + Dryland</option>
+          </select>
+        </label>
+      </div>
+
+      <label style="display:block;margin-bottom:12px">
+        <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Lien / Site officiel</div>
+        <input id="mr-url" type="url" placeholder="https://..." style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 12px;font-size:0.95rem;box-sizing:border-box">
+      </label>
+
+      <label style="display:block;margin-bottom:20px">
+        <div style="font-size:0.78rem;font-weight:600;color:#444;margin-bottom:4px">Notes (infos complémentaires)</div>
+        <textarea id="mr-notes" rows="2" placeholder="Formats, dates alternatives, historique..." style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 12px;font-size:0.88rem;box-sizing:border-box;resize:none;font-family:inherit"></textarea>
+      </label>
+
+      <div id="mr-error" style="color:#e53e3e;font-size:0.82rem;margin-bottom:10px;display:none"></div>
+
+      <button onclick="submitMissingRace()" style="width:100%;background:#fc4c02;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;margin-bottom:10px">Envoyer</button>
+      <button onclick="document.getElementById('missing-race-overlay').remove()" style="width:100%;background:none;border:none;color:#999;font-size:0.9rem;cursor:pointer;padding:8px">Annuler</button>
+    </div>`;
+
+  overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  setTimeout(() => document.getElementById("mr-name")?.focus(), 50);
+}
+
+async function submitMissingRace() {
+  const name     = document.getElementById("mr-name")?.value?.trim();
+  const type     = document.getElementById("mr-type")?.value;
+  const location = document.getElementById("mr-location")?.value?.trim();
+  const date     = document.getElementById("mr-date")?.value || null;
+  const distance = Number(document.getElementById("mr-distance")?.value) || 0;
+  const surface  = document.getElementById("mr-surface")?.value || "A verifier";
+  const url      = document.getElementById("mr-url")?.value?.trim() || null;
+  const notes    = document.getElementById("mr-notes")?.value?.trim() || "";
+
+  const errEl = document.getElementById("mr-error");
+  if (!name || !type || !location) {
+    errEl.textContent = "Merci de remplir le nom, le type et le lieu.";
+    errEl.style.display = "block";
+    return;
+  }
+  errEl.style.display = "none";
 
   const report = {
     id: `pending-${Date.now()}`,
-    name,
-    date: date || null,
-    type,
-    distance: 0,
-    region: location,
-    location,
-    url: url || null,
+    name, date, type, distance,
+    region: location, location, url,
     reliability: "user",
     source: "Signalee",
-    surface: "A verifier",
-    notes: "",
+    surface, notes,
     status: "pending"
   };
 
-  // Envoi dans Supabase avec status pending
   if (supabase) {
     try {
       await supabase.from("mushtrack_races").insert([{
-        id: report.id,
-        name: report.name,
-        date: report.date,
-        type: report.type,
-        region: report.region,
-        location: report.location,
-        url: report.url,
-        reliability: "user",
-        source: "Signalee",
-        surface: "A verifier",
-        notes: report.notes,
-        status: "pending"
+        id: report.id, name, date, type, region: location,
+        location, url, reliability: "user", source: "Signalee",
+        surface, notes, status: "pending"
       }]);
-      alert(`Merci ! "${name}" a ete soumise et sera visible apres validation par l'administrateur.`);
-    } catch (e) {
-      alert("Erreur lors de l'envoi. La course sera sauvegardee localement.");
+      document.getElementById("missing-race-overlay")?.remove();
+      showSyncBadge(`Merci ! "${name}" soumise pour validation.`);
+    } catch {
       state.missingRaceReports.unshift(report);
       saveState();
+      document.getElementById("missing-race-overlay")?.remove();
+      showSyncBadge(`"${name}" sauvegardée localement.`);
     }
   } else {
     state.missingRaceReports.unshift(report);
     saveState();
-    alert(`Merci ! "${name}" a ete soumise et sera visible apres validation.`);
+    document.getElementById("missing-race-overlay")?.remove();
+    showSyncBadge(`Merci ! "${name}" soumise pour validation.`);
   }
   renderRaceSearch();
 }
@@ -6826,6 +7465,7 @@ function toggleDogSelection(id) {
   const isSelected = state.selectedDogIds.includes(id);
   if (isSelected) {
     state.selectedDogIds = state.selectedDogIds.filter((dogId) => dogId !== id);
+    delete (state.runDogRoles || {})[id];
     // Retirer le chien du schéma attelage
     if (state.teamPositions) {
       const entry = Object.entries(state.teamPositions).find(([, v]) => v === id);
@@ -6843,8 +7483,13 @@ function toggleDogSelection(id) {
   render();
 }
 
+function getLangLocale() {
+  const lang = state?.lang || "fr";
+  return lang === "en" ? "en-GB" : lang === "de" ? "de-CH" : "fr-CH";
+}
+
 function formatDate(value) {
-  return new Date(`${value}T12:00:00`).toLocaleDateString("fr-CH", { day: "2-digit", month: "short" });
+  return new Date(`${value}T12:00:00`).toLocaleDateString(getLangLocale(), { day: "2-digit", month: "short" });
 }
 
 function formatDuration(totalSeconds) {
@@ -7267,6 +7912,7 @@ function saveCurrentRun() {
     elevationGain: pendingRunSummary.elevationGain || 0,
     path: gpsPath,
     team: [...state.selectedDogIds],
+    teamRoles: { ...state.runDogRoles },
     weather: document.querySelector("#weather").value,
     temp,
     energy: Number(document.querySelector("#energy").value),
@@ -7310,6 +7956,8 @@ document.querySelectorAll(".vous-subtab").forEach(btn => {
     btn.classList.add("active");
     const panel = document.getElementById("vous-panel-" + target);
     if (panel) panel.classList.add("active");
+    if (target === "enregistrement") setTimeout(() => initRoutePreviews(), 50);
+    if (target === "saisons") renderSeasons();
   });
 });
 
@@ -7381,12 +8029,10 @@ if (state.selectedEngin) {
 
 // Bouton "Modifier" attelage dans l'écran GPS
 document.querySelector("#toggle-dog-picker-record")?.addEventListener("click", () => {
-  const picker = document.querySelector("#dog-picker-record");
-  const diagram = document.querySelector("#gps-sled-diagram");
-  if (!picker) return;
-  const opening = picker.classList.contains("hidden");
-  picker.classList.toggle("hidden", !opening);
-  if (diagram) diagram.classList.toggle("hidden", opening);
+  _sledEditMode = !_sledEditMode;
+  const btn = document.querySelector("#toggle-dog-picker-record");
+  if (btn) btn.textContent = _sledEditMode ? "✓ Terminé" : "Modifier ✏️";
+  renderSledDiagram();
 });
 
 document.querySelectorAll("[data-mode]").forEach((button) => {
@@ -7945,6 +8591,18 @@ function formatCoachMarkdown(text) {
 
 document.querySelector("#missing-race-button")?.addEventListener("click", reportMissingRace);
 
+let _wishlistFilterActive = false;
+document.querySelector("#wishlist-filter-btn")?.addEventListener("click", () => {
+  _wishlistFilterActive = !_wishlistFilterActive;
+  const btn = document.querySelector("#wishlist-filter-btn");
+  if (btn) {
+    btn.style.background = _wishlistFilterActive ? "#fff4f0" : "";
+    btn.style.borderColor = _wishlistFilterActive ? "#fc4c02" : "";
+    btn.style.color = _wishlistFilterActive ? "#fc4c02" : "";
+  }
+  renderRaceSearch();
+});
+
 // Présets paramètres course
 const RACE_PRESETS = {
   sprint:   { name: "Sprint hivernal", type: "Sprint",          km: 12,  months: 3 },
@@ -8277,9 +8935,9 @@ function renderCoach() {
 
   const plan = generateCoachPlan();
   const today = new Date(); today.setHours(0,0,0,0);
-  const DAY_NAMES = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+  const DAY_NAMES = [t('coach_day_sun'), t('coach_day_mon'), t('coach_day_tue'), t('coach_day_wed'), t('coach_day_thu'), t('coach_day_fri'), t('coach_day_sat')];
   const PHASE_COLORS = { base: "#3b82f6", build: "#f59e0b", peak: "#fc4c02", taper: "#22c55e" };
-  const PHASE_LABELS = { base: "Phase de base", build: "Construction", peak: "Pic de forme", taper: "Affûtage" };
+  const PHASE_LABELS = { base: t('coach_phase_base'), build: t('coach_phase_build'), peak: t('coach_phase_peak'), taper: t('coach_phase_taper') };
 
   // Vet reminders
   const vetAlerts = [];
@@ -8563,12 +9221,12 @@ function generateCoachPlan() {
 
   // ── Sessions types ────────────────────────────────────────────────────────
   const SESSION_TYPES = {
-    endurance: { label: "Endurance",     emoji: "🏃", color: "#3b82f6", desc: "70–80% effort max, rythme conversationnel" },
-    long:      { label: "Sortie longue", emoji: "🌲", color: "#059669", desc: "Pace lent, hydratation toutes les 8–10 km" },
-    sprint:    { label: "Sprint",        emoji: "⚡", color: "#fc4c02", desc: "Intervalles 2–3 km haute intensité" },
-    recup:     { label: "Récupération",  emoji: "🐾", color: "#8b5cf6", desc: "Allure douce, pattes et harnais contrôlés" },
-    rest:      { label: "Repos",         emoji: "😴", color: "#94a3b8", desc: "Jeu libre, massage, observation", rest: true },
-    technique: { label: "Technique",     emoji: "🎯", color: "#f59e0b", desc: "Commandes, départs, dépassements" },
+    endurance: { label: t('session_endurance'), emoji: "🏃", color: "#3b82f6", desc: t('session_endurance_desc') },
+    long:      { label: t('session_long'),      emoji: "🌲", color: "#059669", desc: t('session_long_desc') },
+    sprint:    { label: t('session_sprint'),    emoji: "⚡", color: "#fc4c02", desc: t('session_sprint_desc') },
+    recup:     { label: t('session_recup'),     emoji: "🐾", color: "#8b5cf6", desc: t('session_recup_desc') },
+    rest:      { label: t('session_rest'),      emoji: "😴", color: "#94a3b8", desc: t('session_rest_desc'), rest: true },
+    technique: { label: t('session_technique'), emoji: "🎯", color: "#f59e0b", desc: t('session_technique_desc') },
   };
 
   // ── Distribution 7 jours (lun→dim) ───────────────────────────────────────
@@ -8624,20 +9282,20 @@ function generateCoachPlan() {
   const progressPct = lastWeekKm > 0 ? Math.round(((weekTarget - lastWeekKm) / lastWeekKm) * 100) : null;
 
   // ── Conseils par phase ────────────────────────────────────────────────────
-  const deloadNote = isDeloadWeek ? " Cette semaine est une semaine de décharge — volume réduit de 25% pour permettre la supercompensation." : "";
+  const deloadNote = isDeloadWeek ? t('coach_deload_note') : "";
   const ADVICE = {
-    base:  `Phase de base : priorité au volume à basse intensité (70–80% de l'effort max). Objectif ${weekTarget} km avec les deux sorties longues du week-end en back-to-back. Progression de 8%/sem maximum.${deloadNote}`,
-    build: `Construction en cours — ${weeksLeft} semaines avant la course. Intègre les intervalles (sprint) et conserve les back-to-back du week-end. Si un chien refuse le départ ou mange moins, réduis son volume de 20% cette semaine.${deloadNote}`,
-    peak:  `Phase de pointe ! ${weeksLeft} semaines avant ${state.raceName || "la course"}. Fais au moins une sortie à l'allure de course. Les back-to-back samedi-dimanche simulent la fatigue accumulée. Contrôle les pattes après chaque sortie.${deloadNote}`,
-    taper: `Affûtage final — réduis le volume de 40–50% mais garde l'intensité courte. Tes chiens doivent arriver frais et motivés. Prépare le matériel, fais la checklist pré-course. Plus qu'à gérer l'excitation au départ !`,
+    base:  t('coach_advice_base').replace('{km}', weekTarget) + deloadNote,
+    build: t('coach_advice_build').replace('{weeks}', weeksLeft) + deloadNote,
+    peak:  t('coach_advice_peak').replace('{weeks}', weeksLeft).replace('{race}', state.raceName || t('coach_phase_peak')) + deloadNote,
+    taper: t('coach_advice_taper'),
   };
 
   // ── Alertes chiens ────────────────────────────────────────────────────────
   const dogAlerts = [];
   for (const dog of state.dogs) {
     const fatigue = getDogFatigueIndex ? getDogFatigueIndex(dog.id) : 0;
-    if (fatigue > 1.4) dogAlerts.push({ name: dog.name, emoji: "🔴", msg: "Fatigue élevée — réduire le volume cette semaine" });
-    else if (fatigue > 1.0) dogAlerts.push({ name: dog.name, emoji: "🟡", msg: "Charge normale — surveiller la récupération" });
+    if (fatigue > 1.4) dogAlerts.push({ name: dog.name, emoji: "🔴", msg: t('coach_dog_fatigue_high') });
+    else if (fatigue > 1.0) dogAlerts.push({ name: dog.name, emoji: "🟡", msg: t('coach_dog_fatigue_watch') });
   }
 
   return {
@@ -9851,6 +10509,7 @@ async function syncLocalInterestsToServer() {
 // ── Vue carte des tracés GPS ──────────────────────────────────────────────────
 let _traceMap = null;
 const _tracePolylines = {}; // runId → L.polyline
+const _routeMapInstances = {}; // index → L.map (card previews)
 
 function setupTracesView(mapId, selectorId) {
   const mapEl = document.getElementById(mapId);
@@ -10105,6 +10764,7 @@ document.querySelectorAll(".lang-btn[data-lang]").forEach(btn => {
       b.style.color        = active ? "#fc4c02" : "#555";
     });
     applyLang();
+    renderEmergencyContact();
   });
 });
 
@@ -10161,26 +10821,26 @@ function renderEmergencyContact() {
   const c = state.emergencyContact || { name: "", phone: "" };
   el.innerHTML = `
     <section class="section-heading spaced" style="margin-top:20px">
-      <h2>Contact d'urgence</h2>
-      <span>SOS terrain</span>
+      <h2>${t('sos_title')}</h2>
+      <span>${t('sos_label')}</span>
     </section>
     <div style="background:#fff5f0;border-radius:14px;padding:16px;border:1.5px solid #fca5a5;margin-bottom:20px">
-      <p style="font-size:0.82rem;color:#555;margin-bottom:12px">En cas de SOS sur le terrain, un appel est passé directement à ce contact.</p>
+      <p style="font-size:0.82rem;color:#555;margin-bottom:12px">${t('sos_desc')}</p>
       <label style="display:block;margin-bottom:10px;font-size:0.85rem;font-weight:600;color:#333">
-        Nom
+        ${t('sos_name')}
         <input id="ec-name" type="text" placeholder="Ex: Marie Dupont" value="${c.name || ""}"
           style="display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:0.9rem;background:#fff"/>
       </label>
       <label style="display:block;margin-bottom:12px;font-size:0.85rem;font-weight:600;color:#333">
-        Téléphone
+        ${t('sos_phone')}
         <input id="ec-phone" type="tel" placeholder="Ex: +41791234567" value="${c.phone || ""}"
           style="display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:0.9rem;background:#fff"/>
       </label>
       <button id="ec-save-btn" type="button"
         style="width:100%;padding:11px;background:#fc4c02;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer">
-        Enregistrer le contact
+        ${t('sos_save')}
       </button>
-      <div id="ec-saved-msg" style="display:none;font-size:0.8rem;text-align:center;margin-top:8px;color:#16a34a;font-weight:600">✅ Contact enregistré</div>
+      <div id="ec-saved-msg" style="display:none;font-size:0.8rem;text-align:center;margin-top:8px;color:#16a34a;font-weight:600">${t('sos_saved')}</div>
     </div>`;
 
   document.getElementById("ec-save-btn").addEventListener("click", () => {
@@ -10200,7 +10860,7 @@ function triggerSOS() {
   if (c.phone) {
     window.location.href = `tel:${c.phone}`;
   } else {
-    alert("Aucun contact d’urgence configuré.\nVa dans Paramètres > Contact d’urgence.");
+    alert(t('sos_none'));
   }
 }
 
