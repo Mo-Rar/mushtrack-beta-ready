@@ -3982,7 +3982,7 @@ function renderRuns() {
             <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
           </button>
         </div>
-        ${hasTrace ? renderRoutePreview(run.path) : ""}
+        ${hasTrace ? renderRoutePreview(run.path, index) : ""}
         <div class="run-card-stats">
           <div class="run-stat">
             <span class="run-stat-value">${km}</span>
@@ -4015,6 +4015,12 @@ function renderRuns() {
       </article>
     `;
   }).join("");
+
+  // Réinitialise les instances pour permettre la re-création après re-render
+  Object.keys(_routeMapInstances).forEach(k => {
+    try { _routeMapInstances[k].remove(); } catch {}
+    delete _routeMapInstances[k];
+  });
 
   document.querySelectorAll('[data-list="runs"]').forEach((list) => {
     list.innerHTML = runsHtml || `<p class="empty-state">${t('run_empty')}</p>`;
@@ -4052,6 +4058,9 @@ function renderRuns() {
       });
     });
   });
+
+  // Init les mini-cartes après insertion dans le DOM
+  setTimeout(initRoutePreviews, 50);
 }
 
 function openShareSheet(index) {
@@ -4158,56 +4167,51 @@ ${trkpts}
   }
 }
 
-function renderRoutePreview(path) {
+function renderRoutePreview(path, runIndex) {
   const points = path
     .map((point) => Array.isArray(point) ? point : [point.lat, point.lon ?? point.lng ?? point.longitude])
     .filter(([lat, lng]) => Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)));
   if (points.length < 2) return "";
+  // Placeholder — la mini-carte Leaflet est initialisée dans initRoutePreviews()
+  return `<div class="route-preview-map" id="rmap-${runIndex}" data-run-index="${runIndex}"></div>`;
+}
 
-  const W = 300, H = 100, PAD = 14;
-  const lats = points.map(([lat]) => Number(lat));
-  const lngs = points.map(([, lng]) => Number(lng));
-  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
-  const latRange = maxLat - minLat || 0.0001;
-  const lngRange = maxLng - minLng || 0.0001;
+// Initialise les mini-cartes Leaflet sur toutes les cartes visibles
+const _routeMapInstances = {};
+function initRoutePreviews() {
+  document.querySelectorAll(".route-preview-map").forEach(el => {
+    const idx = Number(el.dataset.runIndex);
+    if (_routeMapInstances[idx]) return; // déjà initialisée
 
-  // Garde les proportions réelles du tracé
-  const scaleX = (W - PAD * 2) / lngRange;
-  const scaleY = (H - PAD * 2) / latRange;
-  const scale  = Math.min(scaleX, scaleY);
-  const offX   = (W - lngRange * scale) / 2;
-  const offY   = (H - latRange * scale) / 2;
+    const run = state.runs[idx];
+    if (!run?.path) return;
+    const points = run.path
+      .map(p => Array.isArray(p) ? [Number(p[0]), Number(p[1])] : [Number(p.lat ?? p.latitude), Number(p.lon ?? p.lng ?? p.longitude)])
+      .filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b));
+    if (points.length < 2) return;
 
-  const svgPts = points.map(([lat, lng]) => {
-    const x = offX + (Number(lng) - minLng) * scale;
-    const y = H - offY - (Number(lat) - minLat) * scale;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
+    const map = L.map(el, {
+      zoomControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      touchZoom: false,
+      keyboard: false,
+      attributionControl: false,
+      tap: false
+    });
+
+    L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { maxZoom: 17 }).addTo(map);
+
+    const poly = L.polyline(points, { color: "#fc4c02", weight: 4, opacity: 0.95, lineCap: "round", lineJoin: "round" }).addTo(map);
+    L.circleMarker(points[0], { radius: 5, fillColor: "#22c55e", color: "#fff", weight: 2, fillOpacity: 1 }).addTo(map);
+    L.circleMarker(points[points.length - 1], { radius: 6, fillColor: "#fc4c02", color: "#fff", weight: 2, fillOpacity: 1 }).addTo(map);
+
+    map.fitBounds(poly.getBounds().pad(0.25));
+    _routeMapInstances[idx] = map;
+
+    setTimeout(() => map.invalidateSize(), 100);
   });
-
-  const [fx, fy] = svgPts[0].split(",");
-  const [lx, ly] = svgPts[svgPts.length - 1].split(",");
-  const pts = svgPts.join(" ");
-
-  return `
-    <div class="route-preview">
-      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="2.5" result="blur"/>
-            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-        <!-- halo sous le tracé -->
-        <polyline points="${pts}" fill="none" stroke="#fc4c02" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>
-        <!-- tracé principal -->
-        <polyline points="${pts}" fill="none" stroke="#fc4c02" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
-        <!-- point départ -->
-        <circle cx="${fx}" cy="${fy}" r="5" fill="#22c55e" stroke="#fff" stroke-width="2"/>
-        <!-- point arrivée -->
-        <circle cx="${lx}" cy="${ly}" r="6" fill="#fc4c02" stroke="#fff" stroke-width="2"/>
-      </svg>
-    </div>`;
 }
 
 function renderAnalytics() {

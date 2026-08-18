@@ -1434,6 +1434,15 @@ textarea {
   display: block;
 }
 
+.route-preview-map {
+  grid-column: 1 / -1;
+  height: 140px;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 4px;
+  pointer-events: none;
+}
+
 .run-details {
   grid-column: 1 / -1;
   display: none;
