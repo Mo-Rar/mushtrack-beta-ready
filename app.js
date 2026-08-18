@@ -4803,12 +4803,14 @@ function openRunDetail(index) {
   const rdTeam = document.getElementById("rd-team");
   const rdTeamList = document.getElementById("rd-team-list");
   if (rdTeam && rdTeamList && run.team?.length) {
-    rdTeamList.innerHTML = run.team.map(id => {
-      const dog = state.dogs.find(d => d.id === id);
-      if (!dog) return "";
-      const role = run.teamRoles?.[id] || dog.role || "Team";
-      return `<div style="font-size:0.85rem;color:#333"><strong>${dog.name}</strong> — ${role}</div>`;
-    }).join("");
+    const roleOrder = ["Leader", "Swing", "Team", "Wheel"];
+    const sorted = [...run.team]
+      .map(id => ({ dog: state.dogs.find(d => d.id === id), role: run.teamRoles?.[id] || state.dogs.find(d => d.id === id)?.role || "Team" }))
+      .filter(e => e.dog)
+      .sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role));
+    rdTeamList.innerHTML = sorted.map(({ dog, role }) =>
+      `<div style="font-size:0.85rem;color:#333"><strong>${dog.name}</strong> — ${role}</div>`
+    ).join("");
     rdTeam.style.display = "";
   } else if (rdTeam) {
     rdTeam.style.display = "none";
