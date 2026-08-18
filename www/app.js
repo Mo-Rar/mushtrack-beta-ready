@@ -9730,28 +9730,27 @@ function setupTracesView(mapId, selectorId) {
   }
 
   // Liste cliquable sous la carte
-  selectorEl.innerHTML = runsWithPath.map(run => {
+  selectorEl.innerHTML = runsWithPath.map((run, i) => {
     const km = Number(run.km || 0).toFixed(1);
-    return `<div class="runs-trace-item" data-run-id="${run.id}" style="cursor:pointer">
+    return `<div class="runs-trace-item" data-idx="${i}" style="cursor:pointer">
       <span style="font-size:0.82rem;color:#444;flex:1">${formatDate(run.date)} · ${run.type || "GPS"} · ${km} km</span>
-      <span style="font-size:0.75rem;color:#aaa">Tap</span>
+      <span style="font-size:0.75rem;color:#aaa">+</span>
     </div>`;
   }).join("");
 
   // Tap sur un item → toggle le tracé
   selectorEl.querySelectorAll(".runs-trace-item").forEach(item => {
-    const runId = item.dataset.runId;
-    const run = runsWithPath.find(r => String(r.id) === runId);
+    const idx = Number(item.dataset.idx);
+    const run = runsWithPath[idx];
+    const key = `run_${idx}`;
     item.addEventListener("click", () => {
-      if (_tracePolylines[runId]) {
-        // Déjà affiché → retire
-        _tracePolylines[runId].remove();
-        delete _tracePolylines[runId];
+      if (_tracePolylines[key]) {
+        _tracePolylines[key].remove();
+        delete _tracePolylines[key];
         item.style.background = "";
         item.style.borderLeft = "";
-        item.querySelector("span:last-child").textContent = "Tap";
+        item.querySelector("span:last-child").textContent = "+";
       } else {
-        // Affiche le tracé
         const pts = run.path
           .map(p => {
             if (Array.isArray(p)) return [p[0], p[1]];
@@ -9762,11 +9761,10 @@ function setupTracesView(mapId, selectorId) {
           .filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b));
         if (pts.length < 2) return;
         const poly = L.polyline(pts, { color: "#fc4c02", weight: 4, opacity: 0.85 }).addTo(map);
-        _tracePolylines[runId] = poly;
+        _tracePolylines[key] = poly;
         item.style.background = "#fff5f0";
         item.style.borderLeft = "4px solid #fc4c02";
         item.querySelector("span:last-child").textContent = "✓";
-        // Recadre sur tous les tracés actifs
         try {
           const bounds = L.featureGroup(Object.values(_tracePolylines)).getBounds();
           if (bounds.isValid()) map.fitBounds(bounds.pad(0.15));
