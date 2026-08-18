@@ -1262,7 +1262,7 @@ const TRANSLATIONS = {
     dog_nothing: "Rien de particulier",
     dog_vet_info: "Ajoute les infos véto, blessures ou repos.",
     dog_vet_tracking: "Suivi véto : {info}",
-    dog_weight_evolution: "Évolution du poids",
+    dog_weight_add: "Peser", dog_weight_evolution: "Évolution du poids",
     dog_health_history: "Historique santé",
     dog_no_event: "Aucun événement enregistré.",
     dog_load_high: "Charge haute",
@@ -1862,7 +1862,7 @@ const TRANSLATIONS = {
     dog_nothing: "Nothing particular",
     dog_vet_info: "Add vet info, injuries or rest notes.",
     dog_vet_tracking: "Vet tracking: {info}",
-    dog_weight_evolution: "Weight evolution",
+    dog_weight_add: "Weigh", dog_weight_evolution: "Weight evolution",
     dog_health_history: "Health history",
     dog_no_event: "No event recorded.",
     dog_load_high: "High load",
@@ -2462,7 +2462,7 @@ const TRANSLATIONS = {
     dog_nothing: "Nichts Besonderes",
     dog_vet_info: "Tierarztinfos, Verletzungen oder Ruhephasen hinzufügen.",
     dog_vet_tracking: "Tierarzt: {info}",
-    dog_weight_evolution: "Gewichtsentwicklung",
+    dog_weight_add: "Wiegen", dog_weight_evolution: "Gewichtsentwicklung",
     dog_health_history: "Gesundheitsgeschichte",
     dog_no_event: "Kein Ereignis aufgezeichnet.",
     dog_load_high: "Hohe Last",
@@ -3835,11 +3835,23 @@ function renderDogProfile() {
     </section>
 
     <!-- Graphique poids -->
-    ${(dog.weightHistory || []).length >= 2 ? `
     <div style="margin-bottom:18px">
-      <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0 0 8px">${t('dog_weight_evolution')}</p>
-      <canvas id="weight-chart-${dog.id}" width="800" height="160" style="width:100%;border-radius:12px;background:#f9f9f9"></canvas>
-    </div>` : ""}
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0">${t('dog_weight_evolution')}</p>
+        <button type="button" id="add-weight-btn" style="font-size:0.78rem;color:#fc4c02;background:none;border:none;font-weight:700;cursor:pointer">+ ${t('dog_weight_add')}</button>
+      </div>
+      <form id="weight-add-form" style="display:none;flex-direction:column;gap:8px;background:#fff;border-radius:12px;padding:12px;border:1px solid #f0f0f0;margin-bottom:10px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="weight-add-date" type="date" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem" />
+          <input id="weight-add-value" type="number" step="0.1" min="1" max="100" placeholder="kg" style="width:80px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem;text-align:center" />
+        </div>
+        <div style="display:flex;gap:8px">
+          <button type="submit" style="flex:1;padding:9px;background:#fc4c02;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">${t('health_save_btn')}</button>
+          <button type="button" id="weight-add-cancel" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;cursor:pointer">${t('health_cancel_btn')}</button>
+        </div>
+      </form>
+      ${(dog.weightHistory || []).length >= 2 ? `<canvas id="weight-chart-${dog.id}" width="800" height="160" style="width:100%;border-radius:12px;background:#f9f9f9"></canvas>` : `<p style="font-size:0.82rem;color:#aaa;text-align:center;padding:12px">${t('dog_weight_hint')}</p>`}
+    </div>
 
     <!-- Historique santé -->
     <div style="margin-bottom:10px">
@@ -3920,6 +3932,35 @@ function renderDogProfile() {
 
   // Graphique poids
   drawWeightChart(dog);
+
+  // Bouton + Peser
+  const addWeightBtn = list.querySelector("#add-weight-btn");
+  const weightForm = list.querySelector("#weight-add-form");
+  addWeightBtn?.addEventListener("click", () => {
+    weightForm.style.display = weightForm.style.display === "none" ? "flex" : "none";
+    if (weightForm.style.display !== "none") {
+      list.querySelector("#weight-add-date").value = new Date().toISOString().slice(0, 10);
+      list.querySelector("#weight-add-value").value = dog.weight || "";
+    }
+  });
+  list.querySelector("#weight-add-cancel")?.addEventListener("click", () => {
+    weightForm.style.display = "none";
+  });
+  weightForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const dogIdx = state.dogs.findIndex(d => d.id === dog.id);
+    if (dogIdx === -1) return;
+    const w = parseFloat(list.querySelector("#weight-add-value").value);
+    const d = list.querySelector("#weight-add-date").value;
+    if (!w || !d) return;
+    state.dogs[dogIdx].weightHistory = state.dogs[dogIdx].weightHistory || [];
+    state.dogs[dogIdx].weightHistory.push({ date: d, weight: w });
+    state.dogs[dogIdx].weightHistory.sort((a, b) => a.date.localeCompare(b.date));
+    if (state.dogs[dogIdx].weightHistory.length > 52) state.dogs[dogIdx].weightHistory = state.dogs[dogIdx].weightHistory.slice(-52);
+    state.dogs[dogIdx].weight = w;
+    saveState();
+    renderDogProfile();
+  });
 
   // Bouton + Ajouter événement santé
   const addBtn = list.querySelector("#add-health-event-btn");
