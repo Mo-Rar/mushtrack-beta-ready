@@ -4016,11 +4016,6 @@ function renderRuns() {
     `;
   }).join("");
 
-  // Réinitialise les instances pour permettre la re-création après re-render
-  Object.keys(_routeMapInstances).forEach(k => {
-    try { _routeMapInstances[k].remove(); } catch {}
-    delete _routeMapInstances[k];
-  });
 
   document.querySelectorAll('[data-list="runs"]').forEach((list) => {
     list.innerHTML = runsHtml || `<p class="empty-state">${t('run_empty')}</p>`;
