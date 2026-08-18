@@ -4051,30 +4051,10 @@ function renderDogPicker() {
   document.querySelectorAll('[data-list="dogPicker"]').forEach(list => {
     list.innerHTML = state.dogs.map((dog) => {
       const selected = state.selectedDogIds.includes(dog.id);
-      const role = selected ? (state.runDogRoles[dog.id] || dog.role || "Team") : null;
-      const badge = selected
-        ? `<span class="dog-role-badge" data-role-dog="${dog.id}" style="background:${DOG_ROLE_COLOR[role] || '#888'};color:#fff;border-radius:4px;padding:1px 5px;font-size:0.65rem;font-weight:800;margin-left:4px;cursor:pointer">${DOG_ROLE_SHORT[role] || role[0]}</span>`
-        : "";
-      return `<button class="${selected ? "selected" : ""}" data-dog-id="${dog.id}">${dog.name}${badge}</button>`;
+      return `<button class="${selected ? "selected" : ""}" data-dog-id="${dog.id}">${dog.name}</button>`;
     }).join("");
-
     list.querySelectorAll("button").forEach((button) => {
-      button.addEventListener("click", (e) => {
-        if (e.target.dataset.roleDog) return; // géré séparément
-        toggleDogSelection(button.dataset.dogId);
-      });
-    });
-
-    list.querySelectorAll("[data-role-dog]").forEach((badge) => {
-      badge.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const id = badge.dataset.roleDog;
-        const current = state.runDogRoles[id] || state.dogs.find(d => d.id === id)?.role || "Team";
-        const idx = DOG_ROLES_CYCLE.indexOf(current);
-        state.runDogRoles[id] = DOG_ROLES_CYCLE[(idx + 1) % DOG_ROLES_CYCLE.length];
-        saveState();
-        renderDogPicker();
-      });
+      button.addEventListener("click", () => toggleDogSelection(button.dataset.dogId));
     });
   });
 }
@@ -4145,6 +4125,7 @@ function renderTeamSlots() {
 
 // ── Schéma attelage ───────────────────────────────────────────
 let _dragDogId = null, _dragFromSlot = null, _dragFromReserve = false;
+let _sledEditMode = false;
 
 const SLED_ROLE_MAP = { leader:"Leader", swing:"Swing", team:"Team", wheel:"Wheel" };
 
@@ -4191,6 +4172,22 @@ function renderSledDiagram() {
   }
 
   function buildHTML() {
+    if (!_sledEditMode) {
+      // Mode affichage : position → chips orange, sans boutons
+      if (!placedIds.size) return `<p style="color:#bbb;font-size:.82rem;padding:6px 0">Aucun chien sélectionné</p>`;
+      const rows = positions.map(([key, label]) => {
+        const l = dogInSlot(key, "l"), r = dogInSlot(key, "r");
+        if (!l && !r) return "";
+        const chip = d => d ? `<span style="background:#fc4c02;color:#fff;border-radius:8px;padding:4px 12px;font-size:.8rem;font-weight:700">${d.name}</span>` : "";
+        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+          <span style="font-size:.6rem;font-weight:800;letter-spacing:.07em;color:#bbb;width:46px;text-align:right;flex-shrink:0">${label}</span>
+          ${chip(l)}${chip(r)}
+        </div>`;
+      }).join("");
+      return `<div style="padding:6px 0">${rows}</div>`;
+    }
+
+    // Mode édition : tableau complet avec réserve
     const rows = positions.map(([key, label]) => `
       <div class="sd-row">
         <span class="sd-label">${label}</span>
@@ -8024,12 +8021,10 @@ if (state.selectedEngin) {
 
 // Bouton "Modifier" attelage dans l'écran GPS
 document.querySelector("#toggle-dog-picker-record")?.addEventListener("click", () => {
-  const picker = document.querySelector("#dog-picker-record");
-  const diagram = document.querySelector("#gps-sled-diagram");
-  if (!picker) return;
-  const opening = picker.classList.contains("hidden");
-  picker.classList.toggle("hidden", !opening);
-  if (diagram) diagram.classList.toggle("hidden", opening);
+  _sledEditMode = !_sledEditMode;
+  const btn = document.querySelector("#toggle-dog-picker-record");
+  if (btn) btn.textContent = _sledEditMode ? "✓ Terminé" : "Modifier ✏️";
+  renderSledDiagram();
 });
 
 document.querySelectorAll("[data-mode]").forEach((button) => {
