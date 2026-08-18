@@ -38,9 +38,7 @@ self.addEventListener("notificationclick", (event) => {
 const STATIC_ASSETS = [
   "./icon.svg",
   "./icon-192.png",
-  "./icon-512.png",
-  "./assets/mode-hiver.jpg",
-  "./assets/mode-ete.jpg"
+  "./icon-512.png"
 ];
 
 // À l'installation : on pré-cache uniquement les images
