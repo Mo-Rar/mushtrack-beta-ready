@@ -3990,6 +3990,8 @@ function renderRuns() {
           <p>${run.notes || t('run_no_note')}</p>
           <div class="card-actions">
             <button class="secondary-button" data-run-option="${index}" type="button">${t('run_edit_btn')}</button>
+            <button class="secondary-button" data-share-run="${index}" type="button">📤 Partager</button>
+            ${hasTrace ? `<button class="secondary-button" data-share-gpx="${index}" type="button">📍 GPX</button>` : ""}
             <button class="danger-button" data-delete-run="${index}" type="button">${t('run_delete_btn')}</button>
           </div>
         </div>
@@ -4025,7 +4027,89 @@ function renderRuns() {
         deleteRun(Number(button.dataset.deleteRun));
       });
     });
+
+    list.querySelectorAll("[data-share-run]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        shareRunData(Number(button.dataset.shareRun));
+      });
+    });
+
+    list.querySelectorAll("[data-share-gpx]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        shareRunGpx(Number(button.dataset.shareGpx));
+      });
+    });
   });
+}
+
+function shareRunData(index) {
+  const run = state.runs[index];
+  if (!run) return;
+  const km = Number(run.km).toFixed(1);
+  const dur = run.duration ? formatDuration(run.duration) : null;
+  const speed = run.avgSpeed ? Number(run.avgSpeed).toFixed(1) + " km/h" : null;
+  const elev = run.elevationGain > 0 ? `D+ ${run.elevationGain} m` : null;
+  const dogs = run.team?.map(id => state.dogs.find(d => d.id === id)?.name).filter(Boolean).join(", ");
+
+  const lines = [
+    `🐕 MushTrack — ${run.type}`,
+    `📅 ${formatDate(run.date)}`,
+    `📏 ${km} km`,
+    dur   ? `⏱ ${dur}` : null,
+    speed ? `💨 ${speed}` : null,
+    elev  ? `⛰ ${elev}` : null,
+    dogs  ? `🐶 ${dogs}` : null,
+    run.notes ? `📝 ${run.notes}` : null,
+  ].filter(Boolean).join("\n");
+
+  if (navigator.share) {
+    navigator.share({ title: `MushTrack — ${run.type}`, text: lines }).catch(() => {});
+  } else {
+    navigator.clipboard?.writeText(lines).then(() => showSyncBadge("✅ Copié dans le presse-papier"));
+  }
+}
+
+function shareRunGpx(index) {
+  const run = state.runs[index];
+  if (!run?.path?.length) return;
+
+  const pts = run.path
+    .map(p => Array.isArray(p) ? { lat: p[0], lon: p[1], ts: null } : { lat: p.lat ?? p.latitude, lon: p.lon ?? p.lng ?? p.longitude, ts: p.timestamp ?? p.ts ?? null })
+    .filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lon));
+
+  if (!pts.length) return;
+
+  const trkpts = pts.map(p => {
+    const timeEl = p.ts ? `\n        <time>${new Date(p.ts).toISOString()}</time>` : "";
+    return `      <trkpt lat="${p.lat}" lon="${p.lon}">${timeEl}\n      </trkpt>`;
+  }).join("\n");
+
+  const gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="MushTrack" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk>
+    <name>${run.type} — ${run.date}</name>
+    <trkseg>
+${trkpts}
+    </trkseg>
+  </trk>
+</gpx>`;
+
+  const blob = new Blob([gpx], { type: "application/gpx+xml" });
+  const file = new File([blob], `mushtrack-${run.date}-${run.type}.gpx`, { type: "application/gpx+xml" });
+
+  if (navigator.canShare?.({ files: [file] })) {
+    navigator.share({ files: [file], title: `MushTrack GPX — ${run.date}` }).catch(() => {});
+  } else {
+    // Fallback : téléchargement direct
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = file.name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
 }
 
 function renderRoutePreview(path) {
