@@ -2711,6 +2711,9 @@ function showScreen(id, pushHistory = true) {
   if (id === "community") {
     initCommunity();
   }
+  if (id === "vous") {
+    setTimeout(() => initRoutePreviews(), 80);
+  }
 }
 
 // Bouton retour navigateur / Android → revient à l'écran précédent
@@ -4166,23 +4169,22 @@ function renderRoutePreview(path, index) {
     .map((point) => Array.isArray(point) ? point : [point.lat, point.lon ?? point.lng ?? point.longitude])
     .filter(([lat, lng]) => Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)));
   if (points.length < 2) return "";
-  return `<div class="route-preview" id="route-map-${index}"></div>`;
+  return `<div class="route-preview" data-run-idx="${index}"></div>`;
 }
 
 function initRoutePreviews() {
-  // Détruit les anciennes instances
-  Object.keys(_routeMapInstances).forEach(key => {
-    try { _routeMapInstances[key].remove(); } catch {}
-    delete _routeMapInstances[key];
-  });
+  // Détruit toutes les anciennes instances Leaflet
+  Object.values(_routeMapInstances).forEach(m => { try { m.remove(); } catch {} });
+  Object.keys(_routeMapInstances).forEach(k => delete _routeMapInstances[k]);
 
-  state.runs.forEach((run, index) => {
-    const el = document.getElementById(`route-map-${index}`);
-    if (!el) return;
-    const path = run.path;
-    if (!Array.isArray(path) || path.length < 2) return;
+  // N'initialise que les éléments visibles (offsetWidth > 0)
+  document.querySelectorAll('.route-preview[data-run-idx]').forEach(el => {
+    if (el.offsetWidth === 0) return;
+    const index = Number(el.dataset.runIdx);
+    const run = state.runs[index];
+    if (!run || !Array.isArray(run.path)) return;
 
-    const points = path
+    const points = run.path
       .map(p => Array.isArray(p) ? [p[0], p[1]] : [p.lat, p.lon ?? p.lng ?? p.longitude])
       .filter(([lat, lng]) => Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)))
       .map(([lat, lng]) => [Number(lat), Number(lng)]);
@@ -4200,14 +4202,13 @@ function initRoutePreviews() {
       keyboard: false,
       attributionControl: false,
     });
-    _routeMapInstances[index] = map;
+    _routeMapInstances[`${index}_${el.closest('[data-list]')?.dataset?.list || 'x'}`] = map;
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18 }).addTo(map);
 
     const polyline = L.polyline(points, { color: "#fc4c02", weight: 3.5, opacity: 0.9 }).addTo(map);
     map.fitBounds(polyline.getBounds(), { padding: [12, 12] });
 
-    // Marqueurs début (vert) et fin (orange)
     const startIcon = L.divIcon({ className: "", html: '<div style="width:10px;height:10px;background:#22c55e;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.4)"></div>', iconSize: [10, 10], iconAnchor: [5, 5] });
     const endIcon   = L.divIcon({ className: "", html: '<div style="width:12px;height:12px;background:#fc4c02;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.4)"></div>', iconSize: [12, 12], iconAnchor: [6, 6] });
     L.marker(points[0], { icon: startIcon }).addTo(map);
