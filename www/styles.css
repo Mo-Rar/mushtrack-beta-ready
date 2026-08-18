@@ -2804,15 +2804,15 @@ textarea {
 }
 
 .sponsor-divider {
-  width: 0.5px;
-  height: 28px;
+  width: 1px;
+  height: 50px;
   background: var(--color-border-tertiary, #e0e0e0);
   flex-shrink: 0;
 }
 
 .sponsor-logo img {
-  max-height: 36px;
-  max-width: 100%;
+  max-height: 70px;
+  max-width: 140px;
   width: auto;
   object-fit: contain;
   /* Placeholder grisé si image manquante */
