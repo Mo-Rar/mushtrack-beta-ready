@@ -1080,6 +1080,31 @@ const TRANSLATIONS = {
     focus_mid_summer: "Endurance facile, dénivelé doux, traction régulière.",
     focus_mid_a: "Côtes courtes, endurance, retour calme.",
     focus_mid_b: "Endurance progressive, allure stable.",
+    // --- Sessions types ---
+    session_endurance: "Endurance", session_long: "Sortie longue", session_sprint: "Sprint",
+    session_recup: "Récupération", session_rest: "Repos", session_technique: "Technique",
+    session_endurance_desc: "70–80% effort max, rythme conversationnel",
+    session_long_desc: "Pace lent, hydratation toutes les 8–10 km",
+    session_sprint_desc: "Intervalles 2–3 km haute intensité",
+    session_recup_desc: "Allure douce, pattes et harnais contrôlés",
+    session_rest_desc: "Jeu libre, massage, observation",
+    session_technique_desc: "Commandes, départs, dépassements",
+    // --- Coach advice ---
+    coach_advice_base: "Phase de base : priorité au volume à basse intensité (70–80% de l'effort max). Objectif {km} km avec les deux sorties longues du week-end en back-to-back. Progression de 8%/sem maximum.",
+    coach_advice_build: "Construction en cours — {weeks} semaines avant la course. Intègre les intervalles (sprint) et conserve les back-to-back du week-end. Si un chien refuse le départ ou mange moins, réduis son volume de 20% cette semaine.",
+    coach_advice_peak: "Phase de pointe ! {weeks} semaines avant {race}. Fais au moins une sortie à l'allure de course. Les back-to-back samedi-dimanche simulent la fatigue accumulée. Contrôle les pattes après chaque sortie.",
+    coach_advice_taper: "Affûtage final — réduis le volume de 40–50% mais garde l'intensité courte. Tes chiens doivent arriver frais et motivés. Prépare le matériel, fais la checklist pré-course. Plus qu'à gérer l'excitation au départ !",
+    coach_deload_note: " Cette semaine est une semaine de décharge — volume réduit de 25% pour permettre la supercompensation.",
+    coach_dog_fatigue_high: "Fatigue élevée — réduire le volume cette semaine",
+    coach_dog_fatigue_watch: "Charge normale — surveiller la récupération",
+    // --- Contact urgence ---
+    sos_title: "Contact d'urgence", sos_label: "SOS terrain",
+    sos_desc: "En cas de SOS sur le terrain, un appel est passé directement à ce contact.",
+    sos_name: "Nom", sos_phone: "Téléphone",
+    sos_save: "Enregistrer le contact", sos_saved: "✅ Contact enregistré",
+    sos_none: "Aucun contact d'urgence configuré.\nVa dans Paramètres > Contact d'urgence.",
+    // --- Rotation tips ---
+    advice_new: "Nouveau conseil",
     // --- Analytics ---
     analytics_season: "Analyse saison",
     analytics_stats: "Stats",
@@ -1655,6 +1680,31 @@ const TRANSLATIONS = {
     focus_mid_summer: "Easy endurance, gentle elevation, steady pull.",
     focus_mid_a: "Short hills, endurance, calm return.",
     focus_mid_b: "Progressive endurance, steady pace.",
+    // Session types
+    session_endurance: "Endurance", session_long: "Long run", session_sprint: "Sprint",
+    session_recup: "Recovery", session_rest: "Rest", session_technique: "Technique",
+    session_endurance_desc: "70–80% max effort, conversational pace",
+    session_long_desc: "Easy pace, hydration every 8–10 km",
+    session_sprint_desc: "2–3 km high-intensity intervals",
+    session_recup_desc: "Easy pace, paws and harness check",
+    session_rest_desc: "Free play, massage, observation",
+    session_technique_desc: "Commands, starts, overtaking",
+    // Coach advice
+    coach_advice_base: "Base phase: focus on low-intensity volume (70–80% max effort). Target {km} km with two long back-to-back weekend runs. Max 8% progression per week.",
+    coach_advice_build: "Build phase — {weeks} weeks to race. Add sprint intervals and keep back-to-back weekends. If a dog refuses to start or eats less, cut their volume by 20% this week.",
+    coach_advice_peak: "Peak phase! {weeks} weeks to {race}. Do at least one race-pace run. Saturday–Sunday back-to-back simulates accumulated fatigue. Check paws after every run.",
+    coach_advice_taper: "Final taper — cut volume 40–50% but keep short intensity. Your dogs must arrive fresh and motivated. Prep gear, do the pre-race checklist. Just manage the start-line excitement!",
+    coach_deload_note: " This week is a deload week — volume reduced 25% to allow supercompensation.",
+    coach_dog_fatigue_high: "High fatigue — reduce volume this week",
+    coach_dog_fatigue_watch: "Normal load — monitor recovery",
+    // Emergency contact
+    sos_title: "Emergency contact", sos_label: "Field SOS",
+    sos_desc: "In case of a field SOS, a call is placed directly to this contact.",
+    sos_name: "Name", sos_phone: "Phone",
+    sos_save: "Save contact", sos_saved: "✅ Contact saved",
+    sos_none: "No emergency contact configured.\nGo to Settings > Emergency contact.",
+    // Rotation tips
+    advice_new: "New tip",
     // Analytics
     analytics_season: "Season analysis",
     analytics_stats: "Stats",
@@ -2230,6 +2280,31 @@ const TRANSLATIONS = {
     focus_mid_summer: "Leichte Ausdauer, sanftes Gelände, regelmäßiger Zug.",
     focus_mid_a: "Kurze Hügel, Ausdauer, ruhige Rückkehr.",
     focus_mid_b: "Progressive Ausdauer, stabiles Tempo.",
+    // Einheitstypen
+    session_endurance: "Ausdauer", session_long: "Langer Lauf", session_sprint: "Sprint",
+    session_recup: "Erholung", session_rest: "Ruhe", session_technique: "Technik",
+    session_endurance_desc: "70–80% maximale Anstrengung, Konversationstempo",
+    session_long_desc: "Langsames Tempo, Hydration alle 8–10 km",
+    session_sprint_desc: "2–3 km Hochintervalle",
+    session_recup_desc: "Leichtes Tempo, Pfoten und Gurtzeug prüfen",
+    session_rest_desc: "Freies Spiel, Massage, Beobachtung",
+    session_technique_desc: "Befehle, Starts, Überholen",
+    // Coach-Ratschläge
+    coach_advice_base: "Grundlagenphase: Fokus auf geringes Volumen (70–80% max). Ziel {km} km mit zwei langen Back-to-Back-Wochenendläufen. Max. 8% Steigerung pro Woche.",
+    coach_advice_build: "Aufbauphase — {weeks} Wochen bis zum Rennen. Sprint-Intervalle einbauen, Back-to-Back-Wochenenden beibehalten. Verweigert ein Hund den Start oder frisst weniger, Volumen um 20% reduzieren.",
+    coach_advice_peak: "Formhoch! {weeks} Wochen bis {race}. Mindestens einen Renntempolauf einbauen. Sa-So Back-to-Back simuliert kumulierte Müdigkeit. Pfoten nach jeder Einheit prüfen.",
+    coach_advice_taper: "Endgültiges Tapering — Volumen 40–50% reduzieren, kurze Intensität beibehalten. Hunde müssen frisch und motiviert ankommen. Ausrüstung vorbereiten, Pre-Race-Checkliste abarbeiten.",
+    coach_deload_note: " Diese Woche ist eine Entlastungswoche — Volumen um 25% reduziert für Superkompensation.",
+    coach_dog_fatigue_high: "Hohe Müdigkeit — Volumen diese Woche reduzieren",
+    coach_dog_fatigue_watch: "Normale Last — Erholung beobachten",
+    // Notfallkontakt
+    sos_title: "Notfallkontakt", sos_label: "Feld-SOS",
+    sos_desc: "Bei einem Feld-SOS wird direkt dieser Kontakt angerufen.",
+    sos_name: "Name", sos_phone: "Telefon",
+    sos_save: "Kontakt speichern", sos_saved: "✅ Kontakt gespeichert",
+    sos_none: "Kein Notfallkontakt konfiguriert.\nGehe zu Einstellungen > Notfallkontakt.",
+    // Tipp-Rotation
+    advice_new: "Neuer Tipp",
     // Analytics
     analytics_season: "Saisonanalyse",
     analytics_stats: "Stats",
@@ -5516,7 +5591,7 @@ function renderWebAdvice() {
     list.innerHTML = `
       <div class="advice-rotation-info">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
-        Nouveau conseil : ${nextLabel} · ${periodIndex % total + 1}/${total}
+        ${t('advice_new')} : ${nextLabel} · ${periodIndex % total + 1}/${total}
       </div>
       ${todayTips.map((tip) => `
         <article class="advice-card web-tip">
@@ -8945,12 +9020,12 @@ function generateCoachPlan() {
 
   // ── Sessions types ────────────────────────────────────────────────────────
   const SESSION_TYPES = {
-    endurance: { label: "Endurance",     emoji: "🏃", color: "#3b82f6", desc: "70–80% effort max, rythme conversationnel" },
-    long:      { label: "Sortie longue", emoji: "🌲", color: "#059669", desc: "Pace lent, hydratation toutes les 8–10 km" },
-    sprint:    { label: "Sprint",        emoji: "⚡", color: "#fc4c02", desc: "Intervalles 2–3 km haute intensité" },
-    recup:     { label: "Récupération",  emoji: "🐾", color: "#8b5cf6", desc: "Allure douce, pattes et harnais contrôlés" },
-    rest:      { label: "Repos",         emoji: "😴", color: "#94a3b8", desc: "Jeu libre, massage, observation", rest: true },
-    technique: { label: "Technique",     emoji: "🎯", color: "#f59e0b", desc: "Commandes, départs, dépassements" },
+    endurance: { label: t('session_endurance'), emoji: "🏃", color: "#3b82f6", desc: t('session_endurance_desc') },
+    long:      { label: t('session_long'),      emoji: "🌲", color: "#059669", desc: t('session_long_desc') },
+    sprint:    { label: t('session_sprint'),    emoji: "⚡", color: "#fc4c02", desc: t('session_sprint_desc') },
+    recup:     { label: t('session_recup'),     emoji: "🐾", color: "#8b5cf6", desc: t('session_recup_desc') },
+    rest:      { label: t('session_rest'),      emoji: "😴", color: "#94a3b8", desc: t('session_rest_desc'), rest: true },
+    technique: { label: t('session_technique'), emoji: "🎯", color: "#f59e0b", desc: t('session_technique_desc') },
   };
 
   // ── Distribution 7 jours (lun→dim) ───────────────────────────────────────
@@ -9006,20 +9081,20 @@ function generateCoachPlan() {
   const progressPct = lastWeekKm > 0 ? Math.round(((weekTarget - lastWeekKm) / lastWeekKm) * 100) : null;
 
   // ── Conseils par phase ────────────────────────────────────────────────────
-  const deloadNote = isDeloadWeek ? " Cette semaine est une semaine de décharge — volume réduit de 25% pour permettre la supercompensation." : "";
+  const deloadNote = isDeloadWeek ? t('coach_deload_note') : "";
   const ADVICE = {
-    base:  `Phase de base : priorité au volume à basse intensité (70–80% de l'effort max). Objectif ${weekTarget} km avec les deux sorties longues du week-end en back-to-back. Progression de 8%/sem maximum.${deloadNote}`,
-    build: `Construction en cours — ${weeksLeft} semaines avant la course. Intègre les intervalles (sprint) et conserve les back-to-back du week-end. Si un chien refuse le départ ou mange moins, réduis son volume de 20% cette semaine.${deloadNote}`,
-    peak:  `Phase de pointe ! ${weeksLeft} semaines avant ${state.raceName || "la course"}. Fais au moins une sortie à l'allure de course. Les back-to-back samedi-dimanche simulent la fatigue accumulée. Contrôle les pattes après chaque sortie.${deloadNote}`,
-    taper: `Affûtage final — réduis le volume de 40–50% mais garde l'intensité courte. Tes chiens doivent arriver frais et motivés. Prépare le matériel, fais la checklist pré-course. Plus qu'à gérer l'excitation au départ !`,
+    base:  t('coach_advice_base').replace('{km}', weekTarget) + deloadNote,
+    build: t('coach_advice_build').replace('{weeks}', weeksLeft) + deloadNote,
+    peak:  t('coach_advice_peak').replace('{weeks}', weeksLeft).replace('{race}', state.raceName || t('coach_phase_peak')) + deloadNote,
+    taper: t('coach_advice_taper'),
   };
 
   // ── Alertes chiens ────────────────────────────────────────────────────────
   const dogAlerts = [];
   for (const dog of state.dogs) {
     const fatigue = getDogFatigueIndex ? getDogFatigueIndex(dog.id) : 0;
-    if (fatigue > 1.4) dogAlerts.push({ name: dog.name, emoji: "🔴", msg: "Fatigue élevée — réduire le volume cette semaine" });
-    else if (fatigue > 1.0) dogAlerts.push({ name: dog.name, emoji: "🟡", msg: "Charge normale — surveiller la récupération" });
+    if (fatigue > 1.4) dogAlerts.push({ name: dog.name, emoji: "🔴", msg: t('coach_dog_fatigue_high') });
+    else if (fatigue > 1.0) dogAlerts.push({ name: dog.name, emoji: "🟡", msg: t('coach_dog_fatigue_watch') });
   }
 
   return {
@@ -10544,26 +10619,26 @@ function renderEmergencyContact() {
   const c = state.emergencyContact || { name: "", phone: "" };
   el.innerHTML = `
     <section class="section-heading spaced" style="margin-top:20px">
-      <h2>Contact d'urgence</h2>
-      <span>SOS terrain</span>
+      <h2>${t('sos_title')}</h2>
+      <span>${t('sos_label')}</span>
     </section>
     <div style="background:#fff5f0;border-radius:14px;padding:16px;border:1.5px solid #fca5a5;margin-bottom:20px">
-      <p style="font-size:0.82rem;color:#555;margin-bottom:12px">En cas de SOS sur le terrain, un appel est passé directement à ce contact.</p>
+      <p style="font-size:0.82rem;color:#555;margin-bottom:12px">${t('sos_desc')}</p>
       <label style="display:block;margin-bottom:10px;font-size:0.85rem;font-weight:600;color:#333">
-        Nom
+        ${t('sos_name')}
         <input id="ec-name" type="text" placeholder="Ex: Marie Dupont" value="${c.name || ""}"
           style="display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:0.9rem;background:#fff"/>
       </label>
       <label style="display:block;margin-bottom:12px;font-size:0.85rem;font-weight:600;color:#333">
-        Téléphone
+        ${t('sos_phone')}
         <input id="ec-phone" type="tel" placeholder="Ex: +41791234567" value="${c.phone || ""}"
           style="display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:0.9rem;background:#fff"/>
       </label>
       <button id="ec-save-btn" type="button"
         style="width:100%;padding:11px;background:#fc4c02;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer">
-        Enregistrer le contact
+        ${t('sos_save')}
       </button>
-      <div id="ec-saved-msg" style="display:none;font-size:0.8rem;text-align:center;margin-top:8px;color:#16a34a;font-weight:600">✅ Contact enregistré</div>
+      <div id="ec-saved-msg" style="display:none;font-size:0.8rem;text-align:center;margin-top:8px;color:#16a34a;font-weight:600">${t('sos_saved')}</div>
     </div>`;
 
   document.getElementById("ec-save-btn").addEventListener("click", () => {
@@ -10583,7 +10658,7 @@ function triggerSOS() {
   if (c.phone) {
     window.location.href = `tel:${c.phone}`;
   } else {
-    alert("Aucun contact d’urgence configuré.\nVa dans Paramètres > Contact d’urgence.");
+    alert(t(‘sos_none’));
   }
 }
 
