@@ -9703,140 +9703,118 @@ const TRACE_COLORS = [
   "#fc4c02","#3b82f6","#22c55e","#f59e0b","#a855f7",
   "#ec4899","#14b8a6","#ef4444","#84cc16","#0ea5e9"
 ];
-let runsOverlayMap = null;
-let runsOverlayLayers = {};
-let selectedRunIds = new Set();
 
-function initRunsOverlayMap(mapId = "runs-overlay-map", selectorId = "runs-trace-selector") {
+// État par instance de carte (mapId → {map, layers, selected})
+const _traceInstances = {};
+
+function initRunsOverlayMap(mapId = "runs-overlay-map2", selectorId = "runs-trace-selector2") {
   const mapEl = document.getElementById(mapId);
   const selectorEl = document.getElementById(selectorId);
   if (!mapEl || !selectorEl) return;
 
-  // Réinitialise la carte si elle existait déjà (changement de panneau)
-  if (mapEl._leaflet_id) {
-    const existing = mapEl._leaflet_map;
-    if (existing) { existing.remove(); }
-    mapEl._leaflet_map = null;
-    mapEl._leaflet_id = undefined;
+  // Détruit l'ancienne instance Leaflet si elle existe
+  if (_traceInstances[mapId]?.map) {
+    _traceInstances[mapId].map.remove();
   }
+  _traceInstances[mapId] = { map: null, layers: {}, selected: new Set() };
+  const inst = _traceInstances[mapId];
 
-  // Sorties avec tracé GPS
+  // Sorties avec tracé GPS uniquement
   const runsWithPath = state.runs.filter(r => Array.isArray(r.path) && r.path.length > 1);
 
-  Object.values(runsOverlayLayers).forEach(l => l.remove());
-  runsOverlayLayers = {};
-  runsOverlayMap = L.map(mapId, { zoomControl: true }).setView([47, 8], 5);
-  mapEl._leaflet_map = runsOverlayMap;
+  // Crée la carte
+  inst.map = L.map(mapEl, { zoomControl: true }).setView([47, 8], 5);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap", maxZoom: 18
-  }).addTo(runsOverlayMap);
+  }).addTo(inst.map);
 
   if (!runsWithPath.length) {
     selectorEl.innerHTML = `<p style="text-align:center;color:#aaa;font-size:0.85rem;padding:20px">Aucune sortie GPS enregistrée.</p>`;
-    setTimeout(() => runsOverlayMap.invalidateSize(), 100);
+    setTimeout(() => inst.map.invalidateSize(), 100);
     return;
   }
 
-  // Sélectionne les 3 dernières par défaut
-  if (!selectedRunIds.size) {
-    runsWithPath.slice(0, 3).forEach(r => selectedRunIds.add(r.id));
-  }
+  // Sélectionne les 3 premières par défaut
+  runsWithPath.slice(0, 3).forEach(r => inst.selected.add(r.id));
 
   // Construit le sélecteur
   selectorEl.innerHTML = runsWithPath.map((run, i) => {
     const color = TRACE_COLORS[i % TRACE_COLORS.length];
-    const checked = selectedRunIds.has(run.id) ? "checked" : "";
+    const active = inst.selected.has(run.id);
     const km = Number(run.km).toFixed(1);
     const label = `${formatDate(run.date)} · ${run.type || "GPS"} · ${km} km`;
-    return `
-      <label class="runs-trace-item" data-run-id="${run.id}" data-color="${color}">
-        <input type="checkbox" ${checked} style="display:none" />
-        <span class="runs-trace-dot" style="background:${color};width:12px;height:12px;border-radius:50%;flex-shrink:0;display:inline-block;border:2px solid ${checked ? color : '#ddd'}"></span>
-        <span style="font-size:0.82rem;color:#333;flex:1">${label}</span>
-        <span class="runs-trace-check" style="font-size:0.9rem;color:${checked ? color : '#ddd'}">${checked ? "✓" : "○"}</span>
-      </label>`;
+    return `<div class="runs-trace-item" data-run-id="${run.id}" data-color="${color}" data-active="${active}">
+      <span class="runs-trace-dot" style="background:${active ? color : '#ddd'};width:14px;height:14px;border-radius:50%;flex-shrink:0;display:inline-block;transition:background .2s"></span>
+      <span style="font-size:0.82rem;color:#333;flex:1">${label}</span>
+      <span class="runs-trace-check" style="font-size:1rem;color:${active ? color : '#ccc'};font-weight:700">${active ? "✓" : "○"}</span>
+    </div>`;
   }).join("");
 
-  // Event listeners sur les items
+  // Clic sur un item → toggle le tracé
   selectorEl.querySelectorAll(".runs-trace-item").forEach(item => {
     item.addEventListener("click", () => {
       const runId = item.dataset.runId;
       const color = item.dataset.color;
-      const cb = item.querySelector("input[type=checkbox]");
       const dot = item.querySelector(".runs-trace-dot");
       const chk = item.querySelector(".runs-trace-check");
-      cb.checked = !cb.checked;
-      if (cb.checked) {
-        selectedRunIds.add(runId);
-        dot.style.borderColor = color;
+      const isActive = item.dataset.active === "true";
+
+      if (isActive) {
+        // Désactiver : retire le tracé
+        item.dataset.active = "false";
+        inst.selected.delete(runId);
+        dot.style.background = "#ddd";
+        chk.textContent = "○";
+        chk.style.color = "#ccc";
+        if (inst.layers[runId]) { inst.layers[runId].remove(); delete inst.layers[runId]; }
+      } else {
+        // Activer : ajoute le tracé
+        item.dataset.active = "true";
+        inst.selected.add(runId);
+        dot.style.background = color;
         chk.textContent = "✓";
         chk.style.color = color;
-        drawTrace(runId, color);
-      } else {
-        selectedRunIds.delete(runId);
-        dot.style.borderColor = "#ddd";
-        chk.textContent = "○";
-        chk.style.color = "#ddd";
-        if (runsOverlayLayers[runId]) {
-          runsOverlayLayers[runId].remove();
-          delete runsOverlayLayers[runId];
-        }
-        fitOverlayBounds();
+        _drawTrace(inst, runId, color);
       }
+      _fitBounds(inst);
     });
   });
 
-  // Trace les sélectionnées par défaut
+  // Dessine les traces sélectionnées par défaut
   runsWithPath.forEach((run, i) => {
-    if (selectedRunIds.has(run.id)) {
-      drawTrace(run.id, TRACE_COLORS[i % TRACE_COLORS.length]);
+    if (inst.selected.has(run.id)) {
+      _drawTrace(inst, run.id, TRACE_COLORS[i % TRACE_COLORS.length]);
     }
   });
 
-  fitOverlayBounds();
-  setTimeout(() => runsOverlayMap.invalidateSize(), 120);
+  _fitBounds(inst);
+  setTimeout(() => inst.map.invalidateSize(), 150);
 }
 
-function drawTrace(runId, color) {
-  if (!runsOverlayMap) return;
-  if (runsOverlayLayers[runId]) { runsOverlayLayers[runId].remove(); delete runsOverlayLayers[runId]; }
+function _drawTrace(inst, runId, color) {
+  if (inst.layers[runId]) { inst.layers[runId].remove(); delete inst.layers[runId]; }
   const run = state.runs.find(r => r.id === runId);
-  if (!run || !run.path) return;
-  const path = run.path.map(p => Array.isArray(p) ? [p[0], p[1]] : [p.lat, p.lon ?? p.lng])
+  if (!run?.path) return;
+  const path = run.path
+    .map(p => Array.isArray(p) ? [p[0], p[1]] : [p.lat, p.lon ?? p.lng])
     .filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b));
   if (path.length < 2) return;
-  const layer = L.layerGroup();
-  L.polyline(path, { color, weight: 4, opacity: 0.85 }).addTo(layer);
-  L.circleMarker(path[0], { radius: 6, fillColor: "#22c55e", color: "#fff", weight: 2, fillOpacity: 1 }).addTo(layer);
-  L.circleMarker(path[path.length - 1], { radius: 6, fillColor: color, color: "#fff", weight: 2, fillOpacity: 1 }).addTo(layer);
-  layer.addTo(runsOverlayMap);
-  runsOverlayLayers[runId] = layer;
+  const group = L.featureGroup([
+    L.polyline(path, { color, weight: 4, opacity: 0.9 }),
+    L.circleMarker(path[0], { radius: 6, fillColor: "#22c55e", color: "#fff", weight: 2, fillOpacity: 1 }),
+    L.circleMarker(path[path.length - 1], { radius: 7, fillColor: color, color: "#fff", weight: 2, fillOpacity: 1 })
+  ]).addTo(inst.map);
+  inst.layers[runId] = group;
 }
 
-function fitOverlayBounds() {
-  if (!runsOverlayMap) return;
-  const allLayers = Object.values(runsOverlayLayers);
-  if (!allLayers.length) return;
-  const group = L.featureGroup(allLayers.flatMap(lg => {
-    const layers = [];
-    lg.eachLayer(l => layers.push(l));
-    return layers;
-  }));
-  try { runsOverlayMap.fitBounds(group.getBounds().pad(0.15)); } catch {}
+function _fitBounds(inst) {
+  const groups = Object.values(inst.layers);
+  if (!groups.length) return;
+  try {
+    const all = L.featureGroup(groups);
+    inst.map.fitBounds(all.getBounds().pad(0.15));
+  } catch {}
 }
-
-// Boutons bascule Liste / Tracés (écran séparé vous-enregistrement)
-document.getElementById("runs-view-list-btn")?.addEventListener("click", () => {
-  document.getElementById("runs-view-list-btn").classList.add("active");
-  document.getElementById("runs-view-map-btn").classList.remove("active");
-  document.getElementById("runs-map-view").style.display = "none";
-});
-document.getElementById("runs-view-map-btn")?.addEventListener("click", () => {
-  document.getElementById("runs-view-map-btn").classList.add("active");
-  document.getElementById("runs-view-list-btn").classList.remove("active");
-  document.getElementById("runs-map-view").style.display = "block";
-  initRunsOverlayMap("runs-overlay-map", "runs-trace-selector");
-});
 
 // Boutons bascule Liste / Tracés (panneau inline dans Vous)
 document.getElementById("runs-view-list-btn2")?.addEventListener("click", () => {
@@ -9851,6 +9829,21 @@ document.getElementById("runs-view-map-btn2")?.addEventListener("click", () => {
   document.getElementById("runs-map-view2").style.display = "block";
   document.querySelector("#vous-panel-enregistrement .run-list.gps-history").style.display = "none";
   initRunsOverlayMap("runs-overlay-map2", "runs-trace-selector2");
+});
+
+// Boutons bascule Liste / Tracés (écran séparé vous-enregistrement)
+document.getElementById("runs-view-list-btn")?.addEventListener("click", () => {
+  document.getElementById("runs-view-list-btn").classList.add("active");
+  document.getElementById("runs-view-map-btn").classList.remove("active");
+  document.getElementById("runs-map-view").style.display = "none";
+  document.querySelector("#vous-enregistrement .run-list.gps-history").style.display = "";
+});
+document.getElementById("runs-view-map-btn")?.addEventListener("click", () => {
+  document.getElementById("runs-view-map-btn").classList.add("active");
+  document.getElementById("runs-view-list-btn").classList.remove("active");
+  document.getElementById("runs-map-view").style.display = "block";
+  document.querySelector("#vous-enregistrement .run-list.gps-history").style.display = "none";
+  initRunsOverlayMap("runs-overlay-map", "runs-trace-selector");
 });
 
 // ── Vue carte des courses ─────────────────────────────────────────────────────
