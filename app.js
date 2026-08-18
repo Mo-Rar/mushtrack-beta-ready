@@ -9732,8 +9732,9 @@ function setupTracesView(mapId, selectorId) {
   // Liste cliquable sous la carte
   selectorEl.innerHTML = runsWithPath.map((run, i) => {
     const km = Number(run.km || 0).toFixed(1);
+    const fullDate = run.date ? new Date(run.date).toLocaleDateString("fr-CA", { year:"numeric", month:"long", day:"numeric" }) : formatDate(run.date);
     return `<div class="runs-trace-item" data-idx="${i}" style="cursor:pointer">
-      <span style="font-size:0.82rem;color:#444;flex:1">${formatDate(run.date)} · ${run.type || "GPS"} · ${km} km</span>
+      <span style="font-size:0.82rem;color:#444;flex:1">${fullDate} · ${km} km</span>
       <span style="font-size:0.75rem;color:#aaa">+</span>
     </div>`;
   }).join("");
