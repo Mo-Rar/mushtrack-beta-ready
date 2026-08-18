@@ -1147,6 +1147,17 @@
           <div class="vous-panel-toolbar">
             <button class="text-button" onclick="document.getElementById('manual-run-button').click();showScreen('record')">+ Ajouter</button>
           </div>
+          <!-- Bascule Liste / Tracés -->
+          <div style="display:flex;gap:8px;padding:4px 16px 8px">
+            <button id="runs-view-list-btn2" class="race-view-btn active" type="button">☰ Liste</button>
+            <button id="runs-view-map-btn2" class="race-view-btn" type="button">🗺 Tracés</button>
+          </div>
+          <!-- Vue carte superposée (panel inline) -->
+          <div id="runs-map-view2" style="display:none;padding:0 16px 16px">
+            <div id="runs-overlay-map2" style="height:340px;border-radius:16px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,0.12);margin-bottom:10px"></div>
+            <p style="font-size:0.75rem;color:#999;text-align:center;margin:0 0 10px">Sélectionne les sorties à afficher</p>
+            <div id="runs-trace-selector2"></div>
+          </div>
           <section class="run-list gps-history" data-list="runs" style="padding:0 16px"></section>
         </div>
       </section>

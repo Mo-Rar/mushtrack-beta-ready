@@ -9707,23 +9707,29 @@ let runsOverlayMap = null;
 let runsOverlayLayers = {};
 let selectedRunIds = new Set();
 
-function initRunsOverlayMap() {
-  const mapEl = document.getElementById("runs-overlay-map");
-  const selectorEl = document.getElementById("runs-trace-selector");
+function initRunsOverlayMap(mapId = "runs-overlay-map", selectorId = "runs-trace-selector") {
+  const mapEl = document.getElementById(mapId);
+  const selectorEl = document.getElementById(selectorId);
   if (!mapEl || !selectorEl) return;
+
+  // Réinitialise la carte si elle existait déjà (changement de panneau)
+  if (mapEl._leaflet_id) {
+    const existing = mapEl._leaflet_map;
+    if (existing) { existing.remove(); }
+    mapEl._leaflet_map = null;
+    mapEl._leaflet_id = undefined;
+  }
 
   // Sorties avec tracé GPS
   const runsWithPath = state.runs.filter(r => Array.isArray(r.path) && r.path.length > 1);
 
-  if (!runsOverlayMap) {
-    runsOverlayMap = L.map("runs-overlay-map", { zoomControl: true }).setView([47, 8], 5);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap", maxZoom: 18
-    }).addTo(runsOverlayMap);
-  } else {
-    Object.values(runsOverlayLayers).forEach(l => l.remove());
-    runsOverlayLayers = {};
-  }
+  Object.values(runsOverlayLayers).forEach(l => l.remove());
+  runsOverlayLayers = {};
+  runsOverlayMap = L.map(mapId, { zoomControl: true }).setView([47, 8], 5);
+  mapEl._leaflet_map = runsOverlayMap;
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap", maxZoom: 18
+  }).addTo(runsOverlayMap);
 
   if (!runsWithPath.length) {
     selectorEl.innerHTML = `<p style="text-align:center;color:#aaa;font-size:0.85rem;padding:20px">Aucune sortie GPS enregistrée.</p>`;
@@ -9819,19 +9825,32 @@ function fitOverlayBounds() {
   try { runsOverlayMap.fitBounds(group.getBounds().pad(0.15)); } catch {}
 }
 
-// Boutons bascule Liste / Tracés dans l'historique
+// Boutons bascule Liste / Tracés (écran séparé vous-enregistrement)
 document.getElementById("runs-view-list-btn")?.addEventListener("click", () => {
   document.getElementById("runs-view-list-btn").classList.add("active");
   document.getElementById("runs-view-map-btn").classList.remove("active");
   document.getElementById("runs-map-view").style.display = "none";
-  document.querySelector('[data-list="runs"].gps-history')?.parentElement
-    ?.querySelectorAll('.run-list.gps-history').forEach(el => el.style.display = "");
 });
 document.getElementById("runs-view-map-btn")?.addEventListener("click", () => {
   document.getElementById("runs-view-map-btn").classList.add("active");
   document.getElementById("runs-view-list-btn").classList.remove("active");
   document.getElementById("runs-map-view").style.display = "block";
-  initRunsOverlayMap();
+  initRunsOverlayMap("runs-overlay-map", "runs-trace-selector");
+});
+
+// Boutons bascule Liste / Tracés (panneau inline dans Vous)
+document.getElementById("runs-view-list-btn2")?.addEventListener("click", () => {
+  document.getElementById("runs-view-list-btn2").classList.add("active");
+  document.getElementById("runs-view-map-btn2").classList.remove("active");
+  document.getElementById("runs-map-view2").style.display = "none";
+  document.querySelector("#vous-panel-enregistrement .run-list.gps-history").style.display = "";
+});
+document.getElementById("runs-view-map-btn2")?.addEventListener("click", () => {
+  document.getElementById("runs-view-map-btn2").classList.add("active");
+  document.getElementById("runs-view-list-btn2").classList.remove("active");
+  document.getElementById("runs-map-view2").style.display = "block";
+  document.querySelector("#vous-panel-enregistrement .run-list.gps-history").style.display = "none";
+  initRunsOverlayMap("runs-overlay-map2", "runs-trace-selector2");
 });
 
 // ── Vue carte des courses ─────────────────────────────────────────────────────
