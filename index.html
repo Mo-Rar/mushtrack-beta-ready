@@ -1077,6 +1077,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
             <span data-t="vous_records_tab">Enregistrement</span>
           </button>
+          <button class="vous-subtab" data-you="saisons">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M12 2v20M2 12h20"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10"/><path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10"/></svg>
+            <span>Saisons</span>
+          </button>
         </div>
         <!-- Panneaux inline -->
         <div class="vous-panel active" id="vous-panel-agenda">
@@ -1112,6 +1116,7 @@
             <div class="ration-result hidden" id="ration-result-vous"></div>
           </div>
         </div>
+        <div class="vous-panel" id="vous-panel-saisons"></div>
         <div class="vous-panel" id="vous-panel-enregistrement">
           <div class="vous-panel-toolbar">
             <button class="text-button" onclick="document.getElementById('manual-run-button').click();showScreen('record')">+ Ajouter</button>

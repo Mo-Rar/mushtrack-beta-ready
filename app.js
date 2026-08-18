@@ -801,6 +801,7 @@ const defaultState = {
   dogs: [],
   selectedDogIds: [],
   runs: [],
+  seasons: [],
   planWeather: null,
   planWeatherUpdatedAt: null,
   reminders: [],
@@ -2453,6 +2454,7 @@ function normalizeState(value) {
   value.planWeather ||= null;
   value.planWeatherUpdatedAt ||= null;
   if (!Array.isArray(value.reminders)) value.reminders = [];
+  if (!Array.isArray(value.seasons)) value.seasons = [];
   if (!value.lang) value.lang = "fr";
   value.emergencyContact ||= { name: "", phone: "" };
   value.forecast ||= {};
@@ -4218,6 +4220,148 @@ function initRoutePreviews() {
     L.marker(points[0], { icon: startIcon }).addTo(map);
     L.marker(points[points.length - 1], { icon: endIcon }).addTo(map);
   });
+}
+
+// ─── Saisons ────────────────────────────────────────────────────────────────
+
+function getSeasonRuns(season) {
+  return state.runs.filter(r => {
+    if (!r.date) return false;
+    if (r.date < season.startDate) return false;
+    if (season.endDate && r.date > season.endDate) return false;
+    return true;
+  });
+}
+
+function renderSeasons() {
+  const container = document.getElementById("vous-panel-saisons");
+  if (!container) return;
+
+  const activeSeason = state.seasons.find(s => !s.endDate);
+  const today = new Date().toISOString().slice(0, 10);
+
+  let html = `<div style="padding:12px 16px 24px">`;
+
+  // ── Saison active ──
+  if (activeSeason) {
+    const runs = getSeasonRuns(activeSeason);
+    const km = runs.reduce((s, r) => s + Number(r.km || 0), 0);
+    const dogSet = new Set(runs.flatMap(r => r.team || []));
+    const types = [...new Set(runs.map(r => r.type).filter(Boolean))];
+    html += `
+      <div style="background:linear-gradient(135deg,#fc4c02,#e03a00);border-radius:16px;padding:16px;color:#fff;margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:0.7rem;opacity:0.8;text-transform:uppercase;letter-spacing:.05em">Saison en cours</div>
+            <div style="font-size:1.1rem;font-weight:700;margin:2px 0 8px">${activeSeason.name}</div>
+            <div style="font-size:0.75rem;opacity:0.85">Début : ${formatDate(activeSeason.startDate)}</div>
+          </div>
+          <button onclick="endSeason('${activeSeason.id}')" style="background:rgba(255,255,255,0.22);border:none;border-radius:10px;color:#fff;font-size:0.8rem;font-weight:600;padding:6px 12px;cursor:pointer">Terminer</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;background:rgba(0,0,0,0.15);border-radius:10px;padding:12px">
+          <div style="text-align:center"><div style="font-size:1.4rem;font-weight:800">${km.toFixed(0)}</div><div style="font-size:0.7rem;opacity:0.8">km</div></div>
+          <div style="text-align:center"><div style="font-size:1.4rem;font-weight:800">${runs.length}</div><div style="font-size:0.7rem;opacity:0.8">sorties</div></div>
+          <div style="text-align:center"><div style="font-size:1.4rem;font-weight:800">${dogSet.size}</div><div style="font-size:0.7rem;opacity:0.8">chiens</div></div>
+        </div>
+        ${types.length ? `<div style="margin-top:10px;font-size:0.72rem;opacity:0.85">${types.join(" · ")}</div>` : ""}
+      </div>`;
+  } else {
+    html += `
+      <button onclick="openNewSeasonForm()" style="width:100%;border:2px dashed #fc4c02;border-radius:14px;padding:18px;background:none;color:#fc4c02;font-weight:600;font-size:0.95rem;cursor:pointer;margin-bottom:20px">
+        + Démarrer une nouvelle saison
+      </button>`;
+  }
+
+  // ── Saisons terminées ──
+  const pastSeasons = state.seasons.filter(s => s.endDate).sort((a, b) => b.startDate.localeCompare(a.startDate));
+  if (pastSeasons.length) {
+    html += `<div style="font-size:0.75rem;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Historique</div>`;
+    pastSeasons.forEach(s => {
+      const runs = getSeasonRuns(s);
+      const km = runs.reduce((acc, r) => acc + Number(r.km || 0), 0);
+      const dogSet = new Set(runs.flatMap(r => r.team || []));
+      const types = [...new Set(runs.map(r => r.type).filter(Boolean))];
+      html += `
+        <div style="background:var(--card-bg,#fff);border-radius:14px;border:1px solid #eee;padding:14px 16px;margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div>
+              <div style="font-weight:700;font-size:0.95rem">${s.name}</div>
+              <div style="font-size:0.72rem;color:#999">${formatDate(s.startDate)} → ${formatDate(s.endDate)}</div>
+            </div>
+            <button onclick="deleteSeason('${s.id}')" title="Supprimer" style="background:none;border:none;color:#ccc;font-size:1.1rem;cursor:pointer;padding:4px">✕</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#f8f8f8;border-radius:10px;padding:10px">
+            <div style="text-align:center"><div style="font-size:1.2rem;font-weight:800;color:#fc4c02">${km.toFixed(0)}</div><div style="font-size:0.7rem;color:#999">km</div></div>
+            <div style="text-align:center"><div style="font-size:1.2rem;font-weight:800;color:#fc4c02">${runs.length}</div><div style="font-size:0.7rem;color:#999">sorties</div></div>
+            <div style="text-align:center"><div style="font-size:1.2rem;font-weight:800;color:#fc4c02">${dogSet.size}</div><div style="font-size:0.7rem;color:#999">chiens</div></div>
+          </div>
+          ${types.length ? `<div style="margin-top:8px;font-size:0.72rem;color:#888">${types.join(" · ")}</div>` : ""}
+        </div>`;
+    });
+  } else if (!activeSeason) {
+    html += `<p style="color:#bbb;text-align:center;font-size:0.85rem;margin-top:20px">Aucune saison enregistrée</p>`;
+  }
+
+  if (activeSeason) {
+    html += `<button onclick="openNewSeasonForm()" style="width:100%;border:2px dashed #ddd;border-radius:14px;padding:12px;background:none;color:#999;font-size:0.85rem;cursor:pointer;margin-top:4px">
+      + Préparer la prochaine saison (terminer l'actuelle d'abord)
+    </button>`;
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+function openNewSeasonForm() {
+  const today = new Date().toISOString().slice(0, 10);
+  const overlay = document.createElement("div");
+  overlay.id = "season-form-overlay";
+  overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;display:flex;align-items:flex-end";
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;padding:24px;max-height:80vh;overflow-y:auto">
+      <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 18px"></div>
+      <h3 style="margin:0 0 18px;font-size:1.1rem">Nouvelle saison</h3>
+      <label style="display:block;margin-bottom:14px">
+        <div style="font-size:0.8rem;color:#666;margin-bottom:4px">Nom de la saison</div>
+        <input id="season-name-input" type="text" value="Saison ${new Date().getFullYear()}-${new Date().getFullYear()+1}" style="width:100%;border:1px solid #ddd;border-radius:10px;padding:10px 12px;font-size:1rem;box-sizing:border-box">
+      </label>
+      <label style="display:block;margin-bottom:20px">
+        <div style="font-size:0.8rem;color:#666;margin-bottom:4px">Date de début</div>
+        <input id="season-start-input" type="date" value="${today}" style="width:100%;border:1px solid #ddd;border-radius:10px;padding:10px 12px;font-size:1rem;box-sizing:border-box">
+      </label>
+      <button onclick="saveNewSeason()" style="width:100%;background:#fc4c02;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;margin-bottom:10px">Démarrer la saison</button>
+      <button onclick="document.getElementById('season-form-overlay').remove()" style="width:100%;background:none;border:none;color:#999;font-size:0.9rem;cursor:pointer;padding:8px">Annuler</button>
+    </div>`;
+  overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.style.opacity = "1");
+  document.getElementById("season-name-input").focus();
+}
+
+function saveNewSeason() {
+  const name = document.getElementById("season-name-input")?.value?.trim();
+  const startDate = document.getElementById("season-start-input")?.value;
+  if (!name || !startDate) return;
+  const newSeason = { id: uid(), name, startDate, endDate: null };
+  state.seasons = [...state.seasons, newSeason];
+  saveState();
+  document.getElementById("season-form-overlay")?.remove();
+  renderSeasons();
+}
+
+function endSeason(id) {
+  if (!confirm("Terminer cette saison ?")) return;
+  const today = new Date().toISOString().slice(0, 10);
+  state.seasons = state.seasons.map(s => s.id === id ? { ...s, endDate: today } : s);
+  saveState();
+  renderSeasons();
+}
+
+function deleteSeason(id) {
+  if (!confirm("Supprimer cette saison ? (les activités ne sont pas supprimées)")) return;
+  state.seasons = state.seasons.filter(s => s.id !== id);
+  saveState();
+  renderSeasons();
 }
 
 function renderAnalytics() {
@@ -7321,6 +7465,7 @@ document.querySelectorAll(".vous-subtab").forEach(btn => {
     const panel = document.getElementById("vous-panel-" + target);
     if (panel) panel.classList.add("active");
     if (target === "enregistrement") setTimeout(() => initRoutePreviews(), 50);
+    if (target === "saisons") renderSeasons();
   });
 });
 
