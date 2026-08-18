@@ -3959,6 +3959,9 @@ function renderRuns() {
             <div class="run-card-title">${run.type}</div>
             <div class="run-card-date">${formatDate(run.date)}${teamNames ? " · " + teamNames : ""}</div>
           </div>
+          <button class="strava-run-share" data-share-sheet="${index}" type="button" title="Partager">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="17" height="17"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          </button>
           <button class="strava-run-menu" data-run-option="${index}" type="button" title="Modifier">
             <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
           </button>
@@ -3990,10 +3993,6 @@ function renderRuns() {
           <p>${run.notes || t('run_no_note')}</p>
           <div class="card-actions">
             <button class="secondary-button" data-run-option="${index}" type="button">${t('run_edit_btn')}</button>
-            <button class="secondary-button" data-share-sheet="${index}" type="button">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-              Partager
-            </button>
             <button class="danger-button" data-delete-run="${index}" type="button">${t('run_delete_btn')}</button>
           </div>
         </div>

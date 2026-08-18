@@ -1361,6 +1361,18 @@ textarea {
   cursor: pointer;
 }
 
+.strava-run-share {
+  background: none;
+  border: none;
+  color: #aaaaaa;
+  padding: 4px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.strava-run-share:hover { background: #f5f5f5; color: #fc4c02; }
+
 .strava-run-menu {
   background: none;
   border: none;
