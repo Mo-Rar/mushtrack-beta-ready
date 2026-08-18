@@ -1216,6 +1216,10 @@ const TRANSLATIONS = {
     race_participating_label: "✓ Participe",
     race_interested_label: "⭐ Intéressé",
     race_pinned_label: "⭐ Mes courses sélectionnées",
+    race_wishlist_label: "🎯 Ma liste de souhaits",
+    race_wishlist_share: "Partager",
+    race_wishlist_share_title: "Mes courses souhaitées — MushTrack",
+    race_wishlist_copied: "Liste copiée dans le presse-papier !",
     race_count_singular: "course",
     race_count_plural: "courses",
     race_none_found: "Aucune course trouvée. Essaie une région plus large comme Europe, USA, Canada, Suède ou Amundsen.",
@@ -1818,6 +1822,10 @@ const TRANSLATIONS = {
     race_participating_label: "✓ Participating",
     race_interested_label: "⭐ Interested",
     race_pinned_label: "⭐ My selected races",
+    race_wishlist_label: "🎯 My race wishlist",
+    race_wishlist_share: "Share",
+    race_wishlist_share_title: "My race wishlist — MushTrack",
+    race_wishlist_copied: "List copied to clipboard!",
     race_count_singular: "race",
     race_count_plural: "races",
     race_none_found: "No race found. Try a broader region like Europe, USA, Canada, Sweden or Amundsen.",
@@ -2420,6 +2428,10 @@ const TRANSLATIONS = {
     race_participating_label: "✓ Teilnahme",
     race_interested_label: "⭐ Interessiert",
     race_pinned_label: "⭐ Meine ausgewählten Rennen",
+    race_wishlist_label: "🎯 Meine Wunschliste",
+    race_wishlist_share: "Teilen",
+    race_wishlist_share_title: "Meine Wunschrennen — MushTrack",
+    race_wishlist_copied: "Liste in die Zwischenablage kopiert!",
     race_count_singular: "Rennen",
     race_count_plural: "Rennen",
     race_none_found: "Kein Rennen gefunden. Versuche eine breitere Region wie Europa, USA, Kanada, Schweden oder Amundsen.",
@@ -6193,12 +6205,15 @@ function renderRaceSearch() {
       byCountry[country].push(race);
     });
 
-    // Section courses sélectionnées
+    // Section liste de souhaits
     let pinnedHtml = "";
     if (pinned.length > 0) {
       pinnedHtml = `
         <div class="pinned-races-section">
-          <p class="pinned-races-title">${t('race_pinned_label')} (${pinned.length})</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <p class="pinned-races-title" style="margin:0">${t('race_wishlist_label')} (${pinned.length})</p>
+            <button type="button" id="share-wishlist-btn" style="font-size:0.78rem;color:#fc4c02;background:none;border:1px solid #fc4c02;border-radius:8px;padding:4px 10px;font-weight:700;cursor:pointer">📤 ${t('race_wishlist_share')}</button>
+          </div>
           ${pinned.map((r) => buildRaceCard(r, true)).join("")}
         </div>
       `;
@@ -6247,6 +6262,18 @@ function renderRaceSearch() {
       });
     });
   }
+
+  // Partager la liste de souhaits
+  list.querySelector("#share-wishlist-btn")?.addEventListener("click", () => {
+    const pinned = results.filter((r) => state.raceInterests[r.id]);
+    const lines = pinned.map(r => `🏁 ${r.name}${r.date ? " — " + r.date : ""}${r.location ? " (" + r.location + ")" : ""}`);
+    const text = `${t('race_wishlist_share_title')}\n\n${lines.join("\n")}\n\n— MushTrack`;
+    if (navigator.share) {
+      navigator.share({ title: t('race_wishlist_label'), text }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(text).then(() => alert(t('race_wishlist_copied')));
+    }
+  });
 
   list.querySelectorAll("[data-open-race-source]").forEach((button) => {
     button.addEventListener("click", () => {
