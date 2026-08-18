@@ -4172,47 +4172,63 @@ function renderRoutePreview(path, runIndex) {
     .map((point) => Array.isArray(point) ? point : [point.lat, point.lon ?? point.lng ?? point.longitude])
     .filter(([lat, lng]) => Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)));
   if (points.length < 2) return "";
-  // Placeholder — la mini-carte Leaflet est initialisée dans initRoutePreviews()
-  return `<div class="route-preview-map" id="rmap-${runIndex}" data-run-index="${runIndex}"></div>`;
-}
 
-// Initialise les mini-cartes Leaflet sur toutes les cartes visibles
-const _routeMapInstances = {};
-function initRoutePreviews() {
-  document.querySelectorAll(".route-preview-map").forEach(el => {
-    const idx = Number(el.dataset.runIndex);
-    if (_routeMapInstances[idx]) return; // déjà initialisée
+  const W = 400, H = 130, PAD = 18;
+  const lats = points.map(([lat]) => Number(lat));
+  const lngs = points.map(([, lng]) => Number(lng));
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+  const latRange = maxLat - minLat || 0.0001;
+  const lngRange = maxLng - minLng || 0.0001;
 
-    const run = state.runs[idx];
-    if (!run?.path) return;
-    const points = run.path
-      .map(p => Array.isArray(p) ? [Number(p[0]), Number(p[1])] : [Number(p.lat ?? p.latitude), Number(p.lon ?? p.lng ?? p.longitude)])
-      .filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b));
-    if (points.length < 2) return;
+  const scaleX = (W - PAD * 2) / lngRange;
+  const scaleY = (H - PAD * 2) / latRange;
+  const scale  = Math.min(scaleX, scaleY);
+  const offX   = (W - lngRange * scale) / 2;
+  const offY   = (H - latRange * scale) / 2;
 
-    const map = L.map(el, {
-      zoomControl: false,
-      dragging: false,
-      scrollWheelZoom: false,
-      doubleClickZoom: false,
-      touchZoom: false,
-      keyboard: false,
-      attributionControl: false,
-      tap: false
-    });
-
-    L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { maxZoom: 17 }).addTo(map);
-
-    const poly = L.polyline(points, { color: "#fc4c02", weight: 4, opacity: 0.95, lineCap: "round", lineJoin: "round" }).addTo(map);
-    L.circleMarker(points[0], { radius: 5, fillColor: "#22c55e", color: "#fff", weight: 2, fillOpacity: 1 }).addTo(map);
-    L.circleMarker(points[points.length - 1], { radius: 6, fillColor: "#fc4c02", color: "#fff", weight: 2, fillOpacity: 1 }).addTo(map);
-
-    map.fitBounds(poly.getBounds().pad(0.25));
-    _routeMapInstances[idx] = map;
-
-    setTimeout(() => map.invalidateSize(), 100);
+  const svgPts = points.map(([lat, lng]) => {
+    const x = offX + (Number(lng) - minLng) * scale;
+    const y = H - offY - (Number(lat) - minLat) * scale;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
   });
+
+  const [fx, fy] = svgPts[0].split(",");
+  const [lx, ly] = svgPts[svgPts.length - 1].split(",");
+  const pts = svgPts.join(" ");
+
+  return `
+    <div class="route-preview">
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="topoGrad${runIndex}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#c8ddb0"/>
+            <stop offset="45%" stop-color="#b5cc98"/>
+            <stop offset="100%" stop-color="#9ab882"/>
+          </linearGradient>
+          <filter id="shadow${runIndex}">
+            <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#fc4c02" flood-opacity="0.35"/>
+          </filter>
+        </defs>
+        <!-- fond topo -->
+        <rect width="${W}" height="${H}" fill="url(#topoGrad${runIndex})"/>
+        <!-- contours topo simulés -->
+        <ellipse cx="${W*0.3}" cy="${H*0.55}" rx="${W*0.22}" ry="${H*0.28}" fill="none" stroke="#a8c285" stroke-width="1" opacity="0.6"/>
+        <ellipse cx="${W*0.3}" cy="${H*0.55}" rx="${W*0.14}" ry="${H*0.18}" fill="none" stroke="#9ab878" stroke-width="1" opacity="0.5"/>
+        <ellipse cx="${W*0.72}" cy="${H*0.4}" rx="${W*0.18}" ry="${H*0.22}" fill="none" stroke="#a8c285" stroke-width="1" opacity="0.5"/>
+        <!-- halo tracé -->
+        <polyline points="${pts}" fill="none" stroke="#fc4c02" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.25"/>
+        <!-- tracé principal -->
+        <polyline points="${pts}" fill="none" stroke="#fc4c02" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#shadow${runIndex})"/>
+        <!-- départ -->
+        <circle cx="${fx}" cy="${fy}" r="5.5" fill="#22c55e" stroke="#fff" stroke-width="2"/>
+        <!-- arrivée -->
+        <circle cx="${lx}" cy="${ly}" r="6.5" fill="#fc4c02" stroke="#fff" stroke-width="2"/>
+      </svg>
+    </div>`;
 }
+
+function initRoutePreviews() {} // plus utilisée, gardée pour compatibilité
 
 function renderAnalytics() {
   renderWeeklyChart();

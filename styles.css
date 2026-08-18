@@ -1412,6 +1412,7 @@ textarea {
 .route-preview {
   grid-column: 1 / -1;
   border-radius: 14px;
+  overflow: hidden;
   background:
     linear-gradient(135deg, rgba(252, 76, 2, 0.12), rgba(252, 76, 2, 0.04)),
     #0f0f0f;
@@ -1434,14 +1435,6 @@ textarea {
   display: block;
 }
 
-.route-preview-map {
-  grid-column: 1 / -1;
-  height: 140px;
-  border-radius: 14px;
-  overflow: hidden;
-  margin-bottom: 4px;
-  pointer-events: none;
-}
 
 .run-details {
   grid-column: 1 / -1;
