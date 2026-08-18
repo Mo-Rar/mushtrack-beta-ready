@@ -202,44 +202,6 @@
           </div>
         </section>
 
-        <!-- ── Bas : chart + mission semaine ── -->
-        <div class="dash-bottom-grid">
-          <section class="dash-chart-card">
-            <div class="dash-chart-header">
-              <span class="dash-chart-title" data-t="dash_progression">PROGRESSION</span>
-              <span id="chart-period-label" class="dash-chart-sub">10 semaines</span>
-            </div>
-            <canvas id="progress-chart" height="120"></canvas>
-            <p class="chart-empty hidden" id="chart-empty">Enregistre ta première sortie.</p>
-          </section>
-          <section class="dash-mission-card">
-            <p class="dash-chart-title" data-t="dash_mission_week">MISSION SEMAINE</p>
-            <div class="dash-mission-list" data-list="nextRace"></div>
-            <div class="dash-mission-items">
-              <div class="dash-mission-item">
-                <span class="dash-mi-check">✓</span>
-                <span class="dash-mi-label" data-t="dash_runs_label">Sorties</span>
-                <span class="dash-mi-val" data-bind="kpiWeek">—</span>
-              </div>
-              <div class="dash-mission-item">
-                <span class="dash-mi-check">✓</span>
-                <span class="dash-mi-label" data-t="dash_progress_label">Progression</span>
-                <span class="dash-mi-val dash-orange" data-bind="kpiProgress">—</span>
-              </div>
-              <div class="dash-mission-item">
-                <span class="dash-mi-check dash-mi-circle"></span>
-                <span class="dash-mi-label" data-t="dash_race_goal_label">Objectif race</span>
-                <span class="dash-mi-val" data-bind="kpiDays">—</span>
-              </div>
-            </div>
-            <div class="dash-mission-footer">
-              <span data-t="dash_progress_label">Progression</span>
-              <span class="dash-orange" data-bind="dashWeekPct">—</span>
-            </div>
-            <div class="dash-prep-bar" style="margin-top:4px"><span data-bind-style="dashWeekBar"></span></div>
-          </section>
-        </div>
-
         <!-- ── Partenaires ── -->
         <section class="sponsor-banner" style="margin:0 14px 16px">
           <span class="sponsor-label" data-t="dash_partners">Partenaires</span>
