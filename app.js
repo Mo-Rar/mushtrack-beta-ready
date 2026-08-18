@@ -4347,6 +4347,13 @@ function renderRuns() {
             <span class="run-stat-label">m D+</span>
           </div>` : ""}
         </div>
+        ${run.team?.length ? `<div style="display:flex;flex-wrap:wrap;gap:5px;padding:6px 0 2px">${run.team.map(id => {
+          const dog = state.dogs.find(d => d.id === id);
+          if (!dog) return "";
+          const role = run.teamRoles?.[id] || dog.role || "Team";
+          const color = DOG_ROLE_COLOR[role] || "#888";
+          return `<span style="display:flex;align-items:center;gap:3px;background:#f5f5f5;border-radius:6px;padding:2px 7px;font-size:0.75rem;font-weight:600;color:#444"><span style="width:7px;height:7px;border-radius:50%;background:${color};display:inline-block"></span>${dog.name} <span style="color:${color};font-weight:800">${DOG_ROLE_SHORT[role] || role[0]}</span></span>`;
+        }).join("")}</div>` : ""}
         <div class="run-details">
           <span>${t('run_speed_label')} ${speed} km/h</span>
           <span>${t('run_energy_label')} ${run.energy || "-"}/5</span>
