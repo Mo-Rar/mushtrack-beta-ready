@@ -1039,6 +1039,47 @@ const TRANSLATIONS = {
     plan_intervals: "Intervalles courts",
     plan_recov_note: "⚠️ Récupération à surveiller.",
     plan_next_km: "{n} km recommandés (moyenne récente : {avg} km).",
+    // --- Alertes chiens ---
+    alert_overload: "{name} est à {km} km sur 7 jours. Prévoir repos ou récupération.",
+    alert_underload: "{name} a peu travaillé cette semaine. Bon candidat pour une sortie facile.",
+    alert_paws: "Contrôle les coussinets de {name} avant la prochaine sortie.",
+    alert_low_energy: "{name} a eu une énergie basse. Prévoir repos ou sortie très facile.",
+    alert_recovery: "Récupération à surveiller pour {name}. Note appétit, démarche et motivation.",
+    alert_limitation: "{name} a un point de vigilance noté : {text}",
+    alert_selected_danger: "{name} est sélectionné mais son statut conseille prudence ou repos.",
+    alert_heat: "Température élevée détectée. Éviter l'intensité, vérifier coussinets et hydrater.",
+    alert_hydration: "Dernière sortie marquée avec hydratation incomplète.",
+    alert_race_soon: "Course proche. Diminuer le volume, garder les chiens frais et vérifier le matériel.",
+    alert_label_paws: "Pattes {name}", alert_label_energy: "Énergie {name}",
+    alert_label_recovery: "Récupération {name}", alert_label_team: "Attelage",
+    alert_label_heat: "Chaleur", alert_label_hydration: "Hydratation",
+    alert_label_race: "Course", alert_label_weather: "Météo",
+    // --- Plan hebdo ---
+    plan_action_weather_title: "Adapter à la météo",
+    plan_action_weather_text: "Réduire l'intensité, choisir les heures fraîches et transformer la séance dure en endurance facile.",
+    plan_action_taper_title: "Affûter sans fatiguer",
+    plan_action_taper_text: "Garder une sortie courte avec quelques relances, puis privilégier repos, pattes et matériel.",
+    plan_action_overload_title: "Semaine trop chargée",
+    plan_action_overload_text: "Baisser le volume de 20 à 30 % et laisser les chiens récupérer avant de remettre de l'intensité.",
+    plan_action_underload_title: "Relancer proprement",
+    plan_action_underload_text: "Programmer une sortie facile, puis augmenter seulement si la récupération reste bonne.",
+    plan_action_ok_title: "Progression stable",
+    plan_action_ok_text: "Conserver le plan, noter la météo après sortie et ajuster la prochaine séance selon l'énergie de la team.",
+    // --- Descriptions séances ---
+    focus_race_soon: "Course proche : affûtage, volume réduit, rappel court et team fraîche.",
+    focus_weather_summer: "canicross facile, eau, ombre et coussinets.",
+    focus_weather_winter: "allure contrôlée, pattes et récupération.",
+    focus_rest_summer: "Semaine légère, coussinets, hydratation, chaleur à surveiller.",
+    focus_rest_winter: "Semaine légère, contrôle fatigue, soins des pattes.",
+    focus_sprint_summer: "Intervalles courts tôt le matin, départs propres, récupération active.",
+    focus_sprint_a: "Intervalles courts, départs, récupération active.",
+    focus_sprint_b: "Vitesse propre, virages, ordres leaders.",
+    focus_long_summer: "Rando-course tractée, pauses eau, allure économique.",
+    focus_long_a: "Back-to-back, alimentation, allure économique.",
+    focus_long_b: "Sortie longue, pause contrôlée, mental de team.",
+    focus_mid_summer: "Endurance facile, dénivelé doux, traction régulière.",
+    focus_mid_a: "Côtes courtes, endurance, retour calme.",
+    focus_mid_b: "Endurance progressive, allure stable.",
     // --- Analytics ---
     analytics_season: "Analyse saison",
     analytics_stats: "Stats",
@@ -1573,6 +1614,47 @@ const TRANSLATIONS = {
     plan_intervals: "Short intervals",
     plan_recov_note: "⚠️ Recovery to monitor.",
     plan_next_km: "{n} km recommended (recent avg: {avg} km).",
+    // Dog alerts
+    alert_overload: "{name} is at {km} km over 7 days. Plan rest or recovery.",
+    alert_underload: "{name} worked little this week. Good candidate for an easy run.",
+    alert_paws: "Check {name}'s paws before the next run.",
+    alert_low_energy: "{name} had low energy. Plan rest or a very easy run.",
+    alert_recovery: "Recovery to watch for {name}. Note appetite, gait and motivation.",
+    alert_limitation: "{name} has a noted watchpoint: {text}",
+    alert_selected_danger: "{name} is selected but status advises caution or rest.",
+    alert_heat: "High temperature detected. Avoid intensity, check paws and hydrate.",
+    alert_hydration: "Last run marked with incomplete hydration.",
+    alert_race_soon: "Race coming up. Reduce volume, keep dogs fresh and check gear.",
+    alert_label_paws: "Paws {name}", alert_label_energy: "Energy {name}",
+    alert_label_recovery: "Recovery {name}", alert_label_team: "Team",
+    alert_label_heat: "Heat", alert_label_hydration: "Hydration",
+    alert_label_race: "Race", alert_label_weather: "Weather",
+    // Weekly plan
+    plan_action_weather_title: "Adapt to weather",
+    plan_action_weather_text: "Reduce intensity, choose cooler hours and turn the hard session into easy endurance.",
+    plan_action_taper_title: "Taper without fatigue",
+    plan_action_taper_text: "Keep one short run with a few surges, then prioritise rest, paws and gear.",
+    plan_action_overload_title: "Week too heavy",
+    plan_action_overload_text: "Drop volume by 20–30% and let the dogs recover before adding intensity again.",
+    plan_action_underload_title: "Ramp up cleanly",
+    plan_action_underload_text: "Schedule an easy run, then increase only if recovery stays good.",
+    plan_action_ok_title: "Stable progression",
+    plan_action_ok_text: "Stick to the plan, log weather after each run and adjust the next session to team energy.",
+    // Session descriptions
+    focus_race_soon: "Race soon: taper, reduced volume, short reminder and fresh team.",
+    focus_weather_summer: "easy canicross, water, shade and paw check.",
+    focus_weather_winter: "controlled pace, paws and recovery.",
+    focus_rest_summer: "Light week, paw care, hydration, watch for heat.",
+    focus_rest_winter: "Light week, monitor fatigue, paw care.",
+    focus_sprint_summer: "Short intervals early morning, clean starts, active recovery.",
+    focus_sprint_a: "Short intervals, starts, active recovery.",
+    focus_sprint_b: "Clean speed, turns, leader commands.",
+    focus_long_summer: "Pulled trail run, water breaks, economic pace.",
+    focus_long_a: "Back-to-back, fuelling, economic pace.",
+    focus_long_b: "Long run, controlled break, team mindset.",
+    focus_mid_summer: "Easy endurance, gentle elevation, steady pull.",
+    focus_mid_a: "Short hills, endurance, calm return.",
+    focus_mid_b: "Progressive endurance, steady pace.",
     // Analytics
     analytics_season: "Season analysis",
     analytics_stats: "Stats",
@@ -2107,6 +2189,47 @@ const TRANSLATIONS = {
     plan_intervals: "Kurze Intervalle",
     plan_recov_note: "⚠️ Erholung beobachten.",
     plan_next_km: "{n} km empfohlen (letzter Schnitt: {avg} km).",
+    // Hunde-Alarme
+    alert_overload: "{name} hat {km} km in 7 Tagen. Erholung oder Ruhe einplanen.",
+    alert_underload: "{name} hat diese Woche wenig gearbeitet. Guter Kandidat für eine leichte Einheit.",
+    alert_paws: "Pfoten von {name} vor der nächsten Einheit kontrollieren.",
+    alert_low_energy: "{name} hatte niedrige Energie. Ruhe oder sehr leichte Einheit einplanen.",
+    alert_recovery: "Erholung bei {name} beobachten. Appetit, Gang und Motivation notieren.",
+    alert_limitation: "{name} hat einen notierten Wachpunkt: {text}",
+    alert_selected_danger: "{name} ist ausgewählt, aber Status empfiehlt Vorsicht oder Ruhe.",
+    alert_heat: "Hohe Temperatur erkannt. Intensität vermeiden, Pfoten prüfen und hydrieren.",
+    alert_hydration: "Letzte Einheit mit unvollständiger Hydration markiert.",
+    alert_race_soon: "Rennen steht bevor. Volumen reduzieren, Hunde frisch halten und Ausrüstung prüfen.",
+    alert_label_paws: "Pfoten {name}", alert_label_energy: "Energie {name}",
+    alert_label_recovery: "Erholung {name}", alert_label_team: "Gespann",
+    alert_label_heat: "Hitze", alert_label_hydration: "Hydration",
+    alert_label_race: "Rennen", alert_label_weather: "Wetter",
+    // Wochenplan
+    plan_action_weather_title: "An Wetter anpassen",
+    plan_action_weather_text: "Intensität reduzieren, kühlere Stunden wählen, harte Einheit in leichte Ausdauer umwandeln.",
+    plan_action_taper_title: "Tapering ohne Ermüdung",
+    plan_action_taper_text: "Eine kurze Einheit mit ein paar Sprints, dann Ruhe, Pfoten und Ausrüstung priorisieren.",
+    plan_action_overload_title: "Woche zu schwer",
+    plan_action_overload_text: "Volumen um 20–30 % senken und Hunde erholen lassen, bevor Intensität wieder steigt.",
+    plan_action_underload_title: "Sauber steigern",
+    plan_action_underload_text: "Eine leichte Einheit einplanen, dann nur erhöhen wenn die Erholung gut bleibt.",
+    plan_action_ok_title: "Stabile Progression",
+    plan_action_ok_text: "Plan beibehalten, Wetter nach Einheit notieren und nächste Einheit nach Teamenergie anpassen.",
+    // Einheitsbeschreibungen
+    focus_race_soon: "Rennen nah: Tapering, reduziertes Volumen, kurze Erinnerung und frisches Team.",
+    focus_weather_summer: "leichter Canicross, Wasser, Schatten und Pfotenkontrolle.",
+    focus_weather_winter: "kontrolliertes Tempo, Pfoten und Erholung.",
+    focus_rest_summer: "Leichte Woche, Pfoten, Hydration, Hitze beobachten.",
+    focus_rest_winter: "Leichte Woche, Ermüdung kontrollieren, Pfotenpflege.",
+    focus_sprint_summer: "Kurze Intervalle früh morgens, saubere Starts, aktive Erholung.",
+    focus_sprint_a: "Kurze Intervalle, Starts, aktive Erholung.",
+    focus_sprint_b: "Saubere Geschwindigkeit, Kurven, Leader-Befehle.",
+    focus_long_summer: "Gezogener Trailrun, Wasserpausen, ökonomisches Tempo.",
+    focus_long_a: "Back-to-back, Verpflegung, ökonomisches Tempo.",
+    focus_long_b: "Langer Lauf, kontrollierte Pause, Team-Mentalität.",
+    focus_mid_summer: "Leichte Ausdauer, sanftes Gelände, regelmäßiger Zug.",
+    focus_mid_a: "Kurze Hügel, Ausdauer, ruhige Rückkehr.",
+    focus_mid_b: "Progressive Ausdauer, stabiles Tempo.",
     // Analytics
     analytics_season: "Saisonanalyse",
     analytics_stats: "Stats",
@@ -5427,12 +5550,12 @@ function buildPlan() {
 
 function getWeekFocus(index, isRest, context = getPlanContext()) {
   const summer = state.seasonMode === "summer";
-  if (context.daysToRace <= 10 && index === 0) return "Course proche: affutage, volume reduit, rappel court et team fraiche.";
-  if (context.weatherRisk) return `${context.weatherRisk}. Seance adaptee: ${summer ? "canicross facile, eau, ombre et coussinets." : "allure controlee, pattes et recuperation."}`;
-  if (isRest) return summer ? "Semaine legere, coussinets, hydratation, chaleur a surveiller." : "Semaine legere, controle fatigue, soins des pattes.";
-  if (state.raceType === "Sprint") return summer ? "Intervalles courts tot le matin, departs propres, recuperation active." : index % 2 ? "Intervalles courts, departs, recuperation active." : "Vitesse propre, virages, ordres leaders.";
-  if (state.raceType === "Longue distance") return summer ? "Rando-course tractee, pauses eau, allure economique." : index % 2 ? "Back-to-back, alimentation, allure economique." : "Sortie longue, pause controlee, mental de team.";
-  return summer ? "Endurance facile, denivele doux, traction reguliere." : index % 2 ? "Cotes courtes, endurance, retour calme." : "Endurance progressive, allure stable.";
+  if (context.daysToRace <= 10 && index === 0) return t('focus_race_soon');
+  if (context.weatherRisk) return `${context.weatherRisk}. ${summer ? t('focus_weather_summer') : t('focus_weather_winter')}`;
+  if (isRest) return summer ? t('focus_rest_summer') : t('focus_rest_winter');
+  if (state.raceType === "Sprint") return summer ? t('focus_sprint_summer') : index % 2 ? t('focus_sprint_a') : t('focus_sprint_b');
+  if (state.raceType === "Longue distance") return summer ? t('focus_long_summer') : index % 2 ? t('focus_long_a') : t('focus_long_b');
+  return summer ? t('focus_mid_summer') : index % 2 ? t('focus_mid_a') : t('focus_mid_b');
 }
 
 function getNextWorkout() {
@@ -5671,39 +5794,11 @@ function getDogReadiness(dog) {
 }
 
 function getWeeklyPlanActions(context) {
-  if (context.weatherRisk) {
-    return {
-      level: "danger",
-      title: "Adapter a la meteo",
-      text: "Reduire l'intensite, choisir les heures fraiches et transformer la seance dure en endurance facile."
-    };
-  }
-  if (context.daysToRace <= 10) {
-    return {
-      level: "light",
-      title: "Affuter sans fatiguer",
-      text: "Garder une sortie courte avec quelques relances, puis privilegier repos, pattes et materiel."
-    };
-  }
-  if (context.loadRatio > 1.25) {
-    return {
-      level: "danger",
-      title: "Semaine trop chargee",
-      text: "Baisser le volume de 20 a 30 pourcent et laisser les chiens recuperer avant de remettre de l'intensite."
-    };
-  }
-  if (context.weekKm < 12) {
-    return {
-      level: "light",
-      title: "Relancer proprement",
-      text: "Programmer une sortie facile, puis augmenter seulement si la recuperation reste bonne."
-    };
-  }
-  return {
-    level: "ok",
-    title: "Progression stable",
-    text: "Conserver le plan, noter la meteo apres sortie et ajuster la prochaine seance selon l'energie de la team."
-  };
+  if (context.weatherRisk) return { level: "danger", title: t('plan_action_weather_title'), text: t('plan_action_weather_text') };
+  if (context.daysToRace <= 10) return { level: "light", title: t('plan_action_taper_title'), text: t('plan_action_taper_text') };
+  if (context.loadRatio > 1.25) return { level: "danger", title: t('plan_action_overload_title'), text: t('plan_action_overload_text') };
+  if (context.weekKm < 12) return { level: "light", title: t('plan_action_underload_title'), text: t('plan_action_underload_text') };
+  return { level: "ok", title: t('plan_action_ok_title'), text: t('plan_action_ok_text') };
 }
 
 function buildAlerts() {
@@ -5713,22 +5808,22 @@ function buildAlerts() {
     const runs = state.runs.filter((run) => run.team.includes(dog.id));
     const lastRun = runs[0];
     const readiness = getDogReadiness(dog);
-    if (load > 45) alerts.push({ level: "danger", label: dog.name, text: `${dog.name} est a ${load.toFixed(1)} km sur 7 jours. Prevoir repos ou recuperation.` });
-    if (load < 6) alerts.push({ level: "info", label: dog.name, text: `${dog.name} a peu travaille cette semaine. Bon candidat pour une sortie facile.` });
-    if (lastRun && !lastRun.paws) alerts.push({ level: "danger", label: `Pattes ${dog.name}`, text: `Controle les coussinets de ${dog.name} avant la prochaine sortie.` });
-    if (lastRun && Number(lastRun.energy || 5) <= 2) alerts.push({ level: "danger", label: `Energie ${dog.name}`, text: `${dog.name} a eu une energie basse. Prevoir repos ou sortie tres facile.` });
-    if (lastRun && lastRun.recovery === "A surveiller") alerts.push({ level: "info", label: `Recuperation ${dog.name}`, text: `Recuperation a surveiller pour ${dog.name}. Note appetit, demarche et motivation.` });
-    if (dog.limitation) alerts.push({ level: "danger", label: `Suivi ${dog.name}`, text: `${dog.name} a un point de vigilance note : ${dog.limitation}` });
+    if (load > 45) alerts.push({ level: "danger", label: dog.name, text: t('alert_overload').replace('{name}', dog.name).replace('{km}', load.toFixed(1)) });
+    if (load < 6) alerts.push({ level: "info", label: dog.name, text: t('alert_underload').replace('{name}', dog.name) });
+    if (lastRun && !lastRun.paws) alerts.push({ level: "danger", label: t('alert_label_paws').replace('{name}', dog.name), text: t('alert_paws').replace('{name}', dog.name) });
+    if (lastRun && Number(lastRun.energy || 5) <= 2) alerts.push({ level: "danger", label: t('alert_label_energy').replace('{name}', dog.name), text: t('alert_low_energy').replace('{name}', dog.name) });
+    if (lastRun && lastRun.recovery === "A surveiller") alerts.push({ level: "info", label: t('alert_label_recovery').replace('{name}', dog.name), text: t('alert_recovery').replace('{name}', dog.name) });
+    if (dog.limitation) alerts.push({ level: "danger", label: dog.name, text: t('alert_limitation').replace('{name}', dog.name).replace('{text}', dog.limitation) });
     if (state.selectedDogIds.includes(dog.id) && readiness.level === "danger") {
-      alerts.push({ level: "danger", label: "Attelage", text: `${dog.name} est selectionne mais son statut conseille prudence ou repos.` });
+      alerts.push({ level: "danger", label: t('alert_label_team'), text: t('alert_selected_danger').replace('{name}', dog.name) });
     }
   });
   const heatRisk = state.seasonMode === "summer" && state.runs[0]?.weather?.match(/[2-9][0-9]/);
-  if (heatRisk) alerts.push({ level: "danger", label: "Chaleur", text: "Temperature elevee detectee. Eviter intensite, verifier coussinets et hydrater." });
-  if (state.runs[0] && !state.runs[0].hydrated) alerts.push({ level: "danger", label: "Hydratation", text: "Derniere sortie marquee avec hydratation incomplete." });
+  if (heatRisk) alerts.push({ level: "danger", label: t('alert_label_heat'), text: t('alert_heat') });
+  if (state.runs[0] && !state.runs[0].hydrated) alerts.push({ level: "danger", label: t('alert_label_hydration'), text: t('alert_hydration') });
   const context = getPlanContext();
-  if (context.weatherRisk) alerts.push({ level: "danger", label: "Meteo", text: context.weatherRisk });
-  if (context.daysToRace <= 7) alerts.push({ level: "info", label: "Course", text: "Course proche. Diminuer le volume, garder les chiens frais et verifier le materiel." });
+  if (context.weatherRisk) alerts.push({ level: "danger", label: t('alert_label_weather'), text: context.weatherRisk });
+  if (context.daysToRace <= 7) alerts.push({ level: "info", label: t('alert_label_race'), text: t('alert_race_soon') });
   return alerts.slice(0, 7);
 }
 
