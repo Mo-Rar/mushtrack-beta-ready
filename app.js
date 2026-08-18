@@ -2671,7 +2671,7 @@ function createDeviceId() {
   return `mushtrack-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-function showScreen(id) {
+function showScreen(id, pushHistory = true) {
   screens.forEach((screen) => {
     screen.classList.toggle("active", screen.id === id);
   });
@@ -2679,6 +2679,11 @@ function showScreen(id) {
   bottomButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.go === id);
   });
+
+  // Pousse un état dans l'historique du navigateur pour que le bouton retour fonctionne
+  if (pushHistory && history.state?.screen !== id) {
+    history.pushState({ screen: id }, "", "");
+  }
 
   render();
 
@@ -2706,6 +2711,17 @@ function showScreen(id) {
   if (id === "community") {
     initCommunity();
   }
+}
+
+// Bouton retour navigateur / Android → revient à l'écran précédent
+window.addEventListener("popstate", (e) => {
+  const id = e.state?.screen || "accueil";
+  showScreen(id, false); // false = ne pas re-pousser dans l'historique
+});
+
+// État initial pour que le premier popstate ait un écran de référence
+if (!history.state?.screen) {
+  history.replaceState({ screen: "accueil" }, "", "");
 }
 
 function getSeasonKm() {
