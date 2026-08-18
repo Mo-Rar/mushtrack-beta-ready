@@ -1028,6 +1028,8 @@ const TRANSLATIONS = {
     coach_charge_week: "km cette semaine",
     coach_plan_adjusted: "Plan ajusté selon tes sorties.",
     coach_plan_lightened: "Plan allégé automatiquement.",
+    zone_effort_label: "Zones d'effort — semaine", zone_no_runs: "Aucune sortie cette semaine",
+    zone_easy: "Légère", zone_moderate: "Modérée", zone_intensive: "Intensive", zone_max: "Maximale",
     coach_phase_base: "Phase de base",
     coach_phase_build: "Construction",
     coach_phase_peak: "Pic de forme",
@@ -1628,6 +1630,8 @@ const TRANSLATIONS = {
     coach_charge_week: "km this week",
     coach_plan_adjusted: "Plan adjusted to your runs.",
     coach_plan_lightened: "Plan lightened automatically.",
+    zone_effort_label: "Effort zones — this week", zone_no_runs: "No runs this week",
+    zone_easy: "Easy", zone_moderate: "Moderate", zone_intensive: "Intensive", zone_max: "Maximum",
     coach_phase_base: "Base phase",
     coach_phase_build: "Build phase",
     coach_phase_peak: "Peak phase",
@@ -2228,6 +2232,8 @@ const TRANSLATIONS = {
     coach_charge_week: "km diese Woche",
     coach_plan_adjusted: "Plan an deine Läufe angepasst.",
     coach_plan_lightened: "Plan automatisch reduziert.",
+    zone_effort_label: "Belastungszonen — diese Woche", zone_no_runs: "Keine Ausfahrten diese Woche",
+    zone_easy: "Leicht", zone_moderate: "Moderat", zone_intensive: "Intensiv", zone_max: "Maximal",
     coach_phase_base: "Grundlagenphase",
     coach_phase_build: "Aufbauphase",
     coach_phase_peak: "Formhoch",
@@ -5769,6 +5775,37 @@ function getPlanContext() {
   };
 }
 
+const ENGIN_COEF = { "Traîneau": 1.8, "ATV": 2.5, "Kart": 1.5, "VTT": 1.2, "Trottinette": 1.2, "Canicross": 1.2 };
+
+function getWeekEffortZones() {
+  const now = new Date();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  monday.setHours(0, 0, 0, 0);
+
+  const weekRuns = state.runs.filter(r => new Date(r.date) >= monday);
+
+  const zones = [
+    { label: t('zone_easy'),      color: "#22c55e", score: 0 },
+    { label: t('zone_moderate'),  color: "#3b82f6", score: 0 },
+    { label: t('zone_intensive'), color: "#f97316", score: 0 },
+    { label: t('zone_max'),       color: "#ef4444", score: 0 },
+  ];
+
+  weekRuns.forEach(r => {
+    const km = Number(r.km || 0);
+    const elev = Number(r.elevation || r.elevGain || 0);
+    const coef = ENGIN_COEF[r.engin] || 1.2;
+    const score = km * coef + elev * 0.01;
+    if (score < 8)       zones[0].score += score;
+    else if (score < 18) zones[1].score += score;
+    else if (score < 30) zones[2].score += score;
+    else                 zones[3].score += score;
+  });
+
+  return zones;
+}
+
 function renderPlanInsights() {
   const list = document.querySelector('[data-list="planInsights"]');
   if (!list) return;
@@ -5785,6 +5822,17 @@ function renderPlanInsights() {
     ? `MAJ ${formatDateTime(state.planWeatherUpdatedAt)}`
     : "MAJ automatique";
 
+  const zones = getWeekEffortZones();
+  const zoneTotal = zones.reduce((s, z) => s + z.score, 0) || 1;
+  const zoneBar = zones.map(z => {
+    const pct = Math.round((z.score / zoneTotal) * 100);
+    return pct > 0 ? `<div style="flex:${pct};background:${z.color};height:100%;border-radius:3px;position:relative" title="${z.label} ${pct}%"></div>` : "";
+  }).join("");
+  const zoneLegend = zones.filter(z => z.score > 0).map(z => {
+    const pct = Math.round((z.score / zoneTotal) * 100);
+    return `<span style="display:flex;align-items:center;gap:3px;font-size:0.72rem;color:#555"><span style="width:8px;height:8px;border-radius:50%;background:${z.color};display:inline-block"></span>${z.label} ${pct}%</span>`;
+  }).join("");
+
   list.innerHTML = `
     <article class="plan-signal ${context.riskLevel}">
       <span>Date du jour</span>
@@ -5800,6 +5848,11 @@ function renderPlanInsights() {
       <span>${t('coach_charge_label')}</span>
       <b>${context.weekKm.toFixed(1)} ${t('coach_charge_week')}</b>
       <small>${context.loadRatio > 1.25 ? t('coach_plan_lightened') : t('coach_plan_adjusted')}</small>
+    </article>
+    <article class="plan-signal ok" style="grid-column:1/-1">
+      <span>${t('zone_effort_label')}</span>
+      <div style="display:flex;gap:3px;height:10px;border-radius:4px;overflow:hidden;margin:6px 0 4px;background:#f0f0f0">${zoneTotal > 0 ? zoneBar : '<div style="flex:1;background:#e5e5e5;height:100%;border-radius:3px"></div>'}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px">${zoneTotal > 0 ? zoneLegend : `<span style="font-size:0.72rem;color:#aaa">${t('zone_no_runs')}</span>`}</div>
     </article>
   `;
 }
