@@ -4817,8 +4817,8 @@ function openRunDetail(index) {
   // Altitude min/max
   const altWrap = document.getElementById("rd-alt-wrap");
   const altEl = document.getElementById("rd-alt");
-  if (altWrap && altEl && run.altMin !== null && run.altMax !== null) {
-    altEl.textContent = run.altMin + " – " + run.altMax + " m";
+  if (altWrap && altEl && run.altMin != null && run.altMax != null && Number.isFinite(run.altMin)) {
+    altEl.textContent = Math.round(run.altMin) + " – " + Math.round(run.altMax) + " m";
     altWrap.style.display = "";
   } else if (altWrap) { altWrap.style.display = "none"; }
   const dogCount_ = run.team?.length || 0;
