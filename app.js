@@ -2712,7 +2712,11 @@ function showScreen(id, pushHistory = true) {
     initCommunity();
   }
   if (id === "vous") {
-    setTimeout(() => initRoutePreviews(), 80);
+    // Init cartes seulement si le sous-onglet enregistrement est déjà actif
+    const enregPanel = document.getElementById("vous-panel-enregistrement");
+    if (enregPanel && enregPanel.classList.contains("active")) {
+      setTimeout(() => initRoutePreviews(), 80);
+    }
   }
 }
 
@@ -7316,6 +7320,7 @@ document.querySelectorAll(".vous-subtab").forEach(btn => {
     btn.classList.add("active");
     const panel = document.getElementById("vous-panel-" + target);
     if (panel) panel.classList.add("active");
+    if (target === "enregistrement") setTimeout(() => initRoutePreviews(), 50);
   });
 });
 
