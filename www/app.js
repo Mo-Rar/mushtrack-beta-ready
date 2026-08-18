@@ -4160,36 +4160,54 @@ ${trkpts}
 
 function renderRoutePreview(path) {
   const points = path
-    .map((point) => Array.isArray(point) ? point : [point.lat, point.lon ?? point.lng])
+    .map((point) => Array.isArray(point) ? point : [point.lat, point.lon ?? point.lng ?? point.longitude])
     .filter(([lat, lng]) => Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)));
-  if (points.length < 2) return `<div class="route-preview empty">${t('run_gps_short')}</div>`;
+  if (points.length < 2) return "";
 
+  const W = 300, H = 100, PAD = 14;
   const lats = points.map(([lat]) => Number(lat));
   const lngs = points.map(([, lng]) => Number(lng));
-  const minLat = Math.min(...lats);
-  const maxLat = Math.max(...lats);
-  const minLng = Math.min(...lngs);
-  const maxLng = Math.max(...lngs);
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
   const latRange = maxLat - minLat || 0.0001;
   const lngRange = maxLng - minLng || 0.0001;
-  const svgPoints = points.map(([lat, lng]) => {
-    const x = 8 + ((Number(lng) - minLng) / lngRange) * 84;
-    const y = 52 - ((Number(lat) - minLat) / latRange) * 44;
+
+  // Garde les proportions réelles du tracé
+  const scaleX = (W - PAD * 2) / lngRange;
+  const scaleY = (H - PAD * 2) / latRange;
+  const scale  = Math.min(scaleX, scaleY);
+  const offX   = (W - lngRange * scale) / 2;
+  const offY   = (H - latRange * scale) / 2;
+
+  const svgPts = points.map(([lat, lng]) => {
+    const x = offX + (Number(lng) - minLng) * scale;
+    const y = H - offY - (Number(lat) - minLat) * scale;
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   });
-  const firstPoint = svgPoints[0].split(",");
-  const lastPoint = svgPoints[svgPoints.length - 1].split(",");
+
+  const [fx, fy] = svgPts[0].split(",");
+  const [lx, ly] = svgPts[svgPts.length - 1].split(",");
+  const pts = svgPts.join(" ");
 
   return `
-    <div class="route-preview" aria-label="${t('run_gps_miniature')}">
-      <svg viewBox="0 0 100 60" role="img">
-        <path d="M8 52 L92 8" opacity="0.08"></path>
-        <polyline points="${svgPoints.join(" ")}"></polyline>
-        <circle cx="${firstPoint[0]}" cy="${firstPoint[1]}" r="2.2"></circle>
-        <circle class="finish" cx="${lastPoint[0]}" cy="${lastPoint[1]}" r="2.6"></circle>
+    <div class="route-preview">
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="2.5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <!-- halo sous le tracé -->
+        <polyline points="${pts}" fill="none" stroke="#fc4c02" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>
+        <!-- tracé principal -->
+        <polyline points="${pts}" fill="none" stroke="#fc4c02" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+        <!-- point départ -->
+        <circle cx="${fx}" cy="${fy}" r="5" fill="#22c55e" stroke="#fff" stroke-width="2"/>
+        <!-- point arrivée -->
+        <circle cx="${lx}" cy="${ly}" r="6" fill="#fc4c02" stroke="#fff" stroke-width="2"/>
       </svg>
-    </div>
-  `;
+    </div>`;
 }
 
 function renderAnalytics() {
