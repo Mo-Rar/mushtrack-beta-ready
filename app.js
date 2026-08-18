@@ -4143,18 +4143,17 @@ function renderTeamSlots() {
   renderSledDiagram();
 }
 
-// ── Schéma attelage drag & drop ───────────────────────────────
-let _dragDogId   = null;
-let _dragFromSlot = null;
+// ── Schéma attelage ───────────────────────────────────────────
+let _dragDogId = null, _dragFromSlot = null, _dragFromReserve = false;
 
-// Génère les paires [clé, label] pour n chiens sélectionnés
-function getSledPositions(dogCount) {
-  const pairs = Math.max(1, Math.ceil(dogCount / 2));
-  if (pairs === 1) return [["leader","Leader"]];
-  if (pairs === 2) return [["leader","Leader"],["wheel","Wheel"]];
-  const list = [["leader","Leader"],["swing","Swing"]];
-  for (let i = 2; i < pairs - 1; i++) list.push([`team${i-1}`, `Team ${i-1}`]);
-  list.push(["wheel","Wheel"]);
+const SLED_ROLE_MAP = { leader:"Leader", swing:"Swing", team:"Team", wheel:"Wheel" };
+
+function getSledPositions(pairs) {
+  pairs = Math.max(2, pairs);
+  if (pairs === 2) return [["leader","LEADER"],["wheel","WHEEL"]];
+  const list = [["leader","LEADER"],["swing","SWING"]];
+  for (let i = 2; i < pairs - 1; i++) list.push([`team${i-1}`,`TEAM ${i-1}`]);
+  list.push(["wheel","WHEEL"]);
   return list;
 }
 
@@ -4163,141 +4162,170 @@ function renderSledDiagram() {
   if (!containers.length) return;
   if (!state.teamPositions) state.teamPositions = {};
 
-  const selectedCount = (state.selectedDogIds || []).length;
+  const placedIds  = new Set(Object.values(state.teamPositions).filter(Boolean));
+  const totalDogs  = state.dogs.length;
+  const pairs      = Math.max(2, Math.ceil((placedIds.size + 2) / 2));
+  const positions  = getSledPositions(Math.min(pairs, Math.ceil(totalDogs / 2) + 1));
+  const allSlots   = positions.flatMap(([k]) => [`${k}-l`, `${k}-r`]);
 
-  // Génère les clés et labels selon le nombre de paires
-  function getPositions() { return getSledPositions(selectedCount); }
+  // Sync selectedDogIds
+  state.selectedDogIds = [...placedIds];
 
-  // Nettoyer les slots obsolètes et réassigner les chiens orphelins
-  const orderedSlots = getPositions().flatMap(([k]) => [`${k}-l`, `${k}-r`]);
-  const validSlots = new Set(orderedSlots);
-  Object.keys(state.teamPositions).forEach(slot => {
-    if (!validSlots.has(slot)) delete state.teamPositions[slot];
-  });
-  const assigned = new Set(Object.values(state.teamPositions));
-  (state.selectedDogIds || []).forEach(id => {
-    if (!assigned.has(id)) {
-      const free = orderedSlots.find(s => !state.teamPositions[s]);
-      if (free) { state.teamPositions[free] = id; assigned.add(id); }
-    }
-  });
+  const reserveDogs = state.dogs.filter(d => !placedIds.has(d.id));
 
   function dogInSlot(key, side) {
     const id = state.teamPositions[`${key}-${side}`];
     return id ? state.dogs.find(d => d.id === id) : null;
   }
 
-  function formEmoji(dog) {
-    if (!dog) return "";
-    const signal = dog.healthSignal || "";
-    return signal === "Attention" || signal === "Repos" ? "🔴" : "🟢";
+  function makeSlot(dog, slot) {
+    if (dog) {
+      return `<div class="sd-slot sd-filled" data-slot="${slot}">
+        <span class="sd-dog-name">${dog.name}</span>
+        <button class="sd-remove" type="button" onclick="removeFromSlot('${slot}')">×</button>
+      </div>`;
+    }
+    return `<div class="sd-slot sd-empty" data-slot="${slot}">
+      <span class="sd-plus">＋</span>
+    </div>`;
   }
 
   function buildHTML() {
-    const rows = getPositions().map(([key, label]) => {
-      const left  = dogInSlot(key, "l");
-      const right = dogInSlot(key, "r");
-      const slotL = `${key}-l`, slotR = `${key}-r`;
-      const makeSlot = (dog, slot) => {
-        const occupied = !!dog;
-        return `<div class="sled-slot ${occupied?"filled":"empty"}" data-slot="${slot}"
-               ondragover="if(!${occupied})event.preventDefault();${occupied}?void 0:this.classList.add('drag-over')"
-               ondragleave="this.classList.remove('drag-over')"
-               ondrop="handleSlotDrop(event,'${slot}')">
-            ${dog
-              ? `<span class="sled-dog" draggable="true" ondragstart="handleDogDragStart(event,'${dog.id}','${slot}')">${formEmoji(dog)} ${dog.name}<button type="button" class="sled-remove" onclick="removeFromSlot('${slot}')">✕</button></span>`
-              : `<span class="sled-empty-label">+</span>`}
-          </div>`;
-      };
-      return `<div class="sled-row">${makeSlot(left,slotL)}<div class="sled-position-label">${label}</div>${makeSlot(right,slotR)}</div>`;
-    }).join("");
-    return `<div class="sled-schema">${rows}</div>`;
+    const rows = positions.map(([key, label]) => `
+      <div class="sd-row">
+        <span class="sd-label">${label}</span>
+        ${makeSlot(dogInSlot(key,"l"), `${key}-l`)}
+        ${makeSlot(dogInSlot(key,"r"), `${key}-r`)}
+      </div>`).join("");
+
+    const reserve = reserveDogs.length ? `
+      <div class="sd-reserve-wrap">
+        <span class="sd-reserve-label">Réserve</span>
+        <div class="sd-reserve">
+          ${reserveDogs.map(d => `<button class="sd-reserve-dog" data-rid="${d.id}" type="button">${d.name}</button>`).join("")}
+        </div>
+      </div>` : "";
+
+    return `<div class="sd-board">${rows}${reserve}</div>`;
   }
 
   containers.forEach(container => {
     container.innerHTML = buildHTML();
 
-    // Touch drag (mobile)
-    let touchDogId = null, touchFromSlot = null, touchClone = null, touchHoverSlot = null;
+    // Tap réserve → première case vide
+    container.querySelectorAll(".sd-reserve-dog").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.rid;
+        const free = allSlots.find(s => !state.teamPositions[s]);
+        if (!free) return;
+        state.teamPositions[free] = id;
+        updateRoleFromSlot(free, id);
+        saveState(); renderSledDiagram();
+      });
+    });
 
-    container.querySelectorAll(".sled-dog[draggable='true']").forEach(dogEl => {
-      dogEl.addEventListener("touchstart", e => {
-        const slot = dogEl.closest("[data-slot]");
-        touchFromSlot = slot ? slot.dataset.slot : null;
-        touchDogId = touchFromSlot ? state.teamPositions[touchFromSlot] : null;
-        touchHoverSlot = null;
-        touchClone = dogEl.cloneNode(true);
-        touchClone.style.cssText = "position:fixed;opacity:.75;pointer-events:none;z-index:9999;font-size:0.85rem;background:#fc4c02;color:#fff;padding:6px 10px;border-radius:8px;transform:translate(-50%,-50%)";
-        document.body.appendChild(touchClone);
+    // Touch drag (mobile) — plaques placées
+    let tDogId = null, tFromSlot = null, tClone = null, tHoverSlot = null;
+    container.querySelectorAll(".sd-filled").forEach(el => {
+      el.addEventListener("touchstart", e => {
+        tFromSlot = el.dataset.slot;
+        tDogId = state.teamPositions[tFromSlot] || null;
+        tHoverSlot = null;
+        tClone = document.createElement("div");
+        const dog = state.dogs.find(d => d.id === tDogId);
+        tClone.textContent = dog?.name || "";
+        tClone.style.cssText = "position:fixed;opacity:.8;pointer-events:none;z-index:9999;font-size:.9rem;font-weight:700;background:#fc4c02;color:#fff;padding:8px 14px;border-radius:10px;transform:translate(-50%,-50%)";
+        document.body.appendChild(tClone);
       }, { passive: true });
 
-      dogEl.addEventListener("touchmove", e => {
-        if (!touchClone) return;
+      el.addEventListener("touchmove", e => {
+        if (!tClone) return;
         const t = e.touches[0];
-        touchClone.style.left = t.clientX + "px";
-        touchClone.style.top  = t.clientY + "px";
-        // Détecter le slot sous le doigt en masquant le clone
-        touchClone.style.visibility = "hidden";
+        tClone.style.left = t.clientX + "px";
+        tClone.style.top  = t.clientY + "px";
+        tClone.style.visibility = "hidden";
         const under = document.elementFromPoint(t.clientX, t.clientY);
-        touchClone.style.visibility = "visible";
-        touchHoverSlot = under?.closest("[data-slot]")?.dataset?.slot || null;
+        tClone.style.visibility = "visible";
+        tHoverSlot = under?.closest("[data-slot]")?.dataset?.slot || null;
+        container.querySelectorAll(".sd-slot").forEach(s => s.classList.remove("sd-drag-over"));
+        if (tHoverSlot) container.querySelector(`[data-slot="${tHoverSlot}"]`)?.classList.add("sd-drag-over");
         e.preventDefault();
       }, { passive: false });
 
-      dogEl.addEventListener("touchend", e => {
-        if (touchClone) { touchClone.remove(); touchClone = null; }
-        const toSlot = touchHoverSlot;
-        touchHoverSlot = null;
-        if (toSlot && touchDogId && toSlot !== touchFromSlot) {
-          const occupant = state.teamPositions[toSlot];
-          if (touchFromSlot) {
-            if (occupant) state.teamPositions[touchFromSlot] = occupant;
-            else delete state.teamPositions[touchFromSlot];
-          }
-          state.teamPositions[toSlot] = touchDogId;
-          saveState();
-          renderSledDiagram();
+      el.addEventListener("touchend", () => {
+        if (tClone) { tClone.remove(); tClone = null; }
+        container.querySelectorAll(".sd-slot").forEach(s => s.classList.remove("sd-drag-over"));
+        if (tHoverSlot && tDogId && tHoverSlot !== tFromSlot) {
+          const occupant = state.teamPositions[tHoverSlot];
+          if (occupant) state.teamPositions[tFromSlot] = occupant;
+          else delete state.teamPositions[tFromSlot];
+          state.teamPositions[tHoverSlot] = tDogId;
+          updateRoleFromSlot(tHoverSlot, tDogId);
+          saveState(); renderSledDiagram();
         }
-        touchDogId = null; touchFromSlot = null;
+        tDogId = null; tFromSlot = null; tHoverSlot = null;
       });
+    });
+
+    // Desktop drag & drop
+    container.querySelectorAll(".sd-filled").forEach(el => {
+      el.setAttribute("draggable", "true");
+      el.addEventListener("dragstart", e => {
+        _dragDogId = state.teamPositions[el.dataset.slot];
+        _dragFromSlot = el.dataset.slot;
+        _dragFromReserve = false;
+        e.dataTransfer.setData("text/plain", _dragDogId);
+      });
+    });
+    container.querySelectorAll(".sd-reserve-dog").forEach(btn => {
+      btn.setAttribute("draggable", "true");
+      btn.addEventListener("dragstart", e => {
+        _dragDogId = btn.dataset.rid;
+        _dragFromSlot = null;
+        _dragFromReserve = true;
+        e.dataTransfer.setData("text/plain", _dragDogId);
+      });
+    });
+    container.querySelectorAll(".sd-slot").forEach(slot => {
+      slot.addEventListener("dragover", e => { e.preventDefault(); slot.classList.add("sd-drag-over"); });
+      slot.addEventListener("dragleave", () => slot.classList.remove("sd-drag-over"));
+      slot.addEventListener("drop", e => { e.preventDefault(); handleSlotDrop(e, slot.dataset.slot); });
     });
   });
 }
 
+function updateRoleFromSlot(slot, dogId) {
+  const posKey = slot.split("-")[0];
+  const role = SLED_ROLE_MAP[posKey] || "Team";
+  const idx = state.dogs.findIndex(d => d.id === dogId);
+  if (idx !== -1) state.dogs[idx].role = role;
+}
+
 function handleDogDragStart(event, dogId, fromSlot) {
-  _dragDogId    = dogId;
-  _dragFromSlot = fromSlot || null;
+  _dragDogId = dogId; _dragFromSlot = fromSlot || null; _dragFromReserve = false;
   event.dataTransfer.setData("text/plain", dogId);
 }
 
 function handleSlotDrop(event, toSlot) {
   event.preventDefault();
-  document.querySelectorAll(".sled-slot").forEach(s => s.classList.remove("drag-over"));
+  document.querySelectorAll(".sd-slot").forEach(s => s.classList.remove("sd-drag-over"));
   const dogId = _dragDogId || event.dataTransfer.getData("text/plain");
-  if (!dogId) return;
-  if (!state.teamPositions) state.teamPositions = {};
-  // Inverser si l'emplacement cible est occupé
+  if (!dogId || !state.teamPositions) return;
   const occupant = state.teamPositions[toSlot];
   if (_dragFromSlot) {
     if (occupant && occupant !== dogId) state.teamPositions[_dragFromSlot] = occupant;
     else delete state.teamPositions[_dragFromSlot];
   }
   state.teamPositions[toSlot] = dogId;
-  _dragDogId = null; _dragFromSlot = null;
-  // Met à jour le rôle du chien
-  const roleMap = { leader:"Leader", swing:"Swing", team:"Team", wheel:"Wheel" };
-  const posKey  = toSlot.split("-")[0];
-  const dogIdx  = state.dogs.findIndex(d => d.id === dogId);
-  if (dogIdx !== -1) state.dogs[dogIdx].role = roleMap[posKey] || state.dogs[dogIdx].role;
-  saveState();
-  renderSledDiagram();
+  updateRoleFromSlot(toSlot, dogId);
+  _dragDogId = null; _dragFromSlot = null; _dragFromReserve = false;
+  saveState(); renderSledDiagram();
 }
 
 function removeFromSlot(slot) {
   if (!state.teamPositions) return;
   delete state.teamPositions[slot];
-  saveState();
-  renderSledDiagram();
+  saveState(); renderSledDiagram();
 }
 // ─────────────────────────────────────────────────────────────
 
