@@ -10658,7 +10658,7 @@ function triggerSOS() {
   if (c.phone) {
     window.location.href = `tel:${c.phone}`;
   } else {
-    alert(t(‘sos_none’));
+    alert(t('sos_none'));
   }
 }
 
