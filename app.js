@@ -4372,13 +4372,6 @@ function renderRuns() {
             <span class="run-stat-label">m D+</span>
           </div>` : ""}
         </div>
-        ${run.team?.length ? `<div style="display:flex;flex-wrap:wrap;gap:5px;padding:6px 0 2px">${run.team.map(id => {
-          const dog = state.dogs.find(d => d.id === id);
-          if (!dog) return "";
-          const role = run.teamRoles?.[id] || dog.role || "Team";
-          const color = DOG_ROLE_COLOR[role] || "#888";
-          return `<span style="display:flex;align-items:center;gap:3px;background:#f5f5f5;border-radius:6px;padding:2px 7px;font-size:0.75rem;font-weight:600;color:#444"><span style="width:7px;height:7px;border-radius:50%;background:${color};display:inline-block"></span>${dog.name} <span style="color:${color};font-weight:800">${DOG_ROLE_SHORT[role] || role[0]}</span></span>`;
-        }).join("")}</div>` : ""}
         <div class="run-details">
           <span>${t('run_speed_label')} ${speed} km/h</span>
           <span>${t('run_energy_label')} ${run.energy || "-"}/5</span>
@@ -4807,6 +4800,19 @@ function openRunDetail(index) {
   document.getElementById("rd-speed").textContent = (run.speed || 0).toFixed(1) + " km/h";
   const dogCount_ = run.team?.length || 0;
   document.getElementById("rd-dogs").textContent = dogCount_ + " " + (dogCount_ > 1 ? t('net_dog_count_p') : t('net_dog_count_s'));
+  const rdTeam = document.getElementById("rd-team");
+  const rdTeamList = document.getElementById("rd-team-list");
+  if (rdTeam && rdTeamList && run.team?.length) {
+    rdTeamList.innerHTML = run.team.map(id => {
+      const dog = state.dogs.find(d => d.id === id);
+      if (!dog) return "";
+      const role = run.teamRoles?.[id] || dog.role || "Team";
+      return `<div style="font-size:0.85rem;color:#333"><strong>${dog.name}</strong> — ${role}</div>`;
+    }).join("");
+    rdTeam.style.display = "";
+  } else if (rdTeam) {
+    rdTeam.style.display = "none";
+  }
 
   // Durée estimée
   const durMin = run.km && run.speed > 0 ? Math.round(run.km / run.speed * 60) : 0;
