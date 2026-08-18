@@ -9741,7 +9741,7 @@ function setupTracesView(mapId, selectorId) {
   // Tap sur un item → toggle le tracé
   selectorEl.querySelectorAll(".runs-trace-item").forEach(item => {
     const runId = item.dataset.runId;
-    const run = runsWithPath.find(r => r.id === runId);
+    const run = runsWithPath.find(r => String(r.id) === runId);
     item.addEventListener("click", () => {
       if (_tracePolylines[runId]) {
         // Déjà affiché → retire
