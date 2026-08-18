@@ -1010,8 +1010,35 @@ const TRANSLATIONS = {
     vous_agenda_tab: "Agenda",
     vous_dogs_tab: "Chiens",
     vous_records_tab: "Enregistrement",
+    vous_saisons_tab: "Saisons",
     vous_history: "Historique",
     vous_add: "+ Ajouter",
+    dash_hello: "Bonjour,",
+    advice_cat_sante: "Santé",
+    advice_cat_training: "Entraînement",
+    advice_cat_equipment: "Équipement",
+    advice_cat_competition: "Compétition",
+    advice_cat_behavior: "Comportement",
+    coach_insight_watch_title: "À surveiller",
+    coach_insight_low_title: "Relancer doucement",
+    coach_insight_low_text: "Volume bas cette semaine. Prévoir une sortie facile avant d'augmenter.",
+    coach_insight_ok_title: "Progression propre",
+    coach_insight_ok_text: "Charge stable. Garde une semaine légère toutes les 3 à 4 semaines.",
+    coach_charge_label: "Charge",
+    coach_charge_week: "km cette semaine",
+    coach_plan_adjusted: "Plan ajusté selon tes sorties.",
+    coach_plan_lightened: "Plan allégé automatiquement.",
+    coach_phase_base: "Phase de base",
+    coach_phase_build: "Construction",
+    coach_phase_peak: "Pic de forme",
+    coach_phase_taper: "Affûtage",
+    coach_day_sun: "Dim", coach_day_mon: "Lun", coach_day_tue: "Mar",
+    coach_day_wed: "Mer", coach_day_thu: "Jeu", coach_day_fri: "Ven", coach_day_sat: "Sam",
+    plan_long_run: "Sortie longue économique",
+    plan_endurance: "Endurance progressive",
+    plan_intervals: "Intervalles courts",
+    plan_recov_note: "⚠️ Récupération à surveiller.",
+    plan_next_km: "{n} km recommandés (moyenne récente : {avg} km).",
     // --- Analytics ---
     analytics_season: "Analyse saison",
     analytics_stats: "Stats",
@@ -1517,8 +1544,35 @@ const TRANSLATIONS = {
     vous_agenda_tab: "Agenda",
     vous_dogs_tab: "Dogs",
     vous_records_tab: "Records",
+    vous_saisons_tab: "Seasons",
     vous_history: "History",
     vous_add: "+ Add",
+    dash_hello: "Hello,",
+    advice_cat_sante: "Health",
+    advice_cat_training: "Training",
+    advice_cat_equipment: "Equipment",
+    advice_cat_competition: "Competition",
+    advice_cat_behavior: "Behavior",
+    coach_insight_watch_title: "Watch out",
+    coach_insight_low_title: "Ramp up gently",
+    coach_insight_low_text: "Low volume this week. Plan an easy run before increasing.",
+    coach_insight_ok_title: "Clean progression",
+    coach_insight_ok_text: "Stable load. Keep a light week every 3–4 weeks.",
+    coach_charge_label: "Load",
+    coach_charge_week: "km this week",
+    coach_plan_adjusted: "Plan adjusted to your runs.",
+    coach_plan_lightened: "Plan lightened automatically.",
+    coach_phase_base: "Base phase",
+    coach_phase_build: "Build phase",
+    coach_phase_peak: "Peak phase",
+    coach_phase_taper: "Taper",
+    coach_day_sun: "Sun", coach_day_mon: "Mon", coach_day_tue: "Tue",
+    coach_day_wed: "Wed", coach_day_thu: "Thu", coach_day_fri: "Fri", coach_day_sat: "Sat",
+    plan_long_run: "Easy long run",
+    plan_endurance: "Progressive endurance",
+    plan_intervals: "Short intervals",
+    plan_recov_note: "⚠️ Recovery to monitor.",
+    plan_next_km: "{n} km recommended (recent avg: {avg} km).",
     // Analytics
     analytics_season: "Season analysis",
     analytics_stats: "Stats",
@@ -2024,8 +2078,35 @@ const TRANSLATIONS = {
     vous_agenda_tab: "Agenda",
     vous_dogs_tab: "Hunde",
     vous_records_tab: "Aufzeichnungen",
+    vous_saisons_tab: "Saisons",
     vous_history: "Verlauf",
     vous_add: "+ Hinzufügen",
+    dash_hello: "Hallo,",
+    advice_cat_sante: "Gesundheit",
+    advice_cat_training: "Training",
+    advice_cat_equipment: "Ausrüstung",
+    advice_cat_competition: "Wettkampf",
+    advice_cat_behavior: "Verhalten",
+    coach_insight_watch_title: "Achtung",
+    coach_insight_low_title: "Sanft steigern",
+    coach_insight_low_text: "Niedriges Volumen diese Woche. Eine leichte Einheit einplanen.",
+    coach_insight_ok_title: "Saubere Progression",
+    coach_insight_ok_text: "Stabile Last. Alle 3–4 Wochen eine leichte Woche einplanen.",
+    coach_charge_label: "Last",
+    coach_charge_week: "km diese Woche",
+    coach_plan_adjusted: "Plan an deine Läufe angepasst.",
+    coach_plan_lightened: "Plan automatisch reduziert.",
+    coach_phase_base: "Grundlagenphase",
+    coach_phase_build: "Aufbauphase",
+    coach_phase_peak: "Formhoch",
+    coach_phase_taper: "Tapering",
+    coach_day_sun: "So", coach_day_mon: "Mo", coach_day_tue: "Di",
+    coach_day_wed: "Mi", coach_day_thu: "Do", coach_day_fri: "Fr", coach_day_sat: "Sa",
+    plan_long_run: "Langer lockerer Lauf",
+    plan_endurance: "Progressive Ausdauer",
+    plan_intervals: "Kurze Intervalle",
+    plan_recov_note: "⚠️ Erholung beobachten.",
+    plan_next_km: "{n} km empfohlen (letzter Schnitt: {avg} km).",
     // Analytics
     analytics_season: "Saisonanalyse",
     analytics_stats: "Stats",
@@ -2454,7 +2535,7 @@ function getDogAge(dog) {
 
 function formatDogBirthdate(value) {
   if (!value) return t('dog_birth_na');
-  return new Date(`${value}T12:00:00`).toLocaleDateString("fr-CH", {
+  return new Date(`${value}T12:00:00`).toLocaleDateString(getLangLocale(), {
     day: "2-digit",
     month: "short",
     year: "numeric"
@@ -5377,19 +5458,17 @@ function getNextWorkout() {
   const context = getPlanContext();
   if (context.volumeFactor < 1) nextKm = Math.max(4, Math.round(nextKm * context.volumeFactor));
 
-  // Type de séance selon discipline
-  const label = state.raceType === "Sprint" ? "Intervalles courts"
-    : state.raceType === "Longue distance" ? "Sortie longue économique"
-    : "Endurance progressive";
+  const label = state.raceType === "Sprint" ? t('plan_intervals')
+    : state.raceType === "Longue distance" ? t('plan_long_run')
+    : t('plan_endurance');
 
-  // Alerte récupération
   const lastRecov = state.runs[0]?.recovery || "";
   const recovNote = (lastRecov === "Difficile" || lastRecov === "A surveiller")
-    ? " ⚠️ Récupération à surveiller." : "";
+    ? " " + t('plan_recov_note') : "";
 
   return {
     title: label,
-    text: `${nextKm} km recommandés (moyenne récente : ${Math.round(avgKm)} km).${recovNote}`,
+    text: t('plan_next_km').replace('{n}', nextKm).replace('{avg}', Math.round(avgKm)) + recovNote,
     km: nextKm
   };
 }
@@ -5479,15 +5558,15 @@ function renderPlanInsights() {
       <small>${context.weatherRisk || updateText}</small>
     </article>
     <article class="plan-signal ${context.loadRatio > 1.25 ? "danger" : "ok"}">
-      <span>Charge</span>
-      <b>${context.weekKm.toFixed(1)} km cette semaine</b>
-      <small>${context.loadRatio > 1.25 ? "Plan allege automatiquement." : "Plan ajuste selon tes sorties."}</small>
+      <span>${t('coach_charge_label')}</span>
+      <b>${context.weekKm.toFixed(1)} ${t('coach_charge_week')}</b>
+      <small>${context.loadRatio > 1.25 ? t('coach_plan_lightened') : t('coach_plan_adjusted')}</small>
     </article>
   `;
 }
 
 function formatDateTime(value) {
-  return new Date(value).toLocaleString("fr-CH", {
+  return new Date(value).toLocaleString(getLangLocale(), {
     day: "2-digit",
     month: "short",
     hour: "2-digit",
@@ -5499,10 +5578,10 @@ function getCoachInsight() {
   const alerts = buildAlerts();
   const weekKm = getWeekKm();
   if (alerts.some((alert) => alert.level === "danger")) {
-    return { title: "A surveiller", text: alerts.find((alert) => alert.level === "danger").text };
+    return { title: t('coach_insight_watch_title'), text: alerts.find((alert) => alert.level === "danger").text };
   }
-  if (weekKm < 20) return { title: "Relancer doucement", text: "Volume bas cette semaine. Prevoir une sortie facile avant d'augmenter." };
-  return { title: "Progression propre", text: "Charge stable. Garde une semaine legere toutes les 3 a 4 semaines." };
+  if (weekKm < 20) return { title: t('coach_insight_low_title'), text: t('coach_insight_low_text') };
+  return { title: t('coach_insight_ok_title'), text: t('coach_insight_ok_text') };
 }
 
 function getDogAdvice(dog, recentKm, lastRun) {
@@ -7044,8 +7123,13 @@ function toggleDogSelection(id) {
   render();
 }
 
+function getLangLocale() {
+  const lang = state?.lang || "fr";
+  return lang === "en" ? "en-GB" : lang === "de" ? "de-CH" : "fr-CH";
+}
+
 function formatDate(value) {
-  return new Date(`${value}T12:00:00`).toLocaleDateString("fr-CH", { day: "2-digit", month: "short" });
+  return new Date(`${value}T12:00:00`).toLocaleDateString(getLangLocale(), { day: "2-digit", month: "short" });
 }
 
 function formatDuration(totalSeconds) {
@@ -8480,9 +8564,9 @@ function renderCoach() {
 
   const plan = generateCoachPlan();
   const today = new Date(); today.setHours(0,0,0,0);
-  const DAY_NAMES = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+  const DAY_NAMES = [t('coach_day_sun'), t('coach_day_mon'), t('coach_day_tue'), t('coach_day_wed'), t('coach_day_thu'), t('coach_day_fri'), t('coach_day_sat')];
   const PHASE_COLORS = { base: "#3b82f6", build: "#f59e0b", peak: "#fc4c02", taper: "#22c55e" };
-  const PHASE_LABELS = { base: "Phase de base", build: "Construction", peak: "Pic de forme", taper: "Affûtage" };
+  const PHASE_LABELS = { base: t('coach_phase_base'), build: t('coach_phase_build'), peak: t('coach_phase_peak'), taper: t('coach_phase_taper') };
 
   // Vet reminders
   const vetAlerts = [];
