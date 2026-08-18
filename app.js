@@ -4194,7 +4194,7 @@ function renderRoutePreview(path, runIndex) {
 
   return `
     <div class="route-preview">
-      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" style="width:100%;height:130px;display:block">
         <defs>
           <linearGradient id="topoGrad${runIndex}" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#c8ddb0"/>
