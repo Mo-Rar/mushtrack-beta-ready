@@ -10563,6 +10563,7 @@ document.querySelectorAll(".lang-btn[data-lang]").forEach(btn => {
       b.style.color        = active ? "#fc4c02" : "#555";
     });
     applyLang();
+    renderEmergencyContact();
   });
 });
 
