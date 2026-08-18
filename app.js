@@ -3990,8 +3990,10 @@ function renderRuns() {
           <p>${run.notes || t('run_no_note')}</p>
           <div class="card-actions">
             <button class="secondary-button" data-run-option="${index}" type="button">${t('run_edit_btn')}</button>
-            <button class="secondary-button" data-share-run="${index}" type="button">📤 Partager</button>
-            ${hasTrace ? `<button class="secondary-button" data-share-gpx="${index}" type="button">📍 GPX</button>` : ""}
+            <button class="secondary-button" data-share-sheet="${index}" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+              Partager
+            </button>
             <button class="danger-button" data-delete-run="${index}" type="button">${t('run_delete_btn')}</button>
           </div>
         </div>
@@ -4028,20 +4030,49 @@ function renderRuns() {
       });
     });
 
-    list.querySelectorAll("[data-share-run]").forEach((button) => {
+    list.querySelectorAll("[data-share-sheet]").forEach((button) => {
       button.addEventListener("click", (event) => {
         event.stopPropagation();
-        shareRunData(Number(button.dataset.shareRun));
-      });
-    });
-
-    list.querySelectorAll("[data-share-gpx]").forEach((button) => {
-      button.addEventListener("click", (event) => {
-        event.stopPropagation();
-        shareRunGpx(Number(button.dataset.shareGpx));
+        openShareSheet(Number(button.dataset.shareSheet));
       });
     });
   });
+}
+
+function openShareSheet(index) {
+  const run = state.runs[index];
+  if (!run) return;
+  const hasTrace = Array.isArray(run.path) && run.path.length > 1;
+
+  // Retire un éventuel sheet déjà ouvert
+  document.getElementById("share-sheet-overlay")?.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "share-sheet-overlay";
+  overlay.innerHTML = `
+    <div id="share-sheet">
+      <div class="share-sheet-handle"></div>
+      <p class="share-sheet-title">${run.type} · ${formatDate(run.date)}</p>
+      <button class="share-sheet-btn" id="ss-activity">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        <span>Partager l'activité</span>
+      </button>
+      ${hasTrace ? `<button class="share-sheet-btn" id="ss-gpx">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>Exporter le fichier GPX</span>
+      </button>` : ""}
+      <button class="share-sheet-btn share-sheet-cancel" id="ss-cancel">Annuler</button>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  // Ferme en cliquant hors du sheet
+  overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
+  document.getElementById("ss-cancel").addEventListener("click", () => overlay.remove());
+  document.getElementById("ss-activity").addEventListener("click", () => { overlay.remove(); shareRunData(index); });
+  document.getElementById("ss-gpx")?.addEventListener("click", () => { overlay.remove(); shareRunGpx(index); });
+
+  // Animate in
+  requestAnimationFrame(() => overlay.classList.add("open"));
 }
 
 function shareRunData(index) {

@@ -2168,9 +2168,72 @@ textarea {
   border: 1.5px solid #f0f0f0;
   margin-bottom: 6px;
   cursor: pointer;
-  transition: border-color .15s;
+  transition: border-color .15s, border-left-color .15s;
 }
-.runs-trace-item:hover { border-color: #e0e0e0; }
+.runs-trace-item:hover { background: #fafafa; }
+.runs-trace-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+  transition: background .2s;
+}
+
+/* ── Share bottom sheet ───────────────────────────────────────────────────── */
+#share-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  transition: background .25s;
+}
+#share-sheet-overlay.open { background: rgba(0,0,0,0.45); }
+#share-sheet {
+  background: #fff;
+  width: 100%;
+  border-radius: 20px 20px 0 0;
+  padding: 12px 20px 32px;
+  transform: translateY(100%);
+  transition: transform .3s cubic-bezier(.32,1,.23,1);
+}
+#share-sheet-overlay.open #share-sheet { transform: translateY(0); }
+.share-sheet-handle {
+  width: 40px; height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  margin: 0 auto 14px;
+}
+.share-sheet-title {
+  font-size: 0.82rem;
+  color: #999;
+  text-align: center;
+  margin: 0 0 16px;
+  font-weight: 600;
+}
+.share-sheet-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 4px;
+  background: none;
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  font-size: 1rem;
+  color: #222;
+  cursor: pointer;
+  text-align: left;
+}
+.share-sheet-btn:first-of-type { border-top: none; }
+.share-sheet-cancel {
+  color: #fc4c02;
+  font-weight: 700;
+  justify-content: center;
+  margin-top: 4px;
+}
 
 .race-view-btn {
   flex: 1;
