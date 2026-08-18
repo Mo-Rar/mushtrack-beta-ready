@@ -2635,6 +2635,8 @@ let seconds = 0;
 let distance = 0;
 let elevationGain = 0;
 let lastAltitude = null;
+let maxSpeed = 0;
+let minAlt = null, maxAlt = null;
 let pendingRunSummary = null;
 let planWeatherLoading = false;
 let remoteRaceCatalog = [];
@@ -4798,6 +4800,27 @@ function openRunDetail(index) {
   document.getElementById("run-detail-date").textContent = formatDate(run.date);
   document.getElementById("rd-km").textContent = (run.km || 0).toFixed(2) + " km";
   document.getElementById("rd-speed").textContent = (run.speed || 0).toFixed(1) + " km/h";
+  // Allure (min/km)
+  const paceEl = document.getElementById("rd-pace");
+  if (paceEl) {
+    if (run.speed > 0) {
+      const pMin = Math.floor(60 / run.speed), pSec = Math.round((60 / run.speed - pMin) * 60);
+      paceEl.textContent = `${pMin}:${String(pSec).padStart(2,"0")} /km`;
+    } else { paceEl.textContent = "—"; }
+  }
+  // Vitesse max
+  const maxSpEl = document.getElementById("rd-maxspeed");
+  if (maxSpEl) maxSpEl.textContent = run.maxSpeed > 0 ? run.maxSpeed.toFixed(1) + " km/h" : "—";
+  // Dénivelée
+  const elevEl = document.getElementById("rd-elev");
+  if (elevEl) elevEl.textContent = run.elevationGain > 0 ? "+" + run.elevationGain + " m" : "—";
+  // Altitude min/max
+  const altWrap = document.getElementById("rd-alt-wrap");
+  const altEl = document.getElementById("rd-alt");
+  if (altWrap && altEl && run.altMin !== null && run.altMax !== null) {
+    altEl.textContent = run.altMin + " – " + run.altMax + " m";
+    altWrap.style.display = "";
+  } else if (altWrap) { altWrap.style.display = "none"; }
   const dogCount_ = run.team?.length || 0;
   document.getElementById("rd-dogs").textContent = dogCount_ + " " + (dogCount_ > 1 ? t('net_dog_count_p') : t('net_dog_count_s'));
   const rdTeam = document.getElementById("rd-team");
@@ -4830,16 +4853,6 @@ function openRunDetail(index) {
     enginEl.textContent = run.engin || "Canicross" + (chargeIndiv > 0 ? ` · ${chargeIndiv} kg/chien` : "");
     if (run.engin && run.engin !== "Canicross") enginEl.textContent = `${run.engin} · ${chargeIndiv} kg/chien`;
     else enginEl.textContent = "Canicross";
-  }
-  const elevWrap = document.getElementById("rd-elev-wrap");
-  const elevEl = document.getElementById("rd-elev");
-  if (elevWrap && elevEl) {
-    if (run.elevationGain > 0) {
-      elevEl.textContent = `+${run.elevationGain} m`;
-      elevWrap.style.display = "";
-    } else {
-      elevWrap.style.display = "none";
-    }
   }
   document.getElementById("rd-weather").textContent = run.weather || "—";
   document.getElementById("rd-energy").textContent = run.energy ? run.energy + " / 5" : "—";
@@ -7655,6 +7668,8 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
   const hours = seconds / 3600;
   const calcSpeed = hours > 0 ? distance / hours : 0;
   const displaySpeed = gpsSpeedMs && gpsSpeedMs > 0 ? gpsSpeedMs * 3.6 : calcSpeed;
+  if (displaySpeed > maxSpeed) maxSpeed = displaySpeed;
+  if (altitude !== null) { if (minAlt === null || altitude < minAlt) minAlt = altitude; if (altitude > (maxAlt || altitude)) maxAlt = altitude; }
   updateGpsDisplay(distance, displaySpeed);
 }
 
@@ -7824,7 +7839,10 @@ function finishCurrentRun() {
     km: Number(distance.toFixed(1)),
     speed: Number(speed.toFixed(1)),
     duration: seconds,
-    elevationGain: Math.round(elevationGain)
+    elevationGain: Math.round(elevationGain),
+    maxSpeed: Number(maxSpeed.toFixed(1)),
+    altMin: minAlt !== null ? Math.round(minAlt) : null,
+    altMax: maxAlt !== null ? Math.round(maxAlt) : null
   };
 
   document.querySelector("#runType").value = detectRunType(pendingRunSummary.km, pendingRunSummary.speed);
@@ -7910,6 +7928,9 @@ function saveCurrentRun() {
     speed: pendingRunSummary.speed,
     duration: pendingRunSummary.duration ? Math.round(pendingRunSummary.duration / 60) : null,
     elevationGain: pendingRunSummary.elevationGain || 0,
+    maxSpeed: pendingRunSummary.maxSpeed || 0,
+    altMin: pendingRunSummary.altMin ?? null,
+    altMax: pendingRunSummary.altMax ?? null,
     path: gpsPath,
     team: [...state.selectedDogIds],
     teamRoles: { ...state.runDogRoles },
@@ -7937,6 +7958,7 @@ function saveCurrentRun() {
   recordButton.textContent = "Demarrer";
   recordButton.classList.remove("running");
   pendingRunSummary = null;
+  maxSpeed = 0; minAlt = null; maxAlt = null; elevationGain = 0; lastAltitude = null;
   postRunForm.classList.add("hidden");
 
   saveState();
