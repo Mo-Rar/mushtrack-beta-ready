@@ -9698,6 +9698,142 @@ async function syncLocalInterestsToServer() {
   }
 }
 
+// ── Vue carte superposée des tracés GPS ──────────────────────────────────────
+const TRACE_COLORS = [
+  "#fc4c02","#3b82f6","#22c55e","#f59e0b","#a855f7",
+  "#ec4899","#14b8a6","#ef4444","#84cc16","#0ea5e9"
+];
+let runsOverlayMap = null;
+let runsOverlayLayers = {};
+let selectedRunIds = new Set();
+
+function initRunsOverlayMap() {
+  const mapEl = document.getElementById("runs-overlay-map");
+  const selectorEl = document.getElementById("runs-trace-selector");
+  if (!mapEl || !selectorEl) return;
+
+  // Sorties avec tracé GPS
+  const runsWithPath = state.runs.filter(r => Array.isArray(r.path) && r.path.length > 1);
+
+  if (!runsOverlayMap) {
+    runsOverlayMap = L.map("runs-overlay-map", { zoomControl: true }).setView([47, 8], 5);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap", maxZoom: 18
+    }).addTo(runsOverlayMap);
+  } else {
+    Object.values(runsOverlayLayers).forEach(l => l.remove());
+    runsOverlayLayers = {};
+  }
+
+  if (!runsWithPath.length) {
+    selectorEl.innerHTML = `<p style="text-align:center;color:#aaa;font-size:0.85rem;padding:20px">Aucune sortie GPS enregistrée.</p>`;
+    setTimeout(() => runsOverlayMap.invalidateSize(), 100);
+    return;
+  }
+
+  // Sélectionne les 3 dernières par défaut
+  if (!selectedRunIds.size) {
+    runsWithPath.slice(0, 3).forEach(r => selectedRunIds.add(r.id));
+  }
+
+  // Construit le sélecteur
+  selectorEl.innerHTML = runsWithPath.map((run, i) => {
+    const color = TRACE_COLORS[i % TRACE_COLORS.length];
+    const checked = selectedRunIds.has(run.id) ? "checked" : "";
+    const km = Number(run.km).toFixed(1);
+    const label = `${formatDate(run.date)} · ${run.type || "GPS"} · ${km} km`;
+    return `
+      <label class="runs-trace-item" data-run-id="${run.id}" data-color="${color}">
+        <input type="checkbox" ${checked} style="display:none" />
+        <span class="runs-trace-dot" style="background:${color};width:12px;height:12px;border-radius:50%;flex-shrink:0;display:inline-block;border:2px solid ${checked ? color : '#ddd'}"></span>
+        <span style="font-size:0.82rem;color:#333;flex:1">${label}</span>
+        <span class="runs-trace-check" style="font-size:0.9rem;color:${checked ? color : '#ddd'}">${checked ? "✓" : "○"}</span>
+      </label>`;
+  }).join("");
+
+  // Event listeners sur les items
+  selectorEl.querySelectorAll(".runs-trace-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const runId = item.dataset.runId;
+      const color = item.dataset.color;
+      const cb = item.querySelector("input[type=checkbox]");
+      const dot = item.querySelector(".runs-trace-dot");
+      const chk = item.querySelector(".runs-trace-check");
+      cb.checked = !cb.checked;
+      if (cb.checked) {
+        selectedRunIds.add(runId);
+        dot.style.borderColor = color;
+        chk.textContent = "✓";
+        chk.style.color = color;
+        drawTrace(runId, color);
+      } else {
+        selectedRunIds.delete(runId);
+        dot.style.borderColor = "#ddd";
+        chk.textContent = "○";
+        chk.style.color = "#ddd";
+        if (runsOverlayLayers[runId]) {
+          runsOverlayLayers[runId].remove();
+          delete runsOverlayLayers[runId];
+        }
+        fitOverlayBounds();
+      }
+    });
+  });
+
+  // Trace les sélectionnées par défaut
+  runsWithPath.forEach((run, i) => {
+    if (selectedRunIds.has(run.id)) {
+      drawTrace(run.id, TRACE_COLORS[i % TRACE_COLORS.length]);
+    }
+  });
+
+  fitOverlayBounds();
+  setTimeout(() => runsOverlayMap.invalidateSize(), 120);
+}
+
+function drawTrace(runId, color) {
+  if (!runsOverlayMap) return;
+  if (runsOverlayLayers[runId]) { runsOverlayLayers[runId].remove(); delete runsOverlayLayers[runId]; }
+  const run = state.runs.find(r => r.id === runId);
+  if (!run || !run.path) return;
+  const path = run.path.map(p => Array.isArray(p) ? [p[0], p[1]] : [p.lat, p.lon ?? p.lng])
+    .filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b));
+  if (path.length < 2) return;
+  const layer = L.layerGroup();
+  L.polyline(path, { color, weight: 4, opacity: 0.85 }).addTo(layer);
+  L.circleMarker(path[0], { radius: 6, fillColor: "#22c55e", color: "#fff", weight: 2, fillOpacity: 1 }).addTo(layer);
+  L.circleMarker(path[path.length - 1], { radius: 6, fillColor: color, color: "#fff", weight: 2, fillOpacity: 1 }).addTo(layer);
+  layer.addTo(runsOverlayMap);
+  runsOverlayLayers[runId] = layer;
+}
+
+function fitOverlayBounds() {
+  if (!runsOverlayMap) return;
+  const allLayers = Object.values(runsOverlayLayers);
+  if (!allLayers.length) return;
+  const group = L.featureGroup(allLayers.flatMap(lg => {
+    const layers = [];
+    lg.eachLayer(l => layers.push(l));
+    return layers;
+  }));
+  try { runsOverlayMap.fitBounds(group.getBounds().pad(0.15)); } catch {}
+}
+
+// Boutons bascule Liste / Tracés dans l'historique
+document.getElementById("runs-view-list-btn")?.addEventListener("click", () => {
+  document.getElementById("runs-view-list-btn").classList.add("active");
+  document.getElementById("runs-view-map-btn").classList.remove("active");
+  document.getElementById("runs-map-view").style.display = "none";
+  document.querySelector('[data-list="runs"].gps-history')?.parentElement
+    ?.querySelectorAll('.run-list.gps-history').forEach(el => el.style.display = "");
+});
+document.getElementById("runs-view-map-btn")?.addEventListener("click", () => {
+  document.getElementById("runs-view-map-btn").classList.add("active");
+  document.getElementById("runs-view-list-btn").classList.remove("active");
+  document.getElementById("runs-map-view").style.display = "block";
+  initRunsOverlayMap();
+});
+
 // ── Vue carte des courses ─────────────────────────────────────────────────────
 let raceMap = null;
 let raceMapMarkers = [];

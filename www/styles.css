@@ -2158,6 +2158,20 @@ textarea {
   margin-bottom: 14px;
 }
 
+.runs-trace-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1.5px solid #f0f0f0;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.runs-trace-item:hover { border-color: #e0e0e0; }
+
 .race-view-btn {
   flex: 1;
   padding: 8px 0;

@@ -1069,6 +1069,20 @@
           </div>
           <button class="round-button" id="manual-run-button-vous" type="button" onclick="document.getElementById('manual-run-button').click()">+ Ajouter</button>
         </header>
+
+        <!-- Bouton vue carte tracés -->
+        <div style="display:flex;gap:8px;padding:12px 16px 4px">
+          <button id="runs-view-list-btn" class="race-view-btn active" type="button">☰ Liste</button>
+          <button id="runs-view-map-btn" class="race-view-btn" type="button">🗺 Tracés</button>
+        </div>
+
+        <!-- Vue carte superposée -->
+        <div id="runs-map-view" style="display:none;padding:8px 16px 16px">
+          <div id="runs-overlay-map" style="height:360px;border-radius:16px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,0.12);margin-bottom:10px"></div>
+          <p style="font-size:0.75rem;color:#999;text-align:center;margin:0 0 10px">Sélectionne les sorties à afficher</p>
+          <div id="runs-trace-selector"></div>
+        </div>
+
         <section class="run-list gps-history" data-list="runs"></section>
       </section>
 
