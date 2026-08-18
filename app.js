@@ -3982,7 +3982,7 @@ function renderRuns() {
             <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
           </button>
         </div>
-        ${hasTrace ? renderRoutePreview(run.path, index) : ""}
+        ${hasTrace ? renderRoutePreview(run.path) : ""}
         <div class="run-card-stats">
           <div class="run-stat">
             <span class="run-stat-value">${km}</span>
@@ -4015,7 +4015,6 @@ function renderRuns() {
       </article>
     `;
   }).join("");
-
 
   document.querySelectorAll('[data-list="runs"]').forEach((list) => {
     list.innerHTML = runsHtml || `<p class="empty-state">${t('run_empty')}</p>`;
@@ -4053,9 +4052,6 @@ function renderRuns() {
       });
     });
   });
-
-  // Init les mini-cartes après insertion dans le DOM
-  setTimeout(initRoutePreviews, 50);
 }
 
 function openShareSheet(index) {
@@ -4162,13 +4158,13 @@ ${trkpts}
   }
 }
 
-function renderRoutePreview(path, runIndex) {
+function renderRoutePreview(path) {
   const points = path
     .map((point) => Array.isArray(point) ? point : [point.lat, point.lon ?? point.lng ?? point.longitude])
     .filter(([lat, lng]) => Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)));
   if (points.length < 2) return "";
 
-  const W = 400, H = 130, PAD = 18;
+  const W = 300, H = 100, PAD = 14;
   const lats = points.map(([lat]) => Number(lat));
   const lngs = points.map(([, lng]) => Number(lng));
   const minLat = Math.min(...lats), maxLat = Math.max(...lats);
@@ -4176,6 +4172,7 @@ function renderRoutePreview(path, runIndex) {
   const latRange = maxLat - minLat || 0.0001;
   const lngRange = maxLng - minLng || 0.0001;
 
+  // Garde les proportions réelles du tracé
   const scaleX = (W - PAD * 2) / lngRange;
   const scaleY = (H - PAD * 2) / latRange;
   const scale  = Math.min(scaleX, scaleY);
@@ -4194,36 +4191,24 @@ function renderRoutePreview(path, runIndex) {
 
   return `
     <div class="route-preview">
-      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" style="width:100%;height:130px;display:block">
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <linearGradient id="topoGrad${runIndex}" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#c8ddb0"/>
-            <stop offset="45%" stop-color="#b5cc98"/>
-            <stop offset="100%" stop-color="#9ab882"/>
-          </linearGradient>
-          <filter id="shadow${runIndex}">
-            <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#fc4c02" flood-opacity="0.35"/>
+          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="2.5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
         </defs>
-        <!-- fond topo -->
-        <rect width="${W}" height="${H}" fill="url(#topoGrad${runIndex})"/>
-        <!-- contours topo simulés -->
-        <ellipse cx="${W*0.3}" cy="${H*0.55}" rx="${W*0.22}" ry="${H*0.28}" fill="none" stroke="#a8c285" stroke-width="1" opacity="0.6"/>
-        <ellipse cx="${W*0.3}" cy="${H*0.55}" rx="${W*0.14}" ry="${H*0.18}" fill="none" stroke="#9ab878" stroke-width="1" opacity="0.5"/>
-        <ellipse cx="${W*0.72}" cy="${H*0.4}" rx="${W*0.18}" ry="${H*0.22}" fill="none" stroke="#a8c285" stroke-width="1" opacity="0.5"/>
-        <!-- halo tracé -->
-        <polyline points="${pts}" fill="none" stroke="#fc4c02" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.25"/>
+        <!-- halo sous le tracé -->
+        <polyline points="${pts}" fill="none" stroke="#fc4c02" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>
         <!-- tracé principal -->
-        <polyline points="${pts}" fill="none" stroke="#fc4c02" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#shadow${runIndex})"/>
-        <!-- départ -->
-        <circle cx="${fx}" cy="${fy}" r="5.5" fill="#22c55e" stroke="#fff" stroke-width="2"/>
-        <!-- arrivée -->
-        <circle cx="${lx}" cy="${ly}" r="6.5" fill="#fc4c02" stroke="#fff" stroke-width="2"/>
+        <polyline points="${pts}" fill="none" stroke="#fc4c02" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+        <!-- point départ -->
+        <circle cx="${fx}" cy="${fy}" r="5" fill="#22c55e" stroke="#fff" stroke-width="2"/>
+        <!-- point arrivée -->
+        <circle cx="${lx}" cy="${ly}" r="6" fill="#fc4c02" stroke="#fff" stroke-width="2"/>
       </svg>
     </div>`;
 }
-
-function initRoutePreviews() {} // plus utilisée, gardée pour compatibilité
 
 function renderAnalytics() {
   renderWeeklyChart();

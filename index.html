@@ -202,8 +202,47 @@
           </div>
         </section>
 
-        <!-- ── Partenaires / Publicité ── -->
-        <section class="sponsor-banner" style="margin:0 14px 24px">
+        <!-- ── Bas : chart + mission semaine ── -->
+        <div class="dash-bottom-grid">
+          <section class="dash-chart-card">
+            <div class="dash-chart-header">
+              <span class="dash-chart-title" data-t="dash_progression">PROGRESSION</span>
+              <span id="chart-period-label" class="dash-chart-sub">10 semaines</span>
+            </div>
+            <canvas id="progress-chart" height="120"></canvas>
+            <p class="chart-empty hidden" id="chart-empty">Enregistre ta première sortie.</p>
+          </section>
+          <section class="dash-mission-card">
+            <p class="dash-chart-title" data-t="dash_mission_week">MISSION SEMAINE</p>
+            <div class="dash-mission-list" data-list="nextRace"></div>
+            <div class="dash-mission-items">
+              <div class="dash-mission-item">
+                <span class="dash-mi-check">✓</span>
+                <span class="dash-mi-label" data-t="dash_runs_label">Sorties</span>
+                <span class="dash-mi-val" data-bind="kpiWeek">—</span>
+              </div>
+              <div class="dash-mission-item">
+                <span class="dash-mi-check">✓</span>
+                <span class="dash-mi-label" data-t="dash_progress_label">Progression</span>
+                <span class="dash-mi-val dash-orange" data-bind="kpiProgress">—</span>
+              </div>
+              <div class="dash-mission-item">
+                <span class="dash-mi-check dash-mi-circle"></span>
+                <span class="dash-mi-label" data-t="dash_race_goal_label">Objectif race</span>
+                <span class="dash-mi-val" data-bind="kpiDays">—</span>
+              </div>
+            </div>
+            <div class="dash-mission-footer">
+              <span data-t="dash_progress_label">Progression</span>
+              <span class="dash-orange" data-bind="dashWeekPct">—</span>
+            </div>
+            <div class="dash-prep-bar" style="margin-top:4px"><span data-bind-style="dashWeekBar"></span></div>
+          </section>
+        </div>
+
+        <!-- ── Partenaires ── -->
+        <section class="sponsor-banner" style="margin:0 14px 16px">
+          <span class="sponsor-label" data-t="dash_partners">Partenaires</span>
           <div class="sponsor-logos">
             <a class="sponsor-logo" href="http://www.musherclub.ch/" target="_blank" rel="noopener"><img src="assets/sponsor-mcs.png" alt="Musher Club Suisse"/></a>
             <div class="sponsor-divider"></div>
@@ -610,37 +649,7 @@
           <button class="round-button" data-go="dashboard" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg></button>
         </header>
 
-        <!-- Mission semaine -->
-        <section style="margin:0 16px 8px">
-          <div class="dash-mission-items" style="background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,0.06)">
-            <p class="dash-chart-title" style="margin:0 0 10px" data-t="dash_mission_week">MISSION SEMAINE</p>
-            <div class="dash-mission-list" data-list="nextRace"></div>
-            <div class="dash-mission-item">
-              <span class="dash-mi-check">✓</span>
-              <span class="dash-mi-label" data-t="dash_runs_label">Sorties</span>
-              <span class="dash-mi-val" data-bind="kpiWeek">—</span>
-            </div>
-            <div class="dash-mission-item">
-              <span class="dash-mi-check">✓</span>
-              <span class="dash-mi-label" data-t="dash_progress_label">Progression</span>
-              <span class="dash-mi-val dash-orange" data-bind="kpiProgress">—</span>
-            </div>
-            <div class="dash-mission-item">
-              <span class="dash-mi-check dash-mi-circle"></span>
-              <span class="dash-mi-label" data-t="dash_race_goal_label">Objectif race</span>
-              <span class="dash-mi-val" data-bind="kpiDays">—</span>
-            </div>
-            <div class="dash-prep-bar" style="margin-top:10px"><span data-bind-style="dashWeekBar"></span></div>
-          </div>
-        </section>
-
         <section class="chart-panel">
-          <div class="dash-chart-header" style="padding:12px 16px 0">
-            <span class="dash-chart-title" data-t="dash_progression">PROGRESSION</span>
-            <span id="chart-period-label" class="dash-chart-sub">10 semaines</span>
-          </div>
-          <canvas id="progress-chart" height="120"></canvas>
-          <p class="chart-empty hidden" id="chart-empty">Enregistre ta première sortie.</p>
           <div class="chart-bars" data-list="weeklyChart"></div>
         </section>
 

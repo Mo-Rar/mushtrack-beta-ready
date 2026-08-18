@@ -1393,8 +1393,8 @@ textarea {
 .gps-history .route-preview {
   border-radius: 10px;
   margin: 4px 0;
-  background: transparent;
-  border: none;
+  background: linear-gradient(135deg, rgba(252,76,2,0.08), rgba(252,76,2,0.02)), #f5f5f5;
+  border: 1px solid #f0f0f0;
 }
 
 .card-actions {
@@ -1412,9 +1412,11 @@ textarea {
 .route-preview {
   grid-column: 1 / -1;
   border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(252, 76, 2, 0.12), rgba(252, 76, 2, 0.04)),
+    #0f0f0f;
+  border: 1px solid rgba(252, 76, 2, 0.15);
   overflow: hidden;
-  background: transparent;
-  border: none;
 }
 
 .route-preview.empty {
@@ -1431,7 +1433,6 @@ textarea {
   height: 110px;
   display: block;
 }
-
 
 .run-details {
   grid-column: 1 / -1;
@@ -2762,7 +2763,6 @@ textarea {
   display: flex;
   align-items: center;
   gap: 12px;
-  justify-content: center;
   background: #ffffff;
   border: 1px solid #f0f0f0;
   border-radius: 14px;
@@ -2804,15 +2804,15 @@ textarea {
 }
 
 .sponsor-divider {
-  width: 1px;
-  height: 50px;
+  width: 0.5px;
+  height: 28px;
   background: var(--color-border-tertiary, #e0e0e0);
   flex-shrink: 0;
 }
 
 .sponsor-logo img {
-  max-height: 70px;
-  max-width: 140px;
+  max-height: 36px;
+  max-width: 100%;
   width: auto;
   object-fit: contain;
   /* Placeholder grisé si image manquante */
