@@ -1208,8 +1208,8 @@ const TRANSLATIONS = {
     race_days_before: "J-{n}",
     race_distance_variable: "Distance variable",
     race_surface_variable: "Surface variable",
-    race_interested_btn: "Je suis intéressé",
-    race_interested_active: "⭐ Intéressé",
+    race_interested_btn: "🎯 Mes souhaits",
+    race_interested_active: "🎯 Dans mes souhaits",
     race_add_btn: "Ajouter",
     race_participating_btn: "✓ Participe",
     race_be_first: "Sois le premier à marquer ton intérêt pour cette course ! ⭐",
@@ -1220,6 +1220,7 @@ const TRANSLATIONS = {
     race_wishlist_share: "Partager",
     race_wishlist_share_title: "Mes courses souhaitées — MushTrack",
     race_wishlist_copied: "Liste copiée dans le presse-papier !",
+    race_wishlist_filter: "Mes souhaits",
     race_count_singular: "course",
     race_count_plural: "courses",
     race_none_found: "Aucune course trouvée. Essaie une région plus large comme Europe, USA, Canada, Suède ou Amundsen.",
@@ -1814,8 +1815,8 @@ const TRANSLATIONS = {
     race_days_before: "D-{n}",
     race_distance_variable: "Variable distance",
     race_surface_variable: "Variable surface",
-    race_interested_btn: "I'm interested",
-    race_interested_active: "⭐ Interested",
+    race_interested_btn: "🎯 Wishlist",
+    race_interested_active: "🎯 In my wishlist",
     race_add_btn: "Add",
     race_participating_btn: "✓ Participating",
     race_be_first: "Be the first to mark your interest in this race! ⭐",
@@ -1826,6 +1827,7 @@ const TRANSLATIONS = {
     race_wishlist_share: "Share",
     race_wishlist_share_title: "My race wishlist — MushTrack",
     race_wishlist_copied: "List copied to clipboard!",
+    race_wishlist_filter: "My wishlist",
     race_count_singular: "race",
     race_count_plural: "races",
     race_none_found: "No race found. Try a broader region like Europe, USA, Canada, Sweden or Amundsen.",
@@ -2420,8 +2422,8 @@ const TRANSLATIONS = {
     race_days_before: "T-{n}",
     race_distance_variable: "Variable Distanz",
     race_surface_variable: "Variabler Untergrund",
-    race_interested_btn: "Ich bin interessiert",
-    race_interested_active: "⭐ Interessiert",
+    race_interested_btn: "🎯 Wunschliste",
+    race_interested_active: "🎯 Auf meiner Wunschliste",
     race_add_btn: "Hinzufügen",
     race_participating_btn: "✓ Teilnahme",
     race_be_first: "Sei der Erste, der sein Interesse an diesem Rennen markiert! ⭐",
@@ -2432,6 +2434,7 @@ const TRANSLATIONS = {
     race_wishlist_share: "Teilen",
     race_wishlist_share_title: "Meine Wunschrennen — MushTrack",
     race_wishlist_copied: "Liste in die Zwischenablage kopiert!",
+    race_wishlist_filter: "Meine Wünsche",
     race_count_singular: "Rennen",
     race_count_plural: "Rennen",
     race_none_found: "Kein Rennen gefunden. Versuche eine breitere Region wie Europa, USA, Kanada, Schweden oder Amundsen.",
@@ -6137,7 +6140,8 @@ function renderRaceSearch() {
     } else if (period === "past" && !race.date) {
       periodMatch = false; // pas de date = pas une archive
     }
-    return typeMatch && regionMatch && surfaceMatch && reliabilityMatch && distanceMatch && periodMatch;
+    const wishlistMatch = !_wishlistFilterActive || state.raceInterests[race.id];
+    return typeMatch && regionMatch && surfaceMatch && reliabilityMatch && distanceMatch && periodMatch && wishlistMatch;
   }).sort((a, b) => getReliabilityRank(a.reliability) - getReliabilityRank(b.reliability));
 
   const radarMeta = ""; // radar supprimé
@@ -8522,6 +8526,18 @@ function formatCoachMarkdown(text) {
 });
 
 document.querySelector("#missing-race-button")?.addEventListener("click", reportMissingRace);
+
+let _wishlistFilterActive = false;
+document.querySelector("#wishlist-filter-btn")?.addEventListener("click", () => {
+  _wishlistFilterActive = !_wishlistFilterActive;
+  const btn = document.querySelector("#wishlist-filter-btn");
+  if (btn) {
+    btn.style.background = _wishlistFilterActive ? "#fff4f0" : "";
+    btn.style.borderColor = _wishlistFilterActive ? "#fc4c02" : "";
+    btn.style.color = _wishlistFilterActive ? "#fc4c02" : "";
+  }
+  renderRaceSearch();
+});
 
 // Présets paramètres course
 const RACE_PRESETS = {

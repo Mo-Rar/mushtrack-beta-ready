@@ -653,7 +653,10 @@
         </div>
 
         <section class="race-search-panel">
-          <button class="secondary-button" id="missing-race-button" type="button" data-t="race_missing">Signaler une course manquante</button>
+          <div style="display:flex;gap:8px;margin-bottom:2px">
+            <button class="secondary-button" id="missing-race-button" type="button" data-t="race_missing" style="flex:1">Signaler une course manquante</button>
+            <button class="secondary-button" id="wishlist-filter-btn" type="button" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px"><span>🎯</span><span data-t="race_wishlist_filter">Mes souhaits</span></button>
+          </div>
           <section class="race-search-results" data-list="raceSearchResults"></section>
         </section>
 
