@@ -9698,6 +9698,143 @@ async function syncLocalInterestsToServer() {
   }
 }
 
+// ── Vue carte des courses ─────────────────────────────────────────────────────
+let raceMap = null;
+let raceMapMarkers = [];
+let geocodeCache = {}; // location → {lat, lng}
+
+async function geocodeLocation(location) {
+  if (!location) return null;
+  const key = location.toLowerCase().trim();
+  if (geocodeCache[key]) return geocodeCache[key];
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`;
+    const res = await fetch(url, { headers: { "Accept-Language": "fr" } });
+    const data = await res.json();
+    if (data && data[0]) {
+      const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      geocodeCache[key] = coords;
+      return coords;
+    }
+  } catch { /* hors ligne */ }
+  return null;
+}
+
+async function initRaceMap() {
+  const mapEl = document.getElementById("race-map");
+  if (!mapEl) return;
+
+  if (!raceMap) {
+    raceMap = L.map("race-map", { zoomControl: true }).setView([47, 8], 4);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap",
+      maxZoom: 18
+    }).addTo(raceMap);
+  } else {
+    raceMapMarkers.forEach(m => m.remove());
+    raceMapMarkers = [];
+  }
+
+  // Récupère les courses filtrées (même logique que renderRaceSearch)
+  const hiddenIds = new Set(state.hiddenRaceIds || []);
+  const approvedRemote = remoteRaceCatalog.filter(r => !r.status || r.status === "approved");
+  const catalogWithDates = raceCatalog.filter(r => r.date && !hiddenIds.has(r.id));
+  const reports = state.missingRaceReports.filter(r => r.status !== "pending");
+  const races = mergeRaceSources([...approvedRemote, ...catalogWithDates, ...reports])
+    .filter(r => r.date);
+
+  const cardEl = document.getElementById("race-map-card");
+  cardEl.style.display = "none";
+
+  // Icône personnalisée MushTrack
+  const mkIcon = (color = "#fc4c02") => L.divIcon({
+    className: "",
+    html: `<div style="width:32px;height:32px;background:${color};border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:13px">🏁</div>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16]
+  });
+
+  const dLeft = r => Math.round((new Date(r.date) - new Date()) / 86400000);
+  const isParticipating = r => state.agenda.some(a => a.sourceId === r.id);
+  const isInterested = r => Boolean(state.raceInterests[r.id]);
+
+  let geocoded = 0;
+  for (const race of races) {
+    const loc = race.location || race.region || race.country || "";
+    if (!loc) continue;
+    const coords = await geocodeLocation(loc);
+    if (!coords) continue;
+    geocoded++;
+
+    const color = isParticipating(race) ? "#22c55e" : isInterested(race) ? "#3b82f6" : "#fc4c02";
+    const marker = L.marker([coords.lat, coords.lng], { icon: mkIcon(color) }).addTo(raceMap);
+    raceMapMarkers.push(marker);
+
+    marker.on("click", () => {
+      // Affiche la mini-fiche sous la carte
+      const d = dLeft(race);
+      const statusText = d < 0 ? "Terminée" : `J-${d}`;
+      const participating = isParticipating(race);
+      const interested = isInterested(race);
+      cardEl.style.display = "block";
+      cardEl.innerHTML = `
+        <div style="background:#fff;border-radius:14px;padding:16px;border:1px solid #f0f0f0;box-shadow:0 4px 16px rgba(0,0,0,0.08)">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+            <div>
+              <span style="font-size:0.7rem;font-weight:800;color:${d < 0 ? '#aaa' : '#fc4c02'};text-transform:uppercase;letter-spacing:.05em">${statusText}</span>
+              <h3 style="font-size:1rem;font-weight:800;margin:2px 0 4px;color:#1a1a1a">${race.name}</h3>
+              <p style="font-size:0.8rem;color:#666;margin:0">${race.location || ""} · ${race.type || ""}</p>
+            </div>
+            <span style="font-size:0.78rem;color:#999;white-space:nowrap;margin-left:8px">${formatFullDate(race.date)}</span>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            ${race.distance ? `<span style="background:#f5f5f5;border-radius:6px;padding:3px 8px;font-size:0.75rem;font-weight:600">${race.distance} km</span>` : ""}
+            ${race.surface ? `<span style="background:#f5f5f5;border-radius:6px;padding:3px 8px;font-size:0.75rem;font-weight:600">${race.surface}</span>` : ""}
+            ${race.url ? `<a href="${race.url}" target="_blank" rel="noopener" style="background:#f5f5f5;border-radius:6px;padding:3px 8px;font-size:0.75rem;font-weight:600;color:#3b82f6;text-decoration:none">🔗 Site officiel</a>` : ""}
+          </div>
+          <div style="display:flex;gap:8px">
+            <button onclick="toggleRaceInterest('${race.id}')" style="flex:1;padding:9px;border-radius:10px;border:1.5px solid ${interested ? '#3b82f6' : '#e0e0e0'};background:${interested ? '#eff6ff' : '#fff'};color:${interested ? '#3b82f6' : '#666'};font-weight:700;font-size:0.8rem;cursor:pointer">
+              ${interested ? "⭐ Intéressé" : "⭐ Intéressé ?"}
+            </button>
+            <button onclick="importRaceToAgenda('${race.id}')" style="flex:1;padding:9px;border-radius:10px;border:none;background:${participating ? '#22c55e' : '#fc4c02'};color:#fff;font-weight:700;font-size:0.8rem;cursor:pointer">
+              ${participating ? "✓ Participe" : "Je participe"}
+            </button>
+          </div>
+        </div>`;
+      cardEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  }
+
+  if (geocoded === 0) {
+    cardEl.style.display = "block";
+    cardEl.innerHTML = `<p style="text-align:center;color:#aaa;padding:20px;font-size:0.85rem">Aucune course géolocalisable trouvée.<br>Vérifie ta connexion internet.</p>`;
+  }
+
+  // Ajuste la vue sur tous les marqueurs
+  if (raceMapMarkers.length) {
+    const group = L.featureGroup(raceMapMarkers);
+    raceMap.fitBounds(group.getBounds().pad(0.2));
+  }
+
+  // Force le recalcul de la taille après affichage
+  setTimeout(() => raceMap.invalidateSize(), 100);
+}
+
+// Boutons bascule Liste / Carte
+document.getElementById("race-view-list-btn")?.addEventListener("click", () => {
+  document.getElementById("race-view-list-btn").classList.add("active");
+  document.getElementById("race-view-map-btn").classList.remove("active");
+  document.querySelector(".race-search-panel").style.display = "";
+  document.getElementById("race-map-view").style.display = "none";
+});
+document.getElementById("race-view-map-btn")?.addEventListener("click", () => {
+  document.getElementById("race-view-map-btn").classList.add("active");
+  document.getElementById("race-view-list-btn").classList.remove("active");
+  document.querySelector(".race-search-panel").style.display = "none";
+  document.getElementById("race-map-view").style.display = "block";
+  initRaceMap();
+});
+
 // Boutons de langue
 document.querySelectorAll(".lang-btn[data-lang]").forEach(btn => {
   btn.addEventListener("click", () => {

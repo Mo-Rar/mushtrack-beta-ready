@@ -2158,6 +2158,24 @@ textarea {
   margin-bottom: 14px;
 }
 
+.race-view-btn {
+  flex: 1;
+  padding: 8px 0;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  background: #f5f5f5;
+  color: #666;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+}
+.race-view-btn.active {
+  background: #fc4c02;
+  border-color: #fc4c02;
+  color: #fff;
+}
+
 .race-search-panel {
   display: grid;
   gap: 12px;
