@@ -6745,6 +6745,8 @@ function initMap(lat = 46.8182, lon = 8.2275) {
   let activeLayer = MAP_LAYERS.osm;
   activeLayer.addTo(map);
 
+  const layerPanel = document.getElementById("map-layer-panel");
+
   document.querySelectorAll(".map-layer-opt").forEach(btn => {
     btn.addEventListener("click", () => {
       const key = btn.dataset.layer;
@@ -6754,7 +6756,7 @@ function initMap(lat = 46.8182, lon = 8.2275) {
       activeLayer.addTo(map);
       document.querySelectorAll(".map-layer-opt").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      layerPanel.style.display = "none";
+      if (layerPanel) layerPanel.style.display = "none";
     });
   });
 
@@ -9698,122 +9700,82 @@ async function syncLocalInterestsToServer() {
   }
 }
 
-// ── Vue carte superposée des tracés GPS ──────────────────────────────────────
-const TRACE_COLORS = [
-  "#fc4c02","#3b82f6","#22c55e","#f59e0b","#a855f7",
-  "#ec4899","#14b8a6","#ef4444","#84cc16","#0ea5e9"
-];
+// ── Vue carte des tracés GPS ──────────────────────────────────────────────────
+let _traceMap = null;
+const _tracePolylines = {}; // runId → L.polyline
 
-// État par instance de carte (mapId → {map, layers, selected})
-const _traceInstances = {};
-
-function initRunsOverlayMap(mapId = "runs-overlay-map2", selectorId = "runs-trace-selector2") {
+function setupTracesView(mapId, selectorId) {
   const mapEl = document.getElementById(mapId);
   const selectorEl = document.getElementById(selectorId);
   if (!mapEl || !selectorEl) return;
 
-  // Détruit l'ancienne instance Leaflet si elle existe
-  if (_traceInstances[mapId]?.map) {
-    _traceInstances[mapId].map.remove();
-  }
-  _traceInstances[mapId] = { map: null, layers: {}, selected: new Set() };
-  const inst = _traceInstances[mapId];
+  // Détruit l'instance précédente
+  if (_traceMap) { try { _traceMap.remove(); } catch {} _traceMap = null; }
+  Object.keys(_tracePolylines).forEach(k => delete _tracePolylines[k]);
+  delete mapEl._leaflet_id;
+  mapEl.innerHTML = "";
 
-  // Sorties avec tracé GPS uniquement
-  const runsWithPath = state.runs.filter(r => Array.isArray(r.path) && r.path.length > 1);
+  const runsWithPath = state.runs.filter(r => Array.isArray(r.path) && r.path.length >= 2);
 
-  // Crée la carte
-  inst.map = L.map(mapEl, { zoomControl: true }).setView([47, 8], 5);
+  const map = L.map(mapEl, { zoomControl: true }).setView([47, 8], 5);
+  _traceMap = map;
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap", maxZoom: 18
-  }).addTo(inst.map);
+  }).addTo(map);
 
   if (!runsWithPath.length) {
-    selectorEl.innerHTML = `<p style="text-align:center;color:#aaa;font-size:0.85rem;padding:20px">Aucune sortie GPS enregistrée.</p>`;
-    setTimeout(() => inst.map.invalidateSize(), 100);
+    selectorEl.innerHTML = `<p style="text-align:center;color:#aaa;font-size:0.85rem;padding:16px 0">Aucune sortie GPS enregistrée.</p>`;
+    setTimeout(() => map.invalidateSize(), 150);
     return;
   }
 
-  // Sélectionne les 3 premières par défaut
-  runsWithPath.slice(0, 3).forEach(r => inst.selected.add(r.id));
-
-  // Construit le sélecteur
-  selectorEl.innerHTML = runsWithPath.map((run, i) => {
-    const color = TRACE_COLORS[i % TRACE_COLORS.length];
-    const active = inst.selected.has(run.id);
-    const km = Number(run.km).toFixed(1);
-    const label = `${formatDate(run.date)} · ${run.type || "GPS"} · ${km} km`;
-    return `<div class="runs-trace-item" data-run-id="${run.id}" data-color="${color}" data-active="${active}">
-      <span class="runs-trace-dot" style="background:${active ? color : '#ddd'};width:14px;height:14px;border-radius:50%;flex-shrink:0;display:inline-block;transition:background .2s"></span>
-      <span style="font-size:0.82rem;color:#333;flex:1">${label}</span>
-      <span class="runs-trace-check" style="font-size:1rem;color:${active ? color : '#ccc'};font-weight:700">${active ? "✓" : "○"}</span>
+  // Liste cliquable sous la carte
+  selectorEl.innerHTML = runsWithPath.map(run => {
+    const km = Number(run.km || 0).toFixed(1);
+    return `<div class="runs-trace-item" data-run-id="${run.id}" style="cursor:pointer">
+      <span style="font-size:0.82rem;color:#444;flex:1">${formatDate(run.date)} · ${run.type || "GPS"} · ${km} km</span>
+      <span style="font-size:0.75rem;color:#aaa">Tap</span>
     </div>`;
   }).join("");
 
-  // Clic sur un item → toggle le tracé
+  // Tap sur un item → toggle le tracé
   selectorEl.querySelectorAll(".runs-trace-item").forEach(item => {
+    const runId = item.dataset.runId;
+    const run = runsWithPath.find(r => r.id === runId);
     item.addEventListener("click", () => {
-      const runId = item.dataset.runId;
-      const color = item.dataset.color;
-      const dot = item.querySelector(".runs-trace-dot");
-      const chk = item.querySelector(".runs-trace-check");
-      const isActive = item.dataset.active === "true";
-
-      if (isActive) {
-        // Désactiver : retire le tracé
-        item.dataset.active = "false";
-        inst.selected.delete(runId);
-        dot.style.background = "#ddd";
-        chk.textContent = "○";
-        chk.style.color = "#ccc";
-        if (inst.layers[runId]) { inst.layers[runId].remove(); delete inst.layers[runId]; }
+      if (_tracePolylines[runId]) {
+        // Déjà affiché → retire
+        _tracePolylines[runId].remove();
+        delete _tracePolylines[runId];
+        item.style.background = "";
+        item.style.borderLeft = "";
+        item.querySelector("span:last-child").textContent = "Tap";
       } else {
-        // Activer : ajoute le tracé
-        item.dataset.active = "true";
-        inst.selected.add(runId);
-        dot.style.background = color;
-        chk.textContent = "✓";
-        chk.style.color = color;
-        _drawTrace(inst, runId, color);
+        // Affiche le tracé
+        const pts = run.path
+          .map(p => {
+            if (Array.isArray(p)) return [p[0], p[1]];
+            const lat = p.lat ?? p.latitude;
+            const lon = p.lon ?? p.lng ?? p.longitude;
+            return [lat, lon];
+          })
+          .filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b));
+        if (pts.length < 2) return;
+        const poly = L.polyline(pts, { color: "#fc4c02", weight: 4, opacity: 0.85 }).addTo(map);
+        _tracePolylines[runId] = poly;
+        item.style.background = "#fff5f0";
+        item.style.borderLeft = "4px solid #fc4c02";
+        item.querySelector("span:last-child").textContent = "✓";
+        // Recadre sur tous les tracés actifs
+        try {
+          const bounds = L.featureGroup(Object.values(_tracePolylines)).getBounds();
+          if (bounds.isValid()) map.fitBounds(bounds.pad(0.15));
+        } catch {}
       }
-      _fitBounds(inst);
     });
   });
 
-  // Dessine les traces sélectionnées par défaut
-  runsWithPath.forEach((run, i) => {
-    if (inst.selected.has(run.id)) {
-      _drawTrace(inst, run.id, TRACE_COLORS[i % TRACE_COLORS.length]);
-    }
-  });
-
-  _fitBounds(inst);
-  setTimeout(() => inst.map.invalidateSize(), 150);
-}
-
-function _drawTrace(inst, runId, color) {
-  if (inst.layers[runId]) { inst.layers[runId].remove(); delete inst.layers[runId]; }
-  const run = state.runs.find(r => r.id === runId);
-  if (!run?.path) return;
-  const path = run.path
-    .map(p => Array.isArray(p) ? [p[0], p[1]] : [p.lat, p.lon ?? p.lng])
-    .filter(([a, b]) => Number.isFinite(a) && Number.isFinite(b));
-  if (path.length < 2) return;
-  const group = L.featureGroup([
-    L.polyline(path, { color, weight: 4, opacity: 0.9 }),
-    L.circleMarker(path[0], { radius: 6, fillColor: "#22c55e", color: "#fff", weight: 2, fillOpacity: 1 }),
-    L.circleMarker(path[path.length - 1], { radius: 7, fillColor: color, color: "#fff", weight: 2, fillOpacity: 1 })
-  ]).addTo(inst.map);
-  inst.layers[runId] = group;
-}
-
-function _fitBounds(inst) {
-  const groups = Object.values(inst.layers);
-  if (!groups.length) return;
-  try {
-    const all = L.featureGroup(groups);
-    inst.map.fitBounds(all.getBounds().pad(0.15));
-  } catch {}
+  setTimeout(() => map.invalidateSize(), 200);
 }
 
 // Boutons bascule Liste / Tracés (panneau inline dans Vous)
@@ -9828,7 +9790,7 @@ document.getElementById("runs-view-map-btn2")?.addEventListener("click", () => {
   document.getElementById("runs-view-list-btn2").classList.remove("active");
   document.getElementById("runs-map-view2").style.display = "block";
   document.querySelector("#vous-panel-enregistrement .run-list.gps-history").style.display = "none";
-  initRunsOverlayMap("runs-overlay-map2", "runs-trace-selector2");
+  setupTracesView("runs-overlay-map2", "runs-trace-selector2");
 });
 
 // Boutons bascule Liste / Tracés (écran séparé vous-enregistrement)
@@ -9843,7 +9805,7 @@ document.getElementById("runs-view-map-btn")?.addEventListener("click", () => {
   document.getElementById("runs-view-list-btn").classList.remove("active");
   document.getElementById("runs-map-view").style.display = "block";
   document.querySelector("#vous-enregistrement .run-list.gps-history").style.display = "none";
-  initRunsOverlayMap("runs-overlay-map", "runs-trace-selector");
+  setupTracesView("runs-overlay-map", "runs-trace-selector");
 });
 
 // ── Vue carte des courses ─────────────────────────────────────────────────────
