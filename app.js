@@ -3275,10 +3275,6 @@ function renderDogs() {
       <strong>${Math.round(dog.km)} km</strong>
       <div class="load-meter"><span style="width:${Math.min(100, load * 2)}%"></span></div>
       <small>${load.toFixed(1)} ${t('dog_km_week')} - ${readiness.text}</small>
-      <div class="card-actions">
-        <button class="secondary-button" data-edit-dog="${dog.id}" type="button">${t('dogs_edit_btn')}</button>
-        <button class="danger-button" data-delete-dog="${dog.id}" type="button">${t('dogs_delete_btn')}</button>
-      </div>
     </article>
   `}).join("");
 
@@ -3293,18 +3289,6 @@ function renderDogs() {
       attachLongPress(card, () => {
         document.querySelectorAll(".dog-card.show-actions").forEach(c => c.classList.remove("show-actions"));
         card.classList.add("show-actions");
-      });
-    });
-    list.querySelectorAll("[data-edit-dog]").forEach((button) => {
-      button.addEventListener("click", (event) => {
-        event.stopPropagation();
-        editDog(button.dataset.editDog);
-      });
-    });
-    list.querySelectorAll("[data-delete-dog]").forEach((button) => {
-      button.addEventListener("click", (event) => {
-        event.stopPropagation();
-        deleteDog(button.dataset.deleteDog);
       });
     });
   });
@@ -3650,6 +3634,12 @@ function renderDogProfile() {
         </article>
       `).join("") || `<p class="empty-state">${t('dog_no_run').replace('{name}', dog.name)}</p>`}
     </section>
+
+    <div style="padding:8px 0 24px;text-align:center">
+      <button id="dog-profile-delete-btn" type="button" style="background:none;border:1.5px solid #f87171;color:#f87171;border-radius:10px;padding:9px 24px;font-size:0.82rem;font-weight:700;cursor:pointer">
+        🗑 ${t('dogs_delete_btn')} ${dog.name}
+      </button>
+    </div>
   `;
 
   // Graphique poids
@@ -3705,6 +3695,12 @@ function renderDogProfile() {
       saveState();
       renderDogProfile();
     });
+  });
+
+  // Bouton Supprimer le chien
+  list.querySelector("#dog-profile-delete-btn")?.addEventListener("click", () => {
+    deleteDog(dog.id);
+    showScreen("dogs");
   });
 }
 
@@ -4213,6 +4209,14 @@ function openRunDetail(index) {
     _runDetailMap.invalidateSize();
   }, 150);
 }
+
+// Bouton ⚙️ fiche chien → ouvre le formulaire d'édition dans l'écran dogs
+document.getElementById("dog-detail-settings-btn")?.addEventListener("click", () => {
+  showScreen("dogs");
+  setTimeout(() => {
+    if (activeDogId) editDog(activeDogId);
+  }, 150);
+});
 
 // Boutons écran détail
 document.getElementById("run-detail-back")?.addEventListener("click", () => showScreen("record"));
