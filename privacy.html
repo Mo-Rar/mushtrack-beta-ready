@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MushTrack — Politique de confidentialité</title>
+  <style>
+    :root {
+      --orange: #fc4c02;
+      --bg: #f8f6f3;
+      --surface: #ffffff;
+      --text: #1a1814;
+      --sub: #5a5650;
+      --muted: #9a948e;
+      --border: #e4e0da;
+      --orange-soft: #fff3ee;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #171513;
+        --surface: #211f1c;
+        --text: #f0ece6;
+        --sub: #a09890;
+        --muted: #6a6460;
+        --border: #2e2b27;
+        --orange-soft: #2a1a10;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo-mark {
+      width: 36px; height: 36px;
+      background: var(--orange);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-text { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
+    .logo-text span { color: var(--orange); }
+    .doc-type { margin-left: auto; font-size: 0.72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    main { max-width: 720px; margin: 0 auto; padding: 56px 40px 100px; }
+    .doc-header { border-bottom: 2px solid var(--orange); padding-bottom: 32px; margin-bottom: 48px; }
+    .doc-eyebrow { font-size: 0.7rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--orange); margin-bottom: 12px; }
+    h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; color: var(--text); margin-bottom: 16px; }
+    .doc-meta { font-size: 0.82rem; color: var(--muted); display: flex; gap: 24px; flex-wrap: wrap; }
+    .summary-box {
+      background: var(--orange-soft);
+      border-left: 3px solid var(--orange);
+      border-radius: 0 10px 10px 0;
+      padding: 18px 20px;
+      margin-bottom: 48px;
+      font-size: 0.88rem;
+      color: var(--sub);
+      line-height: 1.65;
+    }
+    .summary-box strong { color: var(--text); }
+    section { margin-bottom: 44px; }
+    h2 { font-size: 1.05rem; font-weight: 800; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+    h2::before { content: ''; display: inline-block; width: 4px; height: 18px; background: var(--orange); border-radius: 2px; flex-shrink: 0; }
+    p { color: var(--sub); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    ul { list-style: none; padding: 0; margin: 10px 0 12px; display: flex; flex-direction: column; gap: 8px; }
+    li { color: var(--sub); padding-left: 18px; position: relative; font-size: 0.92rem; }
+    li::before { content: '—'; position: absolute; left: 0; color: var(--orange); font-weight: 700; }
+    .contact-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; display: flex; flex-direction: column; gap: 6px; }
+    .contact-card a { color: var(--orange); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+    .contact-card a:hover { text-decoration: underline; }
+    .contact-label { font-size: 0.72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 44px 0; }
+    footer { background: var(--surface); border-top: 1px solid var(--border); padding: 20px 40px; text-align: center; font-size: 0.78rem; color: var(--muted); }
+    a { color: var(--orange); }
+    @media (max-width: 600px) {
+      header { padding: 16px 20px; }
+      main { padding: 36px 20px 80px; }
+      h1 { font-size: 1.5rem; }
+      footer { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+        <ellipse cx="5" cy="6" rx="2" ry="2.8" fill="white"/>
+        <ellipse cx="10" cy="3.5" rx="2" ry="2.8" fill="white"/>
+        <ellipse cx="14" cy="3.5" rx="2" ry="2.8" fill="white"/>
+        <ellipse cx="19" cy="6" rx="2" ry="2.8" fill="white"/>
+        <path d="M12 9c-4 0-7 2.5-7 5.8 0 2 1.6 3.8 3.5 4.1 1 .2 2.1.1 3.5.1s2.5.1 3.5-.1c2-.3 3.5-2.1 3.5-4.1C19 11.5 16 9 12 9z" fill="white"/>
+      </svg>
+    </div>
+    <div class="logo-text">Mush<span>Track</span></div>
+    <div class="doc-type">Document légal</div>
+  </header>
+
+  <main>
+    <div class="doc-header">
+      <p class="doc-eyebrow">Politique de confidentialité</p>
+      <h1>Comment MushTrack protège vos données</h1>
+      <div class="doc-meta">
+        <span>📅 En vigueur depuis le 19 août 2026</span>
+        <span>🌍 Applicable à l'app Android et au site web</span>
+      </div>
+    </div>
+
+    <div class="summary-box">
+      <strong>En résumé :</strong> MushTrack collecte uniquement les données nécessaires au suivi de vos entraînements de mushing. Vos données restent les vôtres. Nous ne les vendons pas, ne les partageons pas avec des annonceurs, et vous pouvez les supprimer à tout moment depuis l'application.
+    </div>
+
+    <section>
+      <h2>Qui sommes-nous</h2>
+      <p>MushTrack est une application mobile développée et maintenue par <strong>Juan Morard</strong>, développeur indépendant basé en Suisse. L'application est disponible gratuitement sur Google Play et via le web.</p>
+      <p>Contact : <a href="mailto:Mushtrack@proton.me">Mushtrack@proton.me</a></p>
+    </section>
+
+    <section>
+      <h2>Données collectées</h2>
+      <p>Nous collectons uniquement les données que vous choisissez de saisir ou que vous autorisez explicitement :</p>
+      <ul>
+        <li><strong>Données de localisation GPS</strong> — collectées pendant vos sorties d'entraînement, avec votre permission explicite, pour calculer distance, vitesse et tracer votre parcours.</li>
+        <li><strong>Données d'entraînement</strong> — sorties, distances, durées, vitesses, notes personnelles que vous saisissez.</li>
+        <li><strong>Profil musher</strong> — pseudo, région, niveau, objectifs de course, saison.</li>
+        <li><strong>Données chiens</strong> — noms, races, âges, signaux de santé que vous renseignez manuellement.</li>
+        <li><strong>Photos communautaires</strong> — uniquement si vous choisissez d'en partager dans la section Communauté.</li>
+        <li><strong>Identifiant appareil</strong> — généré aléatoirement pour synchroniser vos données entre sessions, sans identifier votre personne.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Utilisation des données</h2>
+      <p>Vos données sont utilisées exclusivement pour :</p>
+      <ul>
+        <li>Afficher vos statistiques d'entraînement et votre progression</li>
+        <li>Générer des plans d'entraînement personnalisés localement</li>
+        <li>Permettre les fonctionnalités communautaires si vous les activez (partage de pistes, défis)</li>
+        <li>Envoyer des rappels d'inactivité locaux si vous les configurez</li>
+      </ul>
+      <p>Nous n'utilisons pas vos données à des fins publicitaires, de profilage commercial, ou de vente à des tiers.</p>
+    </section>
+
+    <section>
+      <h2>Stockage et sécurité</h2>
+      <p>Vos données sont stockées :</p>
+      <ul>
+        <li><strong>Localement</strong> sur votre appareil (localStorage) pour un accès hors-ligne</li>
+        <li><strong>Sur Supabase</strong> (serveurs PostgreSQL hébergés en Europe) pour la synchronisation et les fonctionnalités communautaires</li>
+      </ul>
+      <p>Les communications entre l'application et nos serveurs sont chiffrées via HTTPS. L'accès à la base de données est protégé par des clés d'API sécurisées.</p>
+    </section>
+
+    <section>
+      <h2>Partage des données</h2>
+      <p>Vos données personnelles ne sont <strong>jamais vendues ni cédées</strong> à des tiers. Certaines données peuvent être partagées uniquement dans ces cas :</p>
+      <ul>
+        <li><strong>Fonctionnalités communautaires</strong> — les pistes GPS et photos que vous partagez volontairement sont visibles des autres utilisateurs de MushTrack</li>
+        <li><strong>Supabase</strong> — notre prestataire d'hébergement de base de données, soumis à des obligations de confidentialité strictes</li>
+        <li><strong>Vercel</strong> — notre prestataire d'hébergement web, pour les fonctions serverless</li>
+        <li><strong>Obligation légale</strong> — si la loi nous y contraint (autorités compétentes)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Vos droits (RGPD)</h2>
+      <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez des droits suivants :</p>
+      <ul>
+        <li><strong>Accès</strong> — consulter toutes les données que nous détenons sur vous</li>
+        <li><strong>Rectification</strong> — corriger vos données directement dans l'application</li>
+        <li><strong>Suppression</strong> — effacer toutes vos données via Réglages → Données personnelles → Supprimer mon compte</li>
+        <li><strong>Portabilité</strong> — exporter vos sorties au format CSV via Réglages → Export données</li>
+        <li><strong>Opposition</strong> — nous contacter pour tout traitement que vous souhaitez contester</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Localisation GPS</h2>
+      <p>L'accès à votre position GPS est demandé uniquement lorsque vous démarrez une sortie d'entraînement. Vous pouvez refuser cette permission — l'application fonctionne alors sans suivi GPS (saisie manuelle possible).</p>
+      <p>La localisation n'est jamais utilisée en arrière-plan hors des sorties actives.</p>
+    </section>
+
+    <section>
+      <h2>Notifications</h2>
+      <p>MushTrack peut envoyer des notifications locales de rappel d'inactivité si vous activez cette option dans les Réglages. Ces notifications sont générées localement sur votre appareil et ne transitent par aucun serveur externe.</p>
+    </section>
+
+    <section>
+      <h2>Enfants</h2>
+      <p>MushTrack n'est pas destinée aux enfants de moins de 13 ans. Nous ne collectons pas sciemment de données personnelles concernant des mineurs.</p>
+    </section>
+
+    <section>
+      <h2>Modifications de cette politique</h2>
+      <p>En cas de modification significative de cette politique, nous vous en informerons via une mise à jour de l'application. La date de mise en vigueur en haut de ce document sera actualisée. L'utilisation continue de MushTrack après modification vaut acceptation de la nouvelle politique.</p>
+    </section>
+
+    <hr>
+
+    <section>
+      <h2>Nous contacter</h2>
+      <div class="contact-card">
+        <p class="contact-label">Responsable du traitement</p>
+        <p style="font-weight:700;color:var(--text);margin-bottom:4px">Juan Morard — MushTrack</p>
+        <a href="mailto:Mushtrack@proton.me">Mushtrack@proton.me</a>
+        <p style="font-size:0.82rem;color:var(--muted);margin-top:8px">Nous nous engageons à répondre à toute demande concernant vos données dans un délai de 30 jours.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 2026 MushTrack — Juan Morard · Tous droits réservés · Suisse
+  </footer>
+</body>
+</html>
