@@ -5809,7 +5809,25 @@ function getNextWorkout() {
 
   // Réduction si météo défavorable ou course imminente
   const context = getPlanContext();
-  if (context.volumeFactor < 1) nextKm = Math.max(4, Math.round(nextKm * context.volumeFactor));
+
+  // Au-dessus de 15°C : pas de traction — balade légère ou repos
+  if (context.volumeFactor === 0) {
+    const temp = context.weather?.temperature ?? 0;
+    if (temp >= 20) {
+      return {
+        title: "Repos recommandé",
+        text: `${Math.round(temp)}°C — trop chaud pour tracter. Repos ou balade très courte à l'ombre, eau disponible.`,
+        km: 0
+      };
+    }
+    return {
+      title: "Balade légère seulement",
+      text: `${Math.round(temp)}°C — pas de traction au-dessus de 15°C. Balade libre 2–3 km max, lente, à l'ombre.`,
+      km: 2
+    };
+  }
+
+  if (context.volumeFactor < 1) nextKm = Math.max(3, Math.round(nextKm * context.volumeFactor));
 
   const label = state.raceType === "Sprint" ? t('plan_intervals')
     : state.raceType === "Longue distance" ? t('plan_long_run')
@@ -5848,26 +5866,36 @@ function getPlanContext() {
   }
 
   if (weather) {
-    if (weather.temperature >= 18 && state.seasonMode === "summer") {
-      weatherRisk = `Chaleur ${Math.round(weather.temperature)} C`;
-      volumeFactor *= weather.temperature >= 24 ? 0.55 : 0.72;
+    const temp = weather.temperature;
+    // Traction interdit au-dessus de 15°C — balade légère seulement
+    if (temp >= 25) {
+      weatherRisk = `Trop chaud pour travailler (${Math.round(temp)}°C) — repos`;
+      volumeFactor = 0; // Annule toute séance de traction
       riskLevel = "danger";
-    } else if (weather.temperature >= 12 && state.seasonMode === "summer") {
-      weatherRisk = `Temperature douce ${Math.round(weather.temperature)} C`;
-      volumeFactor *= 0.9;
+    } else if (temp >= 20) {
+      weatherRisk = `Trop chaud pour tracter (${Math.round(temp)}°C) — balade courte max`;
+      volumeFactor = 0;
+      riskLevel = "danger";
+    } else if (temp >= 15) {
+      weatherRisk = `Chaud pour tracter (${Math.round(temp)}°C) — balade légère seulement`;
+      volumeFactor = 0;
+      riskLevel = "danger";
+    } else if (temp >= 10) {
+      weatherRisk = `Température limite (${Math.round(temp)}°C) — sortie courte et lente`;
+      volumeFactor *= 0.70;
       riskLevel = "light";
     }
 
     if (weather.wind >= 35) {
       weatherRisk = `Vent fort ${Math.round(weather.wind)} km/h`;
       volumeFactor *= 0.82;
-      riskLevel = "light";
+      riskLevel = riskLevel === "ok" ? "light" : riskLevel;
     }
 
     if (weather.precipitation >= 2) {
       weatherRisk = `Pluie/neige ${weather.precipitation} mm`;
       volumeFactor *= 0.85;
-      riskLevel = "light";
+      riskLevel = riskLevel === "ok" ? "light" : riskLevel;
     }
   }
 
