@@ -11266,30 +11266,6 @@ if (reminderSelect) {
   });
 }
 
-// ── Mode sombre ──────────────────────────────────────────────────────────────
-(function initDarkMode() {
-  const saved = localStorage.getItem("mushtrack-dark-mode") === "1";
-  if (saved) document.body.classList.add("dark-mode");
-  const toggle = document.getElementById("dark-mode-toggle");
-  const thumb = document.getElementById("dark-mode-thumb");
-  const ball = document.getElementById("dark-thumb-ball");
-  function applyToggleStyle(on) {
-    if (!thumb || !ball) return;
-    thumb.style.background = on ? "#fc4c02" : "#ddd";
-    ball.style.transform = on ? "translateX(20px)" : "translateX(0)";
-  }
-  if (toggle) {
-    toggle.checked = saved;
-    applyToggleStyle(saved);
-    toggle.addEventListener("change", () => {
-      const on = toggle.checked;
-      document.body.classList.toggle("dark-mode", on);
-      localStorage.setItem("mushtrack-dark-mode", on ? "1" : "0");
-      applyToggleStyle(on);
-    });
-  }
-})();
-
 // Météo automatique au démarrage si pas de données récentes
 (function autoLoadWeather() {
   if (state.planWeather?.temp && state.planWeather?.fetchedAt) {
