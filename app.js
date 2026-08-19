@@ -1,6 +1,6 @@
 ﻿// ── API base URL (Capacitor Android → Vercel, Web → relatif) ──
 const API_BASE = (location.protocol === "capacitor:" || location.hostname === "localhost")
-  ? "https://mushtrack-beta-ready.vercel.app"
+  ? "https://mushtrack-beta-ready-tuc1.vercel.app"
   : "";
 
 // ── Supabase Auth ──────────────────────────────────────────────
