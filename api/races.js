@@ -103,7 +103,9 @@ module.exports = async function handler(req, res) {
 
   // Lecture depuis Supabase, fallback sur seedRaces
   const fromDb = await fetchFromSupabase();
-  const allRaces = fromDb && fromDb.length > 0 ? fromDb : seedRaces;
+  const rawRaces = fromDb && fromDb.length > 0 ? fromDb : seedRaces;
+  const EXCLUDE_REGIONS = /canada|yukon|alaska|north america/i;
+  const allRaces = rawRaces.filter(r => !EXCLUDE_REGIONS.test(r.region || ""));
 
   const races = allRaces
     .filter((race) => matchRace(race, { query, type, distance, surface, reliability }))
