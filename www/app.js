@@ -3311,7 +3311,7 @@ function render() {
   const activeId = document.querySelector(".screen.active")?.id || "";
   if (activeId === "dogs" || activeId === "dog-detail") { renderDogs(); renderDogProfile(); }
   if (activeId === "record" || activeId === "team") { renderDogPicker(); renderSelectedTeam(); renderTeamSlots(); }
-  if (activeId === "runs") renderRuns();
+  if (activeId === "record" || activeId === "run-detail") renderRuns();
   if (activeId === "coach") renderPlan();
   if (activeId === "analytics") renderAnalytics();
   if (activeId === "races") renderRaceSearch();
