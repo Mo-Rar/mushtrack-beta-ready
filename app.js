@@ -3308,24 +3308,17 @@ function render() {
   bindText("nextWorkoutText", workout.text);
   bindText("planIntro", getPlanIntro());
 
-  renderDogs();
-  renderDogPicker();
-  renderSelectedTeam();
-  renderTeamSlots();
-  renderRuns();
-  renderPlan();
-  renderAnalytics();
-  renderDogProfile();
-  renderRaceSearch();
-  renderAdminPanel();
-  renderAgenda();
-  renderOpenRuns();
-  renderWebAdvice();
-  renderNextRace();
-  fillSettingsForm();
-  renderProgressChart();
-  renderReminders();
-  renderBadges();
+  const activeId = document.querySelector(".screen.active")?.id || "";
+  if (activeId === "dogs" || activeId === "dog-detail") { renderDogs(); renderDogProfile(); }
+  if (activeId === "record" || activeId === "team") { renderDogPicker(); renderSelectedTeam(); renderTeamSlots(); }
+  if (activeId === "runs") renderRuns();
+  if (activeId === "coach") renderPlan();
+  if (activeId === "analytics") renderAnalytics();
+  if (activeId === "races") renderRaceSearch();
+  if (activeId === "admin") renderAdminPanel();
+  if (activeId === "agenda") renderAgenda();
+  if (activeId === "dashboard") { renderOpenRuns(); renderWebAdvice(); renderNextRace(); renderProgressChart(); renderBadges(); }
+  if (activeId === "vous") { fillSettingsForm(); renderReminders(); }
   applyLang();
 }
 
@@ -3659,7 +3652,7 @@ function drawWeightChart(dog) {
     const y = pad.top + (i / 4) * cH;
     ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cW, y); ctx.stroke();
     const val = (maxW - (i / 4) * range).toFixed(1);
-    ctx.fillStyle = "#aaa"; ctx.font = "20px system-ui"; ctx.textAlign = "right";
+    ctx.fillStyle = "#aaa"; ctx.font = "11px system-ui"; ctx.textAlign = "right";
     ctx.fillText(val + " kg", pad.left - 6, y + 7);
   }
 
@@ -3694,14 +3687,14 @@ function drawWeightChart(dog) {
     // Date (première, dernière, et tous les 4)
     if (i === 0 || i === history.length - 1 || i % 4 === 0) {
       const label = h.date.slice(5); // MM-DD
-      ctx.fillStyle = "#999"; ctx.font = "18px system-ui"; ctx.textAlign = "center";
+      ctx.fillStyle = "#999"; ctx.font = "11px system-ui"; ctx.textAlign = "center";
       ctx.fillText(label, x, pad.top + cH + 24);
     }
   });
 
   // Valeur courante
   const last = history[history.length - 1];
-  ctx.fillStyle = "#fc4c02"; ctx.font = "bold 22px system-ui"; ctx.textAlign = "left";
+  ctx.fillStyle = "#fc4c02"; ctx.font = "bold 12px system-ui"; ctx.textAlign = "left";
   ctx.fillText(last.weight + " kg", toX(history.length - 1) - 50, toY(last.weight) - 10);
 }
 
@@ -9443,6 +9436,8 @@ function checkReminders() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Export PDF rapport de saison ──────────────────────────────────────────────
+document.querySelector(".dash-bell-btn")?.addEventListener("click", () => showScreen("agenda"));
+
 document.getElementById("export-pdf-btn")?.addEventListener("click", exportSeasonPDF);
 
 // ── Export CSV sorties ────────────────────────────────────────────────────────
