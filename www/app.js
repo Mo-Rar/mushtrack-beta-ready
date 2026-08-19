@@ -5813,10 +5813,10 @@ function getNextWorkout() {
   // Au-dessus de 15°C : pas de traction — balade légère ou repos
   if (context.volumeFactor === 0) {
     const temp = context.weather?.temperature ?? 0;
-    if (temp >= 20) {
+    if (temp >= 25) {
       return {
         title: "Repos recommandé",
-        text: `${Math.round(temp)}°C — trop chaud pour tracter. Repos ou balade très courte à l'ombre, eau disponible.`,
+        text: `${Math.round(temp)}°C — trop chaud, pas de sortie. Eau fraîche, ombre, repos.`,
         km: 0
       };
     }
@@ -5875,11 +5875,7 @@ function getPlanContext() {
     const temp = weather.temperature;
     // Traction interdit au-dessus de 15°C — balade légère seulement
     if (temp >= 25) {
-      weatherRisk = `Trop chaud pour travailler (${Math.round(temp)}°C) — repos`;
-      volumeFactor = 0; // Annule toute séance de traction
-      riskLevel = "danger";
-    } else if (temp >= 20) {
-      weatherRisk = `Trop chaud pour tracter (${Math.round(temp)}°C) — balade courte max`;
+      weatherRisk = `Trop chaud (${Math.round(temp)}°C) — repos, pas de sortie`;
       volumeFactor = 0;
       riskLevel = "danger";
     } else if (temp >= 15) {
