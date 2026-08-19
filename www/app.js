@@ -1,4 +1,9 @@
-﻿// ── Supabase Auth ──────────────────────────────────────────────
+﻿// ── API base URL (Capacitor Android → Vercel, Web → relatif) ──
+const API_BASE = (location.protocol === "capacitor:" || location.hostname === "localhost")
+  ? "https://mushtrack-beta-ready.vercel.app"
+  : "";
+
+// ── Supabase Auth ──────────────────────────────────────────────
 const SUPABASE_URL = "https://ipfnldjrpocceptavvaf.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwZm5sZGpycG9jY2VwdGF2dmFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDk0MTQsImV4cCI6MjA5NjYyNTQxNH0.FVkq0EooacG7lETDAwxJ-ArocxUYFVZVfhxdhyWFhrI";
 let supabase = null;
@@ -6570,7 +6575,7 @@ async function toggleRaceInterest(id) {
   renderRaceSearch();
 
   try {
-    const response = await fetch("/api/community", {
+    const response = await fetch(`${API_BASE}/api/community`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -6605,7 +6610,7 @@ async function fetchCommunityInterests(raceIds) {
   communityLastKey = key;
 
   try {
-    const response = await fetch(`/api/community?raceIds=${encodeURIComponent(key)}`);
+    const response = await fetch(`${API_BASE}/api/community?raceIds=${encodeURIComponent(key)}`);
     const data = await response.json();
     if (data.configured && data.interests) {
       communityInterests = data.interests;
@@ -6658,7 +6663,7 @@ async function fetchRaceRadar() {
   renderRaceSearch();
 
   try {
-    const response = await fetch(`/api/races?${params.toString()}`);
+    const response = await fetch(`${API_BASE}/api/races?${params.toString()}`);
     if (!response.ok) throw new Error(`Radar indisponible (${response.status})`);
     const data = await response.json();
     remoteRaceCatalog = Array.isArray(data.races) ? data.races : [];
@@ -6700,7 +6705,7 @@ async function importRaceToAgenda(id) {
     renderAgenda();
     // Sync communauté : supprime la participation
     try {
-      await fetch("/api/community", {
+      await fetch(`${API_BASE}/api/community`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -6713,7 +6718,7 @@ async function importRaceToAgenda(id) {
         })
       });
       delete communityInterests[id];
-      const fresh = await fetch(`/api/community?raceIds=${encodeURIComponent(id)}`);
+      const fresh = await fetch(`${API_BASE}/api/community?raceIds=${encodeURIComponent(id)}`);
       const data = await fresh.json();
       if (data.configured && data.interests) communityInterests = { ...communityInterests, ...data.interests };
     } catch { /* hors ligne, pas grave */ }
@@ -6739,7 +6744,7 @@ async function importRaceToAgenda(id) {
   renderAgenda();
   // Sync communauté : enregistre la participation
   try {
-    const resp = await fetch("/api/community", {
+    const resp = await fetch(`${API_BASE}/api/community`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -7307,7 +7312,7 @@ async function toggleOpenRunJoin(id) {
   renderOpenRuns();
 
   try {
-    const response = await fetch("/api/community", {
+    const response = await fetch(`${API_BASE}/api/community`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -7349,7 +7354,7 @@ async function fetchOpenRuns() {
 
   try {
     const region = state.profile.region || "";
-    const response = await fetch(`/api/community?kind=open-runs&region=${encodeURIComponent(region)}`);
+    const response = await fetch(`${API_BASE}/api/community?kind=open-runs&region=${encodeURIComponent(region)}`);
     const data = await response.json();
     if (data.configured && Array.isArray(data.openRuns)) {
       remoteOpenRuns = data.openRuns;
@@ -8245,7 +8250,7 @@ openRunForm.addEventListener("submit", async (event) => {
   renderOpenRuns();
 
   try {
-    const response = await fetch("/api/community", {
+    const response = await fetch(`${API_BASE}/api/community`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -8734,7 +8739,7 @@ async function fetchLeaderboard() {
 
   // Push vers Supabase (silencieux)
   if (myKm > 0 && state.profile.name) {
-    fetch("/api/leaderboard", {
+    fetch(`${API_BASE}/api/leaderboard`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -8749,7 +8754,7 @@ async function fetchLeaderboard() {
 
   // Fetch classement
   try {
-    const res  = await fetch(`/api/leaderboard?month=${month}`);
+    const res  = await fetch(`${API_BASE}/api/leaderboard?month=${month}`);
     const data = await res.json();
     if (!data.configured || !data.entries?.length) {
       wrap.innerHTML = renderLeaderboardLocal(myKm, month);
@@ -9971,7 +9976,7 @@ document.getElementById("community-share-btn")?.addEventListener("click", async 
       photoUrl = await uploadFeedPhoto(selectedPhotoFile, state.deviceId);
     }
 
-    const res = await fetch("/api/feed", {
+    const res = await fetch(`${API_BASE}/api/feed`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -10012,7 +10017,7 @@ async function fetchFeed() {
   if (!feedEl) { feedLoading = false; return; }
 
   try {
-    const res  = await fetch("/api/feed");
+    const res  = await fetch(`${API_BASE}/api/feed`);
     const data = await res.json();
 
     if (!data.configured) {
@@ -10096,7 +10101,7 @@ function renderFeed() {
       if (!reacted) post.reactions.push(state.deviceId);
       else post.reactions = post.reactions.filter(d => d !== state.deviceId);
       if (countEl) countEl.textContent = post.reactions.length || "";
-      await fetch("/api/feed", {
+      await fetch(`${API_BASE}/api/feed`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ kind: "react", postId, deviceId: state.deviceId, active: !reacted })
@@ -10124,7 +10129,7 @@ function renderFeed() {
     btn.addEventListener("click", async () => {
       if (!confirm("Supprimer cette activité ?")) return;
       const id = btn.dataset.deletePost;
-      await fetch(`/api/feed?id=${id}&deviceId=${encodeURIComponent(state.deviceId)}`, { method: "DELETE" }).catch(() => {});
+      await fetch(`${API_BASE}/api/feed?id=${id}&deviceId=${encodeURIComponent(state.deviceId)}`, { method: "DELETE" }).catch(() => {});
       feedPosts = feedPosts.filter(p => p.id !== id);
       renderFeed();
     });
@@ -10134,7 +10139,7 @@ function renderFeed() {
 async function loadComments(postId, section, toggleBtn) {
   section.innerHTML = `<p class="feed-comment-loading">Chargement…</p>`;
   try {
-    const res  = await fetch(`/api/feed?comments=${postId}`);
+    const res  = await fetch(`${API_BASE}/api/feed?comments=${postId}`);
     const data = await res.json();
     const comments = data.comments || [];
 
@@ -10162,7 +10167,7 @@ async function loadComments(postId, section, toggleBtn) {
       const text = input.value.trim();
       if (!text) return;
       sendBtn.disabled = true;
-      const res2 = await fetch("/api/feed", {
+      const res2 = await fetch(`${API_BASE}/api/feed`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ kind: "comment", postId, deviceId: state.deviceId, userName: state.profile.name || "Musher", text })
@@ -10181,7 +10186,7 @@ async function loadComments(postId, section, toggleBtn) {
     section.querySelectorAll("[data-delete-comment]").forEach(b => {
       b.addEventListener("click", async () => {
         const cid = b.dataset.deleteComment;
-        await fetch("/api/feed", {
+        await fetch(`${API_BASE}/api/feed`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ kind: "delete-comment", commentId: cid, deviceId: state.deviceId })
@@ -10233,7 +10238,7 @@ async function renderChallenge() {
   if (!el) return;
   el.innerHTML = `<p style="color:#aaa;text-align:center;padding:30px 0;font-size:0.85rem">Chargement…</p>`;
   try {
-    const res  = await fetch("/api/challenges");
+    const res  = await fetch(`${API_BASE}/api/challenges`);
     const data = await res.json();
     if (!data.configured) { el.innerHTML = `<p style="color:#aaa;text-align:center;padding:30px 0;font-size:0.85rem">Défis non configurés.<br>Exécute <code>supabase/challenges_clubs.sql</code></p>`; return; }
     if (!data.challenge)  { el.innerHTML = `<p style="color:#aaa;text-align:center;padding:30px 0;font-size:0.85rem">Aucun défi actif cette semaine.</p>`; return; }
@@ -10278,7 +10283,7 @@ async function renderChallenge() {
       const btn = document.getElementById("challenge-join-btn");
       btn.disabled = true;
       btn.textContent = "Inscription…";
-      await fetch("/api/challenges", {
+      await fetch(`${API_BASE}/api/challenges`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ challengeId: ch.id, deviceId: state.deviceId, userName: state.profile.name || "Musher", km: weekKm })
@@ -10298,7 +10303,7 @@ async function renderMyClubs() {
   if (!el) return;
   el.innerHTML = "";
   try {
-    const res  = await fetch(`/api/clubs?deviceId=${encodeURIComponent(state.deviceId)}`);
+    const res  = await fetch(`${API_BASE}/api/clubs?deviceId=${encodeURIComponent(state.deviceId)}`);
     const data = await res.json();
     if (!data.configured) { el.innerHTML = `<p style="color:#aaa;font-size:0.82rem;text-align:center;padding:16px 0">Clubs non configurés.<br>Exécute <code>supabase/challenges_clubs.sql</code></p>`; return; }
     myClubs = data.clubs || [];
@@ -10324,7 +10329,7 @@ async function renderMyClubs() {
     el.querySelectorAll("[data-leave-club]").forEach(btn => {
       btn.addEventListener("click", async () => {
         if (!confirm("Quitter ce club ?")) return;
-        await fetch(`/api/clubs?clubId=${btn.dataset.leaveClub}&deviceId=${encodeURIComponent(state.deviceId)}`, { method: "DELETE" }).catch(() => {});
+        await fetch(`${API_BASE}/api/clubs?clubId=${btn.dataset.leaveClub}&deviceId=${encodeURIComponent(state.deviceId)}`, { method: "DELETE" }).catch(() => {});
         await renderMyClubs();
       });
     });
@@ -10347,7 +10352,7 @@ document.getElementById("clubs-create-confirm")?.addEventListener("click", async
   if (!name) return;
   const btn = document.getElementById("clubs-create-confirm");
   btn.disabled = true;
-  const res  = await fetch("/api/clubs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "create", deviceId: state.deviceId, userName: state.profile.name || "Musher", name, description: desc }) }).catch(() => null);
+  const res  = await fetch(`${API_BASE}/api/clubs`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "create", deviceId: state.deviceId, userName: state.profile.name || "Musher", name, description: desc }) }).catch(() => null);
   const data = res ? await res.json() : null;
   btn.disabled = false;
   if (data?.club) {
@@ -10365,7 +10370,7 @@ document.getElementById("clubs-join-btn")?.addEventListener("click", async () =>
   if (!code || code.length !== 6) { if (msgEl) { msgEl.textContent = "Code à 6 caractères requis"; msgEl.style.color = "#d94040"; msgEl.style.display = "block"; } return; }
   const btn = document.getElementById("clubs-join-btn");
   btn.disabled = true;
-  const res  = await fetch("/api/clubs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "join", deviceId: state.deviceId, userName: state.profile.name || "Musher", code }) }).catch(() => null);
+  const res  = await fetch(`${API_BASE}/api/clubs`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "join", deviceId: state.deviceId, userName: state.profile.name || "Musher", code }) }).catch(() => null);
   const data = res ? await res.json() : null;
   btn.disabled = false;
   if (data?.club) {
@@ -10389,7 +10394,7 @@ async function initMushersMap() {
       if (toggle.checked) {
         localStorage.setItem("mushtrack-map-optin", "true");
         navigator.geolocation?.getCurrentPosition(async pos => {
-          await fetch("/api/map", {
+          await fetch(`${API_BASE}/api/map`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -10404,7 +10409,7 @@ async function initMushersMap() {
         }, () => { toggle.checked = false; localStorage.removeItem("mushtrack-map-optin"); });
       } else {
         localStorage.removeItem("mushtrack-map-optin");
-        await fetch(`/api/map?deviceId=${encodeURIComponent(state.deviceId)}`, { method: "DELETE" }).catch(() => {});
+        await fetch(`${API_BASE}/api/map?deviceId=${encodeURIComponent(state.deviceId)}`, { method: "DELETE" }).catch(() => {});
         loadMapMarkers();
       }
     });
@@ -10431,7 +10436,7 @@ async function loadMapMarkers() {
   musherMap.eachLayer(l => { if (l instanceof L.Marker || l instanceof L.CircleMarker) musherMap.removeLayer(l); });
 
   try {
-    const res  = await fetch("/api/map");
+    const res  = await fetch(`${API_BASE}/api/map`);
     const data = await res.json();
     if (!data.configured || !data.mushers?.length) return;
 
@@ -10485,7 +10490,7 @@ async function subscribeToPush() {
       });
     }
 
-    await fetch("/api/push-subscribe", {
+    await fetch(`${API_BASE}/api/push-subscribe`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -10523,7 +10528,7 @@ async function syncLocalInterestsToServer() {
   for (const id of ids) {
     const entry = interests[id];
     try {
-      await fetch("/api/community", {
+      await fetch(`${API_BASE}/api/community`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -10918,7 +10923,7 @@ function startLiveTracking() {
   if (liveBar) liveBar.style.display = "flex";
 
   _liveWatchId = navigator.geolocation?.watchPosition(pos => {
-    fetch("/api/live", {
+    fetch(`${API_BASE}/api/live`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -10936,7 +10941,7 @@ function startLiveTracking() {
 async function stopLiveTracking() {
   if (!_liveToken) return;
   if (_liveWatchId != null) navigator.geolocation?.clearWatch(_liveWatchId);
-  await fetch(`/api/live?token=${_liveToken}`, { method: "DELETE" }).catch(() => {});
+  await fetch(`${API_BASE}/api/live?token=${_liveToken}`, { method: "DELETE" }).catch(() => {});
   _liveToken = null;
   _liveWatchId = null;
   const liveBar = document.getElementById("live-tracking-bar");
