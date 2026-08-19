@@ -1,6 +1,65 @@
 :root {
   --season-color: #3b82f6;
   --season-color-light: #60a5fa;
+  --bg: #f5f5f5;
+  --bg-screen: #f5f5f5;
+  --tile-bg: #fff;
+  --text-main: #1a1a1a;
+  --text-sub: #555;
+  --text-muted: #aaa;
+  --border: #e0e0e0;
+  --input-bg: #fff;
+  --nav-bg: #fff;
+}
+body.dark-mode {
+  --bg: #111;
+  --bg-screen: #181818;
+  --tile-bg: #222;
+  --text-main: #f0f0f0;
+  --text-sub: #bbb;
+  --text-muted: #666;
+  --border: #333;
+  --input-bg: #2a2a2a;
+  --nav-bg: #1a1a1a;
+  background: var(--bg) !important;
+  color: var(--text-main);
+}
+body.dark-mode .screen,
+body.dark-mode #app-shell {
+  background: var(--bg-screen) !important;
+}
+body.dark-mode .dash-tile,
+body.dark-mode .settings-form section,
+body.dark-mode .form-card,
+body.dark-mode .activity-card,
+body.dark-mode .run-card {
+  background: var(--tile-bg) !important;
+  color: var(--text-main) !important;
+}
+body.dark-mode .bottom-nav {
+  background: var(--nav-bg) !important;
+  border-top-color: var(--border) !important;
+}
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+  background: var(--input-bg) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border) !important;
+}
+body.dark-mode .topbar,
+body.dark-mode .strava-topbar {
+  background: var(--nav-bg) !important;
+  color: var(--text-main) !important;
+}
+body.dark-mode .section-heading h2,
+body.dark-mode p, body.dark-mode span, body.dark-mode label {
+  color: var(--text-main);
+}
+body.dark-mode .secondary-button {
+  background: var(--tile-bg) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border) !important;
 }
 body.mode-summer {
   --season-color: #22c55e;

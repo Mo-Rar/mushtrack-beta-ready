@@ -190,6 +190,17 @@
         </div>
 
 
+        <!-- ── Graphique progression hebdomadaire ── -->
+        <section style="margin:0 14px 24px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <p style="font-size:0.68rem;font-weight:900;letter-spacing:.12em;color:#fc4c02;text-transform:uppercase">PROGRESSION KM / SEMAINE</p>
+          </div>
+          <div style="background:var(--tile-bg,#fff);border-radius:16px;padding:14px 12px 10px;box-shadow:0 2px 12px rgba(0,0,0,0.06)">
+            <canvas id="progress-chart" style="display:none;width:100%;border-radius:8px"></canvas>
+            <p id="chart-empty" class="hidden" style="color:#aaa;font-size:0.82rem;text-align:center;padding:18px 0">Aucune sortie enregistrée encore</p>
+          </div>
+        </section>
+
         <!-- ── Partenaires ── -->
         <section class="sponsor-banner" style="margin:0 14px 24px;justify-content:center">
           <div class="sponsor-logos">
@@ -1001,6 +1012,20 @@
           <button class="lang-btn" data-lang="fr" style="flex:1;padding:10px;border-radius:10px;border:2px solid #fc4c02;font-size:1rem;font-weight:700;cursor:pointer;background:#fff4f0;color:#fc4c02">FR</button>
           <button class="lang-btn" data-lang="en" style="flex:1;padding:10px;border-radius:10px;border:2px solid #ddd;font-size:1rem;font-weight:700;cursor:pointer;background:#fff;color:#555">EN</button>
           <button class="lang-btn" data-lang="de" style="flex:1;padding:10px;border-radius:10px;border:2px solid #ddd;font-size:1rem;font-weight:700;cursor:pointer;background:#fff;color:#555">DE</button>
+        </div>
+
+        <!-- Mode sombre -->
+        <section class="section-heading spaced" style="margin-top:20px">
+          <h2>Apparence</h2>
+        </section>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--tile-bg,#f9f9f9);border-radius:12px;padding:14px 16px;margin-bottom:16px">
+          <span style="font-size:0.9rem;color:var(--text-main,#333)">🌙 Mode sombre</span>
+          <label style="position:relative;display:inline-block;width:46px;height:26px">
+            <input type="checkbox" id="dark-mode-toggle" style="opacity:0;width:0;height:0">
+            <span id="dark-mode-thumb" style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ddd;border-radius:26px;transition:.3s">
+              <span style="position:absolute;content:'';height:20px;width:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;display:block" id="dark-thumb-ball"></span>
+            </span>
+          </label>
         </div>
 
         <!-- Rappel inactivité -->
