@@ -145,10 +145,15 @@ input, textarea, [contenteditable] {
 
 body {
   margin: 0;
-  min-height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   display: grid;
   place-items: center;
   background: #f0f0f0;
+}
+
+html {
+  height: 100%;
 }
 
 body.mode-summer {
@@ -169,18 +174,18 @@ button {
 
 .phone-shell {
   width: min(100vw, 430px);
-  min-height: min(100vh, 920px);
+  height: 100dvh;
   background: #ffffff;
   position: relative;
   overflow-x: hidden;
+  overflow-y: auto;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
 }
 
 .screen {
   display: none;
   padding: 24px 18px 98px;
-  min-height: 100vh;
-  overflow-y: auto;
+  min-height: 100%;
 }
 
 #record {
