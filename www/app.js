@@ -4224,13 +4224,17 @@ function renderSledDiagram() {
     });
 
     // Touch drag (mobile) — plaques placées
+    const cleanupDragClones = () => document.querySelectorAll(".sd-drag-clone").forEach(c => c.remove());
+
     let tDogId = null, tFromSlot = null, tClone = null, tHoverSlot = null;
     container.querySelectorAll(".sd-filled").forEach(el => {
       el.addEventListener("touchstart", e => {
+        cleanupDragClones();
         tFromSlot = el.dataset.slot;
         tDogId = state.teamPositions[tFromSlot] || null;
         tHoverSlot = null;
         tClone = document.createElement("div");
+        tClone.className = "sd-drag-clone";
         const dog = state.dogs.find(d => d.id === tDogId);
         tClone.textContent = dog?.name || "";
         tClone.style.cssText = "position:fixed;opacity:.8;pointer-events:none;z-index:9999;font-size:.9rem;font-weight:700;background:#fc4c02;color:#fff;padding:8px 14px;border-radius:10px;transform:translate(-50%,-50%)";
@@ -10951,4 +10955,8 @@ function shareLiveLink() {
 
 document.getElementById("live-share-btn")?.addEventListener("click", shareLiveLink);
 document.getElementById("live-stop-btn")?.addEventListener("click", stopLiveTracking);
+
+// Filet de sécurité global : supprime tout clone de drag qui aurait survécu
+document.addEventListener("touchend",    () => document.querySelectorAll(".sd-drag-clone").forEach(c => c.remove()), true);
+document.addEventListener("touchcancel", () => document.querySelectorAll(".sd-drag-clone").forEach(c => c.remove()), true);
 // ─────────────────────────────────────────────────────────────────────────────
