@@ -2742,7 +2742,13 @@ function formatDogBirthdate(value) {
 }
 
 function saveState() {
-  localStorage.setItem("mushtrack-state", JSON.stringify(state));
+  try {
+    localStorage.setItem("mushtrack-state", JSON.stringify(state));
+  } catch (e) {
+    // Quota dépassé — on retire les photos et on réessaie
+    const slim = { ...state, dogs: state.dogs.map(d => { const { photoDataUrl, ...rest } = d; return rest; }) };
+    try { localStorage.setItem("mushtrack-state", JSON.stringify(slim)); } catch {}
+  }
   debouncedSync(); // push vers Supabase si connecté (silencieux)
 }
 
@@ -2880,7 +2886,7 @@ async function syncFromSupabase() {
     // Le cloud est plus récent → on applique ses données
     if (remoteTs > localTs) {
       let changed = false;
-      if (Array.isArray(data.dogs)   && data.dogs.length   > 0) { state.dogs   = data.dogs;   changed = true; }
+      if (Array.isArray(data.dogs))   { state.dogs   = data.dogs;   changed = true; }
       if (Array.isArray(data.runs)   && data.runs.length   > 0) { state.runs   = data.runs;   changed = true; }
       if (Array.isArray(data.agenda) && data.agenda.length > 0) { state.agenda = data.agenda; changed = true; }
       if (data.settings && typeof data.settings === "object") {
