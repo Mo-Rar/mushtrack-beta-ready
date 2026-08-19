@@ -3308,17 +3308,24 @@ function render() {
   bindText("nextWorkoutText", workout.text);
   bindText("planIntro", getPlanIntro());
 
-  const activeId = document.querySelector(".screen.active")?.id || "";
-  if (activeId === "dogs" || activeId === "dog-detail") { renderDogs(); renderDogProfile(); }
-  if (activeId === "record" || activeId === "team") { renderDogPicker(); renderSelectedTeam(); renderTeamSlots(); }
-  if (activeId === "record" || activeId === "run-detail") renderRuns();
-  if (activeId === "coach") renderPlan();
-  if (activeId === "analytics") renderAnalytics();
-  if (activeId === "races") renderRaceSearch();
-  if (activeId === "admin") renderAdminPanel();
-  if (activeId === "agenda") renderAgenda();
-  if (activeId === "dashboard") { renderOpenRuns(); renderWebAdvice(); renderNextRace(); renderProgressChart(); renderBadges(); }
-  if (activeId === "vous" || activeId === "vous-enregistrement") { fillSettingsForm(); renderReminders(); renderDogs(); renderRuns(); renderBadges(); }
+  renderDogs();
+  renderDogPicker();
+  renderSelectedTeam();
+  renderTeamSlots();
+  renderRuns();
+  renderPlan();
+  renderAnalytics();
+  renderDogProfile();
+  renderRaceSearch();
+  renderAdminPanel();
+  renderAgenda();
+  renderOpenRuns();
+  renderWebAdvice();
+  renderNextRace();
+  fillSettingsForm();
+  renderProgressChart();
+  renderReminders();
+  renderBadges();
   applyLang();
 }
 
