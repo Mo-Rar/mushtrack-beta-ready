@@ -4853,7 +4853,8 @@ function openRunDetail(index) {
   }
   document.getElementById("rd-weather").textContent = run.weather || "—";
   document.getElementById("rd-energy").textContent = run.energy ? run.energy + " / 5" : "—";
-  document.getElementById("rd-recovery").textContent = run.recovery || "—";
+  const rdRecovery = document.getElementById("rd-recovery");
+  if (rdRecovery) rdRecovery.textContent = run.recovery || "—";
   document.getElementById("rd-notes").textContent = run.notes || "—";
 
   // Naviguer vers l'écran
