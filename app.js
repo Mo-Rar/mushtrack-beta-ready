@@ -2980,15 +2980,48 @@ function showScreen(id, pushHistory = true) {
   }
 }
 
-// Bouton retour navigateur / Android → revient à l'écran précédent
-window.addEventListener("popstate", (e) => {
-  const id = e.state?.screen || "dashboard";
-  showScreen(id, false); // false = ne pas re-pousser dans l'historique
-});
+// ── Gestion bouton retour Android ────────────────────────────────────────────
+const ROOT_SCREENS = new Set(["dashboard", "record", "team", "agenda", "race", "vous", "community", "coach", "advice"]);
 
-// État initial pour que le premier popstate ait un écran de référence
+function currentScreenId() {
+  return document.querySelector(".screen.active")?.id || "dashboard";
+}
+
+function handleBackButton() {
+  // Modale de partage ouverte → la fermer
+  const shareModal = document.getElementById("share-modal");
+  if (shareModal && shareModal.style.display !== "none") {
+    shareModal.style.display = "none";
+    return;
+  }
+  const cur = currentScreenId();
+  if (cur === "run-detail") {
+    showScreen(_runDetailOrigin, false);
+  } else if (cur !== "dashboard") {
+    showScreen("dashboard", false);
+  } else {
+    // Sur dashboard → quitter l'app
+    window.Capacitor?.Plugins?.App?.exitApp();
+  }
+}
+
+// Plugin @capacitor/app — intercepte le bouton retour Android avant le WebView
+if (window.Capacitor?.Plugins?.App) {
+  window.Capacitor.Plugins.App.addListener("backButton", ({ canGoBack }) => {
+    handleBackButton();
+  });
+} else {
+  // Fallback web : popstate + pile double pour éviter la sortie
+  window.addEventListener("popstate", () => {
+    history.pushState({ screen: currentScreenId() }, "", "");
+    handleBackButton();
+  });
+}
+
+// État initial
 if (!history.state?.screen) {
   history.replaceState({ screen: "dashboard" }, "", "");
+  history.pushState({ screen: "dashboard" }, "", "");
 }
 
 function getSeasonKm() {
@@ -3160,10 +3193,14 @@ function render() {
   const formeLabelEl = document.getElementById("dash-forme-label");
   const formeBarEl = document.getElementById("dash-forme-bar");
   const forme = getFormeAttelageScore();
-  if (formeEl && forme) {
-    formeEl.textContent = forme.score + "%";
+  const formeTile = document.getElementById("dash-forme-tile");
+  if (forme) {
+    if (formeTile) formeTile.style.display = "";
+    if (formeEl) formeEl.textContent = forme.score + "%";
     if (formeLabelEl) formeLabelEl.textContent = forme.label;
     if (formeBarEl) formeBarEl.style.width = forme.score + "%";
+  } else {
+    if (formeTile) formeTile.style.display = "none";
   }
 
   // Phrase hero + image selon saison
@@ -3503,6 +3540,15 @@ async function fetchAndShowWeather(lat, lon) {
     // Pré-remplit le champ Météo du bilan de sortie
     const weatherInput = document.getElementById("weather");
     if (weatherInput) weatherInput.value = `${icon} ${temp}°C · ${wind} km/h · ${desc}`;
+
+    // Sauvegarde pour le dashboard
+    if (!state.planWeather) state.planWeather = {};
+    state.planWeather.temp  = `${temp}°C`;
+    state.planWeather.wind  = `${wind} km/h`;
+    state.planWeather.cond  = `${icon} ${desc}`;
+    state.planWeather.fetchedAt = new Date().toISOString();
+    saveState();
+    render();
 
   } catch {
     // Hors ligne ou API indisponible — pas grave, champ reste vide
@@ -3915,6 +3961,45 @@ function renderDogProfile() {
       }
     </div>
 
+    <!-- Vaccins -->
+    <div id="dog-vaccine-section" style="margin-bottom:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.06em;color:#999;font-weight:700;margin:0">Vaccins</p>
+        <button type="button" id="dog-vaccine-add-btn" style="font-size:0.78rem;color:#fc4c02;background:none;border:none;font-weight:700;cursor:pointer">+ Ajouter</button>
+      </div>
+      <div id="dog-vaccine-form" style="display:none;flex-direction:column;gap:8px;background:#fff;border-radius:12px;padding:14px;border:1px solid #f0f0f0;margin-bottom:8px">
+        <input id="dog-vaccine-name" placeholder="Nom du vaccin (ex: Rage)" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem" />
+        <input id="dog-vaccine-date" type="date" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem" />
+        <input id="dog-vaccine-next" type="date" placeholder="Prochain rappel" style="padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem" />
+        <div style="display:flex;gap:8px">
+          <button type="button" id="dog-vaccine-save" style="flex:1;padding:9px;background:#fc4c02;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">Sauvegarder</button>
+          <button type="button" id="dog-vaccine-cancel" style="flex:1;padding:9px;background:#f5f5f5;border:none;border-radius:8px;cursor:pointer">Annuler</button>
+        </div>
+      </div>
+      <div id="dog-vaccine-list">
+        ${(dog.vaccines || []).length === 0
+          ? `<p style="font-size:0.82rem;color:#aaa;text-align:center;padding:12px">Aucun vaccin enregistré</p>`
+          : (dog.vaccines || []).slice().reverse().map((v, ri) => {
+              const realIdx = (dog.vaccines.length - 1) - ri;
+              const today30 = new Date(); today30.setDate(today30.getDate() + 30);
+              const nextD = v.nextDate ? new Date(v.nextDate + "T12:00:00") : null;
+              const isAlert = nextD && nextD <= today30;
+              const daysLeft = nextD ? Math.round((nextD - Date.now()) / 86400000) : null;
+              const alertHtml = isAlert
+                ? `<span style="margin-left:8px;padding:2px 7px;background:#fee2e2;color:#b91c1c;border-radius:6px;font-size:0.72rem;font-weight:700">${daysLeft !== null && daysLeft < 0 ? "Expiré" : "Rappel < 30j"}</span>` : "";
+              return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:#fff;border-radius:10px;border:1px solid ${isAlert?"#fecaca":"#f0f0f0"};margin-bottom:6px">
+                <span style="font-size:1.2rem">💉</span>
+                <div style="flex:1">
+                  <div style="font-weight:600;font-size:0.88rem">${v.name}${alertHtml}</div>
+                  <div style="font-size:0.78rem;color:#999">${v.date ? formatFullDate(v.date) : "—"}${v.nextDate ? " · Rappel : " + formatFullDate(v.nextDate) : ""}</div>
+                </div>
+                <button type="button" data-delete-vaccine="${realIdx}" style="background:none;border:none;color:#ccc;font-size:0.9rem;cursor:pointer">✕</button>
+              </div>`;
+            }).join("")
+        }
+      </div>
+    </div>
+
     <article class="advice-card ${recentKm > 45 ? "important" : ""}">
       <span>Coach</span>
       <h2>${recentKm > 45 ? t('dog_load_high') : t('dog_load_ok')}</h2>
@@ -4028,6 +4113,43 @@ function renderDogProfile() {
   list.querySelector("#dog-profile-delete-btn")?.addEventListener("click", () => {
     deleteDog(dog.id);
     showScreen("dogs");
+  });
+
+  // ── Vaccins ──────────────────────────────────────────────────
+  const vaccineForm = list.querySelector("#dog-vaccine-form");
+  list.querySelector("#dog-vaccine-add-btn")?.addEventListener("click", () => {
+    if (!vaccineForm) return;
+    vaccineForm.style.display = vaccineForm.style.display === "none" ? "flex" : "none";
+    if (vaccineForm.style.display !== "none") {
+      list.querySelector("#dog-vaccine-date").value = new Date().toISOString().slice(0, 10);
+      list.querySelector("#dog-vaccine-name").value = "";
+      list.querySelector("#dog-vaccine-next").value = "";
+    }
+  });
+  list.querySelector("#dog-vaccine-cancel")?.addEventListener("click", () => {
+    if (vaccineForm) vaccineForm.style.display = "none";
+  });
+  list.querySelector("#dog-vaccine-save")?.addEventListener("click", () => {
+    const name     = list.querySelector("#dog-vaccine-name")?.value.trim();
+    const date     = list.querySelector("#dog-vaccine-date")?.value;
+    const nextDate = list.querySelector("#dog-vaccine-next")?.value;
+    if (!name || !date) return;
+    const dogIdx = state.dogs.findIndex(d => d.id === dog.id);
+    if (dogIdx === -1) return;
+    state.dogs[dogIdx].vaccines = state.dogs[dogIdx].vaccines || [];
+    state.dogs[dogIdx].vaccines.push({ id: Date.now().toString(), name, date, nextDate: nextDate || null });
+    saveState();
+    renderDogProfile();
+  });
+  list.querySelectorAll("[data-delete-vaccine]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = parseInt(btn.dataset.deleteVaccine, 10);
+      const dogIdx = state.dogs.findIndex(d => d.id === dog.id);
+      if (dogIdx === -1) return;
+      state.dogs[dogIdx].vaccines = (state.dogs[dogIdx].vaccines || []).filter((_, i) => i !== idx);
+      saveState();
+      renderDogProfile();
+    });
   });
 }
 
@@ -4601,7 +4723,36 @@ function renderSeasons() {
   const activeSeason = state.seasons.find(s => !s.endDate);
   const today = new Date().toISOString().slice(0, 10);
 
+  // ── Stats toutes saisons ──
+  const allRuns = state.runs || [];
+  const totalKm    = allRuns.reduce((s, r) => s + Number(r.km || 0), 0);
+  const totalRuns  = allRuns.length;
+  const totalSecs  = allRuns.reduce((s, r) => {
+    const dur = r.duration || r.durationSec || 0;
+    return s + Number(dur);
+  }, 0);
+  const totalHours = totalSecs >= 60 ? (totalSecs / 3600) : allRuns.reduce((s, r) => {
+    // fallback: try durationMin
+    return s + Number(r.durationMin || 0) / 60;
+  }, 0);
+
   let html = `<div style="padding:12px 16px 24px">`;
+
+  html += `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+      <div style="background:#f9f9f9;border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:1.4rem;font-weight:800;color:#fc4c02">${totalKm.toFixed(0)}</div>
+        <div style="font-size:0.72rem;color:#888">km total</div>
+      </div>
+      <div style="background:#f9f9f9;border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:1.4rem;font-weight:800;color:#fc4c02">${totalRuns}</div>
+        <div style="font-size:0.72rem;color:#888">sorties</div>
+      </div>
+      <div style="background:#f9f9f9;border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:1.4rem;font-weight:800;color:#fc4c02">${totalHours.toFixed(1)}</div>
+        <div style="font-size:0.72rem;color:#888">heures</div>
+      </div>
+    </div>`;
 
   // ── Saison active ──
   if (activeSeason) {
@@ -4786,11 +4937,13 @@ function deleteRun(index) {
 
 let _runDetailMap = null;
 let _runDetailIndex = null;
+let _runDetailOrigin = "record";
 
 function openRunDetail(index) {
   const run = state.runs[index];
   if (!run) return;
   _runDetailIndex = index;
+  _runDetailOrigin = history.state?.screen || "record";
 
   // Stats
   document.getElementById("run-detail-type").textContent = run.type || "Sortie";
@@ -4836,10 +4989,11 @@ function openRunDetail(index) {
     rdTeam.style.display = "none";
   }
 
-  // Durée estimée
-  const durMin = run.km && run.speed > 0 ? Math.round(run.km / run.speed * 60) : 0;
+  // Durée réelle
+  const durSec = run.duration || 0;
+  const durMin = Math.round(durSec > 300 ? durSec / 60 : durSec); // compatibilité anciens formats (minutes ou secondes)
   const h = Math.floor(durMin / 60), m = durMin % 60;
-  document.getElementById("rd-duration").textContent = h > 0 ? `${h}h${String(m).padStart(2,"0")}` : `${m} min`;
+  document.getElementById("rd-duration").textContent = durMin > 0 ? (h > 0 ? `${h}h${String(m).padStart(2,"0")}` : `${m} min`) : "—";
 
   // Infos
   const enginEl = document.getElementById("rd-engin");
@@ -4856,6 +5010,54 @@ function openRunDetail(index) {
   const rdRecovery = document.getElementById("rd-recovery");
   if (rdRecovery) rdRecovery.textContent = run.recovery || "—";
   document.getElementById("rd-notes").textContent = run.notes || "—";
+
+  // Graphique vitesse / altitude
+  renderRunChart(run, "speed");
+  document.getElementById("rd-chart-speed")?.addEventListener("click", () => {
+    document.getElementById("rd-chart-speed").style.background = "#fc4c02";
+    document.getElementById("rd-chart-speed").style.color = "#fff";
+    document.getElementById("rd-chart-alt").style.background = "#e5e5e5";
+    document.getElementById("rd-chart-alt").style.color = "#555";
+    renderRunChart(run, "speed");
+  });
+  document.getElementById("rd-chart-alt")?.addEventListener("click", () => {
+    document.getElementById("rd-chart-alt").style.background = "#fc4c02";
+    document.getElementById("rd-chart-alt").style.color = "#fff";
+    document.getElementById("rd-chart-speed").style.background = "#e5e5e5";
+    document.getElementById("rd-chart-speed").style.color = "#555";
+    renderRunChart(run, "altitude");
+  });
+
+  // Bouton partage GPS carte communautaire
+  const rdShareWrap = document.getElementById("rd-share-trail-wrap");
+  const rdShareBtn  = document.getElementById("rd-share-trail-btn");
+  if (rdShareWrap) {
+    rdShareWrap.style.display = "";
+    if (rdShareBtn) {
+      const hasGPS = run.positions && run.positions.length >= 2;
+      rdShareBtn.onclick = () => {
+        if (!hasGPS) { alert("Cette sortie n'a pas de tracé GPS enregistré."); return; }
+        shareCurrentTrail(run);
+      };
+    }
+  }
+
+  // Bouton image récap réseaux sociaux
+  const rdShareSocial = document.getElementById("rd-share-social-btn");
+  if (rdShareSocial) {
+    rdShareSocial.onclick = async () => {
+      const orig = rdShareSocial.innerHTML;
+      rdShareSocial.textContent = "Génération en cours…";
+      rdShareSocial.disabled    = true;
+      try {
+        await generateShareImage(run);
+      } catch(e) {
+        alert("Erreur lors de la génération : " + e.message);
+      }
+      rdShareSocial.innerHTML = orig;
+      rdShareSocial.disabled  = false;
+    };
+  }
 
   // Naviguer vers l'écran
   showScreen("run-detail");
@@ -4909,12 +5111,12 @@ document.getElementById("dog-detail-settings-btn")?.addEventListener("click", ()
 });
 
 // Boutons écran détail
-document.getElementById("run-detail-back")?.addEventListener("click", () => showScreen("record"));
+document.getElementById("run-detail-back")?.addEventListener("click", () => showScreen(_runDetailOrigin));
 document.getElementById("run-detail-delete")?.addEventListener("click", () => {
   if (_runDetailIndex === null) return;
   if (!confirm("Supprimer cette activité ?")) return;
   deleteRun(_runDetailIndex);
-  showScreen("record");
+  showScreen(_runDetailOrigin);
 });
 
 function renderWeeklyChart() {
@@ -6992,7 +7194,75 @@ function renderAdminPanel() {
 
 const EVENT_ICONS = { veto:"🏥", osteo:"💆", sortie:"🐕", entrainement:"🏃", materiel:"🛒", course:"🏁", autre:"📌", race:"🏁" };
 
+// ── Calendrier agenda ──────────────────────────────────────────
+let agendaCalMonth = new Date();
+
+function renderAgendaCalendar() {
+  const el = document.getElementById("agenda-calendar");
+  if (!el) return;
+
+  const year  = agendaCalMonth.getFullYear();
+  const month = agendaCalMonth.getMonth();
+  const MONTH_NAMES = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+
+  const eventDates = new Set((state.agenda || []).map(e => e.date));
+  const firstDay   = new Date(year, month, 1).getDay();
+  const startOffset = (firstDay + 6) % 7; // Lundi = 0
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date().toISOString().slice(0, 10);
+
+  let cells = "";
+  for (let i = 0; i < startOffset; i++) cells += `<div></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr  = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    const hasEvent = eventDates.has(dateStr);
+    const isToday  = dateStr === today;
+    cells += `<div data-cal-date="${dateStr}" style="text-align:center;padding:4px 2px;border-radius:8px;cursor:${hasEvent?"pointer":"default"};background:${isToday?"#fc4c02":"transparent"};color:${isToday?"#fff":"inherit"};font-size:0.82rem;position:relative">
+      ${d}
+      ${hasEvent ? `<div style="width:5px;height:5px;border-radius:50%;background:${isToday?"#fff":"#fc4c02"};margin:1px auto 0"></div>` : `<div style="height:6px"></div>`}
+    </div>`;
+  }
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <button id="cal-prev" style="background:none;border:none;font-size:1.4rem;cursor:pointer;padding:4px 10px;color:#fc4c02;line-height:1">&#8249;</button>
+      <span style="font-weight:700;font-size:0.9rem">${MONTH_NAMES[month]} ${year}</span>
+      <button id="cal-next" style="background:none;border:none;font-size:1.4rem;cursor:pointer;padding:4px 10px;color:#fc4c02;line-height:1">&#8250;</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">
+      ${["L","Ma","Me","J","V","S","D"].map(d=>`<div style="text-align:center;font-size:0.68rem;color:#bbb;font-weight:700;padding-bottom:4px">${d}</div>`).join("")}
+      ${cells}
+    </div>
+  `;
+
+  el.querySelector("#cal-prev")?.addEventListener("click", () => {
+    agendaCalMonth = new Date(year, month - 1, 1);
+    renderAgendaCalendar();
+  });
+  el.querySelector("#cal-next")?.addEventListener("click", () => {
+    agendaCalMonth = new Date(year, month + 1, 1);
+    renderAgendaCalendar();
+  });
+  el.querySelectorAll("[data-cal-date]").forEach(cell => {
+    cell.addEventListener("click", () => {
+      const date = cell.dataset.calDate;
+      const agendaItems = document.querySelectorAll(".agenda-item");
+      for (const item of agendaItems) {
+        const ev = (state.agenda || []).find(e => e.id === item.dataset.itemId);
+        if (ev && ev.date === date) {
+          item.scrollIntoView({ behavior: "smooth", block: "center" });
+          const prev = item.style.outline;
+          item.style.outline = "2px solid #fc4c02";
+          setTimeout(() => { item.style.outline = prev; }, 1500);
+          break;
+        }
+      }
+    });
+  });
+}
+
 function renderAgenda() {
+  renderAgendaCalendar();
   const lists = document.querySelectorAll('[data-list="agenda"]');
   if (!lists.length) return;
 
@@ -7859,8 +8129,8 @@ function toggleRecording() {
 
 function finishCurrentRun() {
   if (distance < 0.05) {
-    distance = 12.6;
-    seconds = 3180;
+    alert("Distance insuffisante pour sauvegarder cette sortie (minimum 50m).");
+    return;
   }
 
   if (timer) toggleRecording();
@@ -8314,6 +8584,9 @@ saveRunButton.addEventListener("click", saveCurrentRun);
 const coachModal = document.querySelector("#coach-modal");
 const coachResult = document.querySelector("#coach-result");
 const coachQuestion = document.querySelector("#coach-question");
+
+// Bouton "Mon profil" dans Vous → navigue vers paramètres section profil
+document.getElementById("vous-profile-btn")?.addEventListener("click", () => showScreen("settings"));
 
 document.querySelector("#open-coach-btn")?.addEventListener("click", () => {
   coachModal.classList.remove("hidden");
@@ -9925,10 +10198,13 @@ async function initCommunity() {
   await fetchFeed();
 }
 
-// Affiche la bannière si une sortie vient d'être sauvegardée
+// Affiche la bannière uniquement si la dernière sortie n'a pas encore été partagée
 function showCommunityShareBanner() {
   const run = state.runs[0];
   if (!run || !run.km) return;
+  const alreadyShared = localStorage.getItem("mushtrack-last-shared-run");
+  const runKey = `${run.date}-${run.km}`;
+  if (alreadyShared === runKey) return;
   const banner  = document.getElementById("community-share-banner");
   const summary = document.getElementById("community-share-summary");
   if (!banner || !summary) return;
@@ -9940,6 +10216,7 @@ function showCommunityShareBanner() {
 
 document.getElementById("community-share-dismiss")?.addEventListener("click", () => {
   document.getElementById("community-share-banner").style.display = "none";
+  if (lastSharedRun) localStorage.setItem("mushtrack-last-shared-run", `${lastSharedRun.date}-${lastSharedRun.km}`);
   selectedPhotoFile = null;
   const preview = document.getElementById("community-photo-preview");
   if (preview) preview.style.display = "none";
@@ -9947,7 +10224,7 @@ document.getElementById("community-share-dismiss")?.addEventListener("click", ()
 
 // Aperçu photo en temps réel
 let selectedPhotoFile = null;
-document.getElementById("community-photo-input")?.addEventListener("change", (e) => {
+function onPhotoInputChange(e) {
   const file = e.target.files[0];
   if (!file) return;
   selectedPhotoFile = file;
@@ -9962,9 +10239,12 @@ document.getElementById("community-photo-input")?.addEventListener("change", (e)
   };
   reader.readAsDataURL(file);
   const label = document.getElementById("community-photo-label");
-  if (label) label.innerHTML = `&#x2705; Photo s&eacute;lectionn&eacute;e <input id="community-photo-input" type="file" accept="image/*" capture="environment" style="display:none"/>`;
-  document.getElementById("community-photo-input")?.addEventListener("change", arguments.callee);
-});
+  if (label) {
+    label.innerHTML = `&#x2705; Photo sélectionnée <input id="community-photo-input" type="file" accept="image/*" capture="environment" style="display:none"/>`;
+    document.getElementById("community-photo-input")?.addEventListener("change", onPhotoInputChange);
+  }
+}
+document.getElementById("community-photo-input")?.addEventListener("change", onPhotoInputChange);
 
 async function uploadFeedPhoto(file, deviceId) {
   const ext  = file.name.split(".").pop() || "jpg";
@@ -10017,6 +10297,7 @@ document.getElementById("community-share-btn")?.addEventListener("click", async 
       return;
     }
     selectedPhotoFile = null;
+    localStorage.setItem("mushtrack-last-shared-run", `${lastSharedRun.date}-${lastSharedRun.km}`);
     document.getElementById("community-share-banner").style.display = "none";
     await fetchFeed();
   } catch (e) {
@@ -10244,13 +10525,46 @@ document.querySelectorAll(".community-tab").forEach(tab => {
     document.getElementById("community-tab-feed").style.display       = t === "feed"       ? "block" : "none";
     document.getElementById("community-tab-challenges").style.display = t === "challenges" ? "block" : "none";
     document.getElementById("community-tab-clubs").style.display      = t === "clubs"      ? "block" : "none";
+    document.getElementById("community-tab-map").style.display       = t === "map"        ? "block" : "none";
     if (t === "challenges") renderChallenge();
     if (t === "clubs")      renderMyClubs();
-    if (t === "map")        initMushersMap();
+    if (t === "map")        { initMushersMap(); loadSharedTrails(); }
   });
 });
 
 // ── Défis hebdomadaires ───────────────────────────────────────────────────────
+// ── Boutons formulaire défi ───────────────────────────────────────────────────
+document.getElementById("challenge-create-btn")?.addEventListener("click", () => {
+  document.getElementById("challenge-form").style.display = "";
+  document.getElementById("challenge-create-btn").style.display = "none";
+});
+document.getElementById("challenge-cancel-btn")?.addEventListener("click", () => {
+  document.getElementById("challenge-form").style.display = "none";
+  document.getElementById("challenge-create-btn").style.display = "";
+});
+document.getElementById("challenge-submit-btn")?.addEventListener("click", async () => {
+  const title = document.getElementById("challenge-title-input").value.trim();
+  const goal  = Number(document.getElementById("challenge-goal-input").value);
+  const days  = Number(document.getElementById("challenge-days-input").value) || 7;
+  if (!title || !goal) { alert("Remplis le nom et l'objectif km."); return; }
+  const btn = document.getElementById("challenge-submit-btn");
+  btn.textContent = "Publication…"; btn.disabled = true;
+  const start = new Date().toISOString().slice(0, 10);
+  const end   = new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+  await fetch(`${API_BASE}/api/challenges`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title, targetKm: goal, weekStart: start, weekEnd: end, deviceId: state.deviceId, userName: state.profile?.name || "Musher" })
+  }).catch(() => {});
+  document.getElementById("challenge-form").style.display = "none";
+  document.getElementById("challenge-create-btn").style.display = "";
+  document.getElementById("challenge-title-input").value = "";
+  document.getElementById("challenge-goal-input").value = "";
+  document.getElementById("challenge-days-input").value = "";
+  btn.textContent = "Publier"; btn.disabled = false;
+  renderChallenge();
+});
+
 async function renderChallenge() {
   const el = document.getElementById("challenge-card");
   if (!el) return;
@@ -10258,8 +10572,8 @@ async function renderChallenge() {
   try {
     const res  = await fetch(`${API_BASE}/api/challenges`);
     const data = await res.json();
-    if (!data.configured) { el.innerHTML = `<p style="color:#aaa;text-align:center;padding:30px 0;font-size:0.85rem">Défis non configurés.<br>Exécute <code>supabase/challenges_clubs.sql</code></p>`; return; }
-    if (!data.challenge)  { el.innerHTML = `<p style="color:#aaa;text-align:center;padding:30px 0;font-size:0.85rem">Aucun défi actif cette semaine.</p>`; return; }
+    if (!data.configured) { el.innerHTML = `<p style="color:#aaa;text-align:center;padding:30px 0;font-size:0.85rem">Défis non configurés.</p>`; return; }
+    if (!data.challenge)  { el.innerHTML = `<p style="color:#aaa;text-align:center;padding:20px 0;font-size:0.85rem">Aucun défi actif — crée le premier !</p>`; return; }
 
     const ch      = data.challenge;
     const entries = data.entries || [];
@@ -10481,6 +10795,352 @@ async function loadMapMarkers() {
   } catch (e) {}
 }
 
+// ── Graphique vitesse / altitude ──────────────────────────────────────────────
+function renderRunChart(run, mode) {
+  const wrap   = document.getElementById("rd-chart-wrap");
+  const canvas = document.getElementById("rd-chart-canvas");
+  if (!wrap || !canvas) return;
+
+  const positions = run.positions || [];
+  const hasSpeeds = positions.some(p => p.speed != null);
+  const hasAlts   = positions.some(p => p.altitude != null || p.alt != null);
+
+  if (!hasSpeeds && !hasAlts) { wrap.style.display = "none"; return; }
+  if (mode === "altitude" && !hasAlts) return;
+  if (mode === "speed"    && !hasSpeeds) return;
+  wrap.style.display = "";
+
+  const values = positions.map(p =>
+    mode === "altitude" ? (p.altitude ?? p.alt ?? null) : (p.speed ?? null)
+  ).filter(v => v != null);
+
+  if (values.length < 2) { wrap.style.display = "none"; return; }
+
+  const W    = canvas.offsetWidth || 300;
+  const H    = 120;
+  canvas.width  = W;
+  canvas.height = H;
+  const ctx  = canvas.getContext("2d");
+  const min  = Math.min(...values);
+  const max  = Math.max(...values);
+  const pad  = 12;
+  const rangeV = max - min || 1;
+
+  const toX = i => pad + (i / (values.length - 1)) * (W - pad * 2);
+  const toY = v => H - pad - ((v - min) / rangeV) * (H - pad * 2);
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Zone remplie
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, "rgba(252,76,2,0.25)");
+  grad.addColorStop(1, "rgba(252,76,2,0)");
+  ctx.beginPath();
+  ctx.moveTo(toX(0), H - pad);
+  values.forEach((v, i) => ctx.lineTo(toX(i), toY(v)));
+  ctx.lineTo(toX(values.length - 1), H - pad);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Ligne
+  ctx.beginPath();
+  ctx.moveTo(toX(0), toY(values[0]));
+  values.forEach((v, i) => ctx.lineTo(toX(i), toY(v)));
+  ctx.strokeStyle = "#fc4c02";
+  ctx.lineWidth   = 2;
+  ctx.lineJoin    = "round";
+  ctx.stroke();
+
+  // Labels min/max
+  const unit = mode === "altitude" ? "m" : "km/h";
+  ctx.fillStyle = "#888";
+  ctx.font      = "10px system-ui";
+  ctx.textAlign = "left";
+  ctx.fillText(`${Math.round(max)} ${unit}`, pad, pad + 10);
+  ctx.fillText(`${Math.round(min)} ${unit}`, pad, H - 2);
+}
+
+// ── Image récap réseaux sociaux ───────────────────────────────────────────────
+async function generateShareImage(run) {
+  const canvas = document.getElementById("share-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const W = 1080, H = 1080;
+
+  // ── Fond dégradé ────────────────────────────────────────────────────────────
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0,   "#0f0c29");
+  grad.addColorStop(0.5, "#302b63");
+  grad.addColorStop(1,   "#24243e");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Texture grain subtile ────────────────────────────────────────────────────
+  ctx.save();
+  ctx.globalAlpha = 0.04;
+  for (let i = 0; i < 8000; i++) {
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
+  }
+  ctx.restore();
+
+  // ── Carte GPS (mini tracé) ───────────────────────────────────────────────────
+  const positions = run.positions || [];
+  const mapY = 120, mapH = 420, mapX = 60, mapW = W - 120;
+  if (positions.length >= 2) {
+    // fond carte
+    ctx.save();
+    ctx.beginPath();
+    roundRect(ctx, mapX, mapY, mapW, mapH, 24);
+    ctx.fillStyle = "rgba(255,255,255,0.07)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,0.12)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.clip();
+
+    // normaliser lat/lon → pixels
+    const lats = positions.map(p => p.lat);
+    const lons = positions.map(p => p.lon);
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+    const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+    const pad = 48;
+    const scaleX = (mapW - pad * 2) / (maxLon - minLon || 0.001);
+    const scaleY = (mapH - pad * 2) / (maxLat - minLat || 0.001);
+    const scale  = Math.min(scaleX, scaleY);
+    const offX   = mapX + pad + ((mapW - pad * 2) - (maxLon - minLon) * scale) / 2;
+    const offY   = mapY + pad + ((mapH - pad * 2) - (maxLat - minLat) * scale) / 2;
+    const toX = lon => offX + (lon - minLon) * scale;
+    const toY = lat => offY + (maxLat - lat) * scale;
+
+    // tracé glow
+    ctx.shadowColor = "#f97316";
+    ctx.shadowBlur  = 18;
+    ctx.beginPath();
+    ctx.moveTo(toX(positions[0].lon), toY(positions[0].lat));
+    for (const p of positions) ctx.lineTo(toX(p.lon), toY(p.lat));
+    ctx.strokeStyle = "#f97316";
+    ctx.lineWidth   = 6;
+    ctx.lineJoin    = "round";
+    ctx.lineCap     = "round";
+    ctx.stroke();
+    ctx.shadowBlur  = 0;
+
+    // point départ / arrivée
+    const s = positions[0], e = positions[positions.length - 1];
+    dot(ctx, toX(s.lon), toY(s.lat), "#4ade80", 10);
+    dot(ctx, toX(e.lon), toY(e.lat), "#f43f5e", 10);
+    ctx.restore();
+  } else {
+    // pas de GPS — rectangle placeholder
+    ctx.save();
+    ctx.beginPath();
+    roundRect(ctx, mapX, mapY, mapW, mapH, 24);
+    ctx.fillStyle = "rgba(255,255,255,0.05)";
+    ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = "rgba(255,255,255,0.2)";
+    ctx.font      = "bold 36px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("🐕 Sortie", W / 2, mapY + mapH / 2 + 12);
+  }
+
+  // ── Stats principales ────────────────────────────────────────────────────────
+  const statsY = mapY + mapH + 60;
+  const km     = Number(run.km || 0).toFixed(1);
+  const speed  = run.avgSpeed ? Number(run.avgSpeed).toFixed(1) : (run.speed ? Number(run.speed).toFixed(1) : "—");
+  const dur    = (() => {
+    if (run.duration) { const m = Math.round(run.duration / 60); return m >= 60 ? `${Math.floor(m/60)}h${String(m%60).padStart(2,"0")}` : `${m} min`; }
+    return "—";
+  })();
+
+  const stats = [
+    { val: `${km}`, unit: "km",    label: "Distance" },
+    { val: speed,   unit: "km/h",  label: "Vitesse moy." },
+    { val: dur,     unit: "",      label: "Durée" },
+  ];
+  const colW = W / 3;
+  stats.forEach((s, i) => {
+    const cx = colW * i + colW / 2;
+    // valeur
+    ctx.fillStyle = "#ffffff";
+    ctx.font      = "bold 80px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(s.val, cx, statsY);
+    // unité
+    ctx.fillStyle = "#f97316";
+    ctx.font      = "bold 28px system-ui";
+    ctx.fillText(s.unit, cx, statsY + 36);
+    // label
+    ctx.fillStyle = "rgba(255,255,255,0.5)";
+    ctx.font      = "500 26px system-ui";
+    ctx.fillText(s.label, cx, statsY + 72);
+  });
+
+  // ── Séparateur ───────────────────────────────────────────────────────────────
+  const sepY = statsY + 110;
+  ctx.strokeStyle = "rgba(255,255,255,0.1)";
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(60, sepY); ctx.lineTo(W - 60, sepY); ctx.stroke();
+
+  // ── Équipe de chiens ─────────────────────────────────────────────────────────
+  const teamY = sepY + 44;
+  const team = (run.team || []).map(id => state.dogs.find(d => d.id === id)?.name).filter(Boolean);
+  if (team.length) {
+    ctx.fillStyle = "rgba(255,255,255,0.45)";
+    ctx.font      = "500 26px system-ui";
+    ctx.textAlign = "center";
+    const label = team.length === 1 ? "🐕 " + team[0] : "🐕 " + team.slice(0, 4).join(" · ") + (team.length > 4 ? ` +${team.length - 4}` : "");
+    ctx.fillText(label, W / 2, teamY);
+  }
+
+  // ── Date & type ──────────────────────────────────────────────────────────────
+  const dateStr = run.date ? new Date(run.date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "";
+  const typeStr = run.type || "Sortie";
+  ctx.fillStyle = "rgba(255,255,255,0.3)";
+  ctx.font      = "500 24px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText(`${typeStr}  ·  ${dateStr}`, W / 2, teamY + 46);
+
+  // ── Logo MushTrack ───────────────────────────────────────────────────────────
+  const logoY = H - 90;
+  ctx.fillStyle = "#f97316";
+  ctx.font      = "bold 38px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("🐾 MushTrack", W / 2, logoY);
+  ctx.fillStyle = "rgba(255,255,255,0.2)";
+  ctx.font      = "500 22px system-ui";
+  ctx.fillText("mushtrack.app", W / 2, logoY + 34);
+
+  // ── Afficher dans la modale ──────────────────────────────────────────────────
+  const dataUrl = canvas.toDataURL("image/png");
+  showShareModal(dataUrl, `🐾 ${km} km · ${speed} km/h — MushTrack`);
+}
+
+function showShareModal(dataUrl, shareText) {
+  const modal   = document.getElementById("share-modal");
+  const img     = document.getElementById("share-modal-img");
+  const btnShare = document.getElementById("share-modal-share");
+  const btnClose = document.getElementById("share-modal-close");
+  if (!modal || !img) return;
+
+  img.src = dataUrl;
+  modal.style.display = "flex";
+
+  btnClose.onclick = () => { modal.style.display = "none"; };
+
+  btnShare.onclick = async () => {
+    try {
+      // Essai 1 : Web Share API avec fichier
+      const res  = await fetch(dataUrl);
+      const blob = await res.blob();
+      const file = new File([blob], "mushtrack-sortie.png", { type: "image/png" });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: "Ma sortie MushTrack", text: shareText });
+        return;
+      }
+      // Essai 2 : Web Share API texte seul
+      if (navigator.share) {
+        await navigator.share({ title: "Ma sortie MushTrack", text: shareText });
+        return;
+      }
+      // Fallback : téléchargement
+      const a = document.createElement("a");
+      a.href = dataUrl; a.download = "mushtrack-sortie.png";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    } catch (e) {
+      if (e.name !== "AbortError") alert("Appuyez longuement sur l'image pour l'enregistrer.");
+    }
+  };
+}
+
+function dot(ctx, x, y, color, r) {
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur  = 12;
+  ctx.fill();
+  ctx.shadowBlur  = 0;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// ── Pistes GPS partagées ──────────────────────────────────────────────────────
+let trailLayers = [];
+
+async function loadSharedTrails() {
+  if (!musherMap) return;
+  trailLayers.forEach(l => musherMap.removeLayer(l));
+  trailLayers = [];
+  try {
+    const res  = await fetch(`${API_BASE}/api/trails`);
+    const data = await res.json();
+    if (!data.configured || !data.trails?.length) return;
+    for (const trail of data.trails) {
+      try {
+        const gj = typeof trail.geojson === "string" ? JSON.parse(trail.geojson) : trail.geojson;
+        const layer = L.geoJSON(gj, {
+          style: { color: "#f97316", weight: 3, opacity: 0.75 }
+        }).addTo(musherMap);
+        const km = trail.distance_km ? `${Number(trail.distance_km).toFixed(1)} km` : "";
+        layer.bindPopup(`<strong>${trail.name || "Piste"}</strong><br><small>${trail.user_name || "Musher"}</small>${km ? `<br>${km}` : ""}`);
+        trailLayers.push(layer);
+      } catch (_) {}
+    }
+  } catch (e) {}
+}
+
+async function shareCurrentTrail(run) {
+  if (!run || !run.positions || run.positions.length < 2) {
+    alert("Pas assez de points GPS pour partager cette piste.");
+    return;
+  }
+  const geojson = {
+    type: "Feature",
+    geometry: {
+      type: "LineString",
+      coordinates: run.positions.map(p => [p.lon, p.lat])
+    },
+    properties: {}
+  };
+  try {
+    const res = await fetch(`${API_BASE}/api/trails`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        deviceId:    state.deviceId,
+        userName:    state.profile?.name || "Musher",
+        name:        run.title || `Sortie du ${run.date || ""}`,
+        region:      state.profile?.region || "",
+        type:        run.type || "sortie",
+        distanceKm:  run.km || 0,
+        geojson
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      alert("Piste partagée sur la carte communautaire !");
+    } else {
+      alert("Erreur lors du partage.");
+    }
+  } catch (e) {
+    alert("Erreur réseau : " + e.message);
+  }
+}
+
 // ── Push Notifications ────────────────────────────────────────────────────────
 const VAPID_PUBLIC_KEY = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjZkOqp0nOFuUzIjbCzxO5_8IhFk";
 
@@ -10532,10 +11192,96 @@ setTimeout(() => {
   }
 }, 10000);
 
+// ── Notifications locales d'inactivité ───────────────────────────────────────
+async function scheduleInactivityReminder() {
+  const LocalNotifications = window.Capacitor?.Plugins?.LocalNotifications;
+  if (!LocalNotifications) return;
+
+  const runs = state.runs || [];
+  if (!runs.length) return;
+
+  // Trouver la sortie la plus récente
+  const lastRun = runs
+    .filter(r => r.date)
+    .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+  if (!lastRun) return;
+
+  const daysSince = Math.floor((Date.now() - new Date(lastRun.date).getTime()) / (1000 * 60 * 60 * 24));
+  const inactiveDays = state.settings?.reminderDays || 3;
+
+  // Demander la permission
+  const perm = await LocalNotifications.requestPermissions().catch(() => ({ display: "denied" }));
+  if (perm.display !== "granted") return;
+
+  // Annuler les anciens rappels
+  await LocalNotifications.cancel({ notifications: [{ id: 42 }] }).catch(() => {});
+
+  // Programmer le prochain rappel (dans X jours à 18h)
+  const notifDate = new Date();
+  notifDate.setDate(notifDate.getDate() + inactiveDays);
+  notifDate.setHours(18, 0, 0, 0);
+
+  const messages = [
+    `${inactiveDays} jours sans sortie — tes chiens attendent ! 🐕`,
+    `Ça fait ${inactiveDays} jours… une petite sortie aujourd'hui ? 🏃`,
+    `Rappel MushTrack : ${inactiveDays} jours d'inactivité. On repart ? 🐾`,
+  ];
+  const msg = messages[Math.floor(Math.random() * messages.length)];
+
+  await LocalNotifications.schedule({
+    notifications: [{
+      id: 42,
+      title: "MushTrack",
+      body: daysSince >= inactiveDays ? `${daysSince} jours sans sortie — tes chiens t'attendent ! 🐕` : msg,
+      schedule: { at: notifDate },
+      sound: null,
+      smallIcon: "ic_launcher_foreground",
+    }]
+  }).catch(() => {});
+
+  // Si déjà inactif depuis X jours → notif immédiate
+  if (daysSince >= inactiveDays) {
+    await LocalNotifications.schedule({
+      notifications: [{
+        id: 43,
+        title: "MushTrack",
+        body: `${daysSince} jours sans sortie — tes chiens t'attendent ! 🐕`,
+        schedule: { at: new Date(Date.now() + 5000) },
+        sound: null,
+        smallIcon: "ic_launcher_foreground",
+      }]
+    }).catch(() => {});
+  }
+}
+
+// Réglage rappel inactivité
+const reminderSelect = document.getElementById("reminder-days-select");
+if (reminderSelect) {
+  reminderSelect.value = String(state.settings?.reminderDays || 3);
+  reminderSelect.addEventListener("change", () => {
+    if (!state.settings) state.settings = {};
+    state.settings.reminderDays = Number(reminderSelect.value);
+    saveState();
+    scheduleInactivityReminder();
+  });
+}
+
+// Météo automatique au démarrage si pas de données récentes
+(function autoLoadWeather() {
+  if (state.planWeather?.temp && state.planWeather?.fetchedAt) {
+    const age = Date.now() - new Date(state.planWeather.fetchedAt).getTime();
+    if (age < 3 * 60 * 60 * 1000) return; // moins de 3h → pas besoin
+  }
+  navigator.geolocation?.getCurrentPosition(pos => {
+    fetchAndShowWeather(pos.coords.latitude, pos.coords.longitude);
+  }, () => {}, { timeout: 5000, maximumAge: 600000 });
+})();
+
 // Initialisation au démarrage
 checkReminders();
 fetchLeaderboard();
 applyLang();
+setTimeout(scheduleInactivityReminder, 3000);
 syncLocalInterestsToServer();
 
 // Renvoie à Supabase tous les intérêts locaux qui auraient été perdus (bug env vars)
@@ -10805,6 +11551,7 @@ document.getElementById("race-view-map-btn")?.addEventListener("click", () => {
   document.querySelector(".race-search-panel").style.display = "none";
   document.getElementById("race-map-view").style.display = "block";
   initRaceMap();
+  setTimeout(() => raceMap?.invalidateSize(), 100);
 });
 
 // Boutons de langue

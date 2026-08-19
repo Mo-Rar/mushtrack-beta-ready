@@ -4857,6 +4857,17 @@ function openRunDetail(index) {
   if (rdRecovery) rdRecovery.textContent = run.recovery || "—";
   document.getElementById("rd-notes").textContent = run.notes || "—";
 
+  // Bouton partage GPS
+  const rdShareWrap = document.getElementById("rd-share-trail-wrap");
+  const rdShareBtn  = document.getElementById("rd-share-trail-btn");
+  if (rdShareWrap) {
+    const hasGPS = run.positions && run.positions.length >= 2;
+    rdShareWrap.style.display = hasGPS ? "" : "none";
+    if (hasGPS && rdShareBtn) {
+      rdShareBtn.onclick = () => shareCurrentTrail(run);
+    }
+  }
+
   // Naviguer vers l'écran
   showScreen("run-detail");
 
@@ -10244,9 +10255,10 @@ document.querySelectorAll(".community-tab").forEach(tab => {
     document.getElementById("community-tab-feed").style.display       = t === "feed"       ? "block" : "none";
     document.getElementById("community-tab-challenges").style.display = t === "challenges" ? "block" : "none";
     document.getElementById("community-tab-clubs").style.display      = t === "clubs"      ? "block" : "none";
+    document.getElementById("community-tab-map").style.display       = t === "map"        ? "block" : "none";
     if (t === "challenges") renderChallenge();
     if (t === "clubs")      renderMyClubs();
-    if (t === "map")        initMushersMap();
+    if (t === "map")        { initMushersMap(); loadSharedTrails(); }
   });
 });
 
@@ -10479,6 +10491,69 @@ async function loadMapMarkers() {
       marker.bindPopup(`<strong>${g.names.join(", ")}</strong><br><small>${g.names.length} musher${g.names.length > 1 ? "s" : ""} dans cette zone</small>`);
     }
   } catch (e) {}
+}
+
+// ── Pistes GPS partagées ──────────────────────────────────────────────────────
+let trailLayers = [];
+
+async function loadSharedTrails() {
+  if (!musherMap) return;
+  trailLayers.forEach(l => musherMap.removeLayer(l));
+  trailLayers = [];
+  try {
+    const res  = await fetch(`${API_BASE}/api/trails`);
+    const data = await res.json();
+    if (!data.configured || !data.trails?.length) return;
+    for (const trail of data.trails) {
+      try {
+        const gj = typeof trail.geojson === "string" ? JSON.parse(trail.geojson) : trail.geojson;
+        const layer = L.geoJSON(gj, {
+          style: { color: "#f97316", weight: 3, opacity: 0.75 }
+        }).addTo(musherMap);
+        const km = trail.distance_km ? `${Number(trail.distance_km).toFixed(1)} km` : "";
+        layer.bindPopup(`<strong>${trail.name || "Piste"}</strong><br><small>${trail.user_name || "Musher"}</small>${km ? `<br>${km}` : ""}`);
+        trailLayers.push(layer);
+      } catch (_) {}
+    }
+  } catch (e) {}
+}
+
+async function shareCurrentTrail(run) {
+  if (!run || !run.positions || run.positions.length < 2) {
+    alert("Pas assez de points GPS pour partager cette piste.");
+    return;
+  }
+  const geojson = {
+    type: "Feature",
+    geometry: {
+      type: "LineString",
+      coordinates: run.positions.map(p => [p.lon, p.lat])
+    },
+    properties: {}
+  };
+  try {
+    const res = await fetch(`${API_BASE}/api/trails`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        deviceId:    state.deviceId,
+        userName:    state.profile?.name || "Musher",
+        name:        run.title || `Sortie du ${run.date || ""}`,
+        region:      state.profile?.region || "",
+        type:        run.type || "sortie",
+        distanceKm:  run.km || 0,
+        geojson
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      alert("Piste partagée sur la carte communautaire !");
+    } else {
+      alert("Erreur lors du partage.");
+    }
+  } catch (e) {
+    alert("Erreur réseau : " + e.message);
+  }
 }
 
 // ── Push Notifications ────────────────────────────────────────────────────────
