@@ -172,7 +172,7 @@ button {
   min-height: min(100vh, 920px);
   background: #ffffff;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
 }
 
