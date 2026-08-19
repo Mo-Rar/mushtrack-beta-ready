@@ -5827,7 +5827,9 @@ function getNextWorkout() {
     };
   }
 
-  if (context.volumeFactor < 1) nextKm = Math.max(3, Math.round(nextKm * context.volumeFactor));
+  if (context.volumeFactor < 1) {
+    nextKm = Math.max(3, Math.round(nextKm * context.volumeFactor));
+  }
 
   const label = state.raceType === "Sprint" ? t('plan_intervals')
     : state.raceType === "Longue distance" ? t('plan_long_run')
@@ -5837,9 +5839,13 @@ function getNextWorkout() {
   const recovNote = (lastRecov === "Difficile" || lastRecov === "A surveiller")
     ? " " + t('plan_recov_note') : "";
 
+  const temp = context.weather?.temperature;
+  const morningNote = (temp != null && temp >= 10 && temp < 15)
+    ? " Sors tôt le matin avant que la température monte." : "";
+
   return {
     title: label,
-    text: t('plan_next_km').replace('{n}', nextKm).replace('{avg}', Math.round(avgKm)) + recovNote,
+    text: t('plan_next_km').replace('{n}', nextKm).replace('{avg}', Math.round(avgKm)) + recovNote + morningNote,
     km: nextKm
   };
 }
@@ -5880,9 +5886,13 @@ function getPlanContext() {
       weatherRisk = `Chaud pour tracter (${Math.round(temp)}°C) — balade légère seulement`;
       volumeFactor = 0;
       riskLevel = "danger";
-    } else if (temp >= 10) {
-      weatherRisk = `Température limite (${Math.round(temp)}°C) — sortie courte et lente`;
+    } else if (temp >= 12) {
+      weatherRisk = `Limite pour tracter (${Math.round(temp)}°C) — sors tôt le matin avant la chaleur`;
       volumeFactor *= 0.70;
+      riskLevel = "light";
+    } else if (temp >= 10) {
+      weatherRisk = `Frais (${Math.round(temp)}°C) — sors tôt le matin, sortie courte et lente`;
+      volumeFactor *= 0.85;
       riskLevel = "light";
     }
 
