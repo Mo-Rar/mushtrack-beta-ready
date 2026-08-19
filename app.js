@@ -3318,7 +3318,7 @@ function render() {
   if (activeId === "admin") renderAdminPanel();
   if (activeId === "agenda") renderAgenda();
   if (activeId === "dashboard") { renderOpenRuns(); renderWebAdvice(); renderNextRace(); renderProgressChart(); renderBadges(); }
-  if (activeId === "vous") { fillSettingsForm(); renderReminders(); }
+  if (activeId === "vous" || activeId === "vous-enregistrement") { fillSettingsForm(); renderReminders(); renderDogs(); renderRuns(); renderBadges(); }
   applyLang();
 }
 
