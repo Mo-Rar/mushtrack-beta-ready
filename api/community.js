@@ -1,4 +1,4 @@
-const TABLE = "mushtrack_race_interests";
+﻿const TABLE = "mushtrack_race_interests";
 const OPEN_RUNS_TABLE = "mushtrack_open_runs";
 const OPEN_RUN_PARTICIPANTS_TABLE = "mushtrack_open_run_participants";
 
@@ -12,7 +12,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const configured = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
+  const configured = Boolean(process.env.SUPABASE_URL && (process.env.SUPABASE_SERVICE_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY));
   if (!configured) {
     res.status(200).json({
       configured: false,
@@ -234,8 +234,8 @@ async function supabaseFetch(path, options) {
   const response = await fetch(`${process.env.SUPABASE_URL}/rest/v1/${path}`, {
     ...options,
     headers: {
-      apikey: process.env.SUPABASE_SERVICE_KEY,
-      Authorization: `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
+      apikey: (process.env.SUPABASE_SERVICE_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY),
+      Authorization: `Bearer ${(process.env.SUPABASE_SERVICE_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY)}`,
       "Content-Type": "application/json",
       ...(options.headers || {})
     }

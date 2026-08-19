@@ -1,4 +1,4 @@
-// /api/profile.js — lecture et écriture du profil musher public
+﻿// /api/profile.js — lecture et écriture du profil musher public
 // GET  ?slug=mo-rar          → retourne le profil public
 // POST { slug, data }        → crée/met à jour le profil
 

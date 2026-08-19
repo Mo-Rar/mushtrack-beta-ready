@@ -1,0 +1,14 @@
+{
+  "appId": "com.mushtrack.app",
+  "appName": "MushTrack",
+  "webDir": "www",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "launchAutoHide": true,
+      "backgroundColor": "#fff8f5",
+      "androidSplashResourceName": "splash",
+      "showSpinner": false
+    }
+  }
+}

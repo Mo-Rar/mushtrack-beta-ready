@@ -1,4 +1,4 @@
-// Courses lues depuis Supabase (table mushtrack_races)
+﻿// Courses lues depuis Supabase (table mushtrack_races)
 // Fallback sur le catalogue statique si Supabase n'est pas configuré
 
 const seedRaces = [

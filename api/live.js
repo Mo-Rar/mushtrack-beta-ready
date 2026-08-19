@@ -1,7 +1,7 @@
-// Suivi GPS en direct — GET (lire position) · POST (écrire position) · DELETE (arrêter)
+﻿// Suivi GPS en direct — GET (lire position) · POST (écrire position) · DELETE (arrêter)
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const SUPABASE_KEY = (process.env.SUPABASE_SERVICE_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 module.exports = async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");

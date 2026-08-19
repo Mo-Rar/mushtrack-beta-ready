@@ -1,9 +1,9 @@
-// Enregistre l'abonnement push d'un utilisateur dans Supabase
+﻿// Enregistre l'abonnement push d'un utilisateur dans Supabase
 const { createClient } = require("@supabase/supabase-js");
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  (process.env.SUPABASE_SERVICE_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY)
 );
 
 module.exports = async (req, res) => {

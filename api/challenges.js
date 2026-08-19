@@ -1,11 +1,11 @@
-// /api/challenges.js — defis hebdomadaires MushTrack
+﻿// /api/challenges.js — defis hebdomadaires MushTrack
 module.exports = async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(204).end();
 
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY)
+  if (!process.env.SUPABASE_URL || !(process.env.SUPABASE_SERVICE_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY))
     return res.status(200).json({ configured: false });
 
   try {
@@ -51,8 +51,8 @@ async function sb(path, method, extraHeaders = {}, body = null) {
   const opts = {
     method,
     headers: {
-      apikey: process.env.SUPABASE_SERVICE_KEY,
-      Authorization: `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
+      apikey: (process.env.SUPABASE_SERVICE_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY),
+      Authorization: `Bearer ${(process.env.SUPABASE_SERVICE_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY)}`,
       "Content-Type": "application/json",
       ...extraHeaders
     }

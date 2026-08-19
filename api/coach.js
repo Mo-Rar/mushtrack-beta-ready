@@ -1,4 +1,4 @@
-// api/coach.js — Coach MushTrack IA (Vercel serverless)
+﻿// api/coach.js — Coach MushTrack IA (Vercel serverless)
 // Appelle l'API Claude avec les données d'entraînement de l'utilisateur
 
 module.exports = async function handler(req, res) {

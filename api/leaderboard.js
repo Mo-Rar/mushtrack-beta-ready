@@ -1,4 +1,4 @@
-const TABLE = "mushtrack_leaderboard";
+﻿const TABLE = "mushtrack_leaderboard";
 
 module.exports = async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
