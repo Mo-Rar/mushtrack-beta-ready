@@ -2595,8 +2595,6 @@ function applyLang() {
     const key = el.dataset.t;
     el.textContent = t(key);
   });
-  const sel = document.getElementById("lang-select");
-  if (sel) sel.value = lang;
 }
 
 let state = loadState();
@@ -2963,11 +2961,6 @@ function showScreen(id, pushHistory = true) {
     fetchOpenRuns();
   }
 
-  if (id === "coach") {
-    updatePlanWeatherIfNeeded();
-    renderPlanInsights();
-    renderCoach();
-  }
   if (id === "community") {
     initCommunity();
   }
@@ -2981,7 +2974,7 @@ function showScreen(id, pushHistory = true) {
 }
 
 // ── Gestion bouton retour Android ────────────────────────────────────────────
-const ROOT_SCREENS = new Set(["dashboard", "record", "team", "agenda", "race", "vous", "community", "coach", "advice"]);
+const ROOT_SCREENS = new Set(["dashboard", "record", "team", "agenda", "race", "vous", "community", "analytics", "advice"]);
 
 function currentScreenId() {
   return document.querySelector(".screen.active")?.id || "dashboard";
@@ -9771,11 +9764,11 @@ document.getElementById("delete-account-confirm-btn")?.addEventListener("click",
 
     // Supprime dans Supabase (best effort — ne bloque pas si pas connecté)
     await Promise.allSettled([
-      supabase.from("mushtrack_user_data").delete().eq("device_id", deviceId),
-      supabase.from("mushtrack_race_interests").delete().eq("device_id", deviceId),
-      supabase.from("mushtrack_open_run_participants").delete().eq("device_id", deviceId),
-      supabase.from("push_subscriptions").delete().eq("device_id", deviceId),
-      slug ? supabase.from("mushtrack_profiles").delete().eq("slug", slug) : Promise.resolve(),
+      supabase?.from("mushtrack_user_data").delete().eq("device_id", deviceId),
+      supabase?.from("mushtrack_race_interests").delete().eq("device_id", deviceId),
+      supabase?.from("mushtrack_open_run_participants").delete().eq("device_id", deviceId),
+      supabase?.from("push_subscriptions").delete().eq("device_id", deviceId),
+      slug ? supabase?.from("mushtrack_profiles").delete().eq("slug", slug) : Promise.resolve(),
     ]);
 
     // Efface toutes les données locales
