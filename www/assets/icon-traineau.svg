@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Patin bas (courbe caractéristique traîneau) -->
+  <path d="M8 62 Q10 68 30 70 L100 70 Q112 70 114 64 Q116 58 108 56" stroke-width="4"/>
+
+  <!-- Relevé avant du patin -->
+  <path d="M8 62 Q4 54 10 46 Q16 40 24 42" stroke-width="4"/>
+
+  <!-- Bâti vertical avant (montant incliné) -->
+  <path d="M24 42 L38 70" stroke-width="3.5"/>
+
+  <!-- Montants verticaux -->
+  <line x1="52" y1="44" x2="52" y2="70" stroke-width="3"/>
+  <line x1="66" y1="44" x2="66" y2="70" stroke-width="3"/>
+  <line x1="80" y1="44" x2="80" y2="70" stroke-width="3"/>
+  <line x1="94" y1="50" x2="94" y2="70" stroke-width="3"/>
+
+  <!-- Longeron supérieur (horizontal) -->
+  <path d="M24 42 Q38 38 52 44 L94 50" stroke-width="3.5"/>
+
+  <!-- Planche de fond (barres transversales) -->
+  <line x1="38" y1="70" x2="38" y2="56" stroke-width="2.5"/>
+  <line x1="38" y1="56" x2="94" y2="56" stroke-width="2.5"/>
+
+  <!-- Guidon -->
+  <path d="M94 50 L100 32" stroke-width="4"/>
+  <line x1="92" y1="30" x2="108" y2="30" stroke-width="4"/>
+  <circle cx="92" cy="30" r="3" fill="currentColor" stroke="none"/>
+  <circle cx="108" cy="30" r="3" fill="currentColor" stroke="none"/>
+
+  <!-- Deuxième patin (décalé légèrement) -->
+  <path d="M12 65 Q14 70 30 72 L100 72" stroke-width="2" opacity="0.4"/>
+</svg>
