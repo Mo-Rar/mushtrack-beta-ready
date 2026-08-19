@@ -248,20 +248,6 @@ const raceCatalog = [
     notes: "Europe longue distance. Le site officiel annonce le depart 2027 le 5 mars."
   },
   {
-    id: "grande-odyssee-2027",
-    name: "La Grande Odyssee Royal Canin",
-    date: "2027-01-09",
-    type: "Mid-distance",
-    distance: 400,
-    region: "France Alpes Savoie Haute-Savoie Europe",
-    location: "Alpes francaises",
-    source: "La Grande Odyssee",
-    reliability: "official",
-    surface: "Neige",
-    url: "https://www.grandeodyssee.com/home",
-    notes: "Course par etapes du 9 au 21 janvier 2027 selon le site officiel."
-  },
-  {
     id: "skj-calendar",
     name: "Calendrier SKJ Finlande",
     date: "",
@@ -695,20 +681,6 @@ const raceCatalog = [
   },
 
   // ── Courses majeures connues (à surveiller) ───────────────────────────
-  {
-    id: "finnmarkslопет-2027",
-    name: "Finnmarksløpet",
-    date: "2027-03-06",
-    type: "Longue distance",
-    distance: 500,
-    region: "Norveге Norway Finnmark Alta Scandinavia",
-    location: "Alta, Finnmark, Norvège",
-    source: "Finnmarksløpet",
-    reliability: "official",
-    surface: "Neige",
-    url: "https://www.finnmarkslопет.no/",
-    notes: "La plus longue course de traineau en Europe. 500 km (FL500) et 1000 km (FL1000). Mars 2027."
-  },
   {
     id: "femundlopet-2027",
     name: "Femundløpet",
@@ -3004,13 +2976,13 @@ function showScreen(id, pushHistory = true) {
 
 // Bouton retour navigateur / Android → revient à l'écran précédent
 window.addEventListener("popstate", (e) => {
-  const id = e.state?.screen || "accueil";
+  const id = e.state?.screen || "dashboard";
   showScreen(id, false); // false = ne pas re-pousser dans l'historique
 });
 
 // État initial pour que le premier popstate ait un écran de référence
 if (!history.state?.screen) {
-  history.replaceState({ screen: "accueil" }, "", "");
+  history.replaceState({ screen: "dashboard" }, "", "");
 }
 
 function getSeasonKm() {
@@ -3018,12 +2990,15 @@ function getSeasonKm() {
 }
 
 function getWeekKm() {
-  return state.runs.slice(0, 2).reduce((sum, run) => sum + Number(run.km), 0);
+  const weekAgo = Date.now() - 7 * 24 * 3600 * 1000;
+  return state.runs
+    .filter(r => new Date(r.date).getTime() >= weekAgo)
+    .reduce((sum, r) => sum + Number(r.km), 0);
 }
 
 function getAvgSpeed() {
   if (!state.runs.length) return 0;
-  return state.runs.reduce((sum, run) => sum + Number(run.speed), 0) / state.runs.length;
+  return state.runs.reduce((sum, run) => sum + Number(run.avgSpeed || run.speed || 0), 0) / state.runs.length;
 }
 
 function daysUntilGoal() {
@@ -3577,7 +3552,7 @@ function renderDogs() {
           <span>${dog.role} - ${getDogAge(dog)} ans - ${dog.weight} kg - ${readiness.title}</span>
         </div>
       </div>
-      <strong>${Math.round(dog.km)} km</strong>
+      <strong>${Math.round(dog.km || 0)} km</strong>
       <div class="load-meter"><span style="width:${Math.min(100, load * 2)}%"></span></div>
       <small>${load.toFixed(1)} ${t('dog_km_week')} - ${readiness.text}</small>
     </article>
@@ -7997,7 +7972,7 @@ function saveCurrentRun() {
 
   state.runs.unshift(run);
   state.dogs = state.dogs.map((dog) => (
-    state.selectedDogIds.includes(dog.id) ? { ...dog, km: dog.km + run.km } : dog
+    state.selectedDogIds.includes(dog.id) ? { ...dog, km: (dog.km || 0) + run.km } : dog
   ));
 
   seconds = 0;
