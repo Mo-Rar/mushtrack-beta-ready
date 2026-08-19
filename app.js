@@ -9267,12 +9267,12 @@ function generateCoachPlan() {
 
   // ── Sessions types ────────────────────────────────────────────────────────
   const SESSION_TYPES = {
-    endurance: { label: t('session_endurance'), emoji: "🏃", color: "#3b82f6", desc: t('session_endurance_desc') },
-    long:      { label: t('session_long'),      emoji: "🌲", color: "#059669", desc: t('session_long_desc') },
-    sprint:    { label: t('session_sprint'),    emoji: "⚡", color: "#fc4c02", desc: t('session_sprint_desc') },
-    recup:     { label: t('session_recup'),     emoji: "🐾", color: "#8b5cf6", desc: t('session_recup_desc') },
+    endurance: { label: t('session_endurance'), emoji: "🐕", color: "#3b82f6", desc: t('session_endurance_desc') },
+    long:      { label: t('session_long'),      emoji: "🐕", color: "#059669", desc: t('session_long_desc') },
+    sprint:    { label: t('session_sprint'),    emoji: "🐕", color: "#fc4c02", desc: t('session_sprint_desc') },
+    recup:     { label: t('session_recup'),     emoji: "😴", color: "#8b5cf6", desc: t('session_recup_desc') },
     rest:      { label: t('session_rest'),      emoji: "😴", color: "#94a3b8", desc: t('session_rest_desc'), rest: true },
-    technique: { label: t('session_technique'), emoji: "🎯", color: "#f59e0b", desc: t('session_technique_desc') },
+    technique: { label: t('session_technique'), emoji: "🐕", color: "#f59e0b", desc: t('session_technique_desc') },
   };
 
   // ── Distribution 7 jours (lun→dim) ───────────────────────────────────────
