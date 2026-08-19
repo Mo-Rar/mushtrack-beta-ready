@@ -4251,6 +4251,12 @@ function renderSledDiagram() {
         e.preventDefault();
       }, { passive: false });
 
+      const cancelDrag = () => {
+        if (tClone) { tClone.remove(); tClone = null; }
+        container.querySelectorAll(".sd-slot").forEach(s => s.classList.remove("sd-drag-over"));
+        tDogId = null; tFromSlot = null; tHoverSlot = null;
+      };
+
       el.addEventListener("touchend", () => {
         if (tClone) { tClone.remove(); tClone = null; }
         container.querySelectorAll(".sd-slot").forEach(s => s.classList.remove("sd-drag-over"));
@@ -4264,6 +4270,7 @@ function renderSledDiagram() {
         }
         tDogId = null; tFromSlot = null; tHoverSlot = null;
       });
+      el.addEventListener("touchcancel", cancelDrag);
     });
 
     // Desktop drag & drop
