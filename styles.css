@@ -90,6 +90,20 @@ body.dark-mode .dash-dog-chip-bubble.ok       { background: #14532d !important; 
 body.dark-mode .dash-dog-chip-bubble.attention{ background: #78350f !important; border-color: #92400e !important; }
 body.dark-mode .dash-dog-chip-bubble.repos    { background: #7f1d1d !important; border-color: #991b1b !important; }
 body.dark-mode .dash-feed-map { filter: brightness(0.85); }
+/* Courses screen dark mode */
+body.dark-mode .race-country-group,
+body.dark-mode .race-result,
+body.dark-mode .admin-race-card { background: var(--tile-bg) !important; border-color: rgba(255,255,255,0.08) !important; }
+body.dark-mode .race-result h3,
+body.dark-mode .race-country-header h3,
+body.dark-mode .admin-race-info strong { color: var(--text-main) !important; }
+body.dark-mode .race-result > div > div > p,
+body.dark-mode .agenda-meta span,
+body.dark-mode .admin-race-info span { color: var(--text-muted) !important; }
+body.dark-mode .agenda-meta span { background: rgba(255,255,255,0.06) !important; }
+body.dark-mode .race-result-actions .secondary-button { border-color: rgba(255,255,255,0.12) !important; color: var(--text-muted) !important; }
+body.dark-mode .admin-panel-box:not(:has(.admin-race-card)) { background: rgba(21,128,61,0.12) !important; border-color: rgba(34,197,94,0.3) !important; }
+body.dark-mode .admin-panel-box:has(.admin-race-card) { background: rgba(194,65,12,0.12) !important; border-color: rgba(249,115,22,0.3) !important; }
 body.dark-mode .rec-panel,
 body.dark-mode .rec-section,
 body.dark-mode .rec-team-card { background: var(--tile-bg) !important; }
@@ -2572,27 +2586,92 @@ textarea {
   margin-top: 4px;
 }
 
+/* ══ ÉCRAN COURSES ══════════════════════════════════════════ */
+
+/* En-tête */
+.races-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0 14px;
+}
+.races-header-left { flex: 1; }
+.races-title {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--text-main);
+  margin: 0 0 2px;
+  letter-spacing: -0.04em;
+}
+.races-subtitle {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0;
+  letter-spacing: .01em;
+}
+
+/* Toggle Liste / Carte */
+.races-view-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-screen);
+  border-radius: 12px;
+  padding: 3px;
+  border: 1.5px solid var(--border);
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 4px;
+}
 .race-view-btn {
-  flex: 1;
-  padding: 8px 0;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 10px;
-  background: #f5f5f5;
-  color: #666;
-  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
   transition: all .15s;
+  white-space: nowrap;
 }
 .race-view-btn.active {
-  background: var(--orange);
-  border-color: var(--orange);
-  color: #fff;
+  background: var(--tile-bg);
+  color: var(--text-main);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
 
+/* Bouton Signaler — action secondaire discrète */
+.races-report-row {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+.races-report-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 7px 13px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.races-report-btn:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+/* Panel liste */
 .race-search-panel {
-  display: grid;
-  gap: 12px;
   margin-bottom: 16px;
 }
 
@@ -2652,189 +2731,184 @@ textarea {
   gap: 10px;
 }
 
-/* Groupe pays */
+/* ── Groupe pays (accordéon) ──────────────────────────────── */
 .race-country-group {
-  margin-bottom: 6px;
-  border-radius: 14px;
+  margin-bottom: 4px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
-  background: #fff;
+  background: var(--tile-bg);
+  box-shadow: var(--card-shadow);
 }
-
 .race-country-header {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 13px 16px;
-  background: #fff;
+  background: transparent;
   border: none;
-  border-left: 4px solid var(--orange);
   width: 100%;
   cursor: pointer;
   text-align: left;
-  margin-bottom: 0;
 }
-
 .race-country-header[aria-expanded="true"] {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border);
 }
-
 .race-country-flag {
-  font-size: 1.3rem;
   line-height: 1;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
-
 .race-country-header h3 {
-  font-size: 0.88rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #222;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-main);
   margin: 0;
   flex: 1;
 }
-
 .race-country-header .race-count-badge {
-  background: #fff4ef;
+  background: var(--orange-light);
   color: var(--orange);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 800;
   padding: 3px 9px;
   border-radius: 20px;
   white-space: nowrap;
 }
-
 .country-chevron {
-  color: #bbb;
+  color: var(--text-muted);
   flex-shrink: 0;
   transition: transform .2s;
 }
-
 .race-country-header[aria-expanded="true"] .country-chevron {
   transform: rotate(180deg);
 }
-
 .race-country-body {
-  padding: 10px 12px 12px;
-  background: #fafafa;
+  padding: 8px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-/* Course épinglée / sélectionnée */
-.race-result.pinned {
-  border: 2px solid var(--orange);
-  box-shadow: 0 4px 20px rgba(252, 76, 2, 0.18);
+/* ── Section souhaits (pinned) ────────────────────────────── */
+.pinned-races-section { margin-bottom: 20px; }
+.pinned-races-title {
+  font-size: 0.6rem; font-weight: 900;
+  text-transform: uppercase; letter-spacing: .12em;
+  color: var(--text-muted); margin: 0 0 10px;
+}
+.race-pinned-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--orange); color: #fff;
+  font-size: 0.6rem; font-weight: 900;
+  text-transform: uppercase; letter-spacing: .08em;
+  padding: 2px 8px; border-radius: 999px; margin-bottom: 6px;
+}
+
+/* ── Carte course ─────────────────────────────────────────── */
+.race-result {
+  background: var(--tile-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  box-shadow: none;
   position: relative;
 }
-
-.race-pinned-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: var(--orange);
-  color: #fff;
-  font-size: 0.65rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 3px 8px;
-  border-radius: 999px;
-  margin-bottom: 6px;
+.race-result.pinned {
+  border-color: var(--orange);
+  box-shadow: 0 2px 16px var(--orange-shadow);
 }
-
-/* Section courses épinglées */
-.pinned-races-section {
-  margin-bottom: 24px;
-}
-
-.pinned-races-title {
-  font-size: 0.72rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #888888;
-  margin: 0 0 10px;
-}
-
-.race-result {
-  background: #ffffff;
-  border: 1px solid rgba(30,20,10,0.07);
-  border-left: 5px solid #ff6a00;
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: var(--card-shadow);
-}
-
-.race-result.official {
-  border-left-color: #2f8f46;
-}
-
-.race-result.watch {
-  border-left-color: #ff7a1a;
-  background: rgba(252,76,2,0.06);
-}
-
-.race-result.user {
-  border-left-color: rgba(255,255,255,0.3);
-}
-
-.race-result h3 {
-  margin: 5px 0;
-}
-
-.race-result > strong {
+.race-result.official  { border-left: 3px solid #22c55e; }
+.race-result.watch     { border-left: 3px solid var(--orange); }
+.race-result.user      { border-left: 3px solid #d1d5db; }
+/* Metadata line (status · source · reliability) */
+.race-result > div > div > span:first-child {
   display: block;
-  margin: 8px 0;
+  font-size: 0.62rem; font-weight: 700;
+  color: var(--text-muted); margin-bottom: 3px;
+  letter-spacing: .02em;
+}
+/* Nom course */
+.race-result h3 {
+  font-size: 1rem; font-weight: 900;
+  color: var(--text-main); margin: 0 0 3px;
+  line-height: 1.2; letter-spacing: -0.02em;
+}
+/* Date · Lieu */
+.race-result > div > div > p {
+  font-size: 0.76rem; color: var(--text-sub);
+  margin: 0; font-weight: 600;
+}
+/* Discipline badge */
+.race-result > strong {
+  display: inline-block;
+  margin: 8px 0 4px;
+  font-size: 0.68rem; font-weight: 900;
   color: var(--orange);
+  background: var(--orange-light);
+  padding: 2px 8px; border-radius: 6px;
+  text-transform: uppercase; letter-spacing: .06em;
 }
-
-.race-result span {
-  color: #888888;
-  font-size: 0.76rem;
-  font-weight: 950;
+/* Distance + surface badges */
+.agenda-meta {
+  display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;
 }
-
-.race-result p {
-  color: #555555;
-  line-height: 1.38;
+.agenda-meta span {
+  background: var(--bg-screen);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.68rem; font-weight: 700;
+  color: var(--text-sub);
 }
-
+/* Notes */
+.race-result > p {
+  font-size: 0.76rem; color: var(--text-muted);
+  line-height: 1.4; margin: 0 0 8px;
+}
+/* ── Actions course ───────────────────────────────────────── */
 .race-result-actions {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 10px;
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
 }
-
-.race-result-actions button:disabled {
-  opacity: 0.45;
-}
-
-/* Bouton "Intéressé" actif */
-.race-result-actions .btn-interested {
-  background: #fff8f5;
-  color: var(--orange);
-  border: 1.5px solid var(--orange);
-  font-weight: 600;
-}
-
-/* Bouton "Participe" actif */
-.race-result-actions .btn-participe {
-  background: #1a7a4a;
-  color: #fff;
-  border: none;
+/* Bouton primaire : Ajouter à mon agenda */
+.race-result-actions .primary-button {
+  flex: 1;
+  min-width: 130px;
+  padding: 9px 12px;
+  font-size: 0.78rem; font-weight: 800;
   border-radius: 10px;
-  padding: 8px 10px;
-  font-size: 0.85rem;
-  font-weight: 700;
+  background: var(--orange); color: #fff; border: none;
+  box-shadow: 0 3px 10px var(--orange-shadow);
+  cursor: pointer; order: -1;
+}
+/* Boutons secondaires : Source, Souhaits */
+.race-result-actions .secondary-button {
+  padding: 8px 11px;
+  font-size: 0.74rem; font-weight: 700;
+  border-radius: 10px;
+  background: transparent; color: var(--text-sub);
+  border: 1.5px solid var(--border); cursor: pointer;
+}
+/* Participe (agenda déjà ajouté) */
+.race-result-actions .btn-participe {
+  flex: 1; min-width: 130px; order: -1;
+  background: #dcfce7; color: #15803d;
+  border: 1.5px solid #86efac;
+  border-radius: 10px; padding: 9px 12px;
+  font-size: 0.78rem; font-weight: 800;
   cursor: pointer;
-  transition: transform 0.12s, box-shadow 0.12s;
-  box-shadow: 0 2px 8px rgba(26,122,74,0.25);
 }
-
-.race-result-actions .btn-participe:active {
-  transform: scale(0.97);
+/* Intéressé (souhait actif) */
+.race-result-actions .btn-interested {
+  background: var(--orange-light);
+  color: var(--orange);
+  border-color: var(--orange);
+  font-weight: 700;
 }
+.race-result-actions button:disabled { opacity: 0.4; }
 
 /* ── Ancien style (rétrocompat) ── */
 .race-interest {
@@ -3436,61 +3510,78 @@ textarea {
 }
 
 /* ── Panel Admin ─────────────────────────────────── */
+/* ── Panneau admin Validation des courses ─────────────────── */
+#admin-panel {
+  margin-top: 20px;
+}
+
+/* Libellé section admin */
+#admin-panel::before {
+  content: "VALIDATION DES COURSES";
+  display: block;
+  font-size: 0.58rem; font-weight: 900;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  padding: 0 2px;
+}
+
 .admin-panel-box {
-  margin: 16px 0;
-  background: #fffbf7;
-  border: 2px solid #f59e0b;
-  border-radius: 14px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.admin-panel-title {
-  font-size: 0.78rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: #f59e0b;
-}
-
-.admin-race-card {
-  background: #ffffff;
-  border: 1px solid #f0f0f0;
-  border-radius: 10px;
-  padding: 12px;
+  background: var(--tile-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.admin-race-info {
+/* Titre : badge coloré selon l'état */
+.admin-panel-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.78rem; font-weight: 900;
+  letter-spacing: .04em;
+  color: var(--text-main);
+}
+
+/* "Aucune course en attente" → vert */
+.admin-panel-box:has(.admin-panel-title:only-child) .admin-panel-title {
+  color: #15803d;
+}
+/* Fallback : si pas de .admin-race-card, badge vert */
+.admin-panel-box:not(:has(.admin-race-card)) {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+.admin-panel-box:not(:has(.admin-race-card)) .admin-panel-title {
+  color: #15803d;
+}
+/* Présence de courses en attente → orange */
+.admin-panel-box:has(.admin-race-card) {
+  border-color: #fed7aa;
+  background: #fff7ed;
+}
+.admin-panel-box:has(.admin-race-card) .admin-panel-title {
+  color: #c2410c;
+}
+
+.admin-race-card {
+  background: var(--tile-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-}
-
-.admin-race-info strong {
-  font-size: 0.95rem;
-  color: #111111;
-}
-
-.admin-race-info span {
-  font-size: 0.78rem;
-  color: #888888;
-}
-
-.admin-race-info small {
-  font-size: 0.72rem;
-  color: #aaaaaa;
-  font-style: italic;
-}
-
-.admin-race-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 8px;
+}
+.admin-race-info { display: flex; flex-direction: column; gap: 3px; }
+.admin-race-info strong { font-size: 0.9rem; font-weight: 800; color: var(--text-main); }
+.admin-race-info span { font-size: 0.75rem; color: var(--text-sub); }
+.admin-race-info small { font-size: 0.68rem; color: var(--text-muted); font-style: italic; }
+.admin-race-actions {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
 }
 
 .admin-approve-btn,
