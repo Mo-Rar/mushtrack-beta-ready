@@ -54,7 +54,7 @@ body.dark-mode .dash-feed-label {
   color: var(--text-main) !important;
 }
 body.dark-mode .dash-hero {
-  background: #0d0d0d !important;
+  filter: brightness(0.8);
 }
 body.dark-mode .dash-hero-card {
   background: rgba(255,255,255,0.07) !important;
