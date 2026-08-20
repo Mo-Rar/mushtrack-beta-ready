@@ -67,6 +67,35 @@ body.dark-mode .dash-dog-chip-bubble.ok       { background: #14532d !important; 
 body.dark-mode .dash-dog-chip-bubble.attention{ background: #78350f !important; border-color: #92400e !important; }
 body.dark-mode .dash-dog-chip-bubble.repos    { background: #7f1d1d !important; border-color: #991b1b !important; }
 body.dark-mode .dash-feed-map { filter: brightness(0.85); }
+
+/* textes hardcodés noirs dans les nouvelles cartes */
+body.dark-mode .dash-feed-stat strong,
+body.dark-mode .dash-feed-engin-badge,
+body.dark-mode .dash-workout-title,
+body.dark-mode .dash-workout-desc,
+body.dark-mode .dash-wstat strong,
+body.dark-mode .dash-wstat span,
+body.dark-mode .dash-gauge-val strong,
+body.dark-mode .dash-gauge-label,
+body.dark-mode .dash-gauge-level,
+body.dark-mode .dash-workout-left p,
+body.dark-mode .dash-kpi span,
+body.dark-mode .dash-eyebrow-green,
+body.dark-mode .dash-lastrun-eyebrow,
+body.dark-mode .run-card-title,
+body.dark-mode .run-card-date,
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3,
+body.dark-mode .section-heading h2,
+body.dark-mode .topbar h1,
+body.dark-mode .eyebrow { color: var(--text-main) !important; }
+
+body.dark-mode .dash-feed-engin-badge {
+  background: rgba(30,30,30,0.85) !important;
+  color: #eee !important;
+}
+body.dark-mode .dash-workout { border-color: rgba(255,255,255,0.06) !important; }
+body.dark-mode .dash-workout-gauge circle[stroke="#f0f0f0"] { stroke: #333 !important; }
+body.dark-mode .dash-kpi-divider { background: rgba(255,255,255,0.12) !important; }
 body.dark-mode .bottom-nav {
   background: var(--nav-bg) !important;
   border-top-color: var(--border) !important;
