@@ -1018,12 +1018,13 @@ body.mode-summer .record-button {
   margin: 0;
 }
 
-/* ── GPS Signal Bar : discret, sous la carte ─────────────── */
+/* ── GPS Signal Bar : dans le panel, centré en haut ──────── */
 .gps-signal-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 20px;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 0 14px;
   font-size: 0.72rem;
   font-weight: 700;
   background: transparent;

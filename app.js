@@ -8078,7 +8078,7 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
 
 function updateGpsDisplay(distKm, speedKmh) {
   const useMi   = state.gpsUnitMi  || false;
-  const usePace = state.gpsSpeedPace || false;
+  const usePace = state.gpsSpeedPace ?? true;
   const dist    = useMi ? distKm * 0.621371 : distKm;
   distanceEl.textContent = dist.toFixed(2);
   document.querySelectorAll(".gps-dist-unit").forEach(el => el.textContent = useMi ? "mi" : "km");
@@ -8205,7 +8205,7 @@ function toggleRecording() {
     durationEl.textContent = formatDuration(seconds);
     const paceEl = document.querySelector("#pace");
     const paceUnitEl = document.querySelector("#pace-unit");
-    const usePace = state.gpsSpeedPace || false;
+    const usePace = state.gpsSpeedPace ?? true;
     const useMi   = state.gpsUnitMi   || false;
     if (usePace) {
       // Afficher allure min/km ou min/mi
@@ -8410,7 +8410,7 @@ document.addEventListener("click", () => {
 gpsUnitPanel?.addEventListener("click", e => e.stopPropagation());
 
 function applyGpsUnitUI() {
-  const usePace = state.gpsSpeedPace || false;
+  const usePace = state.gpsSpeedPace ?? true;
   const useMi   = state.gpsUnitMi   || false;
   // Labels unités
   const paceUnit = document.getElementById("pace-unit");

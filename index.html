@@ -207,14 +207,14 @@
           </div>
         </div>
 
-        <!-- ── Statut GPS discret ── -->
-        <div id="gps-signal-bar" class="gps-signal-bar gps-signal-searching">
-          <span id="gps-signal-icon" style="display:none">📡</span>
-          <span id="gps-signal-text" data-t="gps_searching">Recherche du signal GPS</span>
-        </div>
-
         <!-- ── Panneau blanc principal ── -->
         <div class="rec-panel">
+
+          <!-- Statut GPS discret en haut du panel -->
+          <div id="gps-signal-bar" class="gps-signal-bar gps-signal-searching">
+            <span id="gps-signal-icon" style="display:none">📡</span>
+            <span id="gps-signal-text" data-t="gps_searching">Recherche du signal GPS</span>
+          </div>
 
           <!-- Distance héro -->
           <div class="rec-distance">
@@ -318,7 +318,7 @@
           </div>
           <button class="rec-modify-btn" id="toggle-dog-picker-record">Modifier</button>
         </div>
-        <div class="sled-diagram" id="gps-sled-diagram" style="margin:0 20px 8px"></div>
+        <div class="sled-diagram" id="gps-sled-diagram" style="display:none;margin:0 20px 8px"></div>
         <section class="dog-picker hidden" id="dog-picker-record" data-list="dogPicker" style="margin:8px 20px 4px"></section>
 
         <!-- ── Bilan post-sortie ── -->
