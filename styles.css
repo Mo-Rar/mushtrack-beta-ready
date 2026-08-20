@@ -3876,6 +3876,39 @@ textarea {
   cursor: pointer; padding: 4px;
 }
 
+/* ── Dernière sortie ─────────────────────────────────────────── */
+.dash-lastrun {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 18px;
+  margin: 0 14px 14px;
+  padding: 14px 16px;
+  box-shadow: var(--card-shadow, 0 4px 20px rgba(30,20,10,0.10));
+}
+.dash-lastrun-left { display: flex; flex-direction: column; gap: 2px; }
+.dash-lastrun-eyebrow {
+  font-size: 0.58rem; font-weight: 900; letter-spacing: .1em;
+  text-transform: uppercase; color: #fc4c02; margin: 0;
+}
+.dash-lastrun-date {
+  font-size: 0.78rem; color: #666; margin: 0; margin-top: 2px;
+}
+.dash-lastrun-stats {
+  display: flex; gap: 16px;
+}
+.dash-lastrun-stat {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+}
+.dash-lastrun-stat strong {
+  font-size: 1.15rem; font-weight: 900; color: var(--text, #1a1a1a); line-height: 1;
+}
+.dash-lastrun-stat span {
+  font-size: 0.58rem; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: #aaa;
+}
+
 /* ── Ligne 3 KPI ────────────────────────────────────────────── */
 .dash-kpi-row {
   display: flex;

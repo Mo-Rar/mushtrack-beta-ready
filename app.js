@@ -3325,6 +3325,27 @@ function render() {
   }
   // ────────────────────────────────────────────────────────────
 
+  // Dernière sortie
+  const lastRunCard = document.getElementById("dash-lastrun-card");
+  if (state.runs && state.runs.length > 0) {
+    const lr = state.runs[0];
+    if (lastRunCard) lastRunCard.style.display = "";
+    const lrDate = lr.date ? new Date(lr.date + "T12:00:00") : new Date(lr.createdAt || Date.now());
+    const dayNames = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+    const monthNames = ["jan","fév","mar","avr","mai","juin","juil","août","sep","oct","nov","déc"];
+    const diffDays = Math.round((Date.now() - lrDate.getTime()) / 86400000);
+    const dateStr = diffDays === 0 ? "Aujourd'hui" : diffDays === 1 ? "Hier" :
+      `${dayNames[lrDate.getDay()]} ${lrDate.getDate()} ${monthNames[lrDate.getMonth()]}`;
+    bindText("lastRunDate", dateStr);
+    bindText("lastRunKm", Number(lr.km || 0).toFixed(1));
+    const dur = lr.duration || lr.time || 0;
+    const h = Math.floor(dur / 60), m = dur % 60;
+    bindText("lastRunTime", h > 0 ? `${h}h${String(m).padStart(2,"0")}` : `${m} min`);
+    bindText("lastRunSpeed", Number(lr.avgSpeed || lr.speed || 0).toFixed(1));
+  } else {
+    if (lastRunCard) lastRunCard.style.display = "none";
+  }
+
   const progressBar = document.querySelector('[data-bind-style="progress"]');
   if (progressBar) progressBar.style.width = `${progress}%`;
 
