@@ -53,9 +53,8 @@
     <main class="phone-shell">
       <section class="screen active" id="dashboard">
 
-        <!-- ── Hero : image couvre header + contenu ── -->
+        <!-- ── Hero compact ── -->
         <section class="dash-hero">
-          <!-- Header dans le hero pour que l'image passe derrière -->
           <header class="dash-header">
             <button class="dash-menu-btn" data-go="settings" aria-label="Menu">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="22" height="22"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -68,25 +67,12 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </button>
           </header>
-
-          <!-- Titre mission : zone centrale du hero -->
-          <div class="dash-hero-text">
-            <p class="dash-hello"><span data-t="dash_hello">Bonjour,</span> <span data-bind="dashUserName">Musher</span></p>
-            <h2 class="dash-mission-title">Mission <span data-bind="kpiRaceName">—</span></h2>
+          <div class="dash-hero-body">
+            <p class="dash-hero-objectif">Objectif &middot; <span data-bind="kpiRaceName">—</span></p>
           </div>
-
-          <!-- Carte countdown + préparation flottante en bas -->
-          <div class="dash-hero-card">
-            <div class="dash-hero-countdown">
-              <span class="dash-days" data-bind="kpiDays">—</span>
-              <span class="dash-days-label" data-t="dash_days_left">jours restants</span>
-            </div>
-            <div class="dash-hero-prep">
-              <p class="dash-prep-eyebrow" data-t="dash_global_prep">PRÉPARATION GLOBALE</p>
-              <strong class="dash-prep-value" data-bind="kpiProgress">0 %</strong>
-              <div class="dash-prep-bar"><span data-bind-style="kpiProgressBar"></span></div>
-              <p class="dash-prep-phase"><span data-t="dash_current_phase">Phase actuelle</span><br><span class="dash-orange" data-bind="heroSentence"></span></p>
-            </div>
+          <div class="dash-hero-pill">
+            <span class="dash-days" data-bind="kpiDays">—</span>
+            <span class="dash-days-label">j restants</span>
           </div>
         </section>
 
@@ -96,48 +82,45 @@
         <span data-bind-style="progress" style="display:none"></span>
         <span data-bind="lastRunLabel" style="display:none"></span>
         <span data-bind="raceType" style="display:none"></span>
+        <span data-bind="heroSentence" style="display:none"></span>
+        <span data-bind="kpiProgress" style="display:none">0 %</span>
+        <span data-bind-style="kpiProgressBar" style="display:none"></span>
+        <span data-bind="dashUserName" style="display:none">Musher</span>
+        <span data-bind="nextWorkoutText" style="display:none"></span>
 
-        <!-- ── Objectif du jour ── -->
-        <section class="dash-workout">
-          <div class="dash-workout-inner">
-            <div class="dash-workout-left">
-              <p class="dash-eyebrow-green" data-t="dash_daily_goal">🏃 OBJECTIF DU JOUR</p>
-              <h3 class="dash-workout-title" data-bind="nextWorkoutTitle">—</h3>
-              <p class="dash-workout-desc" data-bind="nextWorkoutText">—</p>
-              <div class="dash-workout-stats">
-                <div class="dash-wstat"><strong data-bind="dashWorkoutKm">— km</strong><span data-t="dash_distance_label">Distance</span></div>
-                <div class="dash-wstat"><strong data-bind="dashWorkoutTime">— min</strong><span data-t="dash_estimated_duration">Durée estimée</span></div>
-                <div class="dash-wstat dash-wstat-intensity"><strong data-bind="dashWorkoutLevel">—</strong><span data-t="dash_intensity_label">Intensité</span></div>
-              </div>
+        <!-- ── Séance du jour ── -->
+        <div class="dash-seance-card">
+          <div class="dash-seance-top">
+            <p class="dash-seance-eyebrow">AUJOURD'HUI</p>
+            <h3 class="dash-seance-title" data-bind="nextWorkoutTitle">—</h3>
+          </div>
+          <div class="dash-seance-stats">
+            <div class="dash-sstat">
+              <strong data-bind="dashWorkoutKm">—</strong>
+              <span>km</span>
             </div>
-            <div class="dash-workout-gauge">
-              <svg width="88" height="88" viewBox="0 0 88 88">
-                <circle cx="44" cy="44" r="36" fill="none" stroke="#f0f0f0" stroke-width="7"/>
-                <circle class="dash-gauge-ring" cx="44" cy="44" r="36" fill="none" stroke="#22c55e" stroke-width="7" stroke-linecap="round" transform="rotate(-90 44 44)"/>
-              </svg>
-              <div class="dash-gauge-inner">
-                <span class="dash-gauge-label" data-t="dash_planned_load">Charge prévue</span>
-                <div class="dash-gauge-val"><strong data-bind="dashWorkoutLoad">—</strong><span>/100</span></div>
-                <span class="dash-gauge-level" data-bind="dashWorkoutLoadLabel">—</span>
-              </div>
+            <div class="dash-sstat-div"></div>
+            <div class="dash-sstat">
+              <strong data-bind="dashWorkoutTime">—</strong>
+              <span>min</span>
+            </div>
+            <div class="dash-sstat-div"></div>
+            <div class="dash-sstat dash-sstat-hi">
+              <strong data-bind="dashWorkoutLevel">—</strong>
+              <span>intensité</span>
             </div>
           </div>
-          <div class="dash-workout-btns">
-            <button class="dash-start-btn" data-go="record" data-t="dash_start_session">▶ DÉMARRER LA SÉANCE</button>
-          </div>
-        </section>
-
-        <!-- ── Feed sorties récentes ── -->
-        <div id="dash-feed" style="display:none">
-          <p class="dash-feed-label">Sorties récentes</p>
-          <div id="dash-feed-cards"></div>
+          <button class="dash-seance-btn" data-go="record">DÉMARRER LA SÉANCE</button>
+          <p class="dash-seance-charge">
+            Charge prévue : <strong data-bind="dashWorkoutLoad">—</strong>/100
+            &middot; <span class="dash-seance-charge-level" data-bind="dashWorkoutLoadLabel">—</span>
+          </p>
         </div>
-
 
         <!-- ── 3 chiffres clés ── -->
         <div class="dash-kpi-row">
           <div class="dash-kpi">
-            <svg viewBox="0 0 24 24" fill="#fc4c02" stroke="none" width="18" height="18"><ellipse cx="4.5" cy="6" rx="1.7" ry="2.4"/><ellipse cx="9" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="15" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="19.5" cy="6" rx="1.7" ry="2.4"/><path d="M12 9c-4.5 0-7.5 2.8-7.5 6.2 0 2.2 1.8 4.2 4 4.6 1 .2 2 .2 3.5.2s2.5 0 3.5-.2c2.2-.4 4-2.4 4-4.6C19.5 11.8 16.5 9 12 9z"/></svg>
+            <svg viewBox="0 0 24 24" fill="var(--orange)" stroke="none" width="18" height="18"><ellipse cx="4.5" cy="6" rx="1.7" ry="2.4"/><ellipse cx="9" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="15" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="19.5" cy="6" rx="1.7" ry="2.4"/><path d="M12 9c-4.5 0-7.5 2.8-7.5 6.2 0 2.2 1.8 4.2 4 4.6 1 .2 2 .2 3.5.2s2.5 0 3.5-.2c2.2-.4 4-2.4 4-4.6C19.5 11.8 16.5 9 12 9z"/></svg>
             <strong data-bind="dashDogCount">—</strong>
             <span data-t="dash_team_tile">chiens</span>
           </div>
@@ -149,10 +132,16 @@
           </div>
           <div class="dash-kpi-divider"></div>
           <div class="dash-kpi">
-            <svg viewBox="0 0 24 24" fill="#fc4c02" stroke="#fc4c02" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <svg viewBox="0 0 24 24" fill="var(--orange)" stroke="var(--orange)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
             <strong data-bind="dashStreak">0</strong>
             <span data-t="dash_streak_tile">jours</span>
           </div>
+        </div>
+
+        <!-- ── Feed sorties récentes ── -->
+        <div id="dash-feed" style="display:none">
+          <p class="dash-feed-label">Sorties récentes</p>
+          <div id="dash-feed-cards"></div>
         </div>
 
         <!-- ── Attelage du jour ── -->

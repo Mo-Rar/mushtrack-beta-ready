@@ -58,7 +58,7 @@ body.dark-mode .dash-kpi-row,
 body.dark-mode .dash-lastrun,
 body.dark-mode .dash-team-strip,
 body.dark-mode .dash-feed-card,
-body.dark-mode .dash-workout,
+body.dark-mode .dash-seance-card,
 body.dark-mode .ph-card {
   background: var(--tile-bg) !important;
   color: var(--text-main) !important;
@@ -75,13 +75,17 @@ body.dark-mode .dash-feed-label {
 body.dark-mode .dash-hero {
   filter: brightness(0.8);
 }
-body.dark-mode .dash-hero-card {
-  background: rgba(255,255,255,0.07) !important;
-  border-color: rgba(255,255,255,0.1) !important;
+body.dark-mode .dash-hero-pill {
+  background: rgba(255,255,255,0.10) !important;
+  border-color: rgba(255,255,255,0.12) !important;
 }
-body.dark-mode .dash-workout-btns .dash-start-btn {
-  background: var(--orange) !important;
-}
+body.dark-mode .dash-hero-pill .dash-days-label { color: rgba(255,255,255,0.6) !important; }
+body.dark-mode .dash-seance-stats { background: rgba(255,255,255,0.06) !important; }
+body.dark-mode .dash-seance-title,
+body.dark-mode .dash-sstat strong,
+body.dark-mode .dash-seance-charge strong { color: var(--text-main) !important; }
+body.dark-mode .dash-sstat span,
+body.dark-mode .dash-seance-charge { color: var(--text-muted) !important; }
 body.dark-mode .dash-dog-chip-bubble.ok       { background: #14532d !important; border-color: #166534 !important; }
 body.dark-mode .dash-dog-chip-bubble.attention{ background: #78350f !important; border-color: #92400e !important; }
 body.dark-mode .dash-dog-chip-bubble.repos    { background: #7f1d1d !important; border-color: #991b1b !important; }
@@ -3763,9 +3767,10 @@ textarea {
 /* ── Hero — image couvre tout (header inclus) ───────────────── */
 .dash-hero {
   position: relative;
-  min-height: 340px;
+  min-height: 200px;
+  max-height: 220px;
   background:
-    linear-gradient(180deg, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.62) 100%),
+    linear-gradient(180deg, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.18) 50%, rgba(0,0,0,0.68) 100%),
     url("./assets/mode-hiver.png") center 30%/cover no-repeat;
   border-radius: 0 0 28px 28px;
   margin: 0 0 14px;
@@ -3805,155 +3810,106 @@ textarea {
   display: flex; align-items: center; justify-content: center;
   color: #fff; cursor: pointer;
 }
-.dash-hero-text {
-  position: relative; z-index: 2;
-  padding: 0 20px 20px;
-}
-.dash-hero-bottom {
-  display: flex; align-items: flex-end; gap: 10px;
-  padding: 0 20px 0;
-}
-.dash-hello {
-  font-size: 0.72rem; color: rgba(255,255,255,0.55);
-  margin: 0 0 4px; font-weight: 500; letter-spacing: .02em;
-}
-.dash-mission-title {
-  font-size: 1.75rem; font-weight: 900; color: #fff;
-  margin: 0 0 0; line-height: 1.1;
-  letter-spacing: -0.04em;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
-  text-wrap: balance;
-}
-.dash-mission-title span { color: var(--orange); }
 .dash-hero-photo { display: none; }
+.dash-orange { color: var(--orange); font-weight: 700; }
 
-/* Carte countdown dans le hero — flottante en bas à gauche */
-.dash-hero-card {
+/* Zone texte objectif dans le hero */
+.dash-hero-body {
+  padding: 0 20px 6px;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+}
+.dash-hero-objectif {
+  font-size: 0.82rem; font-weight: 700;
+  color: rgba(255,255,255,0.80);
+  margin: 0;
+  letter-spacing: .01em;
+}
+.dash-hero-objectif span { color: #fff; font-weight: 900; }
+
+/* Pill J-restants flottante en bas à droite */
+.dash-hero-pill {
+  position: absolute;
+  bottom: 18px; right: 18px;
   background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 14px;
-  margin: 16px 0 20px 20px;
-  padding: 8px 14px;
-  display: inline-flex;
-  gap: 12px;
-  align-items: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.22);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 50px;
+  padding: 5px 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.22);
   border: 1px solid rgba(255,255,255,0.6);
 }
-.dash-hero-countdown {
-  display: flex; flex-direction: column; align-items: flex-start;
-  min-width: 46px;
-  border-right: 1px solid rgba(0,0,0,0.08);
-  padding-right: 12px;
-}
 .dash-days {
-  font-size: 1.5rem; font-weight: 900; color: var(--orange);
+  font-size: 1.3rem; font-weight: 900; color: var(--orange);
   letter-spacing: -0.05em; line-height: 1;
 }
 .dash-days-label {
-  font-size: 0.5rem; font-weight: 700; color: #999;
-  margin-top: 1px; text-transform: uppercase; letter-spacing: .05em;
+  font-size: 0.55rem; font-weight: 800; color: #666;
+  text-transform: uppercase; letter-spacing: .06em;
 }
-.dash-hero-prep { flex: 1; min-width: 100px; }
-.dash-prep-eyebrow {
-  font-size: 0.44rem; font-weight: 900; letter-spacing: .1em;
-  color: #aaa; text-transform: uppercase; margin: 0 0 2px;
-}
-.dash-prep-value {
-  display: block; font-size: 0.95rem; font-weight: 900; color: #18211D;
-  margin: 0 0 4px; letter-spacing: -0.02em;
-}
-.dash-prep-bar {
-  height: 3px; background: rgba(0,0,0,0.08); border-radius: 99px; overflow: hidden;
-  width: 100%;
-}
-.dash-prep-bar span {
-  display: block; height: 100%;
-  background: linear-gradient(90deg, var(--season-color), var(--season-color-light));
-  border-radius: 99px; width: 0%; transition: width .4s;
-}
-.dash-prep-phase { display: none; }
-.dash-orange { color: var(--orange); font-weight: 700; }
 
-/* ── Objectif du jour (avec gauge) ─────────────────────────── */
-.dash-workout {
+/* ── Séance du jour (carte centrale) ───────────────────────── */
+.dash-seance-card {
   background: var(--tile-bg);
   border-radius: var(--card-radius);
   margin: 0 var(--side) 14px;
-  padding: 18px;
+  padding: 20px 20px 16px;
   box-shadow: var(--card-shadow);
 }
-.dash-workout-inner {
-  display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px;
+.dash-seance-top { margin-bottom: 16px; }
+.dash-seance-eyebrow {
+  font-size: 0.58rem; font-weight: 900; letter-spacing: .14em;
+  color: var(--orange); text-transform: uppercase; margin: 0 0 4px;
 }
-.dash-workout-left { flex: 1; }
-.dash-eyebrow-green {
-  font-size: 0.6rem; font-weight: 900; letter-spacing: .1em;
-  color: var(--season-color); text-transform: uppercase; margin: 0 0 5px;
+.dash-seance-title {
+  font-size: 1.25rem; font-weight: 900; color: var(--text-main);
+  margin: 0; line-height: 1.15; letter-spacing: -0.03em;
 }
-.dash-workout-title {
-  display: block; font-size: 1.1rem; font-weight: 900;
-  color: #111; margin: 0 0 4px; line-height: 1.2;
+.dash-seance-stats {
+  display: flex; align-items: center; gap: 0;
+  margin-bottom: 18px;
+  background: var(--bg-screen);
+  border-radius: 14px;
+  padding: 12px 0;
 }
-.dash-workout-desc {
-  font-size: 0.8rem; color: #888; margin: 0 0 10px; line-height: 1.4;
+.dash-sstat {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 2px;
 }
-.dash-workout-stats {
-  display: flex; gap: 10px;
+.dash-sstat strong {
+  font-size: 1.15rem; font-weight: 900; color: var(--text-main);
+  letter-spacing: -0.03em; line-height: 1;
 }
-.dash-wstat {
-  display: flex; flex-direction: column; gap: 1px;
+.dash-sstat span {
+  font-size: 0.58rem; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .08em;
 }
-.dash-wstat strong { font-size: 0.88rem; font-weight: 900; color: #111; }
-.dash-wstat span { font-size: 0.6rem; color: #bbb; font-weight: 700; text-transform: uppercase; }
-.dash-wstat-intensity strong { color: var(--orange); }
-
-/* Gauge SVG */
-.dash-workout-gauge {
-  position: relative; display: flex; align-items: center; justify-content: center;
+.dash-sstat-hi strong { color: var(--orange); }
+.dash-sstat-div {
+  width: 1px; height: 32px;
+  background: var(--border);
   flex-shrink: 0;
 }
-.dash-gauge-ring {
-  stroke-dasharray: 226;
-  stroke-dashoffset: 56;
-  transition: stroke-dashoffset .5s, stroke .4s;
-}
-.dash-gauge-inner {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; text-align: center;
-}
-.dash-gauge-label {
-  font-size: 0.52rem; font-weight: 800; text-transform: uppercase;
-  letter-spacing: .06em; color: var(--text-muted); line-height: 1; margin-bottom: 1px;
-}
-.dash-gauge-val {
-  display: flex; align-items: baseline; gap: 1px; line-height: 1.1;
-}
-.dash-gauge-val strong { font-size: 1.4rem; font-weight: 900; color: var(--text-main); }
-.dash-gauge-val span { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; }
-.dash-gauge-level {
-  font-size: 0.6rem; font-weight: 800; color: var(--text-sub); margin-top: 2px;
-}
-
-/* Boutons séance */
-.dash-workout-btns { display: flex; flex-direction: column; gap: 8px; }
-.dash-start-btn {
+.dash-seance-btn {
   width: 100%;
   background: var(--orange); color: #fff;
   border: none; border-radius: 50px;
-  padding: 13px 16px;
-  font-size: 0.85rem; font-weight: 900; letter-spacing: .04em;
-  box-shadow: 0 4px 14px rgba(252,76,2,0.4);
+  padding: 14px 16px;
+  font-size: 0.85rem; font-weight: 900; letter-spacing: .05em;
+  box-shadow: 0 4px 16px var(--orange-shadow);
   cursor: pointer;
+  margin-bottom: 10px;
 }
-.dash-detail-btn {
-  background: none; color: #888;
-  border: none; text-align: center;
-  font-size: 0.82rem; font-weight: 700;
-  cursor: pointer; padding: 4px;
+.dash-seance-charge {
+  font-size: 0.72rem; color: var(--text-muted); font-weight: 500;
+  margin: 0; text-align: center;
 }
+.dash-seance-charge strong { color: var(--text-sub); font-weight: 800; }
+.dash-seance-charge-level { font-weight: 700; color: var(--text-sub); }
 
 /* ── Toggle thème ───────────────────────────────────────────── */
 .theme-toggle-row {
