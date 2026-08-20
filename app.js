@@ -7871,6 +7871,25 @@ function initMap(lat = 46.8182, lon = 8.2275) {
   }).addTo(map);
 }
 
+function setGpsSignalBar(status, label) {
+  const bar = document.getElementById("gps-signal-bar");
+  const icon = document.getElementById("gps-signal-icon");
+  const text = document.getElementById("gps-signal-text");
+  if (!bar) return;
+  bar.className = "gps-signal-bar";
+  if (status === "found") {
+    bar.classList.add("gps-signal-found");
+    if (icon) icon.textContent = "📶";
+  } else if (status === "lost") {
+    bar.classList.add("gps-signal-lost");
+    if (icon) icon.textContent = "⚠️";
+  } else {
+    bar.classList.add("gps-signal-searching");
+    if (icon) icon.textContent = "📡";
+  }
+  if (text) text.textContent = label;
+}
+
 function updateMapPosition(lat, lon, label = "Position GPS active") {
   if (!map) {
     initMap(lat, lon);
@@ -7887,6 +7906,8 @@ function updateMapPosition(lat, lon, label = "Position GPS active") {
   if (gpsStatusEl) {
     gpsStatusEl.textContent = label;
   }
+
+  setGpsSignalBar("found", "Signal GPS trouvé");
 }
 
 function startLiveLocation() {
@@ -7894,10 +7915,12 @@ function startLiveLocation() {
 
   if (!navigator.geolocation) {
     if (gpsStatusEl) gpsStatusEl.textContent = "GPS non disponible sur cet appareil.";
+    setGpsSignalBar("lost", "GPS non disponible");
     return;
   }
 
   if (gpsStatusEl) gpsStatusEl.textContent = "Recherche de ta position...";
+  setGpsSignalBar("searching", "Recherche GPS…");
 
   liveWatchId = navigator.geolocation.watchPosition(
     (position) => {
@@ -7909,6 +7932,7 @@ function startLiveLocation() {
     },
     () => {
       if (gpsStatusEl) gpsStatusEl.textContent = "Position refusee ou signal GPS indisponible.";
+      setGpsSignalBar("lost", "Signal GPS indisponible");
     },
     {
       enableHighAccuracy: true,
@@ -8326,7 +8350,70 @@ document.getElementById("unit-pace")?.addEventListener("click", () => { state.gp
 
 applyGpsUnitUI();
 
-// Sélecteur engin
+// Sélecteur engin + long-press pour modifier le poids
+let _enginLongPressTimer = null;
+let _enginEditing = null;
+
+function openEnginWeightModal(btn) {
+  _enginEditing = btn;
+  const engin = btn.dataset.engin;
+  const poids = parseInt(state.enginPoids?.[engin] ?? btn.dataset.poids ?? 0);
+  document.getElementById("engin-weight-title").textContent = "⚙ " + engin;
+  const input = document.getElementById("engin-weight-input");
+  input.value = poids;
+  const overlay = document.getElementById("engin-weight-overlay");
+  overlay.style.display = "flex";
+  updateEnginChargePreview(engin, poids);
+  input.addEventListener("input", () => {
+    updateEnginChargePreview(engin, parseInt(input.value) || 0);
+  }, { signal: overlay._ac?.signal });
+  overlay._ac = new AbortController();
+  input.addEventListener("input", () => {
+    updateEnginChargePreview(engin, parseInt(input.value) || 0);
+  }, { signal: overlay._ac.signal });
+}
+
+function updateEnginChargePreview(engin, poidsEngin) {
+  const POIDS_MUSHER = 75;
+  const nbChiens = (state.selectedDogs || state.dogs || []).length || 1;
+  const poidsTotal = engin === "Canicross" ? 0 : poidsEngin + POIDS_MUSHER;
+  const parChien = nbChiens > 0 ? Math.round(poidsTotal / nbChiens) : 0;
+  document.getElementById("engin-charge-total").textContent = poidsTotal;
+  document.getElementById("engin-charge-dogs").textContent = nbChiens;
+  document.getElementById("engin-charge-per").textContent = parChien;
+  const levelEl = document.getElementById("engin-charge-level");
+  if (engin === "Canicross") {
+    levelEl.textContent = "🏃 Canicross — pas de charge mécanique";
+    levelEl.style.color = "#888";
+  } else if (parChien > 50) {
+    levelEl.textContent = "🔴 Charge lourde — adapte la distance";
+    levelEl.style.color = "#c0392b";
+  } else if (parChien > 25) {
+    levelEl.textContent = "🟠 Charge modérée — surveille la récupération";
+    levelEl.style.color = "#ff6a00";
+  } else {
+    levelEl.textContent = "🟢 Charge légère — conditions idéales";
+    levelEl.style.color = "#1a7a4a";
+  }
+}
+
+window.closeEnginWeightModal = function() {
+  const overlay = document.getElementById("engin-weight-overlay");
+  overlay.style.display = "none";
+  overlay._ac?.abort();
+};
+
+window.saveEnginWeight = function() {
+  if (!_enginEditing) return;
+  const engin = _enginEditing.dataset.engin;
+  const poids = parseInt(document.getElementById("engin-weight-input").value) || 0;
+  if (!state.enginPoids) state.enginPoids = {};
+  state.enginPoids[engin] = poids;
+  _enginEditing.dataset.poids = poids;
+  saveState();
+  closeEnginWeightModal();
+};
+
 document.querySelectorAll(".engin-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".engin-btn").forEach(b => b.classList.remove("active"));
@@ -8334,7 +8421,19 @@ document.querySelectorAll(".engin-btn").forEach(btn => {
     state.selectedEngin = btn.dataset.engin;
     saveState();
   });
+  // Long press pour modifier le poids
+  btn.addEventListener("pointerdown", () => {
+    _enginLongPressTimer = setTimeout(() => openEnginWeightModal(btn), 600);
+  });
+  btn.addEventListener("pointerup", () => clearTimeout(_enginLongPressTimer));
+  btn.addEventListener("pointerleave", () => clearTimeout(_enginLongPressTimer));
+  btn.addEventListener("contextmenu", e => { e.preventDefault(); openEnginWeightModal(btn); });
+  // Restaurer poids personnalisé depuis state
+  if (state.enginPoids?.[btn.dataset.engin] !== undefined) {
+    btn.dataset.poids = state.enginPoids[btn.dataset.engin];
+  }
 });
+
 // Restaurer l'engin sélectionné au chargement
 if (state.selectedEngin) {
   const saved = document.querySelector(`.engin-btn[data-engin="${state.selectedEngin}"]`);

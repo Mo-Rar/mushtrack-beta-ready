@@ -228,6 +228,12 @@
           <p class="strava-gps-status" id="gps-status" data-t="gps_searching">Recherche GPS…</p>
         </div>
 
+        <!-- Barre statut GPS -->
+        <div id="gps-signal-bar" class="gps-signal-bar gps-signal-searching">
+          <span id="gps-signal-icon">📡</span>
+          <span id="gps-signal-text" data-t="gps_searching">Recherche GPS…</span>
+        </div>
+
         <!-- Stats style Strava : distance hero + 3 secondaires -->
         <div class="strava-stats-panel">
           <div class="strava-stat-hero">
@@ -1263,7 +1269,48 @@
       </div>
     </div>
 
+    <!-- Modal édition poids engin -->
+    <div id="engin-weight-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9998;display:none;align-items:flex-end;justify-content:center">
+      <div id="engin-weight-sheet" style="background:#fff;width:100%;max-width:430px;border-radius:24px 24px 0 0;padding:20px 24px 40px;box-shadow:0 -8px 40px rgba(0,0,0,0.2)">
+        <div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
+        <h3 id="engin-weight-title" style="font-size:1.1rem;font-weight:900;color:#1a1814;margin:0 0 6px"></h3>
+        <p style="font-size:0.82rem;color:#888;margin:0 0 20px">Modifie le poids de l'engin pour affiner le calcul de charge.</p>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem;font-weight:700;color:#444;margin-bottom:16px">
+          Poids de l'engin (kg)
+          <input type="number" id="engin-weight-input" min="0" max="500" step="1"
+            style="font-size:1.8rem;font-weight:900;text-align:center;border:2px solid #e0d9d0;border-radius:14px;padding:12px;color:#1a1814"/>
+        </label>
+        <!-- Calcul charge par chien -->
+        <div id="engin-charge-result" style="background:#fff8f5;border:1.5px solid #fcd9c9;border-radius:14px;padding:14px 16px;margin-bottom:20px">
+          <p style="font-size:0.72rem;font-weight:800;color:#fc4c02;text-transform:uppercase;letter-spacing:.08em;margin:0 0 8px">Charge par chien</p>
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <div style="text-align:center">
+              <span style="display:block;font-size:0.7rem;color:#aaa;font-weight:700;text-transform:uppercase">Engin + musher</span>
+              <strong id="engin-charge-total" style="font-size:1.5rem;font-weight:900;color:#1a1814">—</strong>
+              <span style="font-size:0.75rem;color:#888"> kg</span>
+            </div>
+            <div style="color:#ddd;font-size:1.2rem">÷</div>
+            <div style="text-align:center">
+              <span style="display:block;font-size:0.7rem;color:#aaa;font-weight:700;text-transform:uppercase">Chiens</span>
+              <strong id="engin-charge-dogs" style="font-size:1.5rem;font-weight:900;color:#1a1814">—</strong>
+            </div>
+            <div style="color:#ddd;font-size:1.2rem">=</div>
+            <div style="text-align:center">
+              <span style="display:block;font-size:0.7rem;color:#aaa;font-weight:700;text-transform:uppercase">Par chien</span>
+              <strong id="engin-charge-per" style="font-size:1.8rem;font-weight:900;color:#fc4c02">—</strong>
+              <span style="font-size:0.75rem;color:#888"> kg</span>
+            </div>
+          </div>
+          <p id="engin-charge-level" style="font-size:0.8rem;margin:10px 0 0;text-align:center;font-weight:700"></p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button onclick="closeEnginWeightModal()" style="flex:1;padding:13px;border-radius:14px;border:1.5px solid #e0d9d0;background:#fff;color:#888;font-weight:700;font-size:0.9rem;cursor:pointer">Annuler</button>
+          <button onclick="saveEnginWeight()" style="flex:2;padding:13px;border-radius:14px;border:none;background:#fc4c02;color:#fff;font-weight:800;font-size:0.9rem;cursor:pointer;box-shadow:0 4px 14px rgba(252,76,2,0.35)">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-    <script src="app.js?v=20260819"></script>
+    <script src="app.js?v=20260820"></script>
   </body>
 </html>
