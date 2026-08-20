@@ -3309,7 +3309,11 @@ function render() {
   const dashFeed = document.getElementById("dash-feed");
   const dashFeedCards = document.getElementById("dash-feed-cards");
   if (dashFeedCards) {
-    const recentRuns = (state.runs || []).slice(0, 2);
+    const seenIds = new Set();
+    const recentRuns = [...(state.runs || [])]
+      .sort((a, b) => new Date(b.date || b.createdAt || 0) - new Date(a.date || a.createdAt || 0))
+      .filter(r => { if (seenIds.has(r.id)) return false; seenIds.add(r.id); return true; })
+      .slice(0, 2);
     if (recentRuns.length > 0) {
       dashFeed.style.display = "";
       const dayNames = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
