@@ -3284,6 +3284,67 @@ function render() {
     if (dogEnergyEl) dogEnergyEl.style.width = `${avgEnergy}%`;
   }
 
+  // Feed sorties récentes
+  const dashFeed = document.getElementById("dash-feed");
+  const dashFeedCards = document.getElementById("dash-feed-cards");
+  if (dashFeedCards) {
+    const recentRuns = (state.runs || []).slice(0, 2);
+    if (recentRuns.length > 0) {
+      dashFeed.style.display = "";
+      const dayNames = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+      const monthNames = ["jan","fév","mar","avr","mai","juin","juil","août","sep","oct","nov","déc"];
+      dashFeedCards.innerHTML = recentRuns.map((run, i) => {
+        const km = Number(run.km || 0).toFixed(1);
+        const speed = Number(run.avgSpeed || run.speed || 0).toFixed(1);
+        const dur = run.duration || run.time || 0;
+        const h = Math.floor(dur / 60), m = dur % 60;
+        const durStr = h > 0 ? `${h}h${String(m).padStart(2,"0")}` : `${m} min`;
+        const d = run.date ? new Date(run.date + "T12:00:00") : new Date(run.createdAt || Date.now());
+        const diffD = Math.round((Date.now() - d.getTime()) / 86400000);
+        const dateStr = diffD === 0 ? "Aujourd'hui" : diffD === 1 ? "Hier" :
+          `${dayNames[d.getDay()]} ${d.getDate()} ${monthNames[d.getMonth()]}`;
+        const engin = run.engin || run.type || "Sortie";
+        // Mini SVG trace
+        let mapHtml;
+        const path = run.path;
+        if (Array.isArray(path) && path.length > 1) {
+          const lats = path.map(p => p.lat ?? p[0]);
+          const lngs = path.map(p => p.lng ?? p[1]);
+          const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+          const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+          const W = 300, H = 60, pad = 6;
+          const scaleX = (lng) => pad + (lng - minLng) / (maxLng - minLng || 1) * (W - pad * 2);
+          const scaleY = (lat) => H - pad - (lat - minLat) / (maxLat - minLat || 1) * (H - pad * 2);
+          const pts = path.map(p => `${scaleX(p.lng ?? p[1]).toFixed(1)},${scaleY(p.lat ?? p[0]).toFixed(1)}`).join(" ");
+          mapHtml = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice">
+            <rect width="${W}" height="${H}" fill="#C8DEB5"/>
+            <polyline points="${pts}" fill="none" stroke="#FC4C02" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>`;
+        } else {
+          mapHtml = `<div class="dash-feed-map-placeholder">🐕</div>`;
+        }
+        return `<div class="dash-feed-card" data-go="course">
+          <div class="dash-feed-map">
+            ${mapHtml}
+            <span class="dash-feed-engin-badge">${engin}</span>
+          </div>
+          <div class="dash-feed-body">
+            <div class="dash-feed-meta">
+              <div class="dash-feed-date">${dateStr}</div>
+              <div class="dash-feed-stats">
+                <div class="dash-feed-stat"><strong>${km}</strong><span>km</span></div>
+                <div class="dash-feed-stat"><strong>${durStr}</strong><span>durée</span></div>
+                <div class="dash-feed-stat"><strong>${speed}</strong><span>km/h</span></div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join("");
+    } else {
+      dashFeed.style.display = "none";
+    }
+  }
+
   // Rangée attelage dashboard
   const teamStrip = document.getElementById("dash-team-strip");
   const teamStripDogs = document.getElementById("dash-team-strip-dogs");

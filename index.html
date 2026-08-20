@@ -127,8 +127,14 @@
           </div>
         </section>
 
-        <!-- ── Dernière sortie ── -->
-        <div class="dash-lastrun" id="dash-lastrun-card">
+        <!-- ── Feed sorties récentes ── -->
+        <div id="dash-feed" style="display:none">
+          <p class="dash-feed-label">Sorties récentes</p>
+          <div id="dash-feed-cards"></div>
+        </div>
+
+        <!-- ── Dernière sortie (fallback masqué, remplacé par feed) ── -->
+        <div class="dash-lastrun" id="dash-lastrun-card" style="display:none !important">
           <div class="dash-lastrun-left">
             <p class="dash-lastrun-eyebrow">🏁 DERNIÈRE SORTIE</p>
             <p class="dash-lastrun-date" data-bind="lastRunDate">—</p>
