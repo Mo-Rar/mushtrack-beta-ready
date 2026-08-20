@@ -3668,22 +3668,27 @@ function renderDogs() {
 
   const html = state.dogs.map((dog) => {
     const load = getDogRecentKm(dog.id);
+    const totalKm = getDogTotalKm(dog.id);
     const readiness = getDogReadiness(dog);
+    const loadPct = Math.min(100, load * 2);
     const photoHtml = dog.photoDataUrl
-      ? `<img src="${dog.photoDataUrl}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #fc4c02" alt="${dog.name}" />`
-      : `<div style="width:44px;height:44px;border-radius:50%;flex-shrink:0;background:#f0ede9;border:2px solid #e0dbd5;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:#bbb">${dog.name.charAt(0).toUpperCase()}</div>`;
+      ? `<img src="${dog.photoDataUrl}" class="dog-avatar-photo" alt="${dog.name}" />`
+      : `<div class="dog-avatar-initial">${dog.name.charAt(0).toUpperCase()}</div>`;
     return `
     <article class="dog-card ${readiness.level}" data-open-dog="${dog.id}">
-      <div style="display:flex;align-items:center;gap:12px">
+      <div class="dog-card-header">
         ${photoHtml}
-        <div>
-          <b>${dog.name}</b>
-          <span>${dog.role} - ${getDogAge(dog)} ans - ${dog.weight} kg - ${readiness.title}</span>
+        <div class="dog-card-info">
+          <div class="dog-card-name">${dog.name}</div>
+          <div class="dog-card-role">${dog.role} · ${getDogAge(dog)} ans · ${dog.weight} kg</div>
         </div>
+        <div class="dog-card-km">${Math.round(totalKm)}<span> km</span></div>
       </div>
-      <strong>${Math.round(dog.km || 0)} km</strong>
-      <div class="load-meter"><span style="width:${Math.min(100, load * 2)}%"></span></div>
-      <small>${load.toFixed(1)} ${t('dog_km_week')} - ${readiness.text}</small>
+      <div class="dog-load-bar"><div class="dog-load-fill" style="width:${loadPct}%"></div></div>
+      <div class="dog-card-footer">
+        <span class="dog-card-week">${load.toFixed(1).replace(".", ",")} km / sem.</span>
+        <span class="dog-card-status dog-status-${readiness.level}">${readiness.title}</span>
+      </div>
     </article>
   `}).join("");
 
@@ -6406,6 +6411,12 @@ function getDogRecentKm(id, days = 7) {
     .reduce((sum, r) => sum + Number(r.km || 0), 0);
 }
 
+function getDogTotalKm(id) {
+  return state.runs
+    .filter(r => r.team && r.team.includes(id))
+    .reduce((sum, r) => sum + Number(r.km || 0), 0);
+}
+
 function getDogFatigueIndex(id) {
   const km7 = getDogRecentKm(id, 7);
   const targetWeekly = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
@@ -7358,7 +7369,7 @@ function renderAgenda() {
     const subtitle = isRace
       ? `${item.type || ""} · ${item.distance ? item.distance + " km" : ""} · ${item.location || ""}`
       : item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : t('agenda_event');
-    const notesHtml = item.notes ? `<p style="margin:6px 0 0;font-size:0.82rem;color:#666">${item.notes}</p>` : "";
+    const notesHtml = item.notes ? `<p class="agenda-notes">${item.notes}</p>` : "";
 
     // Formulaire d'édition inline
     const catOptions = ["veto","osteo","sortie","entrainement","materiel","course","autre"].map(c =>
@@ -7366,31 +7377,31 @@ function renderAgenda() {
     ).join("");
 
     return `
-      <article class="agenda-item" data-item-id="${item.id}" style="background:#fff;border:1px solid #f0f0f0;border-left:4px solid ${isRace?"#fc4c02":"#4a90d9"};border-radius:10px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-        <div style="display:flex;align-items:flex-start;gap:10px">
-          <span style="font-size:1.6rem;line-height:1">${icon}</span>
-          <div style="flex:1;min-width:0">
-            <p style="margin:0;font-size:0.75rem;color:${days < 0 ? "#aaa" : days <= 7 ? "#fc4c02" : "#666"};font-weight:600">${status} · ${formatFullDate(item.date)}</p>
-            <h3 style="margin:2px 0 4px;font-size:1rem;font-weight:700">${item.name || item.title || t('agenda_no_title')}</h3>
-            <p style="margin:0;font-size:0.8rem;color:#888">${subtitle}</p>
+      <article class="agenda-item ${isRace ? 'agenda-item--race' : 'agenda-item--event'} ${days < 0 ? 'agenda-item--past' : days <= 7 ? 'agenda-item--soon' : ''}" data-item-id="${item.id}">
+        <div class="agenda-item-top">
+          <div class="agenda-icon-box ${isRace ? 'agenda-icon-box--race' : 'agenda-icon-box--event'}"><span>${icon}</span></div>
+          <div class="agenda-content">
+            <p class="agenda-meta-line">${status} · ${formatFullDate(item.date)}</p>
+            <h3 class="agenda-title">${item.name || item.title || t('agenda_no_title')}</h3>
+            <p class="agenda-subtitle">${subtitle}</p>
             ${notesHtml}
           </div>
         </div>
         ${isRace && item.result ? `
-        <div style="margin-top:10px;padding:10px 12px;background:#fff8f5;border-radius:10px;border:1px solid #fcd9c9">
+        <div class="agenda-result-box">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span style="font-size:1.2rem">🏆</span>
-            ${item.result.rank ? `<strong style="font-size:1rem;color:#fc4c02">${item.result.rank}${item.result.totalParticipants ? ` / ${item.result.totalParticipants}` : ""}</strong>` : ""}
-            ${item.result.time ? `<span style="font-size:0.85rem;color:#666">· ${item.result.time}</span>` : ""}
-            ${item.result.notes ? `<span style="font-size:0.82rem;color:#888">· ${item.result.notes}</span>` : ""}
+            <span>🏆</span>
+            ${item.result.rank ? `<strong style="color:#fc4c02">${item.result.rank}${item.result.totalParticipants ? ` / ${item.result.totalParticipants}` : ""}</strong>` : ""}
+            ${item.result.time ? `<span style="color:#666">· ${item.result.time}</span>` : ""}
+            ${item.result.notes ? `<span style="color:#888">· ${item.result.notes}</span>` : ""}
           </div>
         </div>` : ""}
         ${isRace && days >= 0 ? renderRaceChecklist(item) : ""}
-        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-          ${isRace && days < 0 ? `<button data-agenda-result="${item.id}" type="button" style="flex:1;min-width:100px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #1a7a4a;border-radius:8px;background:#fff;color:#1a7a4a;cursor:pointer">${item.result ? t('agenda_result_edit_btn') : t('agenda_result_btn')}</button>` : ""}
-          ${isRace && days >= 0 ? `<button data-checklist-toggle="${item.id}" type="button" style="flex:1;min-width:100px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #6366f1;border-radius:8px;background:#fff;color:#6366f1;cursor:pointer">${t('agenda_checklist_label')}</button>` : ""}
-          <button data-agenda-edit="${item.id}" type="button" style="flex:1;min-width:80px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #fc4c02;border-radius:8px;background:#fff;color:#fc4c02;cursor:pointer">${t('agenda_edit_btn')}</button>
-          <button data-agenda-delete="${item.id}" type="button" style="flex:1;min-width:80px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#999;cursor:pointer">${t('agenda_delete_btn')}</button>
+        <div class="agenda-actions">
+          ${isRace && days < 0 ? `<button data-agenda-result="${item.id}" type="button" class="agenda-btn agenda-btn--result">${item.result ? t('agenda_result_edit_btn') : t('agenda_result_btn')}</button>` : ""}
+          ${isRace && days >= 0 ? `<button data-checklist-toggle="${item.id}" type="button" class="agenda-btn agenda-btn--checklist">${t('agenda_checklist_label')}</button>` : ""}
+          <button data-agenda-edit="${item.id}" type="button" class="agenda-btn agenda-btn--edit">${t('agenda_edit_btn')}</button>
+          <button data-agenda-delete="${item.id}" type="button" class="agenda-btn agenda-btn--delete">${t('agenda_delete_btn')}</button>
         </div>
         <form data-result-form="${item.id}" style="display:none;flex-direction:column;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #eee">
           <p style="margin:0 0 4px;font-size:0.78rem;font-weight:700;color:#1a7a4a;text-transform:uppercase;letter-spacing:.05em">${t('agenda_result_label')}</p>

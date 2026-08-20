@@ -4792,93 +4792,193 @@ textarea {
 .dash-tile-team-health { font-size: 0.65rem; color: #666; margin: 2px 0 4px; font-weight: 600; }
 
 /* ══════════════════════════════════════════════════════════════════
-   VOUS — Passe UI/UX
+   VOUS — Refonte complète
    ══════════════════════════════════════════════════════════════════ */
+
+/* ── Screen ──────────────────────────────────────────────────── */
+#vous { background: var(--bg-screen); }
 
 /* ── Bouton Mon profil ───────────────────────────────────────── */
 #vous-profile-btn {
-  padding: 5px 11px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 6px 13px !important;
   font-size: 0.76rem !important;
-  border-radius: 16px !important;
+  font-weight: 700 !important;
+  border: 1.5px solid var(--orange) !important;
+  border-radius: 20px !important;
+  background: transparent !important;
+  color: var(--orange) !important;
+  cursor: pointer !important;
 }
 
-/* ── Agenda — items ──────────────────────────────────────────── */
+/* ── Sous-onglets ─────────────────────────────────────────────── */
+.vous-subtab-bar {
+  background: var(--tile-bg);
+  border-bottom: 1.5px solid var(--border);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+.vous-subtab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 2px 8px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+  margin-bottom: -2px;
+  white-space: nowrap;
+}
+.vous-subtab svg { width: 16px !important; height: 16px !important; opacity: 0.5; transition: opacity .15s; }
+.vous-subtab.active { color: var(--orange); border-bottom-color: var(--orange); }
+.vous-subtab.active svg { opacity: 1; }
+
+/* ── Panneaux ─────────────────────────────────────────────────── */
+.vous-panel.active { background: var(--bg-screen); }
+
+/* ════════════════════ AGENDA ════════════════════════════════════ */
 .agenda-item {
-  border-left-width: 2px !important;
-  padding: 12px !important;
-  margin-bottom: 8px !important;
-  border-radius: 12px !important;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.05) !important;
+  background: var(--tile-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  overflow: hidden;
 }
-/* Icône : moins dominante */
-.agenda-item > div:first-child > span:first-child {
-  font-size: 1.15rem !important;
+.agenda-item--race { border-left: 3px solid var(--orange); }
+.agenda-item--event { border-left: 3px solid #60a5fa; }
+.agenda-item--past { opacity: 0.82; }
+
+.agenda-item-top { display: flex; align-items: flex-start; gap: 12px; }
+
+.agenda-icon-box {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
   flex-shrink: 0;
-  margin-top: 1px;
 }
-/* Actions : séparées par un filet */
-.agenda-item > div[style*="margin-top"] {
-  border-top: 1px solid rgba(0,0,0,0.06);
-  padding-top: 10px !important;
-  margin-top: 10px !important;
-}
+.agenda-icon-box--race { background: var(--orange-light); }
+.agenda-icon-box--event { background: #eff6ff; }
 
-/* ── Dog cards ───────────────────────────────────────────────── */
-.dog-list article.dog-card {
-  padding: 12px !important;
-  gap: 6px !important;
-  position: relative;
+.agenda-content { flex: 1; min-width: 0; }
+
+.agenda-meta-line {
+  font-size: 0.64rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .07em;
+  color: var(--text-muted);
+  margin: 0 0 4px;
 }
-/* Km en top-right */
-.dog-card > strong {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 0.78rem;
-  font-weight: 800;
+.agenda-item--soon .agenda-meta-line { color: var(--orange); }
+
+.agenda-title {
+  font-size: 0.95rem; font-weight: 800;
   color: var(--text-main);
+  margin: 0 0 3px;
+  line-height: 1.2;
 }
-/* Éviter overlap */
-.dog-card > div:first-child {
-  padding-right: 48px;
+.agenda-subtitle {
+  font-size: 0.74rem; color: var(--text-sub); margin: 0; font-weight: 600;
 }
-/* Small (charge texte) */
-.dog-card > small {
-  font-size: 0.62rem !important;
-  color: var(--text-muted) !important;
-  font-weight: 600 !important;
-  line-height: 1.3;
+.agenda-notes {
+  font-size: 0.72rem; color: var(--text-muted);
+  margin: 6px 0 0; line-height: 1.4;
 }
-/* Nom */
-.dog-list article b {
-  font-size: 0.9rem;
-  font-weight: 800;
-  display: block;
-  margin-bottom: 2px;
+.agenda-result-box {
+  margin-top: 10px; padding: 10px 12px;
+  background: #fff8f5; border-radius: 10px; border: 1px solid #fcd9c9;
+  font-size: 0.85rem;
 }
-/* Infos secondaires */
-.dog-list article span {
-  font-size: 0.68rem !important;
-  color: var(--text-muted) !important;
-  line-height: 1.3;
+.agenda-actions {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  padding-top: 10px; margin-top: 12px;
 }
+.agenda-btn {
+  flex: 1; min-width: 72px;
+  padding: 7px 10px;
+  font-size: 0.78rem; font-weight: 700;
+  border-radius: 8px; cursor: pointer; border: 1.5px solid;
+  background: transparent; text-align: center;
+}
+.agenda-btn--result { border-color: #1a7a4a; color: #1a7a4a; }
+.agenda-btn--checklist { border-color: #6366f1; color: #6366f1; }
+.agenda-btn--edit { border-color: var(--orange); color: var(--orange); }
+.agenda-btn--delete { border-color: var(--border); color: var(--text-muted); }
 
-/* ── Run cards ───────────────────────────────────────────────── */
-.gps-history .run-card {
-  padding: 14px 16px !important;
-  margin-bottom: 8px !important;
+/* ════════════════════ CHIENS ════════════════════════════════════ */
+.dog-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 0 16px 16px;
 }
-.gps-history .run-card-icon {
-  width: 32px !important;
-  height: 32px !important;
+.dog-card {
+  background: var(--tile-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 12px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  cursor: pointer;
 }
-.gps-history .run-card-title {
-  font-size: 0.86rem !important;
+.dog-card.ok    { border-left: 3px solid #22c55e; }
+.dog-card.light { border-left: 3px solid #fb923c; }
+.dog-card.danger { border-left: 3px solid var(--orange); background: rgba(252,76,2,0.03); }
+
+.dog-card-header { display: flex; align-items: center; gap: 8px; }
+.dog-avatar-photo {
+  width: 36px; height: 36px;
+  border-radius: 50%; object-fit: cover; flex-shrink: 0;
+  border: 2px solid var(--orange);
 }
+.dog-avatar-initial {
+  width: 36px; height: 36px;
+  border-radius: 50%; flex-shrink: 0;
+  background: var(--orange-light);
+  border: 2px solid var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 900; color: var(--orange);
+}
+.dog-card-info { flex: 1; min-width: 0; }
+.dog-card-name {
+  font-size: 0.88rem; font-weight: 800; color: var(--text-main);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dog-card-role {
+  font-size: 0.6rem; color: var(--text-muted);
+  font-weight: 600; line-height: 1.4; margin-top: 1px;
+}
+.dog-card-km {
+  font-size: 0.8rem; font-weight: 800;
+  color: var(--text-main); text-align: right; flex-shrink: 0; white-space: nowrap;
+}
+.dog-card-km span { font-size: 0.6rem; font-weight: 600; color: var(--text-muted); }
+.dog-load-bar { height: 3px; background: var(--bg-screen); border-radius: 999px; overflow: hidden; }
+.dog-load-fill { height: 100%; border-radius: 999px; background: #fb923c; transition: width .3s; }
+.dog-card-footer { display: flex; justify-content: space-between; align-items: center; gap: 4px; }
+.dog-card-week { font-size: 0.6rem; color: var(--text-muted); font-weight: 600; }
+.dog-card-status {
+  font-size: 0.58rem; font-weight: 800;
+  padding: 2px 7px; border-radius: 999px;
+  text-transform: uppercase; letter-spacing: .04em; white-space: nowrap;
+}
+.dog-status-ok    { background: #dcfce7; color: #15803d; }
+.dog-status-light { background: #fff7ed; color: #ea580c; }
+.dog-status-danger { background: #fef2f2; color: #dc2626; }
 
 /* ── Bascule Liste / Tracés ──────────────────────────────────── */
 #vous-panel-enregistrement > div:nth-child(2) {
-  background: var(--bg-screen) !important;
+  background: var(--tile-bg) !important;
   border: 1.5px solid var(--border) !important;
   border-radius: 12px !important;
   padding: 3px !important;
@@ -4887,14 +4987,13 @@ textarea {
   margin: 0 16px 8px !important;
 }
 
-/* ── Dark mode — Vous ────────────────────────────────────────── */
-body.dark-mode .agenda-item {
-  background: var(--tile-bg) !important;
-  border-color: rgba(255,255,255,0.08) !important;
-}
-body.dark-mode .dog-card { background: var(--tile-bg) !important; }
-body.dark-mode .dog-card.danger { background: rgba(252,76,2,0.08) !important; }
-body.dark-mode .dog-card > strong,
-body.dark-mode .dog-list article b { color: var(--text-main) !important; }
-body.dark-mode .dog-list article span,
-body.dark-mode .dog-card > small { color: var(--text-muted) !important; }
+/* ════════════════════ DARK MODE ══════════════════════════════════ */
+body.dark-mode .agenda-item { background: var(--tile-bg); border-color: rgba(255,255,255,0.07); }
+body.dark-mode .agenda-icon-box--event { background: rgba(96,165,250,0.12); }
+body.dark-mode .agenda-result-box { background: rgba(252,76,2,0.08); border-color: rgba(252,76,2,0.2); }
+body.dark-mode .agenda-actions { border-color: rgba(255,255,255,0.07); }
+body.dark-mode .agenda-btn--delete { border-color: rgba(255,255,255,0.12); }
+body.dark-mode .dog-card { background: var(--tile-bg); border-color: rgba(255,255,255,0.07); }
+body.dark-mode .dog-card.danger { background: rgba(252,76,2,0.07); }
+body.dark-mode .dog-avatar-initial { background: rgba(252,76,2,0.15); }
+body.dark-mode .dog-load-bar { background: rgba(255,255,255,0.06); }
