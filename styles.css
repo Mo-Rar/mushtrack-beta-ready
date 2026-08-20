@@ -954,6 +954,12 @@ body.mode-summer .record-button {
   color: #c0392b;
 }
 
+/* Bloc blanc unifié écran GPS */
+.gps-unified-block {
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
 /* Stats panel below map */
 .strava-stats-panel {
   background: #ffffff;
