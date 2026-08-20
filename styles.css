@@ -2742,8 +2742,8 @@ textarea {
 .race-country-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 13px 16px;
+  gap: 8px;
+  padding: 10px 14px;
   background: transparent;
   border: none;
   width: 100%;
@@ -2760,7 +2760,7 @@ textarea {
   align-items: center;
 }
 .race-country-header h3 {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 800;
   color: var(--text-main);
   margin: 0;
@@ -2821,47 +2821,57 @@ textarea {
   border-color: var(--orange);
   box-shadow: 0 2px 16px var(--orange-shadow);
 }
-.race-result.official  { border-left: 3px solid #22c55e; }
-.race-result.watch     { border-left: 3px solid var(--orange); }
-.race-result.user      { border-left: 3px solid #d1d5db; }
-/* Metadata line (status · source · reliability) */
-.race-result > div > div > span:first-child {
-  display: block;
-  font-size: 0.62rem; font-weight: 700;
-  color: var(--text-muted); margin-bottom: 3px;
-  letter-spacing: .02em;
+.race-result.official,
+.race-result.watch,
+.race-result.user { border-left: 1px solid var(--border); }
+/* Reorder inner div : h3 → date → meta discrète */
+.race-result > div > div:first-child {
+  display: flex;
+  flex-direction: column;
 }
-/* Nom course */
+/* Metadata line (J-N · source · fiabilité) — rendu discret, en dernier */
+.race-result > div > div:first-child > span:first-child {
+  order: 10;
+  font-size: 0.58rem; font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 5px;
+  letter-spacing: .01em;
+}
+/* Nom course — en premier */
 .race-result h3 {
+  order: 1;
   font-size: 1rem; font-weight: 900;
-  color: var(--text-main); margin: 0 0 3px;
+  color: var(--text-main); margin: 0 0 2px;
   line-height: 1.2; letter-spacing: -0.02em;
 }
-/* Date · Lieu */
-.race-result > div > div > p {
+/* Date · Lieu — en deuxième */
+.race-result > div > div:first-child > p {
+  order: 2;
   font-size: 0.76rem; color: var(--text-sub);
   margin: 0; font-weight: 600;
 }
-/* Discipline badge */
+/* Discipline + distance/surface : même ligne */
 .race-result > strong {
   display: inline-block;
-  margin: 8px 0 4px;
-  font-size: 0.68rem; font-weight: 900;
+  margin: 8px 5px 0 0;
+  vertical-align: middle;
+  font-size: 0.66rem; font-weight: 900;
   color: var(--orange);
   background: var(--orange-light);
   padding: 2px 8px; border-radius: 6px;
   text-transform: uppercase; letter-spacing: .06em;
 }
-/* Distance + surface badges */
 .agenda-meta {
-  display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;
+  display: inline-flex; flex-wrap: wrap; gap: 4px;
+  margin-bottom: 10px;
+  vertical-align: middle;
 }
 .agenda-meta span {
   background: var(--bg-screen);
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 2px 8px;
-  font-size: 0.68rem; font-weight: 700;
+  font-size: 0.66rem; font-weight: 700;
   color: var(--text-sub);
 }
 /* Notes */
