@@ -3196,7 +3196,7 @@ function render() {
   }
   // Cette semaine
   const weekPct = Math.min(100, Math.round(weekKmVal / targetKmVal * 100));
-  bindText("kpiWeek", `${weekKmVal.toFixed(1)} km`);
+  bindText("kpiWeek", `${weekKmVal.toFixed(1).replace(".", ",")} km`);
   bindText("kpiWeekSub", `${t('dash_race_goal_label')} : ${targetKmVal} km`);
   bindText("dashWeekPct", `${weekPct} %`);
   const dashWeekBarEl = document.querySelector('[data-bind-style="dashWeekBar"]');
@@ -3314,9 +3314,9 @@ function render() {
       dashFeed.style.display = "";
       const dayNames = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
       const monthNames = ["jan","fév","mar","avr","mai","juin","juil","août","sep","oct","nov","déc"];
-      dashFeedCards.innerHTML = recentRuns.map((run, i) => {
-        const km = Number(run.km || 0).toFixed(1);
-        const speed = Number(run.avgSpeed || run.speed || 0).toFixed(1);
+      dashFeedCards.innerHTML = recentRuns.map((run) => {
+        const kmRaw = Number(run.km || 0).toFixed(1).replace(".", ",");
+        const speedRaw = Number(run.avgSpeed || run.speed || 0).toFixed(1).replace(".", ",");
         const dur = run.duration || run.time || 0;
         const h = Math.floor(dur / 60), m = dur % 60;
         const durStr = h > 0 ? `${h}h${String(m).padStart(2,"0")}` : `${m} min`;
@@ -3325,38 +3325,22 @@ function render() {
         const dateStr = diffD === 0 ? "Aujourd'hui" : diffD === 1 ? "Hier" :
           `${dayNames[d.getDay()]} ${d.getDate()} ${monthNames[d.getMonth()]}`;
         const engin = run.engin || run.type || "Sortie";
-        // Mini SVG trace
-        let mapHtml;
-        const path = run.path;
-        if (Array.isArray(path) && path.length > 1) {
-          const lats = path.map(p => p.lat ?? p[0]);
-          const lngs = path.map(p => p.lng ?? p[1]);
-          const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-          const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
-          const W = 300, H = 60, pad = 6;
-          const scaleX = (lng) => pad + (lng - minLng) / (maxLng - minLng || 1) * (W - pad * 2);
-          const scaleY = (lat) => H - pad - (lat - minLat) / (maxLat - minLat || 1) * (H - pad * 2);
-          const pts = path.map(p => `${scaleX(p.lng ?? p[1]).toFixed(1)},${scaleY(p.lat ?? p[0]).toFixed(1)}`).join(" ");
-          mapHtml = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice">
-            <rect width="${W}" height="${H}" fill="#C8DEB5"/>
-            <polyline points="${pts}" fill="none" stroke="#FC4C02" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>`;
-        } else {
-          mapHtml = `<div class="dash-feed-map-placeholder">🐕</div>`;
-        }
+        const recov = run.recovery || "Bonne";
         return `<div class="dash-feed-card" data-go="course">
-          <div class="dash-feed-map">
-            ${mapHtml}
-            <span class="dash-feed-engin-badge">${engin}</span>
-          </div>
           <div class="dash-feed-body">
             <div class="dash-feed-meta">
-              <div class="dash-feed-date">${dateStr}</div>
-              <div class="dash-feed-stats">
-                <div class="dash-feed-stat"><strong>${km}</strong><span>km</span></div>
-                <div class="dash-feed-stat"><strong>${durStr}</strong><span>durée</span></div>
-                <div class="dash-feed-stat"><strong>${speed}</strong><span>km/h</span></div>
+              <div class="dash-feed-header-row">
+                <span class="dash-feed-date">${dateStr} · ${engin}</span>
+                <span class="dash-feed-badge">${recov}</span>
               </div>
+              <div class="dash-feed-stats">
+                <div class="dash-feed-stat"><strong>${kmRaw}</strong><span>km</span></div>
+                <div class="dash-feed-stat"><strong>${durStr}</strong><span>durée</span></div>
+                <div class="dash-feed-stat"><strong>${speedRaw}</strong><span>km/h</span></div>
+              </div>
+            </div>
+            <div class="dash-feed-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/></svg>
             </div>
           </div>
         </div>`;
