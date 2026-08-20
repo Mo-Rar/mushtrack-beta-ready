@@ -2784,10 +2784,13 @@ textarea {
   transform: rotate(180deg);
 }
 .race-country-body {
-  padding: 8px 12px 12px;
+  display: none;
+}
+.race-country-header.open + .race-country-body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 8px 12px 12px;
 }
 
 /* ── Section souhaits (pinned) ────────────────────────────── */
