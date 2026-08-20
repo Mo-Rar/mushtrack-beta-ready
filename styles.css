@@ -2876,8 +2876,8 @@ textarea {
 }
 /* Notes */
 .race-result > p {
-  font-size: 0.76rem; color: var(--text-muted);
-  line-height: 1.4; margin: 0 0 8px;
+  font-size: 0.72rem; color: var(--text-muted);
+  line-height: 1.4; margin: 4px 0 8px;
 }
 /* ── Actions course ───────────────────────────────────────── */
 .race-result-actions {

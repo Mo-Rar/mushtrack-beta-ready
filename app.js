@@ -930,7 +930,7 @@ const TRANSLATIONS = {
     dogs_delete_btn: "Supprimer",
     dogs_no_dogs: "Aucun chien enregistré.",
     // --- Race ---
-    race_competition: "Mode competition",
+    race_competition: "Calendrier international de mushing",
     race_title: "Course",
     race_missing: "Signaler une course manquante",
     race_leaderboard: "Classement du mois",
@@ -1208,7 +1208,7 @@ const TRANSLATIONS = {
     race_surface_variable: "Surface variable",
     race_interested_btn: "🎯 Mes souhaits",
     race_interested_active: "🎯 Dans mes souhaits",
-    race_add_btn: "Ajouter",
+    race_add_btn: "Ajouter à mon agenda",
     race_participating_btn: "✓ Participe",
     race_be_first: "Sois le premier à marquer ton intérêt pour cette course ! ⭐",
     race_participating_label: "✓ Participe",
