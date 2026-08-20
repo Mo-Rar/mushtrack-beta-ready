@@ -1,15 +1,17 @@
 :root {
   --season-color: #3b82f6;
   --season-color-light: #60a5fa;
-  --bg: #f5f5f5;
-  --bg-screen: #f5f5f5;
+  --bg: #f7f4f1;
+  --bg-screen: #f7f4f1;
   --tile-bg: #fff;
-  --text-main: #1a1a1a;
-  --text-sub: #555;
-  --text-muted: #aaa;
-  --border: #e0e0e0;
+  --text-main: #1a1814;
+  --text-sub: #4a4540;
+  --text-muted: #9a9490;
+  --border: #ece8e3;
   --input-bg: #fff;
   --nav-bg: #fff;
+  --card-shadow: 0 2px 16px rgba(30,20,10,0.08);
+  --card-radius: 18px;
 }
 body.dark-mode {
   --bg: #111;
@@ -208,7 +210,7 @@ body {
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: #f0f0f0;
+  background: #ede9e4;
 }
 
 html {
@@ -234,16 +236,16 @@ button {
 .phone-shell {
   width: min(100vw, 430px);
   height: 100dvh;
-  background: #ffffff;
+  background: var(--bg-screen);
   position: relative;
   overflow-x: hidden;
   overflow-y: auto;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 12px 60px rgba(30,20,10,0.18);
 }
 
 .screen {
   display: none;
-  padding: 24px 18px 24px;
+  padding: 24px 16px 100px;
   min-height: 100%;
 }
 
@@ -280,9 +282,9 @@ button {
 }
 
 .topbar {
-  margin-bottom: 18px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
 }
 
 .section-heading {
@@ -469,17 +471,17 @@ body.mode-summer .mode-switch button.active {
 .settings-form,
 .record-form {
   background: #ffffff;
-  border: 1px solid #f0f0f0;
-  border-radius: 14px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(30,20,10,0.07);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
 }
 
 .quick-stats article {
-  padding: 14px 12px;
+  padding: 16px 14px;
   border-left: 3px solid #fc4c02;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .stat-icon {
@@ -528,11 +530,12 @@ label,
 
 .quick-stats strong {
   display: block;
-  margin-top: 6px;
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: #111111;
-  letter-spacing: -0.02em;
+  margin-top: 4px;
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: #1a1814;
+  letter-spacing: -0.03em;
+  line-height: 1;
 }
 
 .plan-summary,
@@ -547,11 +550,11 @@ label,
 /* Prochaine séance — fond blanc, texte noir */
 .training-card {
   background: #ffffff;
-  color: #111111;
-  border-radius: 18px;
-  padding: 18px;
-  border: 1px solid #f0f0f0;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  color: #1a1814;
+  border-radius: var(--card-radius);
+  padding: 20px;
+  border: 1px solid rgba(30,20,10,0.07);
+  box-shadow: var(--card-shadow);
 }
 
 .training-card strong {
@@ -565,11 +568,11 @@ label,
 /* Agenda card — fond blanc, texte noir, bordure orange */
 .next-race-card article {
   background: #ffffff;
-  color: #111111;
-  border-radius: 18px;
-  padding: 18px;
+  color: #1a1814;
+  border-radius: var(--card-radius);
+  padding: 20px;
   border-left: 4px solid #fc4c02;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  box-shadow: var(--card-shadow);
 }
 
 /* Coach card — fond orange, texte blanc */
@@ -1123,13 +1126,14 @@ body.mode-summer .record-button {
 /* History cards style Strava */
 .gps-history .run-card {
   background: #ffffff;
-  border: 1px solid #f0f0f0;
-  border-radius: 14px;
-  padding: 14px 16px;
-  margin-bottom: 10px;
+  border: 1px solid rgba(30,20,10,0.07);
+  border-radius: var(--card-radius);
+  padding: 16px 18px;
+  margin-bottom: 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  box-shadow: var(--card-shadow);
 }
 
 .gps-history .run-card-header {
@@ -1289,12 +1293,13 @@ input,
 select,
 textarea {
   width: 100%;
-  border: 1.5px solid #e8e8e8;
-  border-radius: 12px;
-  padding: 12px 14px;
+  border: 1.5px solid #e4dfd9;
+  border-radius: 14px;
+  padding: 13px 15px;
   background: #ffffff;
-  color: #111111;
+  color: #1a1814;
   transition: border-color 0.18s, box-shadow 0.18s;
+  box-shadow: 0 1px 4px rgba(30,20,10,0.04);
 }
 
 input:focus,
@@ -1584,10 +1589,10 @@ textarea {
 .alert-card,
 .checklist article {
   background: #ffffff;
-  border: 1px solid #f0f0f0;
-  border-radius: 8px;
-  padding: 14px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border: 1px solid rgba(30,20,10,0.07);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: var(--card-shadow);
 }
 
 .profile-grid span,
@@ -1944,11 +1949,11 @@ textarea {
 .open-run-card,
 .open-run-status {
   background: #ffffff;
-  border: 1px solid #f0f0f0;
+  border: 1px solid rgba(30,20,10,0.07);
   border-left: 5px solid #ff6a00;
-  border-radius: 8px;
-  padding: 14px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: var(--card-shadow);
 }
 
 .open-run-status {
@@ -2485,11 +2490,11 @@ textarea {
 
 .race-result {
   background: #ffffff;
-  border: 1px solid #f0f0f0;
+  border: 1px solid rgba(30,20,10,0.07);
   border-left: 5px solid #ff6a00;
-  border-radius: 8px;
-  padding: 14px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: var(--card-shadow);
 }
 
 .race-result.official {
@@ -2634,11 +2639,12 @@ textarea {
 /* ── Graphique de progression ─────────────────────────────────────────────── */
 .progress-chart-wrap {
   background: #fff;
-  border: 1px solid #f0f0f0;
-  border-radius: 14px;
-  padding: 12px 10px 6px;
-  margin-bottom: 14px;
+  border: 1px solid rgba(30,20,10,0.07);
+  border-radius: var(--card-radius);
+  padding: 14px 12px 8px;
+  margin-bottom: 16px;
   overflow: hidden;
+  box-shadow: var(--card-shadow);
 }
 
 .progress-chart-wrap canvas {
@@ -2949,11 +2955,11 @@ textarea {
 
 .advice-card {
   background: #ffffff;
-  border: 1px solid #f0f0f0;
+  border: 1px solid rgba(30,20,10,0.07);
   border-left: 5px solid #ff6a00;
-  border-radius: 8px;
-  padding: 14px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: var(--card-shadow);
 }
 
 .advice-card.important {
@@ -4085,19 +4091,21 @@ textarea {
 
 /* ── Bottom nav premium ─────────────────────────────────────── */
 .bottom-nav {
-  background: #ffffff;
-  border-top: none;
-  box-shadow: 0 -6px 28px rgba(0,0,0,0.1);
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(30,20,10,0.08);
+  box-shadow: 0 -4px 24px rgba(30,20,10,0.08);
   padding: 8px 0 env(safe-area-inset-bottom, 12px);
 }
 .bottom-nav button {
   min-height: 52px;
-  font-size: 0.46rem; font-weight: 800;
+  font-size: 0.48rem; font-weight: 800;
   letter-spacing: .02em; color: #bbb;
-  gap: 3px;
+  gap: 4px;
   padding: 0 2px;
 }
-.bottom-nav button svg { width: 18px; height: 18px; stroke-width: 1.6; }
+.bottom-nav button svg { width: 20px; height: 20px; stroke-width: 1.6; }
 .bottom-nav button.active { color: #fc4c02; }
 .bottom-nav button.active svg { stroke-width: 2.4; }
 
