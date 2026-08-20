@@ -17,6 +17,26 @@ try {
 
 let currentUser = null;
 
+// ── Thème clair / sombre ───────────────────────────────────────
+(function applyStoredTheme() {
+  const t = localStorage.getItem("mushtrack-theme") || "light";
+  if (t === "dark") document.body.classList.add("dark-mode");
+})();
+
+function setTheme(theme) {
+  localStorage.setItem("mushtrack-theme", theme);
+  document.body.classList.toggle("dark-mode", theme === "dark");
+  document.getElementById("theme-btn-light")?.classList.toggle("active", theme === "light");
+  document.getElementById("theme-btn-dark")?.classList.toggle("active", theme === "dark");
+}
+
+function syncThemeButtons() {
+  const theme = localStorage.getItem("mushtrack-theme") || "light";
+  document.getElementById("theme-btn-light")?.classList.toggle("active", theme === "light");
+  document.getElementById("theme-btn-dark")?.classList.toggle("active", theme === "dark");
+}
+// ─────────────────────────────────────────────────────────────
+
 function showAuthOverlay() {
   document.getElementById("auth-overlay").classList.remove("hidden");
 }
@@ -2933,6 +2953,7 @@ function showScreen(id, pushHistory = true) {
   screens.forEach((screen) => {
     screen.classList.toggle("active", screen.id === id);
   });
+  if (id === "settings") syncThemeButtons();
 
   bottomButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.go === id);

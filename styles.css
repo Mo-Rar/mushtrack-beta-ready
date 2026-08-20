@@ -34,10 +34,39 @@ body.dark-mode .dash-tile,
 body.dark-mode .settings-form section,
 body.dark-mode .form-card,
 body.dark-mode .activity-card,
-body.dark-mode .run-card {
+body.dark-mode .run-card,
+body.dark-mode .dash-kpi-row,
+body.dark-mode .dash-lastrun,
+body.dark-mode .dash-team-strip,
+body.dark-mode .dash-feed-card,
+body.dark-mode .dash-workout,
+body.dark-mode .ph-card {
   background: var(--tile-bg) !important;
   color: var(--text-main) !important;
 }
+body.dark-mode .dash-kpi strong,
+body.dark-mode .dash-feed-stat strong,
+body.dark-mode .dash-lastrun-date,
+body.dark-mode .dash-dog-chip-name,
+body.dark-mode .dash-feed-date,
+body.dark-mode .dash-team-strip-label,
+body.dark-mode .dash-feed-label {
+  color: var(--text-main) !important;
+}
+body.dark-mode .dash-hero {
+  background: #0d0d0d !important;
+}
+body.dark-mode .dash-hero-card {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+body.dark-mode .dash-workout-btns .dash-start-btn {
+  background: #fc4c02 !important;
+}
+body.dark-mode .dash-dog-chip-bubble.ok       { background: #14532d !important; border-color: #166534 !important; }
+body.dark-mode .dash-dog-chip-bubble.attention{ background: #78350f !important; border-color: #92400e !important; }
+body.dark-mode .dash-dog-chip-bubble.repos    { background: #7f1d1d !important; border-color: #991b1b !important; }
+body.dark-mode .dash-feed-map { filter: brightness(0.85); }
 body.dark-mode .bottom-nav {
   background: var(--nav-bg) !important;
   border-top-color: var(--border) !important;
@@ -3874,6 +3903,34 @@ textarea {
   border: none; text-align: center;
   font-size: 0.82rem; font-weight: 700;
   cursor: pointer; padding: 4px;
+}
+
+/* ── Toggle thème ───────────────────────────────────────────── */
+.theme-toggle-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+.theme-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 0;
+  border-radius: 12px;
+  border: 2px solid var(--border, #e0d9d0);
+  background: var(--tile-bg, #fff);
+  color: var(--text-sub, #4a4540);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .2s, background .2s, color .2s;
+}
+.theme-btn.active {
+  border-color: #fc4c02;
+  color: #fc4c02;
+  background: rgba(252,76,2,0.07);
 }
 
 /* ── Feed sorties récentes ──────────────────────────────────── */
