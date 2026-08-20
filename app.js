@@ -3284,6 +3284,24 @@ function render() {
     if (dogEnergyEl) dogEnergyEl.style.width = `${avgEnergy}%`;
   }
 
+  // Rangée attelage dashboard
+  const teamStrip = document.getElementById("dash-team-strip");
+  const teamStripDogs = document.getElementById("dash-team-strip-dogs");
+  if (teamStripDogs && teamDogs.length > 0) {
+    teamStrip.style.display = "";
+    teamStripDogs.innerHTML = teamDogs.map(dog => {
+      const sig = dog.healthSignal || "OK";
+      const cls = sig === "Attention" ? "attention" : sig === "Repos" ? "repos" : "ok";
+      const name = (dog.name || "—").substring(0, 8);
+      return `<div class="dash-dog-chip" data-go="dogs" title="${dog.name} — ${sig}">
+        <div class="dash-dog-chip-bubble ${cls}">🐾</div>
+        <span class="dash-dog-chip-name">${name}</span>
+      </div>`;
+    }).join("");
+  } else if (teamStrip) {
+    teamStrip.style.display = "none";
+  }
+
   // Météo
   const wx = typeof state.planWeather === "object" && state.planWeather ? state.planWeather : null;
   if (wx) {

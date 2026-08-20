@@ -3876,6 +3876,60 @@ textarea {
   cursor: pointer; padding: 4px;
 }
 
+/* ── Attelage du jour ───────────────────────────────────────── */
+.dash-team-strip {
+  background: #fff;
+  border-radius: 18px;
+  margin: 0 14px 20px;
+  padding: 14px 16px;
+  box-shadow: var(--card-shadow, 0 4px 20px rgba(30,20,10,0.10));
+}
+.dash-team-strip-label {
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #8A8880;
+  margin-bottom: 10px;
+}
+.dash-team-strip-dogs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.dash-dog-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.dash-dog-chip-bubble {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  border: 2.5px solid transparent;
+  transition: transform .15s;
+}
+.dash-dog-chip:active .dash-dog-chip-bubble { transform: scale(0.92); }
+.dash-dog-chip-bubble.ok       { background: #DCFCE7; border-color: #86EFAC; }
+.dash-dog-chip-bubble.attention{ background: #FEF3C7; border-color: #FCD34D; }
+.dash-dog-chip-bubble.repos    { background: #FEE2E2; border-color: #FCA5A5; }
+.dash-dog-chip-name {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #8A8880;
+  max-width: 44px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+
 /* ── Dernière sortie ─────────────────────────────────────────── */
 .dash-lastrun {
   display: flex;
