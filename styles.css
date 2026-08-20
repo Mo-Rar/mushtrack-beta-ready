@@ -1,17 +1,17 @@
 :root {
   --season-color: #3b82f6;
   --season-color-light: #60a5fa;
-  --bg: #f7f4f1;
-  --bg-screen: #f7f4f1;
+  --bg: #ede8e2;
+  --bg-screen: #ede8e2;
   --tile-bg: #fff;
   --text-main: #1a1814;
   --text-sub: #4a4540;
   --text-muted: #9a9490;
-  --border: #ece8e3;
+  --border: #e0d9d0;
   --input-bg: #fff;
   --nav-bg: #fff;
-  --card-shadow: 0 2px 16px rgba(30,20,10,0.08);
-  --card-radius: 18px;
+  --card-shadow: 0 4px 20px rgba(30,20,10,0.10);
+  --card-radius: 20px;
 }
 body.dark-mode {
   --bg: #111;
@@ -210,7 +210,7 @@ body {
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: #ede9e4;
+  background: #d8d0c6;
 }
 
 html {
