@@ -90,6 +90,13 @@ body.dark-mode .dash-dog-chip-bubble.ok       { background: #14532d !important; 
 body.dark-mode .dash-dog-chip-bubble.attention{ background: #78350f !important; border-color: #92400e !important; }
 body.dark-mode .dash-dog-chip-bubble.repos    { background: #7f1d1d !important; border-color: #991b1b !important; }
 body.dark-mode .dash-feed-map { filter: brightness(0.85); }
+body.dark-mode .rec-panel,
+body.dark-mode .rec-section,
+body.dark-mode .rec-team-card { background: var(--tile-bg) !important; }
+body.dark-mode #record #distance,
+body.dark-mode .rec-team-count { color: var(--text-main) !important; }
+body.dark-mode .rec-stats-row { background: rgba(255,255,255,0.06) !important; }
+body.dark-mode .rec-share-btn { border-color: rgba(255,255,255,0.12) !important; color: var(--text-muted) !important; }
 
 /* textes hardcodés noirs dans les nouvelles cartes */
 body.dark-mode .dash-feed-stat strong,
@@ -901,7 +908,7 @@ body.mode-summer .record-button {
 }
 
 #record .strava-map-wrap #map {
-  height: 280px;
+  height: 245px;
   width: 100%;
   border-radius: 0;
   margin: 0;
@@ -1011,34 +1018,183 @@ body.mode-summer .record-button {
   margin: 0;
 }
 
-/* Barre statut GPS */
+/* ── GPS Signal Bar : discret, sous la carte ─────────────── */
 .gps-signal-bar {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  padding: 10px 16px;
-  font-size: 0.88rem;
+  padding: 7px 20px;
+  font-size: 0.72rem;
   font-weight: 700;
-  transition: background 0.3s, color 0.3s;
+  background: transparent;
+  color: var(--text-muted);
+  transition: color 0.3s;
 }
-.gps-signal-searching {
-  background: #fff8e1;
-  color: #b8860b;
+.gps-signal-bar::before {
+  content: '';
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #d1d5db;
+  transition: background 0.3s;
 }
-.gps-signal-found {
-  background: #e8f7ef;
-  color: #1a7a4a;
+.gps-signal-searching { color: var(--text-sub); }
+.gps-signal-searching::before {
+  background: var(--orange);
+  animation: pulse-dot 1.2s infinite;
 }
-.gps-signal-lost {
-  background: #fdecea;
-  color: #c0392b;
+.gps-signal-found { color: #15803d; }
+.gps-signal-found::before { background: #22c55e; animation: none; }
+.gps-signal-lost { color: #dc2626; }
+.gps-signal-lost::before { background: #ef4444; animation: none; }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.7); }
 }
 
-/* Bloc blanc unifié écran GPS */
-.gps-unified-block {
-  background: #ffffff;
-  border-bottom: 1px solid #f0f0f0;
+/* ── Panneau blanc principal (sheet) ─────────────────────── */
+.rec-panel {
+  background: var(--tile-bg);
+  border-radius: 24px 24px 0 0;
+  margin-top: -22px;
+  padding: 22px 20px 16px;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+}
+
+/* Distance héro */
+.rec-distance { text-align: center; margin-bottom: 16px; }
+.rec-dist-label {
+  display: block;
+  font-size: 0.58rem; font-weight: 900;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 4px;
+}
+.rec-dist-value-row {
+  display: flex; align-items: baseline;
+  justify-content: center; gap: 6px;
+}
+#record #distance {
+  font-size: 4rem; font-weight: 900;
+  color: var(--text-main); line-height: 1;
+  letter-spacing: -0.04em;
+}
+.rec-dist-unit {
+  font-size: 1.4rem; font-weight: 700; color: var(--text-muted);
+}
+
+/* ── Record button — pleine largeur dans rec-panel ────────── */
+#record .strava-record-wrap {
+  padding: 0; margin: 0 0 14px;
+  flex-direction: column; align-items: stretch; gap: 10px;
+}
+#record .strava-record-btn {
+  width: 100%; height: auto;
+  border-radius: 50px;
+  padding: 14px 20px;
+  gap: 10px;
+  font-size: 0.88rem; letter-spacing: .05em;
+  box-shadow: 0 4px 16px var(--orange-shadow);
+  justify-content: center;
+}
+#record .strava-record-btn .rec-btn-label::after {
+  content: "Démarrer la séance";
+  font-weight: 900; font-size: 0.88rem;
+}
+#record .strava-record-btn.running .rec-btn-label::after {
+  content: "Pause";
+}
+
+/* Stats row dans rec-panel */
+.rec-stats-row {
+  background: var(--bg-screen);
+  border-radius: 14px;
+  padding: 12px 0;
+  margin-bottom: 14px;
+  border: none !important;
+}
+#record .strava-stat-secondary strong {
+  font-size: 1.2rem; color: var(--text-main);
+}
+#record .strava-stat-secondary .strava-stat-label {
+  color: var(--text-muted);
+}
+#record .strava-stat-center-border {
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+/* Actions secondaires SOS + Partager */
+.rec-actions-row {
+  display: flex; gap: 10px; align-items: center;
+  margin-bottom: 4px;
+}
+.rec-sos-btn {
+  background: transparent; color: #dc2626;
+  border: 1.5px solid #dc2626;
+  border-radius: 10px; padding: 9px 16px;
+  font-size: 0.8rem; font-weight: 900; letter-spacing: .04em;
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+}
+.rec-share-btn {
+  flex: 1; background: transparent; color: var(--text-sub);
+  border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 9px 14px;
+  font-size: 0.78rem; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: center; gap: 6px;
+}
+
+/* Boutons icônes dans la topbar */
+.rec-map-icon-btn {
+  background: rgba(255,255,255,0.18);
+  border: none; border-radius: 50%;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; cursor: pointer; flex-shrink: 0;
+}
+
+/* ── Discipline ───────────────────────────────────────────── */
+.rec-section {
+  background: var(--tile-bg);
+  border-radius: var(--card-radius);
+  margin: 0 20px 12px;
+  padding: 16px 16px 14px;
+  box-shadow: var(--card-shadow);
+}
+.rec-section-label {
+  display: block;
+  font-size: 0.58rem; font-weight: 900;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 10px;
+}
+
+/* ── Attelage du jour (compact card) ─────────────────────── */
+.rec-team-card {
+  background: var(--tile-bg);
+  border-radius: var(--card-radius);
+  margin: 0 20px 12px;
+  padding: 14px 16px;
+  box-shadow: var(--card-shadow);
+  display: flex; align-items: center; gap: 12px;
+}
+.rec-team-info { flex: 1; }
+.rec-team-label {
+  font-size: 0.58rem; font-weight: 900;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--text-muted); margin: 0 0 3px;
+}
+.rec-team-count {
+  font-size: 1rem; font-weight: 800;
+  color: var(--text-main); margin: 0;
+}
+.rec-modify-btn {
+  font-size: 0.78rem; font-weight: 800;
+  color: var(--orange); background: none;
+  border: none; cursor: pointer; padding: 4px 0;
+  white-space: nowrap;
 }
 
 /* Stats panel below map */

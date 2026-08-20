@@ -154,103 +154,110 @@
 
       <section class="screen" id="record">
 
-        <!-- Carte plein largeur -->
+        <!-- ── Carte immersive ── -->
         <div class="strava-map-wrap">
           <div id="map"></div>
-          <!-- Topbar flottant sur la carte -->
+
+          <!-- Header flottant sur la carte -->
           <div class="strava-topbar">
             <button class="strava-back-btn" data-go="dashboard" aria-label="Retour">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-            <span class="strava-topbar-title" data-t="gps_session">Sortie GPS</span>
-              <p class="strava-gps-dot" id="gps-status-dot" title="GPS"></p>
+            <span class="strava-topbar-title">Nouvelle sortie</span>
+            <p class="strava-gps-dot" id="gps-status-dot" title="GPS"></p>
+            <button id="map-layer-btn" class="rec-map-icon-btn" aria-label="Fond de carte">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><path d="M9 4v13M15 7v13"/></svg>
+            </button>
+            <button id="gps-unit-btn" class="rec-map-icon-btn" aria-label="Unités">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+            </button>
           </div>
+
           <p class="strava-gps-status" id="gps-status" data-t="gps_searching">Recherche GPS…</p>
+
+          <!-- Panneau fond de carte -->
+          <div id="map-layer-panel" style="display:none;position:absolute;top:60px;right:60px;z-index:200;background:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 6px 24px rgba(0,0,0,0.18);min-width:160px">
+            <p style="font-size:0.62rem;font-weight:900;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin:0 0 8px" data-t="gps_map_background">Fond de carte</p>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <button class="map-layer-opt active" data-layer="osm">Standard</button>
+              <button class="map-layer-opt" data-layer="satellite">Satellite</button>
+              <button class="map-layer-opt" data-layer="topo">Relief</button>
+            </div>
+          </div>
+
+          <!-- Panneau unités -->
+          <div id="gps-unit-panel" style="display:none;position:absolute;top:60px;right:16px;z-index:100;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 6px 24px rgba(0,0,0,0.18);min-width:200px">
+            <p style="font-size:0.65rem;font-weight:900;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin:0 0 10px" data-t="gps_units_label">Unités GPS</p>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:0.82rem;font-weight:600;color:#333">Distance</span>
+                <div style="display:flex;gap:5px">
+                  <button class="gps-unit-toggle active" id="unit-km">km</button>
+                  <button class="gps-unit-toggle" id="unit-mi">mi</button>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:0.82rem;font-weight:600;color:#333">Vitesse</span>
+                <div style="display:flex;gap:5px">
+                  <button class="gps-unit-toggle active" id="unit-kmh">km/h</button>
+                  <button class="gps-unit-toggle" id="unit-pace">min/km</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Barre statut GPS -->
+        <!-- ── Statut GPS discret ── -->
         <div id="gps-signal-bar" class="gps-signal-bar gps-signal-searching">
-          <span id="gps-signal-icon">📡</span>
-          <span id="gps-signal-text" data-t="gps_searching">Recherche GPS…</span>
+          <span id="gps-signal-icon" style="display:none">📡</span>
+          <span id="gps-signal-text" data-t="gps_searching">Recherche du signal GPS</span>
         </div>
 
-        <!-- Bloc blanc unifié : contrôles + stats + start + actions -->
-        <div class="gps-unified-block">
+        <!-- ── Panneau blanc principal ── -->
+        <div class="rec-panel">
 
-          <!-- Ligne Carte + Unités -->
-          <div style="position:relative;display:flex;justify-content:flex-end;gap:6px;padding:10px 16px 0">
-            <button id="map-layer-btn" style="background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:8px;color:#555;padding:5px 12px;font-size:0.75rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><path d="M9 4v13M15 7v13"/></svg><svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10" style="margin-left:-8px;margin-top:-8px"><path d="M12 2C9.24 2 7 4.24 7 7c0 4 5 11 5 11s5-7 5-11c0-2.76-2.24-5-5-5zm0 6.5c-.83 0-1.5-.67-1.5-1.5S11.17 5.5 12 5.5 13.5 6.17 13.5 7 12.83 8.5 12 8.5z"/></svg> Carte</button>
-            <div id="map-layer-panel" style="display:none;position:absolute;top:46px;right:120px;z-index:200;background:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 6px 24px rgba(0,0,0,0.18);min-width:160px">
-              <p style="font-size:0.62rem;font-weight:900;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin:0 0 8px" data-t="gps_map_background">Fond de carte</p>
-              <div style="display:flex;flex-direction:column;gap:4px">
-                <button class="map-layer-opt active" data-layer="osm">🗺 Standard</button>
-                <button class="map-layer-opt" data-layer="satellite">🛰 Satellite</button>
-                <button class="map-layer-opt" data-layer="topo">⛰ Relief</button>
-              </div>
-            </div>
-            <button id="gps-unit-btn" style="background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:8px;color:#555;padding:5px 12px;font-size:0.75rem;font-weight:800;cursor:pointer">⚙ Unités</button>
-            <div id="gps-unit-panel" style="display:none;position:absolute;top:46px;right:16px;z-index:100;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 6px 24px rgba(0,0,0,0.18);min-width:200px">
-              <p style="font-size:0.65rem;font-weight:900;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin:0 0 10px" data-t="gps_units_label">Unités GPS</p>
-              <div style="display:flex;flex-direction:column;gap:10px">
-                <div style="display:flex;align-items:center;justify-content:space-between">
-                  <span style="font-size:0.82rem;font-weight:600;color:#333">Distance</span>
-                  <div style="display:flex;gap:5px">
-                    <button class="gps-unit-toggle active" id="unit-km">km</button>
-                    <button class="gps-unit-toggle" id="unit-mi">mi</button>
-                  </div>
-                </div>
-                <div style="display:flex;align-items:center;justify-content:space-between">
-                  <span style="font-size:0.82rem;font-weight:600;color:#333">Vitesse</span>
-                  <div style="display:flex;gap:5px">
-                    <button class="gps-unit-toggle active" id="unit-kmh">km/h</button>
-                    <button class="gps-unit-toggle" id="unit-pace">min/km</button>
-                  </div>
-                </div>
-              </div>
+          <!-- Distance héro -->
+          <div class="rec-distance">
+            <span class="rec-dist-label" data-t="gps_distance">DISTANCE</span>
+            <div class="rec-dist-value-row">
+              <strong id="distance">0,00</strong>
+              <span class="rec-dist-unit gps-dist-unit">km</span>
             </div>
           </div>
 
-          <!-- Distance (compteur principal) -->
-          <div class="strava-stat-hero" style="padding:8px 16px 4px">
-            <span class="strava-stat-label" data-t="gps_distance">Distance</span>
-            <div class="strava-stat-value-row">
-              <strong id="distance">0.00</strong>
-              <span class="strava-stat-unit gps-dist-unit">km</span>
-            </div>
-          </div>
-
-          <!-- Bouton Start / Pause / Terminer -->
-          <div class="strava-record-wrap" style="padding:4px 0">
+          <!-- CTA Démarrer / Pause -->
+          <div class="strava-record-wrap">
             <button class="strava-record-btn" id="record-button" aria-label="Démarrer">
-              <svg id="record-icon-play" viewBox="0 0 24 24" fill="currentColor" width="30" height="30"><polygon points="5,3 19,12 5,21"/></svg>
-              <svg id="record-icon-pause" viewBox="0 0 24 24" fill="currentColor" width="28" height="28" style="display:none"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+              <svg id="record-icon-play" viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><polygon points="5,3 19,12 5,21"/></svg>
+              <svg id="record-icon-pause" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style="display:none"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+              <span class="rec-btn-label"></span>
             </button>
             <button class="strava-finish-btn hidden" id="finish-run">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
               <span data-t="gps_finish">Terminer</span>
             </button>
           </div>
 
-          <!-- Stats secondaires : Durée / Moy. / Vitesse -->
-          <div class="strava-stats-row" style="border-top:1px solid #f0f0f0;padding:12px 0 8px">
+          <!-- Stats secondaires -->
+          <div class="strava-stats-row rec-stats-row">
             <div class="strava-stat-secondary">
               <span class="strava-stat-label" data-t="gps_duration">Durée</span>
               <strong id="duration">00:00</strong>
             </div>
             <div class="strava-stat-secondary strava-stat-center-border">
-              <span class="strava-stat-label" id="avg-label" data-t="gps_avg">Moy.</span>
+              <span class="strava-stat-label" id="avg-label" data-t="gps_avg">Allure moy.</span>
               <strong id="pace">--:--</strong>
               <span class="strava-stat-unit-small" id="pace-unit">min/km</span>
             </div>
             <div class="strava-stat-secondary">
               <span class="strava-stat-label" data-t="gps_speed">Vitesse</span>
-              <strong id="speed">0.0</strong>
+              <strong id="speed">0,0</strong>
               <span class="strava-stat-unit-small gps-speed-unit">km/h</span>
             </div>
           </div>
 
           <!-- Météo en direct -->
-          <div class="weather-strip hidden" id="weather-strip" style="margin:0 16px 8px">
+          <div class="weather-strip hidden" id="weather-strip" style="margin:0 0 10px">
             <span id="weather-icon">🌡️</span>
             <span id="weather-temp">—</span>
             <span class="weather-sep">·</span>
@@ -259,52 +266,63 @@
             <span id="weather-desc">—</span>
           </div>
 
-          <!-- SOS + Partager -->
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px 10px;border-top:1px solid #f5f5f5">
-            <button onclick="triggerSOS()" type="button"
-              style="background:#dc2626;color:#fff;border:none;border-radius:10px;padding:8px 20px;font-size:0.85rem;font-weight:800;letter-spacing:.05em;cursor:pointer;box-shadow:0 3px 10px rgba(220,38,38,0.35)">
+          <!-- Actions secondaires -->
+          <div class="rec-actions-row">
+            <button onclick="triggerSOS()" type="button" class="rec-sos-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="14" height="14"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               SOS
             </button>
-            <button onclick="startLiveTracking()" type="button"
-              style="background:#fc4c02;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><circle cx="12" cy="12" r="6"/></svg>
+            <button onclick="startLiveTracking()" type="button" class="rec-share-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
               <span data-t="gps_live_share">Partager en direct</span>
             </button>
           </div>
 
-          <!-- Barre suivi en direct -->
-          <div id="live-tracking-bar" style="display:none;align-items:center;gap:10px;margin:0 16px 10px;padding:10px 14px;background:#1a1a2e;border-radius:12px;border:1.5px solid #fc4c02">
-            <span style="width:10px;height:10px;border-radius:50%;background:#fc4c02;flex-shrink:0;animation:pulse 1.2s infinite"></span>
+          <!-- Suivi en direct actif -->
+          <div id="live-tracking-bar" style="display:none;align-items:center;gap:10px;margin:0 0 10px;padding:10px 14px;background:#1a1a2e;border-radius:12px;border:1.5px solid var(--orange)">
+            <span style="width:10px;height:10px;border-radius:50%;background:var(--orange);flex-shrink:0;animation:pulse 1.2s infinite"></span>
             <span style="font-size:0.82rem;color:#fff;font-weight:600;flex:1" data-t="gps_live_active">Suivi en direct actif</span>
-            <button id="live-share-btn" type="button" style="background:#fc4c02;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:0.78rem;font-weight:700;cursor:pointer" data-t="gps_share">Partager</button>
+            <button id="live-share-btn" type="button" style="background:var(--orange);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:0.78rem;font-weight:700;cursor:pointer" data-t="gps_share">Partager</button>
             <button id="live-stop-btn" type="button" style="background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:0.78rem;cursor:pointer" data-t="gps_stop">Stop</button>
           </div>
 
-        </div><!-- fin gps-unified-block -->
+        </div><!-- fin rec-panel -->
 
-        <!-- Sélecteur engin -->
-        <div class="engin-selector-row">
-          <span class="strava-section-label" data-t="gps_engin">Engin</span>
+        <!-- ── Discipline ── -->
+        <div class="rec-section">
+          <p class="rec-section-label">DISCIPLINE</p>
           <div class="engin-btns" id="engin-btns">
-            <button class="engin-btn active" data-engin="Canicross" data-poids="0">🏃 Canicross</button>
-            <button class="engin-btn" data-engin="Trottinette" data-poids="18">🛴 Trott.</button>
-            <button class="engin-btn" data-engin="VTT" data-poids="18">🚵 VTT</button>
+            <button class="engin-btn active" data-engin="Canicross" data-poids="0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="12" cy="3.5" r="1.5"/><path d="M5 18l4-5.5 2.5 2 3-5M7.5 20l2-2.5M16.5 20l-2.5-2.5"/></svg>
+              Canicross
+            </button>
+            <button class="engin-btn" data-engin="Trottinette" data-poids="18">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><path d="M6 15V9h12v3M12 9V5M18 12h-6"/></svg>
+              Trott.
+            </button>
+            <button class="engin-btn" data-engin="VTT" data-poids="18">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 0 0-1-1h-1l-3 8h8L15 6zM6 17.5l3-8"/></svg>
+              VTT
+            </button>
             <button class="engin-btn" data-engin="Kart" data-poids="100"><img src="assets/icon-kart.svg" class="engin-icon" alt="kart"/> Kart</button>
             <button class="engin-btn" data-engin="ATV" data-poids="200"><img src="assets/icon-atv.svg" class="engin-icon" alt="ATV"/> ATV</button>
             <button class="engin-btn" data-engin="Traîneau" data-poids="18"><img src="assets/icon-traineau.svg" class="engin-icon" alt="traîneau"/> Traîneau</button>
           </div>
         </div>
 
-        <!-- Team du jour -->
-        <div class="strava-team-row">
-          <span class="strava-section-label" data-t="gps_team_today">Attelage du jour</span>
-          <button class="text-button" id="toggle-dog-picker-record" data-t="gps_edit">Modifier ✏️</button>
+        <!-- ── Attelage du jour ── -->
+        <div class="rec-team-card">
+          <div class="rec-team-info">
+            <p class="rec-team-label">ATTELAGE DU JOUR</p>
+            <p class="rec-team-count" data-bind="dashDogCount">—</p>
+          </div>
+          <button class="rec-modify-btn" id="toggle-dog-picker-record">Modifier</button>
         </div>
-        <div class="sled-diagram" id="gps-sled-diagram"></div>
-        <section class="dog-picker hidden" id="dog-picker-record" data-list="dogPicker" style="margin:8px 16px 4px"></section>
+        <div class="sled-diagram" id="gps-sled-diagram" style="margin:0 20px 8px"></div>
+        <section class="dog-picker hidden" id="dog-picker-record" data-list="dogPicker" style="margin:8px 20px 4px"></section>
 
-        <!-- Bilan post-sortie -->
-        <section class="record-form hidden" id="post-run-form">
+        <!-- ── Bilan post-sortie ── -->
+        <section class="record-form hidden" id="post-run-form" style="margin:0 20px;padding:0 0 20px">
           <div class="section-heading compact">
             <h2 data-t="gps_run_summary">Bilan de la sortie</h2>
             <span data-t="gps_auto_notes">Auto + notes</span>
@@ -350,7 +368,7 @@
           </label>
           <div style="display:flex;gap:10px;margin-top:4px">
             <button class="primary-button" id="save-run" type="button" style="flex:2" data-t="gps_save_run">Enregistrer la sortie</button>
-            <button class="secondary-button" id="share-run-btn" type="button" style="flex:1">📤 Partager</button>
+            <button class="secondary-button" id="share-run-btn" type="button" style="flex:1">Partager</button>
           </div>
         </section>
 
