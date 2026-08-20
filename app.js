@@ -8531,7 +8531,9 @@ if (state.selectedEngin) {
 document.querySelector("#toggle-dog-picker-record")?.addEventListener("click", () => {
   _sledEditMode = !_sledEditMode;
   const btn = document.querySelector("#toggle-dog-picker-record");
-  if (btn) btn.textContent = _sledEditMode ? "✓ Terminé" : "Modifier ✏️";
+  if (btn) btn.textContent = _sledEditMode ? "Terminé" : "Modifier";
+  const diagram = document.getElementById("gps-sled-diagram");
+  if (diagram) diagram.style.display = _sledEditMode ? "" : "none";
   renderSledDiagram();
 });
 
