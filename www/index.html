@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#fc4c02" />
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="icon-192.png" />
-    <link rel="stylesheet" href="styles.css?v=20260629" />
+    <link rel="stylesheet" href="styles.css?v=20260820" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
@@ -53,9 +53,8 @@
     <main class="phone-shell">
       <section class="screen active" id="dashboard">
 
-        <!-- ── Hero : image couvre header + contenu ── -->
+        <!-- ── Hero compact ── -->
         <section class="dash-hero">
-          <!-- Header dans le hero pour que l'image passe derrière -->
           <header class="dash-header">
             <button class="dash-menu-btn" data-go="settings" aria-label="Menu">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="22" height="22"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -68,25 +67,12 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </button>
           </header>
-
-          <div class="dash-hero-text">
-            <p class="dash-hello"><span data-t="dash_hello">Bonjour,</span> <span data-bind="dashUserName">Musher</span> 👋</p>
-            <h2 class="dash-mission-title">Mission <span data-bind="kpiRaceName">—</span></h2>
+          <div class="dash-hero-body">
+            <p class="dash-hero-objectif">Objectif &middot; <span data-bind="kpiRaceName">—</span></p>
           </div>
-          <div class="dash-hero-photo"></div>
-
-          <!-- Carte countdown + préparation -->
-          <div class="dash-hero-card">
-            <div class="dash-hero-countdown">
-              <span class="dash-days" data-bind="kpiDays">—</span>
-              <span class="dash-days-label" data-t="dash_days_left">jours restants</span>
-            </div>
-            <div class="dash-hero-prep">
-              <p class="dash-prep-eyebrow" data-t="dash_global_prep">PRÉPARATION GLOBALE</p>
-              <strong class="dash-prep-value" data-bind="kpiProgress">0 %</strong>
-              <div class="dash-prep-bar"><span data-bind-style="kpiProgressBar"></span></div>
-              <p class="dash-prep-phase"><span data-t="dash_current_phase">Phase actuelle</span><br><span class="dash-orange" data-bind="heroSentence"></span></p>
-            </div>
+          <div class="dash-hero-pill">
+            <span class="dash-days" data-bind="kpiDays">—</span>
+            <span class="dash-days-label">j restants</span>
           </div>
         </section>
 
@@ -96,178 +82,127 @@
         <span data-bind-style="progress" style="display:none"></span>
         <span data-bind="lastRunLabel" style="display:none"></span>
         <span data-bind="raceType" style="display:none"></span>
+        <span data-bind="heroSentence" style="display:none"></span>
+        <span data-bind="kpiProgress" style="display:none">0 %</span>
+        <span data-bind-style="kpiProgressBar" style="display:none"></span>
+        <span data-bind="dashUserName" style="display:none">Musher</span>
+        <span data-bind="nextWorkoutText" style="display:none"></span>
 
-        <!-- ── Objectif du jour ── -->
-        <section class="dash-workout">
-          <div class="dash-workout-inner">
-            <div class="dash-workout-left">
-              <p class="dash-eyebrow-green" data-t="dash_daily_goal">🏃 OBJECTIF DU JOUR</p>
-              <h3 class="dash-workout-title" data-bind="nextWorkoutTitle">—</h3>
-              <p class="dash-workout-desc" data-bind="nextWorkoutText">—</p>
-              <div class="dash-workout-stats">
-                <div class="dash-wstat"><strong data-bind="dashWorkoutKm">— km</strong><span data-t="dash_distance_label">Distance</span></div>
-                <div class="dash-wstat"><strong data-bind="dashWorkoutTime">— min</strong><span data-t="dash_estimated_duration">Durée estimée</span></div>
-                <div class="dash-wstat dash-wstat-intensity"><strong data-bind="dashWorkoutLevel">—</strong><span data-t="dash_intensity_label">Intensité</span></div>
-              </div>
+        <!-- ── Séance du jour ── -->
+        <div class="dash-seance-card">
+          <div class="dash-seance-top">
+            <p class="dash-seance-eyebrow">AUJOURD'HUI</p>
+            <h3 class="dash-seance-title" data-bind="nextWorkoutTitle">—</h3>
+          </div>
+          <div class="dash-seance-stats">
+            <div class="dash-sstat">
+              <strong data-bind="dashWorkoutKm">—</strong>
+              <span>km</span>
             </div>
-            <div class="dash-workout-gauge">
-              <svg width="88" height="88" viewBox="0 0 88 88">
-                <circle cx="44" cy="44" r="36" fill="none" stroke="#f0f0f0" stroke-width="7"/>
-                <circle class="dash-gauge-ring" cx="44" cy="44" r="36" fill="none" stroke="#22c55e" stroke-width="7" stroke-linecap="round" transform="rotate(-90 44 44)"/>
-              </svg>
-              <div class="dash-gauge-inner">
-                <span class="dash-gauge-label" data-t="dash_planned_load">Charge prévue</span>
-                <div class="dash-gauge-val"><strong data-bind="dashWorkoutLoad">—</strong><span>/100</span></div>
-                <span class="dash-gauge-level" data-bind="dashWorkoutLoadLabel">—</span>
-              </div>
+            <div class="dash-sstat-div"></div>
+            <div class="dash-sstat">
+              <strong data-bind="dashWorkoutTime">—</strong>
+              <span>min</span>
+            </div>
+            <div class="dash-sstat-div"></div>
+            <div class="dash-sstat dash-sstat-hi">
+              <strong data-bind="dashWorkoutLevel">—</strong>
+              <span>intensité</span>
             </div>
           </div>
-          <div class="dash-workout-btns">
-            <button class="dash-start-btn" data-go="record" data-t="dash_start_session">▶ DÉMARRER LA SÉANCE</button>
-          </div>
-        </section>
+          <button class="dash-seance-btn" data-go="record">DÉMARRER LA SÉANCE</button>
+          <p class="dash-seance-charge">
+            Charge prévue : <strong data-bind="dashWorkoutLoad">—</strong>/100
+            &middot; <span class="dash-seance-charge-level" data-bind="dashWorkoutLoadLabel">—</span>
+          </p>
+        </div>
 
-        <!-- ── 4 stat tiles ── -->
-        <div class="dash-tiles">
-          <!-- Tile 1 : équipe -->
-          <div class="dash-tile">
-            <div class="dash-tile-head">
-              <svg class="dash-tile-icon tile-icon-orange" viewBox="0 0 24 24" fill="#fc4c02" stroke="none"><ellipse cx="4.5" cy="6" rx="1.7" ry="2.4"/><ellipse cx="9" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="15" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="19.5" cy="6" rx="1.7" ry="2.4"/><path d="M12 9c-4.5 0-7.5 2.8-7.5 6.2 0 2.2 1.8 4.2 4 4.6 1 .2 2 .2 3.5.2s2.5 0 3.5-.2c2.2-.4 4-2.4 4-4.6C19.5 11.8 16.5 9 12 9z"/></svg>
-              <span class="dash-tile-label" data-t="dash_team_tile">ATTELAGE</span>
-            </div>
-            <strong class="dash-tile-team-count" data-bind="dashDogCount">—</strong>
-            <p class="dash-tile-team-health" data-bind="dashDogHealth">—</p>
-            <div class="dash-energy-row">
-              <span data-t="dash_avg_energy">Énergie moy.</span>
-              <div class="dash-energy-track"><span data-bind-style="dashDogEnergy"></span></div>
-              <span class="dash-energy-pct" data-bind="dashDogEnergyPct">—</span>
-            </div>
+        <!-- ── 3 chiffres clés ── -->
+        <div class="dash-kpi-row">
+          <div class="dash-kpi">
+            <svg viewBox="0 0 24 24" fill="var(--orange)" stroke="none" width="18" height="18"><ellipse cx="4.5" cy="6" rx="1.7" ry="2.4"/><ellipse cx="9" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="15" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="19.5" cy="6" rx="1.7" ry="2.4"/><path d="M12 9c-4.5 0-7.5 2.8-7.5 6.2 0 2.2 1.8 4.2 4 4.6 1 .2 2 .2 3.5.2s2.5 0 3.5-.2c2.2-.4 4-2.4 4-4.6C19.5 11.8 16.5 9 12 9z"/></svg>
+            <strong data-bind="dashDogCount">—</strong>
+            <span data-t="dash_team_tile">chiens</span>
           </div>
-          <!-- Tile 2 : conditions -->
-          <div class="dash-tile">
-            <div class="dash-tile-head">
-              <svg class="dash-tile-icon tile-icon-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
-              <span class="dash-tile-label" data-t="dash_conditions_tile">CONDITIONS</span>
-            </div>
-            <strong class="dash-tile-temp" data-bind="dashWeatherTemp">—</strong>
-            <p class="dash-tile-wind" data-bind="dashWeatherWind">—</p>
-            <p class="dash-tile-ground" data-bind="dashWeatherGround">—</p>
-            <p class="dash-tile-cond" data-bind="dashWeatherCond">—</p>
+          <div class="dash-kpi-divider"></div>
+          <div class="dash-kpi">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <strong data-bind="kpiWeek">0</strong>
+            <span>km / sem.</span>
           </div>
-          <!-- Tile 3 : cette semaine -->
-          <div class="dash-tile">
-            <div class="dash-tile-head">
-              <svg class="dash-tile-icon tile-icon-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-              <span class="dash-tile-label" data-t="dash_this_week_tile">CETTE SEMAINE</span>
-            </div>
-            <strong class="dash-tile-km" data-bind="kpiWeek">0 km</strong>
-            <p class="dash-tile-target" data-bind="kpiWeekSub">—</p>
-            <div class="dash-week-bar"><span data-bind-style="dashWeekBar"></span></div>
-            <span class="dash-week-pct" data-bind="dashWeekPct">—</span>
-          </div>
-          <!-- Tile 4 : série -->
-          <div class="dash-tile">
-            <div class="dash-tile-head">
-              <svg class="dash-tile-icon tile-icon-orange" viewBox="0 0 24 24" fill="#fc4c02" stroke="#fc4c02" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-              <span class="dash-tile-label" data-t="dash_streak_tile">SÉRIE</span>
-            </div>
-            <strong class="dash-tile-streak" data-bind="dashStreak">0 jours</strong>
-            <p class="dash-tile-streak-sub" data-bind="dashStreakSub">—</p>
-            <div class="dash-streak-dots"></div>
-          </div>
-          <!-- Tile 5 : forme attelage -->
-          <div class="dash-tile" id="dash-forme-tile" style="display:none">
-            <div class="dash-tile-head">
-              <svg class="dash-tile-icon tile-icon-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-              <span class="dash-tile-label">FORME</span>
-            </div>
-            <strong class="dash-tile-streak" id="dash-forme-score">—</strong>
-            <p class="dash-tile-streak-sub" id="dash-forme-label">—</p>
-            <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:6px">
-              <div id="dash-forme-bar" style="height:100%;border-radius:2px;background:#fc4c02;width:0%;transition:width .4s"></div>
-            </div>
+          <div class="dash-kpi-divider"></div>
+          <div class="dash-kpi">
+            <svg viewBox="0 0 24 24" fill="var(--orange)" stroke="var(--orange)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <strong data-bind="dashStreak">0</strong>
+            <span data-t="dash_streak_tile">jours</span>
           </div>
         </div>
 
+        <!-- ── Feed sorties récentes ── -->
+        <div id="dash-feed" style="display:none">
+          <p class="dash-feed-label">Sorties récentes</p>
+          <div id="dash-feed-cards"></div>
+        </div>
 
-        <!-- ── Graphique progression hebdomadaire ── -->
-        <section style="margin:0 14px 24px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <p style="font-size:0.68rem;font-weight:900;letter-spacing:.12em;color:#fc4c02;text-transform:uppercase">PROGRESSION KM / SEMAINE</p>
-          </div>
-          <div style="background:var(--tile-bg,#fff);border-radius:16px;padding:14px 12px 10px;box-shadow:0 2px 12px rgba(0,0,0,0.06)">
-            <canvas id="progress-chart" style="display:none;width:100%;border-radius:8px"></canvas>
-            <p id="chart-empty" class="hidden" style="color:#aaa;font-size:0.82rem;text-align:center;padding:18px 0">Aucune sortie enregistrée encore</p>
-          </div>
-        </section>
+        <!-- ── Attelage du jour ── -->
+        <div class="dash-team-strip" id="dash-team-strip" style="display:none">
+          <p class="dash-team-strip-label">Attelage du jour</p>
+          <div class="dash-team-strip-dogs" id="dash-team-strip-dogs"></div>
+        </div>
 
         <!-- ── Partenaires ── -->
-        <section class="sponsor-banner" style="margin:0 14px 24px;justify-content:center">
-          <div class="sponsor-logos">
-            <a class="sponsor-logo" href="http://www.musherclub.ch/" target="_blank" rel="noopener"><img src="assets/sponsor-mcs.png" alt="Musher Club Suisse"/></a>
-            <div class="sponsor-divider"></div>
-            <a class="sponsor-logo" href="https://www.instagram.com/morardogteam.alaskan_kennel/" target="_blank" rel="noopener"><img src="assets/sponsor-morardog.png" alt="Morardog Team"/></a>
+        <div class="dash-section-wrap">
+          <div class="sponsor-banner">
+            <span class="sponsor-label" data-t="dash_partners">Partenaires</span>
+            <div class="sponsor-logos">
+              <a class="sponsor-logo" href="#" aria-label="MCS">
+                <img src="assets/sponsor-mcs.png" alt="MCS" />
+              </a>
+              <div class="sponsor-divider"></div>
+              <a class="sponsor-logo" href="#" aria-label="MorarDog">
+                <img src="assets/sponsor-morardog.png" alt="MorarDog" />
+              </a>
+            </div>
           </div>
-        </section>
+        </div>
 
       </section>
 
       <section class="screen" id="record">
 
-        <!-- Carte plein largeur -->
+        <!-- ── Carte immersive ── -->
         <div class="strava-map-wrap">
           <div id="map"></div>
-          <!-- Topbar flottant sur la carte -->
+
+          <!-- Header flottant sur la carte -->
           <div class="strava-topbar">
             <button class="strava-back-btn" data-go="dashboard" aria-label="Retour">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-            <span class="strava-topbar-title" data-t="gps_session">Sortie GPS</span>
-              <p class="strava-gps-dot" id="gps-status-dot" title="GPS"></p>
+            <span class="strava-topbar-title">Nouvelle sortie</span>
+            <p class="strava-gps-dot" id="gps-status-dot" title="GPS"></p>
+            <button id="map-layer-btn" class="rec-map-icon-btn" aria-label="Fond de carte">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><path d="M9 4v13M15 7v13"/></svg>
+            </button>
+            <button id="gps-unit-btn" class="rec-map-icon-btn" aria-label="Unités">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+            </button>
           </div>
+
           <p class="strava-gps-status" id="gps-status" data-t="gps_searching">Recherche GPS…</p>
-        </div>
 
-        <!-- Stats style Strava : distance hero + 3 secondaires -->
-        <div class="strava-stats-panel">
-          <div class="strava-stat-hero">
-            <span class="strava-stat-label" data-t="gps_distance">Distance</span>
-            <div class="strava-stat-value-row">
-              <strong id="distance">0.00</strong>
-              <span class="strava-stat-unit gps-dist-unit">km</span>
-            </div>
-          </div>
-          <div class="strava-stats-row">
-            <div class="strava-stat-secondary">
-              <span class="strava-stat-label" data-t="gps_duration">Durée</span>
-              <strong id="duration">00:00</strong>
-            </div>
-            <div class="strava-stat-secondary strava-stat-center-border">
-              <span class="strava-stat-label" id="avg-label" data-t="gps_avg">Moy.</span>
-              <strong id="pace">--:--</strong>
-              <span class="strava-stat-unit-small" id="pace-unit">min/km</span>
-            </div>
-            <div class="strava-stat-secondary">
-              <span class="strava-stat-label" data-t="gps_speed">Vitesse</span>
-              <strong id="speed">0.0</strong>
-              <span class="strava-stat-unit-small gps-speed-unit">km/h</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bouton unités GPS + fond de carte -->
-        <div style="position:relative;display:flex;justify-content:flex-end;align-items:center;gap:6px;padding:0 16px;margin-top:-4px">
-          <button id="map-layer-btn" style="background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:8px;color:#555;padding:5px 12px;font-size:0.75rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><path d="M9 4v13M15 7v13"/></svg><svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10" style="margin-left:-8px;margin-top:-8px"><path d="M12 2C9.24 2 7 4.24 7 7c0 4 5 11 5 11s5-7 5-11c0-2.76-2.24-5-5-5zm0 6.5c-.83 0-1.5-.67-1.5-1.5S11.17 5.5 12 5.5 13.5 6.17 13.5 7 12.83 8.5 12 8.5z"/></svg> Carte</button>
-          <div id="map-layer-panel" style="display:none;position:absolute;top:36px;right:120px;z-index:200;background:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 6px 24px rgba(0,0,0,0.18);min-width:160px">
+          <!-- Panneau fond de carte -->
+          <div id="map-layer-panel" style="display:none;position:absolute;top:60px;right:60px;z-index:200;background:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 6px 24px rgba(0,0,0,0.18);min-width:160px">
             <p style="font-size:0.62rem;font-weight:900;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin:0 0 8px" data-t="gps_map_background">Fond de carte</p>
             <div style="display:flex;flex-direction:column;gap:4px">
-              <button class="map-layer-opt active" data-layer="osm">🗺 Standard</button>
-              <button class="map-layer-opt" data-layer="satellite">🛰 Satellite</button>
-              <button class="map-layer-opt" data-layer="topo">⛰ Relief</button>
+              <button class="map-layer-opt active" data-layer="osm">Standard</button>
+              <button class="map-layer-opt" data-layer="satellite">Satellite</button>
+              <button class="map-layer-opt" data-layer="topo">Relief</button>
             </div>
           </div>
-          <button id="gps-unit-btn" style="background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:8px;color:#555;padding:5px 12px;font-size:0.75rem;font-weight:800;cursor:pointer">⚙ Unités</button>
-          <div id="gps-unit-panel" style="display:none;position:absolute;top:36px;right:16px;z-index:100;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 6px 24px rgba(0,0,0,0.18);min-width:200px">
+
+          <!-- Panneau unités -->
+          <div id="gps-unit-panel" style="display:none;position:absolute;top:60px;right:16px;z-index:100;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 6px 24px rgba(0,0,0,0.18);min-width:200px">
             <p style="font-size:0.65rem;font-weight:900;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin:0 0 10px" data-t="gps_units_label">Unités GPS</p>
             <div style="display:flex;flex-direction:column;gap:10px">
               <div style="display:flex;align-items:center;justify-content:space-between">
@@ -288,70 +223,122 @@
           </div>
         </div>
 
-        <!-- Météo en direct -->
-        <div class="weather-strip hidden" id="weather-strip">
-          <span id="weather-icon">🌡️</span>
-          <span id="weather-temp">—</span>
-          <span class="weather-sep">·</span>
-          <span id="weather-wind">— km/h</span>
-          <span class="weather-sep">·</span>
-          <span id="weather-desc">—</span>
-        </div>
+        <!-- ── Panneau blanc principal ── -->
+        <div class="rec-panel">
 
-        <!-- Bouton record rond style Strava -->
-        <div class="strava-record-wrap">
-          <button class="strava-record-btn" id="record-button" aria-label="Démarrer">
-            <svg id="record-icon-play" viewBox="0 0 24 24" fill="currentColor" width="30" height="30"><polygon points="5,3 19,12 5,21"/></svg>
-            <svg id="record-icon-pause" viewBox="0 0 24 24" fill="currentColor" width="28" height="28" style="display:none"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
-          </button>
-          <button class="strava-finish-btn hidden" id="finish-run">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><polyline points="20 6 9 17 4 12"/></svg>
-            <span data-t="gps_finish">Terminer</span>
-          </button>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin:4px 16px 8px">
-          <button onclick="triggerSOS()" type="button"
-            style="background:#dc2626;color:#fff;border:none;border-radius:10px;padding:8px 20px;font-size:0.85rem;font-weight:800;letter-spacing:.05em;cursor:pointer;box-shadow:0 3px 10px rgba(220,38,38,0.35)">
-            SOS
-          </button>
-          <button onclick="startLiveTracking()" type="button"
-            style="background:#fc4c02;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><circle cx="12" cy="12" r="6"/></svg>
-            <span data-t="gps_live_share">Partager en direct</span>
-          </button>
-        </div>
+          <!-- Statut GPS discret en haut du panel -->
+          <div id="gps-signal-bar" class="gps-signal-bar gps-signal-searching">
+            <span id="gps-signal-icon" style="display:none">📡</span>
+            <span id="gps-signal-text" data-t="gps_searching">Recherche du signal GPS</span>
+          </div>
 
-        <!-- Barre suivi en direct -->
-        <div id="live-tracking-bar" style="display:none;align-items:center;gap:10px;margin:0 16px 10px;padding:10px 14px;background:#1a1a2e;border-radius:12px;border:1.5px solid #fc4c02">
-          <span style="width:10px;height:10px;border-radius:50%;background:#fc4c02;flex-shrink:0;animation:pulse 1.2s infinite"></span>
-          <span style="font-size:0.82rem;color:#fff;font-weight:600;flex:1" data-t="gps_live_active">Suivi en direct actif</span>
-          <button id="live-share-btn" type="button" style="background:#fc4c02;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:0.78rem;font-weight:700;cursor:pointer" data-t="gps_share">Partager</button>
-          <button id="live-stop-btn" type="button" style="background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:0.78rem;cursor:pointer" data-t="gps_stop">Stop</button>
-        </div>
+          <!-- Distance héro -->
+          <div class="rec-distance">
+            <span class="rec-dist-label" data-t="gps_distance">DISTANCE</span>
+            <div class="rec-dist-value-row">
+              <strong id="distance">0,00</strong>
+              <span class="rec-dist-unit gps-dist-unit">km</span>
+            </div>
+          </div>
 
-        <!-- Sélecteur engin -->
-        <div class="engin-selector-row">
-          <span class="strava-section-label" data-t="gps_engin">Engin</span>
+          <!-- CTA Démarrer / Pause -->
+          <div class="strava-record-wrap">
+            <button class="strava-record-btn" id="record-button" aria-label="Démarrer">
+              <svg id="record-icon-play" viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><polygon points="5,3 19,12 5,21"/></svg>
+              <svg id="record-icon-pause" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style="display:none"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+              <span class="rec-btn-label"></span>
+            </button>
+            <button class="strava-finish-btn hidden" id="finish-run">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
+              <span data-t="gps_finish">Terminer</span>
+            </button>
+          </div>
+
+          <!-- Stats secondaires -->
+          <div class="strava-stats-row rec-stats-row">
+            <div class="strava-stat-secondary">
+              <span class="strava-stat-label" data-t="gps_duration">Durée</span>
+              <strong id="duration">00:00</strong>
+            </div>
+            <div class="strava-stat-secondary strava-stat-center-border">
+              <span class="strava-stat-label" id="avg-label" data-t="gps_avg">Allure moy.</span>
+              <strong id="pace">--:--</strong>
+              <span class="strava-stat-unit-small" id="pace-unit">min/km</span>
+            </div>
+            <div class="strava-stat-secondary">
+              <span class="strava-stat-label" data-t="gps_speed">Vitesse</span>
+              <strong id="speed">0,0</strong>
+              <span class="strava-stat-unit-small gps-speed-unit">km/h</span>
+            </div>
+          </div>
+
+          <!-- Météo en direct -->
+          <div class="weather-strip hidden" id="weather-strip" style="margin:0 0 10px">
+            <span id="weather-icon">🌡️</span>
+            <span id="weather-temp">—</span>
+            <span class="weather-sep">·</span>
+            <span id="weather-wind">— km/h</span>
+            <span class="weather-sep">·</span>
+            <span id="weather-desc">—</span>
+          </div>
+
+          <!-- Actions secondaires -->
+          <div class="rec-actions-row">
+            <button onclick="triggerSOS()" type="button" class="rec-sos-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="14" height="14"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              SOS
+            </button>
+            <button onclick="startLiveTracking()" type="button" class="rec-share-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
+              <span data-t="gps_live_share">Partager en direct</span>
+            </button>
+          </div>
+
+          <!-- Suivi en direct actif -->
+          <div id="live-tracking-bar" style="display:none;align-items:center;gap:10px;margin:0 0 10px;padding:10px 14px;background:#1a1a2e;border-radius:12px;border:1.5px solid var(--orange)">
+            <span style="width:10px;height:10px;border-radius:50%;background:var(--orange);flex-shrink:0;animation:pulse 1.2s infinite"></span>
+            <span style="font-size:0.82rem;color:#fff;font-weight:600;flex:1" data-t="gps_live_active">Suivi en direct actif</span>
+            <button id="live-share-btn" type="button" style="background:var(--orange);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:0.78rem;font-weight:700;cursor:pointer" data-t="gps_share">Partager</button>
+            <button id="live-stop-btn" type="button" style="background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:0.78rem;cursor:pointer" data-t="gps_stop">Stop</button>
+          </div>
+
+        </div><!-- fin rec-panel -->
+
+        <!-- ── Discipline ── -->
+        <div class="rec-section">
+          <p class="rec-section-label">DISCIPLINE</p>
           <div class="engin-btns" id="engin-btns">
-            <button class="engin-btn active" data-engin="Canicross" data-poids="0">🏃 Canicross</button>
-            <button class="engin-btn" data-engin="Trottinette" data-poids="18">🛴 Trott.</button>
-            <button class="engin-btn" data-engin="VTT" data-poids="18">🚵 VTT</button>
+            <button class="engin-btn active" data-engin="Canicross" data-poids="0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="12" cy="3.5" r="1.5"/><path d="M5 18l4-5.5 2.5 2 3-5M7.5 20l2-2.5M16.5 20l-2.5-2.5"/></svg>
+              Canicross
+            </button>
+            <button class="engin-btn" data-engin="Trottinette" data-poids="18">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><path d="M6 15V9h12v3M12 9V5M18 12h-6"/></svg>
+              Trott.
+            </button>
+            <button class="engin-btn" data-engin="VTT" data-poids="18">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 0 0-1-1h-1l-3 8h8L15 6zM6 17.5l3-8"/></svg>
+              VTT
+            </button>
             <button class="engin-btn" data-engin="Kart" data-poids="100"><img src="assets/icon-kart.svg" class="engin-icon" alt="kart"/> Kart</button>
             <button class="engin-btn" data-engin="ATV" data-poids="200"><img src="assets/icon-atv.svg" class="engin-icon" alt="ATV"/> ATV</button>
             <button class="engin-btn" data-engin="Traîneau" data-poids="18"><img src="assets/icon-traineau.svg" class="engin-icon" alt="traîneau"/> Traîneau</button>
           </div>
         </div>
 
-        <!-- Team du jour -->
-        <div class="strava-team-row">
-          <span class="strava-section-label" data-t="gps_team_today">Attelage du jour</span>
-          <button class="text-button" id="toggle-dog-picker-record" data-t="gps_edit">Modifier ✏️</button>
+        <!-- ── Attelage du jour ── -->
+        <div class="rec-team-card">
+          <div class="rec-team-info">
+            <p class="rec-team-label">ATTELAGE DU JOUR</p>
+            <p class="rec-team-count" data-bind="dashDogCount">—</p>
+          </div>
+          <button class="rec-modify-btn" id="toggle-dog-picker-record">Modifier</button>
         </div>
-        <div class="sled-diagram" id="gps-sled-diagram"></div>
-        <section class="dog-picker hidden" id="dog-picker-record" data-list="dogPicker" style="margin:8px 16px 4px"></section>
+        <div class="sled-diagram" id="gps-sled-diagram" style="display:none;margin:0 20px 8px"></div>
+        <section class="dog-picker hidden" id="dog-picker-record" data-list="dogPicker" style="margin:8px 20px 4px"></section>
 
-        <!-- Bilan post-sortie -->
-        <section class="record-form hidden" id="post-run-form">
+        <!-- ── Bilan post-sortie ── -->
+        <section class="record-form hidden" id="post-run-form" style="margin:0 20px;padding:0 0 20px">
           <div class="section-heading compact">
             <h2 data-t="gps_run_summary">Bilan de la sortie</h2>
             <span data-t="gps_auto_notes">Auto + notes</span>
@@ -397,7 +384,7 @@
           </label>
           <div style="display:flex;gap:10px;margin-top:4px">
             <button class="primary-button" id="save-run" type="button" style="flex:2" data-t="gps_save_run">Enregistrer la sortie</button>
-            <button class="secondary-button" id="share-run-btn" type="button" style="flex:1">📤 Partager</button>
+            <button class="secondary-button" id="share-run-btn" type="button" style="flex:1">Partager</button>
           </div>
         </section>
 
@@ -673,44 +660,47 @@
       </section>
 
       <section class="screen" id="race">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow" data-t="race_competition">Mode competition</p>
-            <h1 data-t="race_title">Course</h1>
-          </div>
-          <button class="round-button" data-go="settings" aria-label="Reglages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
-        </header>
 
-        <!-- Bascule Liste / Carte -->
-        <div style="display:flex;gap:8px;padding:12px 16px 0">
-          <button id="race-view-list-btn" class="race-view-btn active" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13" style="vertical-align:middle;margin-right:3px"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="0.8" fill="currentColor"/><circle cx="3" cy="12" r="0.8" fill="currentColor"/><circle cx="3" cy="18" r="0.8" fill="currentColor"/></svg>Liste
-          </button>
-          <button id="race-view-map-btn" class="race-view-btn" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13" style="vertical-align:middle;margin-right:3px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Carte
+        <!-- ── En-tête Courses ── -->
+        <div class="races-header">
+          <div class="races-header-left">
+            <h1 class="races-title">Courses</h1>
+            <p class="races-subtitle" data-t="race_competition">Calendrier international de mushing</p>
+          </div>
+          <div class="races-view-toggle">
+            <button id="race-view-list-btn" class="race-view-btn active" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="0.8" fill="currentColor"/><circle cx="3" cy="12" r="0.8" fill="currentColor"/><circle cx="3" cy="18" r="0.8" fill="currentColor"/></svg>
+              Liste
+            </button>
+            <button id="race-view-map-btn" class="race-view-btn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="13" height="13"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Carte
+            </button>
+          </div>
+        </div>
+
+        <!-- Action secondaire : Signaler -->
+        <div class="races-report-row">
+          <button class="races-report-btn" id="missing-race-button" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span data-t="race_missing">Signaler une course manquante</span>
           </button>
         </div>
 
+        <!-- Vue liste -->
         <section class="race-search-panel">
-          <button class="secondary-button" id="missing-race-button" type="button" data-t="race_missing">Signaler une course manquante</button>
           <section class="race-search-results" data-list="raceSearchResults"></section>
         </section>
 
         <!-- Vue carte -->
-        <div id="race-map-view" style="display:none;padding:0 16px 16px">
-          <div id="race-map" style="height:380px;border-radius:16px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,0.12)"></div>
-          <div id="race-map-card" style="display:none;margin-top:12px"></div>
+        <div id="race-map-view" style="display:none;padding:0 0 16px">
+          <div id="race-map" style="height:400px;border-radius:0;overflow:hidden"></div>
+          <div id="race-map-card" style="display:none;margin:12px 20px 0"></div>
         </div>
+
+        <!-- Panneau admin (caché pour non-admin) -->
         <section id="admin-panel" hidden></section>
 
-        <!-- Classement communautaire -->
-        <section class="section-heading spaced" style="margin-top:20px">
-          <h2 data-t="race_leaderboard">Classement du mois</h2>
-          <span id="leaderboard-month"></span>
-        </section>
-        <div class="leaderboard-wrap" id="leaderboard-wrap">
-          <p class="leaderboard-loading" data-t="race_loading">Chargement…</p>
-        </div>
       </section>
 
       <section class="screen" id="agenda">
@@ -810,6 +800,15 @@
             <button class="community-tab" data-tab="challenges" data-t="net_challenges_tab">D&eacute;fis</button>
             <button class="community-tab" data-tab="clubs" data-t="net_clubs_tab">Clubs</button>
             <button class="community-tab" data-tab="map" data-t="net_map_tab">Carte</button>
+          </div>
+
+          <!-- Classement du mois -->
+          <section class="section-heading spaced" style="margin-top:4px">
+            <h2 data-t="race_leaderboard">Classement du mois</h2>
+            <span id="leaderboard-month" style="font-size:0.78rem;color:#aaa;font-weight:600"></span>
+          </section>
+          <div class="leaderboard-wrap" id="leaderboard-wrap" style="margin-bottom:20px">
+            <p class="leaderboard-loading" data-t="race_loading">Chargement…</p>
           </div>
 
           <!-- Fil -->
@@ -916,6 +915,21 @@
         </header>
 
         <form class="settings-form" id="settings-form">
+
+          <!-- ── Thème ── -->
+          <section class="profile-settings">
+            <span>Apparence</span>
+            <div class="theme-toggle-row">
+              <button type="button" class="theme-btn" id="theme-btn-light" onclick="setTheme('light')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                Clair
+              </button>
+              <button type="button" class="theme-btn" id="theme-btn-dark" onclick="setTheme('dark')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                Sombre
+              </button>
+            </div>
+          </section>
 
           <section class="profile-settings">
             <span data-t="settings_season_mode">Mode saison</span>
@@ -1263,7 +1277,48 @@
       </div>
     </div>
 
+    <!-- Modal édition poids engin -->
+    <div id="engin-weight-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9998;display:none;align-items:flex-end;justify-content:center">
+      <div id="engin-weight-sheet" style="background:#fff;width:100%;max-width:430px;border-radius:24px 24px 0 0;padding:20px 24px 40px;box-shadow:0 -8px 40px rgba(0,0,0,0.2)">
+        <div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
+        <h3 id="engin-weight-title" style="font-size:1.1rem;font-weight:900;color:#1a1814;margin:0 0 6px"></h3>
+        <p style="font-size:0.82rem;color:#888;margin:0 0 20px">Modifie le poids de l'engin pour affiner le calcul de charge.</p>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem;font-weight:700;color:#444;margin-bottom:16px">
+          Poids de l'engin (kg)
+          <input type="number" id="engin-weight-input" min="0" max="500" step="1"
+            style="font-size:1.8rem;font-weight:900;text-align:center;border:2px solid #e0d9d0;border-radius:14px;padding:12px;color:#1a1814"/>
+        </label>
+        <!-- Calcul charge par chien -->
+        <div id="engin-charge-result" style="background:#fff8f5;border:1.5px solid #fcd9c9;border-radius:14px;padding:14px 16px;margin-bottom:20px">
+          <p style="font-size:0.72rem;font-weight:800;color:#fc4c02;text-transform:uppercase;letter-spacing:.08em;margin:0 0 8px">Charge par chien</p>
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <div style="text-align:center">
+              <span style="display:block;font-size:0.7rem;color:#aaa;font-weight:700;text-transform:uppercase">Engin + musher</span>
+              <strong id="engin-charge-total" style="font-size:1.5rem;font-weight:900;color:#1a1814">—</strong>
+              <span style="font-size:0.75rem;color:#888"> kg</span>
+            </div>
+            <div style="color:#ddd;font-size:1.2rem">÷</div>
+            <div style="text-align:center">
+              <span style="display:block;font-size:0.7rem;color:#aaa;font-weight:700;text-transform:uppercase">Chiens</span>
+              <strong id="engin-charge-dogs" style="font-size:1.5rem;font-weight:900;color:#1a1814">—</strong>
+            </div>
+            <div style="color:#ddd;font-size:1.2rem">=</div>
+            <div style="text-align:center">
+              <span style="display:block;font-size:0.7rem;color:#aaa;font-weight:700;text-transform:uppercase">Par chien</span>
+              <strong id="engin-charge-per" style="font-size:1.8rem;font-weight:900;color:#fc4c02">—</strong>
+              <span style="font-size:0.75rem;color:#888"> kg</span>
+            </div>
+          </div>
+          <p id="engin-charge-level" style="font-size:0.8rem;margin:10px 0 0;text-align:center;font-weight:700"></p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button onclick="closeEnginWeightModal()" style="flex:1;padding:13px;border-radius:14px;border:1.5px solid #e0d9d0;background:#fff;color:#888;font-weight:700;font-size:0.9rem;cursor:pointer">Annuler</button>
+          <button onclick="saveEnginWeight()" style="flex:2;padding:13px;border-radius:14px;border:none;background:#fc4c02;color:#fff;font-weight:800;font-size:0.9rem;cursor:pointer;box-shadow:0 4px 14px rgba(252,76,2,0.35)">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-    <script src="app.js?v=20260819"></script>
+    <script src="app.js?v=20260820"></script>
   </body>
 </html>
