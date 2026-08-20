@@ -1,17 +1,36 @@
 :root {
-  --season-color: #3b82f6;
+  /* ── Palette MushTrack v1 ── */
+  --orange:          #F36A21;
+  --orange-light:    rgba(243,106,33,0.12);
+  --orange-shadow:   rgba(243,106,33,0.30);
+
+  /* Saison */
+  --season-color:       #3b82f6;
   --season-color-light: #60a5fa;
-  --bg: #ede8e2;
-  --bg-screen: #ede8e2;
-  --tile-bg: #fff;
-  --text-main: #1a1814;
-  --text-sub: #4a4540;
-  --text-muted: #9a9490;
-  --border: #e0d9d0;
-  --input-bg: #fff;
-  --nav-bg: #fff;
-  --card-shadow: 0 4px 20px rgba(30,20,10,0.10);
+
+  /* Surfaces */
+  --bg:        #F7F6F3;
+  --bg-screen: #F7F6F3;
+  --tile-bg:   #ffffff;
+  --input-bg:  #ffffff;
+
+  /* Texte */
+  --text-main:  #18211D;
+  --text-sub:   #4A5550;
+  --text-muted: #9AA09C;
+
+  /* Bordures & ombres */
+  --border:      rgba(24,33,29,0.09);
+  --card-shadow: 0 2px 16px rgba(24,33,29,0.08);
   --card-radius: 20px;
+
+  /* Navigation basse */
+  --nav-bg:          #18211D;
+  --nav-icon-idle:   rgba(255,255,255,0.45);
+  --nav-icon-active: #F36A21;
+
+  /* Spacing */
+  --side: 20px;
 }
 body.dark-mode {
   --bg: #111;
@@ -61,7 +80,7 @@ body.dark-mode .dash-hero-card {
   border-color: rgba(255,255,255,0.1) !important;
 }
 body.dark-mode .dash-workout-btns .dash-start-btn {
-  background: #fc4c02 !important;
+  background: var(--orange) !important;
 }
 body.dark-mode .dash-dog-chip-bubble.ok       { background: #14532d !important; border-color: #166534 !important; }
 body.dark-mode .dash-dog-chip-bubble.attention{ background: #78350f !important; border-color: #92400e !important; }
@@ -97,8 +116,8 @@ body.dark-mode .dash-workout { border-color: rgba(255,255,255,0.06) !important; 
 body.dark-mode .dash-workout-gauge circle[stroke="#f0f0f0"] { stroke: #333 !important; }
 body.dark-mode .dash-kpi-divider { background: rgba(255,255,255,0.12) !important; }
 body.dark-mode .bottom-nav {
-  background: var(--nav-bg) !important;
-  border-top-color: var(--border) !important;
+  background: #0f1812 !important;
+  border-top: none !important;
 }
 body.dark-mode input,
 body.dark-mode select,
@@ -177,7 +196,7 @@ input, textarea, [contenteditable] {
 .auth-logo h1 {
   font-size: 2rem;
   font-weight: 800;
-  color: #fc4c02;
+  color: var(--orange);
   margin: 0 0 4px;
 }
 
@@ -213,7 +232,7 @@ input, textarea, [contenteditable] {
 }
 
 #auth-form input:focus {
-  border-color: #fc4c02;
+  border-color: var(--orange);
 }
 
 .auth-error {
@@ -246,7 +265,7 @@ input, textarea, [contenteditable] {
 }
 
 .auth-user-bar .text-button {
-  color: #fc4c02;
+  color: var(--orange);
   font-size: 0.7rem;
   font-weight: 700;
 }
@@ -372,7 +391,7 @@ h1 {
 }
 
 .brand-orange {
-  color: #fc4c02;
+  color: var(--orange);
 }
 
 h2 {
@@ -383,7 +402,7 @@ h2 {
 
 .eyebrow {
   margin: 0 0 4px;
-  color: #fc4c02;
+  color: var(--orange);
   font-size: 0.7rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -395,7 +414,7 @@ h2 {
   height: 44px;
   padding: 0 12px;
   border-radius: 999px;
-  background: #fc4c02;
+  background: var(--orange);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -412,7 +431,7 @@ h2 {
 
 .text-button {
   background: transparent;
-  color: #fc4c02;
+  color: var(--orange);
   font-weight: 900;
 }
 
@@ -536,7 +555,7 @@ body.mode-summer .mode-switch button.active {
 
 .quick-stats article {
   padding: 16px 14px;
-  border-left: 3px solid #fc4c02;
+  border-left: 3px solid var(--orange);
   display: flex;
   align-items: center;
   gap: 14px;
@@ -599,7 +618,7 @@ label,
 .plan-summary,
 .race-card,
 .profile-hero {
-  background: linear-gradient(135deg, #fc4c02 0%, #ff6a00 60%, #ff8c00 100%);
+  background: linear-gradient(135deg, var(--orange) 0%, #ff6a00 60%, #ff8c00 100%);
   color: #fff;
   border-radius: 18px;
   padding: 18px;
@@ -629,17 +648,17 @@ label,
   color: #1a1814;
   border-radius: var(--card-radius);
   padding: 20px;
-  border-left: 4px solid #fc4c02;
+  border-left: 4px solid var(--orange);
   box-shadow: var(--card-shadow);
 }
 
 /* Coach card — fond orange, texte blanc */
 .insight-panel {
-  background: linear-gradient(135deg, #fc4c02 0%, #ff6a00 100%);
+  background: linear-gradient(135deg, var(--orange) 0%, #ff6a00 100%);
   color: #fff;
   border-radius: 18px;
   padding: 18px;
-  box-shadow: 0 8px 28px rgba(252, 76, 2, 0.35);
+  box-shadow: 0 8px 28px var(--orange-shadow);
   border: none;
 }
 
@@ -666,7 +685,7 @@ label,
 /* Bouton Analyser : blanc avec texte orange */
 .insight-panel .primary-button {
   background: #ffffff;
-  color: #fc4c02;
+  color: var(--orange);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
 }
 
@@ -675,7 +694,7 @@ body.mode-summer .plan-summary,
 body.mode-summer .insight-panel,
 body.mode-summer .race-card,
 body.mode-summer .profile-hero {
-  background: linear-gradient(145deg, #fc4c02, #ff8a2a);
+  background: linear-gradient(145deg, var(--orange), #ff8a2a);
 }
 
 .training-card,
@@ -735,21 +754,21 @@ body.mode-summer .profile-hero {
 
 .primary-button,
 .save-button {
-  background: #fc4c02;
+  background: var(--orange);
   color: #fff;
-  border-radius: 999px;
-  padding: 13px 22px;
+  border-radius: 14px;
+  padding: 14px 24px;
   font-weight: 800;
   font-size: 0.95rem;
-  letter-spacing: 0.01em;
-  box-shadow: 0 4px 16px rgba(252, 76, 2, 0.35);
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 16px var(--orange-shadow);
   transition: transform 0.12s, box-shadow 0.12s;
 }
 
 .primary-button:active,
 .save-button:active {
   transform: scale(0.97);
-  box-shadow: 0 2px 8px rgba(252, 76, 2, 0.25);
+  box-shadow: 0 2px 8px rgba(243,106,33,0.20);
 }
 
 .secondary-button,
@@ -762,7 +781,7 @@ body.mode-summer .profile-hero {
 
 .secondary-button {
   background: #fff4ef;
-  color: #fc4c02;
+  color: var(--orange);
   border: 1px solid #ffd0bb;
 }
 
@@ -831,14 +850,14 @@ body.mode-summer .mode-photo {
 .route-line {
   position: absolute;
   inset: 54px 38px 64px 48px;
-  border: 8px solid #fc4c02;
+  border: 8px solid var(--orange);
   border-left-color: transparent;
   border-radius: 48% 42% 54% 36%;
   transform: rotate(-13deg);
 }
 
 body.mode-summer .route-line {
-  border-color: #fc4c02;
+  border-color: var(--orange);
   border-left-color: transparent;
 }
 
@@ -854,18 +873,18 @@ body.mode-summer .route-line {
 .pin.start {
   left: 36px;
   bottom: 70px;
-  background: #fc4c02;
+  background: var(--orange);
 }
 
 .pin.finish {
   right: 34px;
   top: 70px;
-  background: #fc4c02;
+  background: var(--orange);
 }
 
 body.mode-summer .pin.finish,
 body.mode-summer .record-button {
-  background: #fc4c02;
+  background: var(--orange);
 }
 
 /* ── Strava-style GPS screen ─────────────────────────────── */
@@ -924,8 +943,8 @@ body.mode-summer .record-button {
 }
 .gps-unit-toggle.active {
   background: #fff4ef;
-  border-color: #fc4c02;
-  color: #fc4c02;
+  border-color: var(--orange);
+  color: var(--orange);
 }
 
 .map-layer-opt {
@@ -942,8 +961,8 @@ body.mode-summer .record-button {
 }
 .map-layer-opt.active {
   background: #fff4ef;
-  border-color: #fc4c02;
-  color: #fc4c02;
+  border-color: var(--orange);
+  color: var(--orange);
 }
 .strava-back-btn {
   background: rgba(255,255,255,0.18);
@@ -1131,8 +1150,8 @@ body.mode-summer .record-button {
 }
 .engin-btn.active {
   background: #fff4ef;
-  border-color: #fc4c02;
-  color: #fc4c02;
+  border-color: var(--orange);
+  color: var(--orange);
 }
 .engin-icon {
   width: 18px; height: 14px;
@@ -1166,7 +1185,7 @@ body.mode-summer .record-button {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: #fc4c02;
+  background: var(--orange);
   color: #ffffff;
   border: none;
   display: flex;
@@ -1192,8 +1211,8 @@ body.mode-summer .record-button {
   align-items: center;
   gap: 7px;
   background: #ffffff;
-  color: #fc4c02;
-  border: 2px solid #fc4c02;
+  color: var(--orange);
+  border: 2px solid var(--orange);
   border-radius: 24px;
   padding: 10px 24px;
   font-weight: 800;
@@ -1239,7 +1258,7 @@ body.mode-summer .record-button {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: #fc4c02;
+  color: var(--orange);
 }
 
 .gps-history .run-card-meta {
@@ -1332,7 +1351,7 @@ body.mode-summer .record-button {
 }
 
 .profile-settings > span {
-  color: #fc4c02;
+  color: var(--orange);
   font-size: 0.76rem;
   font-weight: 950;
   text-transform: uppercase;
@@ -1394,7 +1413,7 @@ input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: #fc4c02;
+  border-color: var(--orange);
   box-shadow: 0 0 0 3px rgba(252, 76, 2, 0.12);
 }
 
@@ -1424,8 +1443,8 @@ textarea {
 }
 
 .dog-picker button.selected {
-  background: #fc4c02;
-  border-color: #fc4c02;
+  background: var(--orange);
+  border-color: var(--orange);
   color: #fff;
 }
 
@@ -1456,11 +1475,11 @@ textarea {
   cursor: pointer; position: relative; overflow: hidden;
 }
 .sd-filled {
-  border-style: solid; border-color: #fc4c02; background: #fc4c02;
+  border-style: solid; border-color: var(--orange); background: var(--orange);
   cursor: grab;
 }
 .sd-filled:active { cursor: grabbing; }
-.sd-drag-over { border-color: #fc4c02 !important; background: #fff0ea !important; transform: scale(1.03); }
+.sd-drag-over { border-color: var(--orange) !important; background: #fff0ea !important; transform: scale(1.03); }
 .sd-dog-name { font-size: 0.82rem; font-weight: 700; color: #fff; padding: 0 28px 0 10px; }
 .sd-plus { font-size: 1.1rem; color: #ccc; }
 .sd-remove {
@@ -1543,7 +1562,7 @@ textarea {
   display: flex;
   align-items: center;
 }
-.strava-run-share:hover { background: #f5f5f5; color: #fc4c02; }
+.strava-run-share:hover { background: #f5f5f5; color: var(--orange); }
 
 .strava-run-menu {
   background: none;
@@ -1645,7 +1664,7 @@ textarea {
 }
 
 .dog-card.danger {
-  border-left: 5px solid #fc4c02;
+  border-left: 5px solid var(--orange);
   background: rgba(252, 76, 2, 0.1);
 }
 
@@ -1709,7 +1728,7 @@ textarea {
 }
 
 .dog-health-grid .danger {
-  border-left-color: #fc4c02;
+  border-left-color: var(--orange);
   background: #fff4ef;
 }
 
@@ -1749,7 +1768,7 @@ textarea {
   width: 100%;
   min-height: 10px;
   border-radius: 8px 8px 3px 3px;
-  background: linear-gradient(180deg, #ff7a1a, #fc4c02);
+  background: linear-gradient(180deg, #ff7a1a, var(--orange));
 }
 
 .chart-bars span,
@@ -1787,7 +1806,7 @@ textarea {
 
 .plan-signal.danger,
 .week-list article.danger {
-  border-top-color: #fc4c02;
+  border-top-color: var(--orange);
   background: #fff4ef;
 }
 
@@ -1840,7 +1859,7 @@ textarea {
   transition: background 0.15s, color 0.15s;
 }
 .community-tab.active {
-  background: #fc4c02;
+  background: var(--orange);
   color: #fff;
 }
 
@@ -1854,17 +1873,17 @@ textarea {
   gap: 10px;
 }
 .challenge-header { display: flex; justify-content: space-between; align-items: center; }
-.challenge-badge  { font-size: 0.78rem; font-weight: 700; color: #fc4c02; }
+.challenge-badge  { font-size: 0.78rem; font-weight: 700; color: var(--orange); }
 .challenge-header small { font-size: 0.72rem; color: #888; }
 .challenge-title  { font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; }
 .challenge-desc   { font-size: 0.8rem; color: #aaa; margin: 0; }
 .challenge-progress-bar  { height: 10px; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; }
-.challenge-progress-fill { height: 100%; background: linear-gradient(90deg, #fc4c02, #ff8c42); border-radius: 10px; transition: width 0.4s; }
+.challenge-progress-fill { height: 100%; background: linear-gradient(90deg, var(--orange), #ff8c42); border-radius: 10px; transition: width 0.4s; }
 .challenge-progress-label { display: flex; justify-content: space-between; font-size: 0.72rem; color: #aaa; }
 .challenge-join {
   width: 100%;
   padding: 10px;
-  background: #fc4c02;
+  background: var(--orange);
   border: none;
   border-radius: 10px;
   color: #fff;
@@ -1879,7 +1898,7 @@ textarea {
 .challenge-lb-row.me { background: rgba(252,76,2,0.12); }
 .lb-rank  { width: 20px; color: #888; font-weight: 700; flex-shrink: 0; }
 .lb-name  { flex: 1; color: #ddd; }
-.lb-km    { color: #fc4c02; font-weight: 700; }
+.lb-km    { color: var(--orange); font-weight: 700; }
 
 /* ── Clubs ────────────────────────────────────────────────── */
 .clubs-actions { margin-top: 14px; }
@@ -1895,11 +1914,11 @@ textarea {
 .club-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .club-header strong { font-size: 0.95rem; color: #fff; display: block; }
 .club-header small  { font-size: 0.72rem; color: #888; }
-.club-code { font-size: 1rem; font-weight: 900; color: #fc4c02; letter-spacing: 3px; flex-shrink: 0; }
+.club-code { font-size: 1rem; font-weight: 900; color: var(--orange); letter-spacing: 3px; flex-shrink: 0; }
 .club-desc { font-size: 0.78rem; color: #aaa; margin: 0; }
 .club-members { display: flex; flex-wrap: wrap; gap: 5px; }
 .club-member-chip { font-size: 0.72rem; background: rgba(255,255,255,0.07); border-radius: 20px; padding: 3px 10px; color: #ccc; }
-.club-member-chip.me { background: rgba(252,76,2,0.18); color: #fc4c02; }
+.club-member-chip.me { background: rgba(252,76,2,0.18); color: var(--orange); }
 .club-leave-btn { background: none; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 4px 12px; font-size: 0.72rem; color: #888; cursor: pointer; }
 
 /* ── Feed réseau social ──────────────────────────────────── */
@@ -1920,7 +1939,7 @@ textarea {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #fc4c02, #ff8c42);
+  background: linear-gradient(135deg, var(--orange), #ff8c42);
   color: #fff;
   font-weight: 700;
   font-size: 0.88rem;
@@ -1951,12 +1970,12 @@ textarea {
   align-items: center;
   gap: 1px;
 }
-.feed-stat span { font-size: 1.05rem; font-weight: 700; color: #fc4c02; }
+.feed-stat span { font-size: 1.05rem; font-weight: 700; color: var(--orange); }
 .feed-stat small { font-size: 0.65rem; color: #aaa; }
 .feed-photo { border-radius: 10px; overflow: hidden; margin: 2px 0; }
 .feed-photo img { width: 100%; max-height: 260px; object-fit: cover; display: block; }
 .feed-dogs  { font-size: 0.78rem; color: #aaa; margin: 0; }
-.feed-type  { display: inline-block; font-size: 0.72rem; background: rgba(252,76,2,0.15); color: #fc4c02; border-radius: 6px; padding: 2px 8px; }
+.feed-type  { display: inline-block; font-size: 0.72rem; background: rgba(252,76,2,0.15); color: var(--orange); border-radius: 6px; padding: 2px 8px; }
 .feed-notes { font-size: 0.8rem; color: #ccc; font-style: italic; margin: 0; }
 .feed-actions { display: flex; gap: 8px; margin-top: 2px; }
 .feed-react-btn {
@@ -1974,8 +1993,8 @@ textarea {
 }
 .feed-react-btn.reacted {
   background: rgba(252,76,2,0.2);
-  border-color: #fc4c02;
-  color: #fc4c02;
+  border-color: var(--orange);
+  color: var(--orange);
 }
 .feed-comment-btn {
   background: rgba(255,255,255,0.06);
@@ -2005,7 +2024,7 @@ textarea {
   font-size: 0.82rem;
   flex-wrap: wrap;
 }
-.feed-comment strong { color: #fc4c02; flex-shrink: 0; }
+.feed-comment strong { color: var(--orange); flex-shrink: 0; }
 .feed-comment span   { color: #ddd; flex: 1; }
 .feed-comment small  { color: #666; font-size: 0.7rem; flex-shrink: 0; }
 .feed-comment-delete { background: none; border: none; color: #555; font-size: 0.7rem; cursor: pointer; padding: 0 2px; }
@@ -2021,7 +2040,7 @@ textarea {
   outline: none;
 }
 .feed-comment-send {
-  background: #fc4c02;
+  background: var(--orange);
   border: none;
   border-radius: 8px;
   padding: 7px 12px;
@@ -2050,7 +2069,7 @@ textarea {
 }
 
 .open-run-status.loading {
-  background: linear-gradient(145deg, #21140f, #fc4c02);
+  background: linear-gradient(145deg, #21140f, var(--orange));
 }
 
 .open-run-status span,
@@ -2064,7 +2083,7 @@ textarea {
 }
 
 .agenda-card.priority-a {
-  border-left-color: #fc4c02;
+  border-left-color: var(--orange);
 }
 
 .agenda-card.priority-b {
@@ -2116,15 +2135,15 @@ textarea {
   padding: 8px 12px;
   font-size: 0.85rem;
   font-weight: 600;
-  border: 1.5px solid #fc4c02;
+  border: 1.5px solid var(--orange);
   border-radius: 8px;
   background: #fff;
-  color: #fc4c02;
+  color: var(--orange);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
 .agenda-edit-btn:hover, .agenda-edit-btn:active {
-  background: #fc4c02;
+  background: var(--orange);
   color: #fff;
 }
 .agenda-delete-btn {
@@ -2141,13 +2160,13 @@ textarea {
 }
 .agenda-delete-btn:hover, .agenda-delete-btn:active {
   background: #fff0ed;
-  color: #fc4c02;
-  border-color: #fc4c02;
+  color: var(--orange);
+  border-color: var(--orange);
 }
 .agenda-delete-btn.agenda-delete-confirm {
   background: #fff0ed;
-  color: #fc4c02;
-  border-color: #fc4c02;
+  color: var(--orange);
+  border-color: var(--orange);
   font-weight: 700;
 }
 .agenda-edit-form {
@@ -2208,7 +2227,7 @@ textarea {
   padding: 6px 9px;
   border-radius: 999px;
   background: #fff4ef;
-  color: #fc4c02;
+  color: var(--orange);
 }
 
 .agenda-meta span {
@@ -2268,7 +2287,7 @@ textarea {
 }
 
 .health-grid article.danger {
-  border-left-color: #fc4c02;
+  border-left-color: var(--orange);
   background: #fff4ef;
 }
 
@@ -2285,7 +2304,7 @@ textarea {
 }
 
 .load-row.high {
-  border-left-color: #fc4c02;
+  border-left-color: var(--orange);
 }
 
 .load-row.low {
@@ -2297,7 +2316,7 @@ textarea {
 }
 
 .alert-card.danger {
-  border-left-color: #fc4c02;
+  border-left-color: var(--orange);
   background: #fff4ef;
 }
 
@@ -2386,7 +2405,7 @@ textarea {
 }
 .share-sheet-btn:first-of-type { border-top: none; }
 .share-sheet-cancel {
-  color: #fc4c02;
+  color: var(--orange);
   font-weight: 700;
   justify-content: center;
   margin-top: 4px;
@@ -2405,8 +2424,8 @@ textarea {
   transition: all .15s;
 }
 .race-view-btn.active {
-  background: #fc4c02;
-  border-color: #fc4c02;
+  background: var(--orange);
+  border-color: var(--orange);
   color: #fff;
 }
 
@@ -2429,7 +2448,7 @@ textarea {
 }
 
 .radar-status.loading {
-  background: linear-gradient(145deg, #21140f, #fc4c02);
+  background: linear-gradient(145deg, #21140f, var(--orange));
 }
 
 .radar-status span {
@@ -2488,7 +2507,7 @@ textarea {
   padding: 13px 16px;
   background: #fff;
   border: none;
-  border-left: 4px solid #fc4c02;
+  border-left: 4px solid var(--orange);
   width: 100%;
   cursor: pointer;
   text-align: left;
@@ -2517,7 +2536,7 @@ textarea {
 
 .race-country-header .race-count-badge {
   background: #fff4ef;
-  color: #fc4c02;
+  color: var(--orange);
   font-size: 0.7rem;
   font-weight: 800;
   padding: 3px 9px;
@@ -2542,7 +2561,7 @@ textarea {
 
 /* Course épinglée / sélectionnée */
 .race-result.pinned {
-  border: 2px solid #fc4c02;
+  border: 2px solid var(--orange);
   box-shadow: 0 4px 20px rgba(252, 76, 2, 0.18);
   position: relative;
 }
@@ -2551,7 +2570,7 @@ textarea {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: #fc4c02;
+  background: var(--orange);
   color: #fff;
   font-size: 0.65rem;
   font-weight: 900;
@@ -2605,7 +2624,7 @@ textarea {
 .race-result > strong {
   display: block;
   margin: 8px 0;
-  color: #fc4c02;
+  color: var(--orange);
 }
 
 .race-result span {
@@ -2633,8 +2652,8 @@ textarea {
 /* Bouton "Intéressé" actif */
 .race-result-actions .btn-interested {
   background: #fff8f5;
-  color: #fc4c02;
-  border: 1.5px solid #fc4c02;
+  color: var(--orange);
+  border: 1.5px solid var(--orange);
   font-weight: 600;
 }
 
@@ -2847,7 +2866,7 @@ textarea {
 .lb-info { flex: 1; }
 .lb-info strong { display: block; font-size: 0.88rem; }
 .lb-info small  { font-size: 0.75rem; color: #999; }
-.lb-km { font-size: 0.9rem; font-weight: 700; color: #fc4c02; white-space: nowrap; }
+.lb-km { font-size: 0.9rem; font-weight: 700; color: var(--orange); white-space: nowrap; }
 .leaderboard-empty, .leaderboard-loading {
   font-size: 0.82rem; color: #aaa; text-align: center; padding: 16px;
 }
@@ -2877,7 +2896,7 @@ textarea {
 }
 .ration-main { text-align: center; }
 .ration-label { font-size: 0.75rem; color: #999; display: block; margin-bottom: 4px; }
-.ration-value { font-size: 2rem; font-weight: 800; color: #fc4c02; display: block; }
+.ration-value { font-size: 2rem; font-weight: 800; color: var(--orange); display: block; }
 .ration-main small { font-size: 0.78rem; color: #888; }
 .ration-breakdown {
   display: grid;
@@ -3051,12 +3070,12 @@ textarea {
 }
 
 .advice-card.important {
-  border-left-color: #fc4c02;
+  border-left-color: var(--orange);
   background: #fff4ef;
 }
 
 .advice-card span {
-  color: #fc4c02;
+  color: var(--orange);
   font-size: 0.76rem;
   font-weight: 950;
   text-transform: uppercase;
@@ -3075,7 +3094,7 @@ textarea {
   display: inline-flex;
   width: fit-content;
   margin-top: 10px;
-  color: #fc4c02;
+  color: var(--orange);
   font-size: 0.78rem;
   font-weight: 950;
   text-decoration: none;
@@ -3110,9 +3129,9 @@ textarea {
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 .advice-filter-btn.active {
-  background: #fc4c02;
+  background: var(--orange);
   color: #fff;
-  border-color: #fc4c02;
+  border-color: var(--orange);
 }
 
 /* ── Compteur dernière sortie dashboard ──────── */
@@ -3144,16 +3163,16 @@ textarea {
 .preset-btn {
   padding: 8px 14px;
   border-radius: 12px;
-  border: 1.5px solid #fc4c02;
+  border: 1.5px solid var(--orange);
   background: #fff7f5;
-  color: #fc4c02;
+  color: var(--orange);
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
 .preset-btn:hover {
-  background: #fc4c02;
+  background: var(--orange);
   color: #fff;
 }
 
@@ -3183,7 +3202,7 @@ textarea {
 
 .record-button {
   border-radius: 8px;
-  background: #fc4c02;
+  background: var(--orange);
   color: #fff;
   font-weight: 950;
 }
@@ -3216,10 +3235,8 @@ textarea {
   scrollbar-width: none;
   -ms-overflow-style: none;
   gap: 0;
-  padding: 8px 4px 16px;
-  background: #ffffff;
-  border-top: 1px solid #eeeeee;
-  box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+  background: var(--nav-bg);
+  border-top: none;
 }
 .bottom-nav::-webkit-scrollbar { display: none; }
 
@@ -3253,8 +3270,8 @@ textarea {
 
 .season-btn.active {
   background: #fff4ef;
-  border-color: #fc4c02;
-  color: #fc4c02;
+  border-color: var(--orange);
+  color: var(--orange);
 }
 
 /* ── Panel Admin ─────────────────────────────────── */
@@ -3447,7 +3464,7 @@ textarea {
   width: 36px;
   height: 36px;
   border: 3px solid #f0f0f0;
-  border-top-color: #fc4c02;
+  border-top-color: var(--orange);
   border-radius: 50%;
   animation: coach-spin 0.8s linear infinite;
 }
@@ -3484,7 +3501,7 @@ textarea {
 
 .coach-analysis-text h4 {
   font-size: 0.95rem;
-  color: #fc4c02;
+  color: var(--orange);
   margin: 14px 0 6px;
   font-weight: 900;
 }
@@ -3565,7 +3582,7 @@ textarea {
 }
 
 .bottom-nav button.active {
-  color: #fc4c02;
+  color: var(--orange);
   background: transparent;
 }
 
@@ -3634,7 +3651,7 @@ textarea {
   padding: 12px;
   background: #fff7f5;
   border-radius: 12px;
-  border: 1.5px solid #fc4c02;
+  border: 1.5px solid var(--orange);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -3699,7 +3716,7 @@ textarea {
   display: inline-block;
   padding: 10px 22px;
   background: #fff;
-  color: #fc4c02;
+  color: var(--orange);
   border: none;
   border-radius: 50px;
   font-size: 0.9rem;
@@ -3732,16 +3749,16 @@ textarea {
 .kpi-value { display: block; font-size: 1.15rem; font-weight: 800; color: #1a1a1a; }
 .kpi-sub { display: block; font-size: 0.72rem; color: #888; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .kpi-bar { height: 4px; background: #f0f0f0; border-radius: 2px; margin-top: 6px; overflow: hidden; }
-.kpi-bar span { display: block; height: 100%; background: #fc4c02; border-radius: 2px; transition: width .4s; width: 0%; }
+.kpi-bar span { display: block; height: 100%; background: var(--orange); border-radius: 2px; transition: width .4s; width: 0%; }
 
 /* ═══════════════════════════════════════════════════════════════
    DASHBOARD PREMIUM v3 — fond blanc, split hero, gauge SVG
    ═══════════════════════════════════════════════════════════════ */
 
 /* Fond global */
-.phone-shell { background: #f2f3f7; }
-.screen { background: #f2f3f7; }
-#dashboard { background: #f2f3f7; padding: 0; }
+.phone-shell { background: var(--bg); }
+.screen { background: var(--bg); }
+#dashboard { background: var(--bg); padding: 0; }
 
 /* ── Hero — image couvre tout (header inclus) ───────────────── */
 .dash-hero {
@@ -3772,7 +3789,7 @@ textarea {
 }
 .dash-header-brand { text-align: center; }
 .dash-logo { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.04em; margin: 0; color: #fff; }
-.dash-logo .brand-orange { color: #fc4c02; }
+.dash-logo .brand-orange { color: var(--orange); }
 .dash-season {
   font-size: 0.55rem; font-weight: 800; letter-spacing: .14em;
   color: rgba(255,255,255,0.65); margin: 1px 0 0; text-transform: uppercase;
@@ -3805,7 +3822,7 @@ textarea {
   letter-spacing: -0.03em;
   text-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
-.dash-mission-title span { color: #fc4c02; }
+.dash-mission-title span { color: var(--orange); }
 .dash-hero-photo { display: none; }
 
 /* Carte countdown dans le hero — fond blanc, gauche seulement */
@@ -3827,7 +3844,7 @@ textarea {
   padding-right: 8px;
 }
 .dash-days {
-  font-size: 1.6rem; font-weight: 900; color: #fc4c02;
+  font-size: 1.6rem; font-weight: 900; color: var(--orange);
   letter-spacing: -0.05em; line-height: 1;
 }
 .dash-days-label {
@@ -3853,7 +3870,7 @@ textarea {
   border-radius: 99px; width: 0%; transition: width .4s;
 }
 .dash-prep-phase { display: none; }
-.dash-orange { color: #fc4c02; font-weight: 700; }
+.dash-orange { color: var(--orange); font-weight: 700; }
 
 /* ── Objectif du jour (avec gauge) ─────────────────────────── */
 .dash-workout {
@@ -3886,7 +3903,7 @@ textarea {
 }
 .dash-wstat strong { font-size: 0.88rem; font-weight: 900; color: #111; }
 .dash-wstat span { font-size: 0.6rem; color: #bbb; font-weight: 700; text-transform: uppercase; }
-.dash-wstat-intensity strong { color: #fc4c02; }
+.dash-wstat-intensity strong { color: var(--orange); }
 
 /* Gauge SVG */
 .dash-workout-gauge {
@@ -3920,7 +3937,7 @@ textarea {
 .dash-workout-btns { display: flex; flex-direction: column; gap: 8px; }
 .dash-start-btn {
   width: 100%;
-  background: #fc4c02; color: #fff;
+  background: var(--orange); color: #fff;
   border: none; border-radius: 50px;
   padding: 13px 16px;
   font-size: 0.85rem; font-weight: 900; letter-spacing: .04em;
@@ -3957,14 +3974,14 @@ textarea {
   transition: border-color .2s, background .2s, color .2s;
 }
 .theme-btn.active {
-  border-color: #fc4c02;
-  color: #fc4c02;
+  border-color: var(--orange);
+  color: var(--orange);
   background: rgba(252,76,2,0.07);
 }
 
 /* ── Feed sorties récentes ──────────────────────────────────── */
 #dash-feed {
-  margin: 0 14px 14px;
+  margin: 0 var(--side) 14px;
 }
 .dash-feed-label {
   font-size: 0.58rem;
@@ -3975,12 +3992,12 @@ textarea {
   margin-bottom: 8px;
 }
 .dash-feed-card {
-  background: #fff;
-  border-radius: 16px;
-  border: 1px solid rgba(30,20,10,0.07);
+  background: var(--tile-bg);
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border);
   overflow: hidden;
-  margin-bottom: 8px;
-  box-shadow: var(--card-shadow, 0 2px 10px rgba(30,20,10,0.07));
+  margin-bottom: 10px;
+  box-shadow: var(--card-shadow);
 }
 .dash-feed-map {
   height: 60px;
@@ -4043,11 +4060,11 @@ textarea {
 
 /* ── Attelage du jour ───────────────────────────────────────── */
 .dash-team-strip {
-  background: #fff;
-  border-radius: 18px;
-  margin: 0 14px 20px;
+  background: var(--tile-bg);
+  border-radius: var(--card-radius);
+  margin: 0 var(--side) 16px;
   padding: 14px 16px;
-  box-shadow: var(--card-shadow, 0 4px 20px rgba(30,20,10,0.10));
+  box-shadow: var(--card-shadow);
 }
 .dash-team-strip-label {
   font-size: 0.58rem;
@@ -4100,16 +4117,16 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
-  border-radius: 18px;
-  margin: 0 14px 14px;
+  background: var(--tile-bg);
+  border-radius: var(--card-radius);
+  margin: 0 var(--side) 14px;
   padding: 14px 16px;
-  box-shadow: var(--card-shadow, 0 4px 20px rgba(30,20,10,0.10));
+  box-shadow: var(--card-shadow);
 }
 .dash-lastrun-left { display: flex; flex-direction: column; gap: 2px; }
 .dash-lastrun-eyebrow {
   font-size: 0.58rem; font-weight: 900; letter-spacing: .1em;
-  text-transform: uppercase; color: #fc4c02; margin: 0;
+  text-transform: uppercase; color: var(--orange); margin: 0;
 }
 .dash-lastrun-date {
   font-size: 0.78rem; color: #666; margin: 0; margin-top: 2px;
@@ -4133,11 +4150,11 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  background: #fff;
-  border-radius: 18px;
-  margin: 0 14px 20px;
+  background: var(--tile-bg);
+  border-radius: var(--card-radius);
+  margin: 0 var(--side) 16px;
   padding: 16px 12px;
-  box-shadow: var(--card-shadow, 0 4px 20px rgba(30,20,10,0.10));
+  box-shadow: var(--card-shadow);
 }
 .dash-kpi {
   display: flex;
@@ -4197,7 +4214,7 @@ textarea {
   width: 13px; height: 13px;
   stroke: #bbb; flex-shrink: 0;
 }
-.tile-icon-orange { stroke: #fc4c02; }
+.tile-icon-orange { stroke: var(--orange); }
 .tile-icon-blue   { stroke: #3b82f6; }
 .dash-tile-label {
   font-size: 0.48rem; font-weight: 900; letter-spacing: .08em;
@@ -4255,7 +4272,7 @@ textarea {
   display: flex; align-items: center; justify-content: center;
 }
 .dash-streak-dot.done {
-  background: #fc4c02;
+  background: var(--orange);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l3 3 5-5' stroke='white' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-size: 10px; background-repeat: no-repeat; background-position: center;
 }
@@ -4407,25 +4424,23 @@ textarea {
   margin-top: 10px;
 }
 
-/* ── Bottom nav premium ─────────────────────────────────────── */
+/* ── Bottom nav dark premium ─────────────────────────────────── */
 .bottom-nav {
-  background: rgba(255,255,255,0.96);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(30,20,10,0.08);
-  box-shadow: 0 -4px 24px rgba(30,20,10,0.08);
-  padding: 8px 0 env(safe-area-inset-bottom, 12px);
+  background: var(--nav-bg);
+  border-top: none;
+  box-shadow: 0 -1px 0 rgba(255,255,255,0.06);
+  padding: 6px 0 env(safe-area-inset-bottom, 14px);
 }
 .bottom-nav button {
   min-height: 52px;
-  font-size: 0.48rem; font-weight: 800;
-  letter-spacing: .02em; color: #bbb;
-  gap: 4px;
-  padding: 0 2px;
+  font-size: 0.46rem; font-weight: 700;
+  letter-spacing: .04em; color: var(--nav-icon-idle);
+  gap: 3px;
+  padding: 0 4px;
 }
-.bottom-nav button svg { width: 20px; height: 20px; stroke-width: 1.6; }
-.bottom-nav button.active { color: #fc4c02; }
-.bottom-nav button.active svg { stroke-width: 2.4; }
+.bottom-nav button svg { width: 22px; height: 22px; stroke-width: 1.6; stroke: currentColor; }
+.bottom-nav button.active { color: var(--nav-icon-active); }
+.bottom-nav button.active svg { stroke-width: 2.2; }
 
 /* ── Écran Vous ─────────────────────────────────────────────── */
 .vous-subtab-bar {
@@ -4451,8 +4466,8 @@ textarea {
   margin-bottom: -2px;
 }
 .vous-subtab.active {
-  color: #fc4c02;
-  border-bottom-color: #fc4c02;
+  color: var(--orange);
+  border-bottom-color: var(--orange);
 }
 .vous-subtab svg { opacity: 0.6; }
 .vous-subtab.active svg { opacity: 1; }
@@ -4467,12 +4482,12 @@ textarea {
 /* ── Autres screens — elevation cards ──────────────────────── */
 .quick-stats article {
   border-radius: 16px; box-shadow: 0 3px 14px rgba(0,0,0,0.07);
-  border: none; border-left: 3px solid #fc4c02;
+  border: none; border-left: 3px solid var(--orange);
 }
 .quick-stats strong { font-size: 1.75rem; font-weight: 900; letter-spacing: -0.03em; }
 .dog-list article, .run-list article, .mini-history article {
   border-radius: 16px; box-shadow: 0 3px 12px rgba(0,0,0,0.06);
-  border: none; border-left: 4px solid #fc4c02;
+  border: none; border-left: 4px solid var(--orange);
 }
 .plan-signal, .race-result, .agenda-card, .advice-card, .reminder-item, .open-run-card {
   border-radius: 16px; box-shadow: 0 3px 12px rgba(0,0,0,0.06);
