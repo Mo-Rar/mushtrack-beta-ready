@@ -127,88 +127,26 @@
           </div>
         </section>
 
-        <!-- ── 4 stat tiles ── -->
-        <div class="dash-tiles">
-          <!-- Tile 1 : équipe -->
-          <div class="dash-tile">
-            <div class="dash-tile-head">
-              <svg class="dash-tile-icon tile-icon-orange" viewBox="0 0 24 24" fill="#fc4c02" stroke="none"><ellipse cx="4.5" cy="6" rx="1.7" ry="2.4"/><ellipse cx="9" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="15" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="19.5" cy="6" rx="1.7" ry="2.4"/><path d="M12 9c-4.5 0-7.5 2.8-7.5 6.2 0 2.2 1.8 4.2 4 4.6 1 .2 2 .2 3.5.2s2.5 0 3.5-.2c2.2-.4 4-2.4 4-4.6C19.5 11.8 16.5 9 12 9z"/></svg>
-              <span class="dash-tile-label" data-t="dash_team_tile">ATTELAGE</span>
-            </div>
-            <strong class="dash-tile-team-count" data-bind="dashDogCount">—</strong>
-            <p class="dash-tile-team-health" data-bind="dashDogHealth">—</p>
-            <div class="dash-energy-row">
-              <span data-t="dash_avg_energy">Énergie moy.</span>
-              <div class="dash-energy-track"><span data-bind-style="dashDogEnergy"></span></div>
-              <span class="dash-energy-pct" data-bind="dashDogEnergyPct">—</span>
-            </div>
+        <!-- ── 3 chiffres clés ── -->
+        <div class="dash-kpi-row">
+          <div class="dash-kpi">
+            <svg viewBox="0 0 24 24" fill="#fc4c02" stroke="none" width="18" height="18"><ellipse cx="4.5" cy="6" rx="1.7" ry="2.4"/><ellipse cx="9" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="15" cy="3.5" rx="1.7" ry="2.4"/><ellipse cx="19.5" cy="6" rx="1.7" ry="2.4"/><path d="M12 9c-4.5 0-7.5 2.8-7.5 6.2 0 2.2 1.8 4.2 4 4.6 1 .2 2 .2 3.5.2s2.5 0 3.5-.2c2.2-.4 4-2.4 4-4.6C19.5 11.8 16.5 9 12 9z"/></svg>
+            <strong data-bind="dashDogCount">—</strong>
+            <span data-t="dash_team_tile">chiens</span>
           </div>
-          <!-- Tile 2 : conditions -->
-          <div class="dash-tile">
-            <div class="dash-tile-head">
-              <svg class="dash-tile-icon tile-icon-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
-              <span class="dash-tile-label" data-t="dash_conditions_tile">CONDITIONS</span>
-            </div>
-            <strong class="dash-tile-temp" data-bind="dashWeatherTemp">—</strong>
-            <p class="dash-tile-wind" data-bind="dashWeatherWind">—</p>
-            <p class="dash-tile-ground" data-bind="dashWeatherGround">—</p>
-            <p class="dash-tile-cond" data-bind="dashWeatherCond">—</p>
+          <div class="dash-kpi-divider"></div>
+          <div class="dash-kpi">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <strong data-bind="kpiWeek">0</strong>
+            <span>km / sem.</span>
           </div>
-          <!-- Tile 3 : cette semaine -->
-          <div class="dash-tile">
-            <div class="dash-tile-head">
-              <svg class="dash-tile-icon tile-icon-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-              <span class="dash-tile-label" data-t="dash_this_week_tile">CETTE SEMAINE</span>
-            </div>
-            <strong class="dash-tile-km" data-bind="kpiWeek">0 km</strong>
-            <p class="dash-tile-target" data-bind="kpiWeekSub">—</p>
-            <div class="dash-week-bar"><span data-bind-style="dashWeekBar"></span></div>
-            <span class="dash-week-pct" data-bind="dashWeekPct">—</span>
-          </div>
-          <!-- Tile 4 : série -->
-          <div class="dash-tile">
-            <div class="dash-tile-head">
-              <svg class="dash-tile-icon tile-icon-orange" viewBox="0 0 24 24" fill="#fc4c02" stroke="#fc4c02" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-              <span class="dash-tile-label" data-t="dash_streak_tile">SÉRIE</span>
-            </div>
-            <strong class="dash-tile-streak" data-bind="dashStreak">0 jours</strong>
-            <p class="dash-tile-streak-sub" data-bind="dashStreakSub">—</p>
-            <div class="dash-streak-dots"></div>
-          </div>
-          <!-- Tile 5 : forme attelage -->
-          <div class="dash-tile" id="dash-forme-tile" style="display:none">
-            <div class="dash-tile-head">
-              <svg class="dash-tile-icon tile-icon-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-              <span class="dash-tile-label">FORME</span>
-            </div>
-            <strong class="dash-tile-streak" id="dash-forme-score">—</strong>
-            <p class="dash-tile-streak-sub" id="dash-forme-label">—</p>
-            <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:6px">
-              <div id="dash-forme-bar" style="height:100%;border-radius:2px;background:#fc4c02;width:0%;transition:width .4s"></div>
-            </div>
+          <div class="dash-kpi-divider"></div>
+          <div class="dash-kpi">
+            <svg viewBox="0 0 24 24" fill="#fc4c02" stroke="#fc4c02" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <strong data-bind="dashStreak">0</strong>
+            <span data-t="dash_streak_tile">jours</span>
           </div>
         </div>
-
-
-        <!-- ── Graphique progression hebdomadaire ── -->
-        <section style="margin:0 14px 24px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <p style="font-size:0.68rem;font-weight:900;letter-spacing:.12em;color:#fc4c02;text-transform:uppercase">PROGRESSION KM / SEMAINE</p>
-          </div>
-          <div style="background:var(--tile-bg,#fff);border-radius:16px;padding:14px 12px 10px;box-shadow:0 2px 12px rgba(0,0,0,0.06)">
-            <canvas id="progress-chart" style="display:none;width:100%;border-radius:8px"></canvas>
-            <p id="chart-empty" class="hidden" style="color:#aaa;font-size:0.82rem;text-align:center;padding:18px 0">Aucune sortie enregistrée encore</p>
-          </div>
-        </section>
-
-        <!-- ── Partenaires ── -->
-        <section class="sponsor-banner" style="margin:0 14px 24px;justify-content:center">
-          <div class="sponsor-logos">
-            <a class="sponsor-logo" href="http://www.musherclub.ch/" target="_blank" rel="noopener"><img src="assets/sponsor-mcs.png" alt="Musher Club Suisse"/></a>
-            <div class="sponsor-divider"></div>
-            <a class="sponsor-logo" href="https://www.instagram.com/morardogteam.alaskan_kennel/" target="_blank" rel="noopener"><img src="assets/sponsor-morardog.png" alt="Morardog Team"/></a>
-          </div>
-        </section>
 
       </section>
 
