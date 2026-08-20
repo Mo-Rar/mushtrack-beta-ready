@@ -715,15 +715,6 @@
           <div id="race-map-card" style="display:none;margin-top:12px"></div>
         </div>
         <section id="admin-panel" hidden></section>
-
-        <!-- Classement communautaire -->
-        <section class="section-heading spaced" style="margin-top:20px">
-          <h2 data-t="race_leaderboard">Classement du mois</h2>
-          <span id="leaderboard-month"></span>
-        </section>
-        <div class="leaderboard-wrap" id="leaderboard-wrap">
-          <p class="leaderboard-loading" data-t="race_loading">Chargement…</p>
-        </div>
       </section>
 
       <section class="screen" id="agenda">
@@ -823,6 +814,15 @@
             <button class="community-tab" data-tab="challenges" data-t="net_challenges_tab">D&eacute;fis</button>
             <button class="community-tab" data-tab="clubs" data-t="net_clubs_tab">Clubs</button>
             <button class="community-tab" data-tab="map" data-t="net_map_tab">Carte</button>
+          </div>
+
+          <!-- Classement du mois -->
+          <section class="section-heading spaced" style="margin-top:4px">
+            <h2 data-t="race_leaderboard">Classement du mois</h2>
+            <span id="leaderboard-month" style="font-size:0.78rem;color:#aaa;font-weight:600"></span>
+          </section>
+          <div class="leaderboard-wrap" id="leaderboard-wrap" style="margin-bottom:20px">
+            <p class="leaderboard-loading" data-t="race_loading">Chargement…</p>
           </div>
 
           <!-- Fil -->
