@@ -6563,7 +6563,7 @@ function renderRaceSearch() {
   // Catalogue local : exclure les entrées sans date ET les courses cachées par l'admin
   const hiddenIds = new Set(state.hiddenRaceIds || []);
   const catalogWithDates = raceCatalog.filter((r) => r.date && !hiddenIds.has(r.id));
-  const mergedRaces = mergeRaceSources([...approvedRemote, ...catalogWithDates, ...reports]);
+  const mergedRaces = mergeRaceSources([...catalogWithDates, ...reports, ...approvedRemote]);
   const results = mergedRaces.filter((race) => {
     if (!race.date) return false; // n'affiche que les courses avec une date précise
     const regionText = `${race.region} ${race.location} ${race.name} ${race.source} ${race.notes}`.toLowerCase();
@@ -6754,7 +6754,7 @@ function renderRaceSearch() {
 
   list.querySelectorAll("[data-open-race-source]").forEach((button) => {
     button.addEventListener("click", () => {
-      const race = mergeRaceSources([...remoteRaceCatalog, ...raceCatalog, ...state.missingRaceReports])
+      const race = mergeRaceSources([...raceCatalog, ...state.missingRaceReports, ...remoteRaceCatalog])
         .find((item) => item.id === button.dataset.openRaceSource);
       if (race?.url) window.open(race.url, "_blank", "noopener");
     });
@@ -6941,7 +6941,7 @@ function requireProfile() {
 
 async function toggleRaceInterest(id) {
   if (!requireProfile()) return;
-  const merged = mergeRaceSources([...remoteRaceCatalog, ...raceCatalog, ...state.missingRaceReports]);
+  const merged = mergeRaceSources([...raceCatalog, ...state.missingRaceReports, ...remoteRaceCatalog]);
   const race = merged.find((item) => item.id === id);
   const willBeInterested = !state.raceInterests[id];
 
@@ -7078,7 +7078,7 @@ function getReliabilityLabel(value) {
 
 async function importRaceToAgenda(id) {
   if (!requireProfile()) return;
-  const race = mergeRaceSources([...remoteRaceCatalog, ...raceCatalog, ...state.missingRaceReports])
+  const race = mergeRaceSources([...raceCatalog, ...state.missingRaceReports, ...remoteRaceCatalog])
     .find((item) => item.id === id);
   if (!race || !race.date) return;
 
@@ -11886,7 +11886,7 @@ async function initRaceMap() {
   const approvedRemote = remoteRaceCatalog.filter(r => !r.status || r.status === "approved");
   const catalogWithDates = raceCatalog.filter(r => r.date && !hiddenIds.has(r.id));
   const reports = state.missingRaceReports.filter(r => r.status !== "pending");
-  const races = mergeRaceSources([...approvedRemote, ...catalogWithDates, ...reports])
+  const races = mergeRaceSources([...catalogWithDates, ...reports, ...approvedRemote])
     .filter(r => r.date);
 
   const cardEl = document.getElementById("race-map-card");
