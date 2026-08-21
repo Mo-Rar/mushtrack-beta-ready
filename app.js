@@ -164,13 +164,87 @@ function addUserBar(email) {
 }
 
 async function initAuth() {
-  if (!supabase) return; // Supabase non disponible
+  if (!supabase) return;
+
+  // Détecte le flow de réinitialisation de mot de passe
+  // Supabase redirige avec #type=recovery&access_token=...
+  const hash = window.location.hash;
+  if (hash.includes("type=recovery")) {
+    showResetPasswordOverlay();
+    // Nettoyer le hash de l'URL sans recharger
+    history.replaceState(null, "", window.location.pathname);
+    return;
+  }
+
+  // Écoute l'événement PASSWORD_RECOVERY (fallback pour certains clients)
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === "PASSWORD_RECOVERY") showResetPasswordOverlay();
+  });
+
   const { data } = await supabase.auth.getSession();
   if (data.session?.user) {
     onAuthSuccess(data.session.user);
   } else {
     showAuthOverlay();
   }
+}
+
+function showResetPasswordOverlay() {
+  const existing = document.getElementById("reset-pwd-overlay");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "reset-pwd-overlay";
+  overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px";
+  overlay.innerHTML = `
+    <div style="background:var(--card-bg,#fff);border-radius:16px;padding:28px 24px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,0.2)">
+      <h2 style="margin:0 0 6px;font-size:1.2rem;font-weight:800">Nouveau mot de passe</h2>
+      <p style="margin:0 0 20px;font-size:0.85rem;color:#888">Choisis un nouveau mot de passe pour ton compte.</p>
+      <input id="reset-pwd-input" type="password" placeholder="Nouveau mot de passe (min. 6 caractères)"
+        style="width:100%;box-sizing:border-box;padding:12px;border:1.5px solid #ddd;border-radius:10px;font-size:1rem;margin-bottom:8px" />
+      <input id="reset-pwd-confirm" type="password" placeholder="Confirmer le mot de passe"
+        style="width:100%;box-sizing:border-box;padding:12px;border:1.5px solid #ddd;border-radius:10px;font-size:1rem;margin-bottom:12px" />
+      <div id="reset-pwd-msg" style="display:none;font-size:0.82rem;margin-bottom:10px;padding:8px 12px;border-radius:8px"></div>
+      <button id="reset-pwd-submit" style="width:100%;padding:13px;background:#fc4c02;color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer">Enregistrer le mot de passe</button>
+    </div>`;
+
+  document.body.appendChild(overlay);
+
+  document.getElementById("reset-pwd-submit").addEventListener("click", async () => {
+    const pwd = document.getElementById("reset-pwd-input").value;
+    const confirm = document.getElementById("reset-pwd-confirm").value;
+    const msg = document.getElementById("reset-pwd-msg");
+    const btn = document.getElementById("reset-pwd-submit");
+
+    if (pwd.length < 6) {
+      msg.style.display = "block"; msg.style.background = "#fde8e8"; msg.style.color = "#c0392b";
+      msg.textContent = "Le mot de passe doit contenir au moins 6 caractères.";
+      return;
+    }
+    if (pwd !== confirm) {
+      msg.style.display = "block"; msg.style.background = "#fde8e8"; msg.style.color = "#c0392b";
+      msg.textContent = "Les mots de passe ne correspondent pas.";
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = "Enregistrement…";
+    const { error } = await supabase.auth.updateUser({ password: pwd });
+    if (error) {
+      msg.style.display = "block"; msg.style.background = "#fde8e8"; msg.style.color = "#c0392b";
+      msg.textContent = "Erreur : " + error.message;
+      btn.disabled = false; btn.textContent = "Enregistrer le mot de passe";
+    } else {
+      msg.style.display = "block"; msg.style.background = "#e8f5e9"; msg.style.color = "#2e7d32";
+      msg.textContent = "✅ Mot de passe mis à jour ! Connexion en cours…";
+      setTimeout(() => {
+        overlay.remove();
+        const { data } = supabase.auth.getSession().then(({ data }) => {
+          if (data.session?.user) onAuthSuccess(data.session.user);
+          else showAuthOverlay();
+        });
+      }, 1500);
+    }
+  });
 }
 
 initAuth();
