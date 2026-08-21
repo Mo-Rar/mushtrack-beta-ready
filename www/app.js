@@ -6613,7 +6613,7 @@ function renderRaceSearch() {
   if (!list) return;
 
   const region = document.querySelector("#race-search-region")?.value.trim().toLowerCase() || "";
-  const type = document.querySelector("#race-search-type")?.value || "";
+  const type = _activeRaceType;
   const distance = document.querySelector("#race-search-distance")?.value || "";
   const surface = document.querySelector("#race-search-surface")?.value || "";
   const reliability = document.querySelector("#race-search-reliability")?.value || "";
@@ -6641,7 +6641,9 @@ function renderRaceSearch() {
   const results = mergedRaces.filter((race) => {
     if (!race.date) return false; // n'affiche que les courses avec une date précise
     const regionText = `${race.region} ${race.location} ${race.name} ${race.source} ${race.notes}`.toLowerCase();
-    const typeMatch = !type || race.type === type || (type === "Dryland" && ["Canicross", "Dryland"].includes(race.type));
+    const RACE_TYPE_MATCHES = { "Sprint":["Sprint"], "Mid-distance":["Mid-distance","Mid distance"], "Long-distance":["Long-distance","Longue distance","Long distance"], "Canicross":["Canicross"], "Dryland":["Dryland"], "Skijoring":["Skijoring","Ski-joring"] };
+    const typeMatchList = type ? (RACE_TYPE_MATCHES[type] || [type]) : null;
+    const typeMatch = !typeMatchList || typeMatchList.includes(race.type);
     const regionMatch = !region || regionText.includes(region);
     const surfaceMatch = !surface || String(race.surface || "").includes(surface);
     const reliabilityMatch = !reliability || race.reliability === reliability;
@@ -6667,6 +6669,13 @@ function renderRaceSearch() {
   }).sort((a, b) => getReliabilityRank(a.reliability) - getReliabilityRank(b.reliability));
 
   const radarMeta = ""; // radar supprimé
+
+  const RACE_TYPES_ORDER = ["Sprint", "Mid-distance", "Long-distance", "Canicross", "Dryland", "Skijoring"];
+  const typeTabsHtml = `<div class="race-type-tabs">${
+    [["", "Toutes"], ...RACE_TYPES_ORDER.map(t => [t, t])].map(([val, label]) =>
+      `<button class="race-type-tab${val === _activeRaceType ? " active" : ""}" data-race-type="${val}">${label}</button>`
+    ).join("")
+  }</div>`;
 
   // Helper : construit la carte HTML d'une course
   function buildRaceCard(race, pinned = false) {
@@ -6722,8 +6731,8 @@ function renderRaceSearch() {
             <div>
               <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Type</label>
               <select class="admin-edit-type" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem">
-                ${["Sprint","Mid-distance","Longue distance","Canicross","Dryland"].map(tp =>
-                  `<option value="${tp}" ${race.type === tp ? "selected" : ""}>${tp}</option>`
+                ${["Sprint","Mid-distance","Long-distance","Canicross","Dryland","Skijoring"].map(tp =>
+                  `<option value="${tp}" ${(race.type === tp || (tp==="Long-distance" && race.type==="Longue distance")) ? "selected" : ""}>${tp}</option>`
                 ).join("")}
               </select>
             </div>
@@ -6742,7 +6751,7 @@ function renderRaceSearch() {
   }
 
   if (results.length === 0) {
-    list.innerHTML = radarMeta + `<p class="empty-state">${t('race_none_found')}</p>`;
+    list.innerHTML = typeTabsHtml + radarMeta + `<p class="empty-state">${t('race_none_found')}</p>`;
   } else {
     // Séparer les courses sélectionnées (intérêt marqué) des autres
     const pinned = results.filter((r) => state.raceInterests[r.id]);
@@ -6800,7 +6809,7 @@ function renderRaceSearch() {
         </div>
       `;}).join("");
 
-    list.innerHTML = radarMeta + pinnedHtml + (countriesHtml || "");
+    list.innerHTML = typeTabsHtml + radarMeta + pinnedHtml + (countriesHtml || "");
 
     // Accordéon : toggle au clic sur l'en-tête pays
     list.querySelectorAll(".race-country-header[data-country]").forEach((btn) => {
@@ -6813,6 +6822,14 @@ function renderRaceSearch() {
       });
     });
   }
+
+  // Onglets type de course
+  list.querySelectorAll("[data-race-type]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      _activeRaceType = btn.dataset.raceType;
+      renderRaceSearch();
+    });
+  });
 
   // Partager la liste de souhaits
   list.querySelector("#share-wishlist-btn")?.addEventListener("click", () => {
@@ -7106,7 +7123,7 @@ function mergeRaceSources(items) {
 async function fetchRaceRadar(forceRefresh = false) {
   if (raceRadarLoading) return;
   const region = document.querySelector("#race-search-region")?.value.trim() || "";
-  const type = document.querySelector("#race-search-type")?.value || "";
+  const type = _activeRaceType;
   const distance = document.querySelector("#race-search-distance")?.value || "";
   const surface = document.querySelector("#race-search-surface")?.value || "";
   const reliability = document.querySelector("#race-search-reliability")?.value || "";
@@ -9643,7 +9660,7 @@ function formatCoachMarkdown(text) {
     .replace(/<p><\/p>/g, "");
 }
 
-["race-search-region", "race-search-type", "race-search-distance", "race-search-surface", "race-search-reliability", "race-search-period"].forEach((id) => {
+["race-search-region", "race-search-distance", "race-search-surface", "race-search-reliability", "race-search-period"].forEach((id) => {
   document.querySelector(`#${id}`)?.addEventListener("input", () => {
     renderRaceSearch();
     fetchRaceRadar();
@@ -9656,6 +9673,7 @@ function formatCoachMarkdown(text) {
 
 document.querySelector("#missing-race-button")?.addEventListener("click", reportMissingRace);
 
+let _activeRaceType = "";
 let _wishlistFilterActive = false;
 document.querySelector("#wishlist-filter-btn")?.addEventListener("click", () => {
   _wishlistFilterActive = !_wishlistFilterActive;

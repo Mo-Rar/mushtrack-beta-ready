@@ -2727,6 +2727,37 @@ textarea {
   gap: 10px;
 }
 
+/* ── Onglets type de course ───────────────────────────────── */
+.race-type-tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 6px;
+  padding: 4px 16px 12px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.race-type-tabs::-webkit-scrollbar { display: none; }
+.race-type-tab {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--tile-bg);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+  white-space: nowrap;
+}
+.race-type-tab.active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
+}
+body.dark-mode .race-type-tab { background: var(--tile-bg); }
+body.dark-mode .race-type-tab.active { background: var(--orange); color: #fff; }
+
 /* ── Groupe pays (accordéon) ──────────────────────────────── */
 .race-country-group {
   margin-bottom: 4px;
