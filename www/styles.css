@@ -2728,22 +2728,34 @@ textarea {
 }
 
 /* ── Onglets type de course ───────────────────────────────── */
+.race-type-tabs-wrap {
+  position: relative;
+  overflow: hidden;
+}
+.race-type-tabs-wrap::after {
+  content: "";
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 36px;
+  background: linear-gradient(to right, transparent, var(--tile-bg));
+  pointer-events: none;
+}
 .race-type-tabs {
   display: flex;
   overflow-x: auto;
   gap: 6px;
-  padding: 4px 16px 12px;
+  padding: 8px 40px 10px 14px;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 .race-type-tabs::-webkit-scrollbar { display: none; }
 .race-type-tab {
   flex-shrink: 0;
-  padding: 6px 14px;
+  padding: 5px 12px;
   border-radius: 20px;
   border: 1.5px solid var(--border);
   background: var(--tile-bg);
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 700;
   color: var(--text-muted);
   cursor: pointer;
@@ -2755,6 +2767,7 @@ textarea {
   border-color: var(--orange);
   color: #fff;
 }
+body.dark-mode .race-type-tabs-wrap::after { background: linear-gradient(to right, transparent, var(--tile-bg)); }
 body.dark-mode .race-type-tab { background: var(--tile-bg); }
 body.dark-mode .race-type-tab.active { background: var(--orange); color: #fff; }
 

@@ -6673,11 +6673,11 @@ function renderRaceSearch() {
   const RACE_TYPES_ORDER = ["Sprint", "Mid-distance", "Long-distance", "Canicross", "Dryland", "Skijoring"];
   const RACE_TYPE_ALIASES = { "Sprint":["Sprint"], "Mid-distance":["Mid-distance","Mid distance"], "Long-distance":["Long-distance","Longue distance","Long distance"], "Canicross":["Canicross"], "Dryland":["Dryland"], "Skijoring":["Skijoring","Ski-joring"] };
   function buildCountryTypeTabs() {
-    return `<div class="race-type-tabs">${
+    return `<div class="race-type-tabs-wrap"><div class="race-type-tabs">${
       [["", "Toutes"], ...RACE_TYPES_ORDER.map(t => [t, t])].map(([val, label]) =>
         `<button class="race-type-tab${val === _activeRaceType ? " active" : ""}" data-race-type-filter="${val}">${label}</button>`
       ).join("")
-    }</div>`;
+    }</div></div>`;
   }
   function applyRaceTypeFilter() {
     const allowed = _activeRaceType ? (RACE_TYPE_ALIASES[_activeRaceType] || [_activeRaceType]) : null;
@@ -7282,7 +7282,7 @@ function reportMissingRace() {
             <option value="">— choisir —</option>
             <option value="Sprint">Sprint</option>
             <option value="Mid-distance">Mid-distance</option>
-            <option value="Longue distance">Longue distance</option>
+            <option value="Long-distance">Long-distance</option>
             <option value="Canicross">Canicross</option>
             <option value="Dryland">Dryland</option>
             <option value="Skijoring">Skijoring</option>
@@ -7496,7 +7496,7 @@ function renderAdminPanelData(panel, { data: pendingData, error: pendingError },
       ${detectedRaces.map(race => {
         const parentName = race.source && !race.source.startsWith("http") ? race.source : "";
         const noteShort = (race.notes || "").replace(/^Détection automatique — /, "");
-        const TYPES = ["Sprint","Mid-distance","Longue distance","Canicross","Dryland"];
+        const TYPES = ["Sprint","Mid-distance","Long-distance","Canicross","Dryland","Skijoring"];
         return `
         <article class="admin-race-card" data-detected-id="${race.id}">
           <div class="admin-race-info">
