@@ -6673,11 +6673,12 @@ function renderRaceSearch() {
   const RACE_TYPES_ORDER = ["Sprint", "Mid-distance", "Long-distance", "Canicross", "Dryland", "Skijoring"];
   const RACE_TYPE_ALIASES = { "Sprint":["Sprint"], "Mid-distance":["Mid-distance","Mid distance"], "Long-distance":["Long-distance","Longue distance","Long distance"], "Canicross":["Canicross"], "Dryland":["Dryland"], "Skijoring":["Skijoring","Ski-joring"] };
   function buildCountryTypeTabs() {
-    return `<div class="race-type-tabs-wrap"><div class="race-type-tabs">${
-      [["", "Toutes"], ...RACE_TYPES_ORDER.map(t => [t, t])].map(([val, label]) =>
-        `<button class="race-type-tab${val === _activeRaceType ? " active" : ""}" data-race-type-filter="${val}">${label}</button>`
-      ).join("")
-    }</div></div>`;
+    return `<div class="race-type-select-wrap">
+      <select class="race-type-select" data-race-type-select>
+        <option value="">🏁 Tous les types</option>
+        ${RACE_TYPES_ORDER.map(t => `<option value="${t}"${t === _activeRaceType ? " selected" : ""}>${t}</option>`).join("")}
+      </select>
+    </div>`;
   }
   function applyRaceTypeFilter() {
     const allowed = _activeRaceType ? (RACE_TYPE_ALIASES[_activeRaceType] || [_activeRaceType]) : null;
@@ -6834,15 +6835,11 @@ function renderRaceSearch() {
     });
   }
 
-  // Onglets type de course — filtrage en-place (accordéon reste ouvert)
-  list.querySelectorAll("[data-race-type-filter]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      _activeRaceType = btn.dataset.raceTypeFilter;
-      list.querySelectorAll("[data-race-type-filter]").forEach(b =>
-        b.classList.toggle("active", b.dataset.raceTypeFilter === _activeRaceType)
-      );
-      applyRaceTypeFilter();
-    });
+  // Select type de course — filtrage en-place (accordéon reste ouvert)
+  list.querySelector("[data-race-type-select]")?.addEventListener("change", (e) => {
+    _activeRaceType = e.target.value;
+    list.querySelectorAll("[data-race-type-select]").forEach(s => { s.value = _activeRaceType; });
+    applyRaceTypeFilter();
   });
   applyRaceTypeFilter();
 

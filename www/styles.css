@@ -2727,49 +2727,21 @@ textarea {
   gap: 10px;
 }
 
-/* ── Onglets type de course ───────────────────────────────── */
-.race-type-tabs-wrap {
-  position: relative;
-  overflow: hidden;
+/* ── Sélecteur type de course ─────────────────────────────── */
+.race-type-select-wrap {
+  padding: 8px 14px 10px;
 }
-.race-type-tabs-wrap::after {
-  content: "";
-  position: absolute;
-  right: 0; top: 0; bottom: 0;
-  width: 36px;
-  background: linear-gradient(to right, transparent, var(--tile-bg));
-  pointer-events: none;
-}
-.race-type-tabs {
-  display: flex;
-  overflow-x: auto;
-  gap: 6px;
-  padding: 8px 40px 10px 14px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.race-type-tabs::-webkit-scrollbar { display: none; }
-.race-type-tab {
-  flex-shrink: 0;
-  padding: 5px 12px;
-  border-radius: 20px;
+.race-type-select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
   border: 1.5px solid var(--border);
   background: var(--tile-bg);
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: var(--text-muted);
+  color: var(--text-main);
+  font-size: 0.84rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background .15s, color .15s, border-color .15s;
-  white-space: nowrap;
 }
-.race-type-tab.active {
-  background: var(--orange);
-  border-color: var(--orange);
-  color: #fff;
-}
-body.dark-mode .race-type-tabs-wrap::after { background: linear-gradient(to right, transparent, var(--tile-bg)); }
-body.dark-mode .race-type-tab { background: var(--tile-bg); }
-body.dark-mode .race-type-tab.active { background: var(--orange); color: #fff; }
 
 /* ── Groupe pays (accordéon) ──────────────────────────────── */
 .race-country-group {
