@@ -2,6 +2,10 @@
   "appId": "com.mushtrack.app",
   "appName": "MushTrack",
   "webDir": "www",
+  "server": {
+    "url": "https://mushtrack-beta-ready.vercel.app",
+    "cleartext": false
+  },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 0,
