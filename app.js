@@ -6671,11 +6671,20 @@ function renderRaceSearch() {
   const radarMeta = ""; // radar supprimé
 
   const RACE_TYPES_ORDER = ["Sprint", "Mid-distance", "Long-distance", "Canicross", "Dryland", "Skijoring"];
-  const typeTabsHtml = `<div class="race-type-tabs">${
-    [["", "Toutes"], ...RACE_TYPES_ORDER.map(t => [t, t])].map(([val, label]) =>
-      `<button class="race-type-tab${val === _activeRaceType ? " active" : ""}" data-race-type="${val}">${label}</button>`
-    ).join("")
-  }</div>`;
+  const RACE_TYPE_ALIASES = { "Sprint":["Sprint"], "Mid-distance":["Mid-distance","Mid distance"], "Long-distance":["Long-distance","Longue distance","Long distance"], "Canicross":["Canicross"], "Dryland":["Dryland"], "Skijoring":["Skijoring","Ski-joring"] };
+  function buildCountryTypeTabs() {
+    return `<div class="race-type-tabs">${
+      [["", "Toutes"], ...RACE_TYPES_ORDER.map(t => [t, t])].map(([val, label]) =>
+        `<button class="race-type-tab${val === _activeRaceType ? " active" : ""}" data-race-type-filter="${val}">${label}</button>`
+      ).join("")
+    }</div>`;
+  }
+  function applyRaceTypeFilter() {
+    const allowed = _activeRaceType ? (RACE_TYPE_ALIASES[_activeRaceType] || [_activeRaceType]) : null;
+    list.querySelectorAll("article[data-race-id]").forEach(a => {
+      a.style.display = (!allowed || allowed.includes(a.dataset.raceType)) ? "" : "none";
+    });
+  }
 
   // Helper : construit la carte HTML d'une course
   function buildRaceCard(race, pinned = false) {
@@ -6688,7 +6697,7 @@ function renderRaceSearch() {
       <button class="admin-race-delete-btn text-button" data-admin-delete="${race.id}" type="button" title="Supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
     ` : "";
     return `
-      <article class="race-result ${race.reliability || "calendar"}${pinned ? " pinned" : ""}" data-race-id="${race.id}">
+      <article class="race-result ${race.reliability || "calendar"}${pinned ? " pinned" : ""}" data-race-id="${race.id}" data-race-type="${race.type || ""}">
         ${pinnedBadge}
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px">
           <div>
@@ -6751,7 +6760,7 @@ function renderRaceSearch() {
   }
 
   if (results.length === 0) {
-    list.innerHTML = typeTabsHtml + radarMeta + `<p class="empty-state">${t('race_none_found')}</p>`;
+    list.innerHTML = radarMeta + `<p class="empty-state">${t('race_none_found')}</p>`;
   } else {
     // Séparer les courses sélectionnées (intérêt marqué) des autres
     const pinned = results.filter((r) => state.raceInterests[r.id]);
@@ -6804,12 +6813,13 @@ function renderRaceSearch() {
             <svg class="country-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div class="race-country-body" hidden>
+            ${buildCountryTypeTabs()}
             ${races.map((r) => buildRaceCard(r, false)).join("")}
           </div>
         </div>
       `;}).join("");
 
-    list.innerHTML = typeTabsHtml + radarMeta + pinnedHtml + (countriesHtml || "");
+    list.innerHTML = radarMeta + pinnedHtml + (countriesHtml || "");
 
     // Accordéon : toggle au clic sur l'en-tête pays
     list.querySelectorAll(".race-country-header[data-country]").forEach((btn) => {
@@ -6819,17 +6829,22 @@ function renderRaceSearch() {
         body.hidden = open;
         btn.setAttribute("aria-expanded", String(!open));
         btn.classList.toggle("open", !open);
+        if (!open) applyRaceTypeFilter();
       });
     });
   }
 
-  // Onglets type de course
-  list.querySelectorAll("[data-race-type]").forEach((btn) => {
+  // Onglets type de course — filtrage en-place (accordéon reste ouvert)
+  list.querySelectorAll("[data-race-type-filter]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      _activeRaceType = btn.dataset.raceType;
-      renderRaceSearch();
+      _activeRaceType = btn.dataset.raceTypeFilter;
+      list.querySelectorAll("[data-race-type-filter]").forEach(b =>
+        b.classList.toggle("active", b.dataset.raceTypeFilter === _activeRaceType)
+      );
+      applyRaceTypeFilter();
     });
   });
+  applyRaceTypeFilter();
 
   // Partager la liste de souhaits
   list.querySelector("#share-wishlist-btn")?.addEventListener("click", () => {
