@@ -16,9 +16,13 @@ const seedRaces = [
   id, name, date, type, distance, region, location, source, reliability, surface, url, notes
 }));
 
+// Clé anon publique — identique à app.js (lecture seule, déjà exposée côté client)
+const SUPABASE_URL_DEFAULT = "https://ipfnldjrpocceptavvaf.supabase.co";
+const SUPABASE_KEY_DEFAULT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwZm5sZGpycG9jY2VwdGF2dmFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDk0MTQsImV4cCI6MjA5NjYyNTQxNH0.FVkq0EooacG7lETDAwxJ-ArocxUYFVZVfhxdhyWFhrI";
+
 async function fetchFromSupabase(filters) {
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const SUPABASE_URL = process.env.SUPABASE_URL || SUPABASE_URL_DEFAULT;
+  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_KEY_DEFAULT;
   if (!SUPABASE_URL || !SUPABASE_KEY) return null;
 
   try {
