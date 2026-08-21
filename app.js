@@ -3456,7 +3456,63 @@ function render() {
   renderProgressChart();
   renderReminders();
   renderBadges();
+  renderVousMusherCard();
   applyLang();
+}
+
+function renderVousMusherCard() {
+  const el = document.getElementById("vous-musher-card");
+  if (!el) return;
+
+  const name   = state.profile?.name   || "";
+  const region = state.profile?.region || "";
+  const level  = state.profile?.level  || "";
+  const nbDogs = state.dogs.length;
+
+  const activeSeason = (state.seasons || []).find(s => !s.endDate);
+  let km = 0, nbRuns = 0, label = "Total";
+  if (activeSeason) {
+    const runs = getSeasonRuns(activeSeason);
+    km     = runs.reduce((s, r) => s + Number(r.km || 0), 0);
+    nbRuns = runs.length;
+    label  = activeSeason.name || "Saison";
+  } else {
+    km     = (state.runs || []).reduce((s, r) => s + Number(r.km || 0), 0);
+    nbRuns = (state.runs || []).length;
+  }
+
+  const dark = document.body.classList.contains("dark-mode");
+  const bg   = dark
+    ? "linear-gradient(135deg,#b83700,#8a2700)"
+    : "linear-gradient(135deg,#fc4c02,#e03a00)";
+
+  el.innerHTML = `
+    <div style="background:${bg};border-radius:16px;padding:16px;color:#fff">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+        <div>
+          <div style="font-size:${name ? "1.15rem" : "0.85rem"};font-weight:800;line-height:1.2;opacity:${name ? "1" : "0.6"}">${name || "Musher sans pseudo"}</div>
+          ${(region || level) ? `<div style="font-size:0.72rem;opacity:0.8;margin-top:4px">${[region,level].filter(Boolean).join(" · ")}</div>` : ""}
+        </div>
+        <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:.06em;opacity:0.7;text-align:right;line-height:1.4;padding-top:2px">${label}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:rgba(0,0,0,0.18);border-radius:10px;padding:10px;margin-bottom:10px">
+        <div style="text-align:center">
+          <div style="font-size:1.3rem;font-weight:800">${Math.round(km)}</div>
+          <div style="font-size:0.64rem;opacity:0.75;margin-top:2px">km</div>
+        </div>
+        <div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)">
+          <div style="font-size:1.3rem;font-weight:800">${nbRuns}</div>
+          <div style="font-size:0.64rem;opacity:0.75;margin-top:2px">sorties</div>
+        </div>
+        <div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)">
+          <div style="font-size:1.3rem;font-weight:800">${nbDogs}</div>
+          <div style="font-size:0.64rem;opacity:0.75;margin-top:2px">chiens</div>
+        </div>
+      </div>
+      <button id="vous-musher-edit-btn" style="width:100%;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);border-radius:8px;color:#fff;font-size:0.78rem;font-weight:700;padding:7px;cursor:pointer;letter-spacing:.02em">Modifier le profil</button>
+    </div>`;
+
+  el.querySelector("#vous-musher-edit-btn")?.addEventListener("click", () => showScreen("settings"));
 }
 
 function renderBadges() {
@@ -3687,6 +3743,9 @@ function renderDogs() {
     const totalKm = getDogTotalKm(dog.id);
     const readiness = getDogReadiness(dog);
     const loadPct = Math.min(100, load * 2);
+    const lastRun = [...state.runs]
+      .filter(r => Array.isArray(r.team) && r.team.includes(dog.id) && r.date)
+      .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
     const photoHtml = dog.photoDataUrl
       ? `<img src="${dog.photoDataUrl}" class="dog-avatar-photo" alt="${dog.name}" />`
       : `<div class="dog-avatar-initial">${dog.name.charAt(0).toUpperCase()}</div>`;
@@ -3705,6 +3764,7 @@ function renderDogs() {
         <span class="dog-card-week">${load.toFixed(1).replace(".", ",")} km / sem.</span>
         <span class="dog-card-status dog-status-${readiness.level}">${readiness.title}</span>
       </div>
+      ${lastRun ? `<div class="dog-card-last-run">Dernière sortie : ${formatDate(lastRun.date)}</div>` : ""}
     </article>
   `}).join("");
 
@@ -7383,9 +7443,10 @@ function renderAgenda() {
   const agendaHtml = items.map((item) => {
     const days = daysUntil(item.date);
     const status = days < 0 ? t('agenda_passed') : days === 0 ? t('agenda_today') : t('agenda_in_days').replace('{n}', days).replace('{s}', days > 1 ? "s" : "");
-    const isRace = item.kind === "race" || item.sourceId;
+    const isImportedRace = item.kind === "race" || !!item.sourceId;
+    const isRace = isImportedRace || item.category === "course";
     const icon = EVENT_ICONS[item.category || (isRace ? "race" : "autre")] || "📌";
-    const subtitle = isRace
+    const subtitle = isImportedRace
       ? `${item.type || ""} · ${item.distance ? item.distance + " km" : ""} · ${item.location || ""}`
       : item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : t('agenda_event');
     const notesHtml = item.notes ? `<p class="agenda-notes">${item.notes}</p>` : "";

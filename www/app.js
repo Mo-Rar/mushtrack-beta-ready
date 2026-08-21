@@ -3495,7 +3495,7 @@ function renderVousMusherCard() {
         </div>
         <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:.06em;opacity:0.7;text-align:right;line-height:1.4;padding-top:2px">${label}</div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:rgba(0,0,0,0.18);border-radius:10px;padding:10px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:rgba(0,0,0,0.18);border-radius:10px;padding:10px;margin-bottom:10px">
         <div style="text-align:center">
           <div style="font-size:1.3rem;font-weight:800">${Math.round(km)}</div>
           <div style="font-size:0.64rem;opacity:0.75;margin-top:2px">km</div>
@@ -3509,7 +3509,10 @@ function renderVousMusherCard() {
           <div style="font-size:0.64rem;opacity:0.75;margin-top:2px">chiens</div>
         </div>
       </div>
+      <button id="vous-musher-edit-btn" style="width:100%;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);border-radius:8px;color:#fff;font-size:0.78rem;font-weight:700;padding:7px;cursor:pointer;letter-spacing:.02em">Modifier le profil</button>
     </div>`;
+
+  el.querySelector("#vous-musher-edit-btn")?.addEventListener("click", () => showScreen("settings"));
 }
 
 function renderBadges() {
@@ -7440,9 +7443,10 @@ function renderAgenda() {
   const agendaHtml = items.map((item) => {
     const days = daysUntil(item.date);
     const status = days < 0 ? t('agenda_passed') : days === 0 ? t('agenda_today') : t('agenda_in_days').replace('{n}', days).replace('{s}', days > 1 ? "s" : "");
-    const isRace = item.kind === "race" || item.sourceId;
+    const isImportedRace = item.kind === "race" || !!item.sourceId;
+    const isRace = isImportedRace || item.category === "course";
     const icon = EVENT_ICONS[item.category || (isRace ? "race" : "autre")] || "📌";
-    const subtitle = isRace
+    const subtitle = isImportedRace
       ? `${item.type || ""} · ${item.distance ? item.distance + " km" : ""} · ${item.location || ""}`
       : item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : t('agenda_event');
     const notesHtml = item.notes ? `<p class="agenda-notes">${item.notes}</p>` : "";
