@@ -6835,8 +6835,9 @@ function renderRaceSearch() {
     });
   }
 
-  // Select type de course — filtrage en-place (accordéon reste ouvert)
-  list.querySelector("[data-race-type-select]")?.addEventListener("change", (e) => {
+  // Select type de course — délégation sur list (fonctionne pour tous les pays)
+  list.addEventListener("change", (e) => {
+    if (!e.target.matches("[data-race-type-select]")) return;
     _activeRaceType = e.target.value;
     list.querySelectorAll("[data-race-type-select]").forEach(s => { s.value = _activeRaceType; });
     applyRaceTypeFilter();
