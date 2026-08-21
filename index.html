@@ -174,6 +174,11 @@
         <div class="strava-map-wrap">
           <div id="map"></div>
 
+          <!-- Bouton recentrer (visible uniquement si l'utilisateur a bougé la carte) -->
+          <button id="gps-recenter-btn" aria-label="Recentrer sur ma position" style="display:none;position:absolute;bottom:16px;right:16px;z-index:500;width:40px;height:40px;background:#fff;border:none;border-radius:50%;box-shadow:0 2px 10px rgba(0,0,0,0.2);align-items:center;justify-content:center;cursor:pointer;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fc4c02" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-opacity="0.3"/></svg>
+          </button>
+
           <!-- Header flottant sur la carte -->
           <div class="strava-topbar">
             <button class="strava-back-btn" data-go="dashboard" aria-label="Retour">

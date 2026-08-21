@@ -2634,11 +2634,18 @@ let maxSpeed = 0;
 let minAlt = null, maxAlt = null;
 let pendingRunSummary = null;
 // Wall-clock run tracking (résistant au throttling Android)
-let runStartTime = null;   // Date.now() au démarrage
+let runStartTime = null;   // Date.now() quand GPS prêt + chrono démarré
 let totalPausedMs = 0;     // ms de pause cumulées
 let pauseStartTime = null; // Date.now() au début de la pause courante
 let isPaused = false;
 let pauseCount = 0;
+// GPS warmup — on n'enregistre ni distance ni chrono avant d'avoir N bonnes positions
+let gpsReadyCount = 0;
+let gpsReady = false;
+let gpsLostSince = null;   // Date.now() si signal perdu en cours de sortie
+// Carte — suivi auto jusqu'à ce que l'utilisateur la déplace
+let mapFollowing = true;
+let gpsPolylines = [];     // toutes les polylines actives (une par segment)
 let planWeatherLoading = false;
 let remoteRaceCatalog = [];
 let raceRadarLoading = false;
@@ -7988,10 +7995,22 @@ function initMap(lat = 46.8182, lon = 8.2275) {
 
   marker = L.marker([lat, lon]).addTo(map);
 
-  polyline = L.polyline([], {
-    color: "#fc4c02",
-    weight: 4
-  }).addTo(map);
+  // Ne plus suivre automatiquement si l'utilisateur explore la carte
+  map.on("dragstart", () => {
+    mapFollowing = false;
+    const btn = document.getElementById("gps-recenter-btn");
+    if (btn) btn.style.display = "flex";
+  });
+
+  gpsPolylines = [];
+  _addNewPolylineSegment();
+}
+
+function _addNewPolylineSegment() {
+  if (!map) return;
+  const seg = L.polyline([], { color: "#fc4c02", weight: 4, opacity: 0.9 }).addTo(map);
+  gpsPolylines.push(seg);
+  polyline = seg; // alias courant
 }
 
 function setGpsSignalBar(status, label) {
@@ -8022,7 +8041,7 @@ function updateMapPosition(lat, lon, label = "Position GPS active") {
     marker.setLatLng([lat, lon]);
   }
 
-  if (map) {
+  if (map && mapFollowing) {
     map.setView([lat, lon], Math.max(map.getZoom(), 15));
   }
 
@@ -8079,46 +8098,91 @@ function isCapacitorNative() {
 
 function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
   if (isPaused) return;
-  if (accuracy > 25) {
-    updateMapPosition(lat, lon, t('gps_searching_acc').replace('{acc}', Math.round(accuracy)));
+
+  const acc = accuracy ?? 999;
+
+  // ── Signal faible : positionner la carte mais ne pas enregistrer ─────────
+  if (acc > 25) {
+    updateMapPosition(lat, lon, `Recherche GPS précis · ±${Math.round(acc)} m`);
+    // Si le signal était bon et vient de se dégrader → marquer une coupure
+    if (gpsReady && !gpsLostSince) {
+      gpsLostSince = Date.now();
+      gpsPath.push({ gap: true });
+      lastPosition = null;
+      setGpsSignalBar("lost", `Signal faible · ±${Math.round(acc)} m — distance suspendue`);
+    }
     return;
   }
+
+  // ── Filtres qualité ──────────────────────────────────────────────────────
   if (lastPosition) {
     const jump = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
-    if (jump > 0.3) return;
-    // Rejeter les vitesses irréalistes (>80 km/h pour mushing)
+    if (jump > 0.3) return; // bond irréaliste (>300m)
     const dtSec = (Date.now() - lastPosition.timestamp) / 1000;
     if (dtSec > 0 && dtSec < 30) {
       const speedKmh = (jump / dtSec) * 3600;
-      if (speedKmh > 80) return;
+      if (speedKmh > 80) return; // vitesse irréaliste pour mushing
     }
-  }
-  if (lastPosition) {
     const moved = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
-    if (moved < 0.005) return;
+    if (moved < 0.005) return; // <5 m → ignorer
   }
 
-  updateMapPosition(lat, lon, t('gps_active').replace('{acc}', Math.round(accuracy)));
-  if (altitude !== null && altitude !== undefined) {
+  // ── Regain de signal ─────────────────────────────────────────────────────
+  if (gpsLostSince) {
+    gpsLostSince = null;
+    // Déjà un gap marker inséré lors de la perte → ne pas en rajouter
+    setGpsSignalBar("found", `GPS · ±${Math.round(acc)} m`);
+  }
+
+  // ── Warmup : attendre 3 bonnes positions avant de démarrer ───────────────
+  if (!gpsReady) {
+    gpsReadyCount++;
+    updateMapPosition(lat, lon, `GPS prêt · ±${Math.round(acc)} m (${gpsReadyCount}/3)`);
+    if (gpsReadyCount < 3) return;
+    // GPS prêt : démarrer le chrono depuis maintenant
+    gpsReady = true;
+    runStartTime = Date.now();
+    setGpsSignalBar("found", `GPS prêt · ±${Math.round(acc)} m`);
+  }
+
+  updateMapPosition(lat, lon, `GPS · ±${Math.round(acc)} m`);
+
+  // ── Altitude ─────────────────────────────────────────────────────────────
+  if (altitude != null) {
     if (lastAltitude !== null && altitude - lastAltitude > 1) {
       elevationGain += altitude - lastAltitude;
     }
     lastAltitude = altitude;
+    if (minAlt === null || altitude < minAlt) minAlt = altitude;
+    if (maxAlt === null || altitude > maxAlt) maxAlt = altitude;
   }
-  const point = { lat, lon, timestamp: Date.now() };
+
+  // ── Point enrichi ────────────────────────────────────────────────────────
+  const point = {
+    lat, lon,
+    timestamp: Date.now(),
+    accuracy: Math.round(acc),
+    speed: gpsSpeedMs != null ? Math.round(gpsSpeedMs * 3.6 * 10) / 10 : null,
+    altitude: altitude != null ? Math.round(altitude) : null
+  };
   gpsPath.push(point);
   if (polyline) polyline.addLatLng([lat, lon]);
+
+  // ── Distance ─────────────────────────────────────────────────────────────
   if (lastPosition) {
     const segment = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
     if (segment < 1) distance += segment;
   }
   lastPosition = point;
 
-  const hours = seconds / 3600;
-  const calcSpeed = hours > 0 ? distance / hours : 0;
-  const displaySpeed = gpsSpeedMs && gpsSpeedMs > 0 ? gpsSpeedMs * 3.6 : calcSpeed;
-  if (displaySpeed > maxSpeed) maxSpeed = displaySpeed;
-  if (altitude !== null) { if (minAlt === null || altitude < minAlt) minAlt = altitude; if (altitude > (maxAlt || altitude)) maxAlt = altitude; }
+  // ── Affichage ────────────────────────────────────────────────────────────
+  const movingSec = runStartTime ? Math.floor((Date.now() - runStartTime - totalPausedMs) / 1000) : 0;
+  const movingHours = movingSec / 3600;
+  const calcSpeed = movingHours > 0 && distance > 0.05 ? distance / movingHours : 0;
+  const rawSpeed = gpsSpeedMs != null && gpsSpeedMs > 0 ? gpsSpeedMs * 3.6 : 0;
+  // N'utiliser la vitesse GPS brute que si elle est plausible
+  const displaySpeed = rawSpeed > 0.5 && rawSpeed < 80 ? rawSpeed : calcSpeed;
+  if (displaySpeed > 0.5 && displaySpeed < 80 && displaySpeed > maxSpeed) maxSpeed = displaySpeed;
   updateGpsDisplay(distance, displaySpeed);
 }
 
@@ -8126,25 +8190,30 @@ function updateGpsDisplay(distKm, speedKmh) {
   const useMi   = state.gpsUnitMi  || false;
   const usePace = state.gpsSpeedPace ?? true;
   const dist    = useMi ? distKm * 0.621371 : distKm;
-  distanceEl.textContent = dist.toFixed(2);
+  if (distanceEl) distanceEl.textContent = dist.toFixed(2);
   document.querySelectorAll(".gps-dist-unit").forEach(el => el.textContent = useMi ? "mi" : "km");
 
+  const paceEl    = document.querySelector("#pace");
+  const paceUnitEl= document.querySelector("#pace-unit");
+  const paceLabel = document.querySelector("#pace-label");
+
   if (usePace) {
-    const paceEl = document.querySelector("#pace");
-    const paceUnitEl = document.querySelector("#pace-unit");
-    const paceLabel = document.querySelector("#pace-label");
-    if (speedKmh > 0.5 && distKm > 0) {
+    if (paceLabel) paceLabel.textContent = "Allure";
+    // N'afficher l'allure que si distance > 100 m et vitesse plausible
+    if (speedKmh > 0.5 && distKm > 0.1) {
       const minPerUnit = useMi ? (1 / (speedKmh * 0.621371)) * 60 : (1 / speedKmh) * 60;
       const pMin = Math.floor(minPerUnit);
       const pSec = Math.round((minPerUnit - pMin) * 60);
       if (paceEl) paceEl.textContent = `${pMin}:${String(pSec).padStart(2,"0")}`;
       if (paceUnitEl) paceUnitEl.textContent = useMi ? "min/mi" : "min/km";
+    } else {
+      if (paceEl) paceEl.textContent = "—";
     }
-    speedEl.textContent = "—";
-    if (paceLabel) paceLabel.textContent = "Allure";
+    if (speedEl) speedEl.textContent = "—";
   } else {
-    const spd = useMi ? speedKmh * 0.621371 : speedKmh;
-    speedEl.textContent = spd.toFixed(1);
+    if (paceEl) paceEl.textContent = "—";
+    const spd = speedKmh > 0.3 ? (useMi ? speedKmh * 0.621371 : speedKmh) : 0;
+    if (speedEl) speedEl.textContent = spd > 0 ? spd.toFixed(1) : "—";
     document.querySelectorAll(".gps-speed-unit").forEach(el => el.textContent = useMi ? "mph" : "km/h");
   }
 }
@@ -8156,15 +8225,21 @@ async function startGPS() {
   lastPosition = null;
   elevationGain = 0;
   lastAltitude = null;
-  if (polyline) polyline.setLatLngs([]);
+  distance = 0;
+  maxSpeed = 0; minAlt = null; maxAlt = null;
+  // Réinitialiser toutes les polylines Leaflet
+  gpsPolylines.forEach(p => { try { p.remove(); } catch {} });
+  gpsPolylines = [];
+  polyline = null;
+  _addNewPolylineSegment();
   await _startGPSWatcher(true);
 }
 
 async function _resumeGPS() {
-  // Reprend le GPS sans toucher à gpsPath/lastPosition/distance
-  // Ajoute un marqueur de coupure pour ne pas relier les points de part et d'autre de la pause
-  gpsPath.push({ gap: true });
-  lastPosition = null; // évite une ligne artificielle depuis le dernier point avant pause
+  // Reprend sans toucher à distance — gap déjà inséré dans toggleRecording (pause)
+  // lastPosition = null évite une ligne artificielle entre avant-pause et après-pause
+  lastPosition = null;
+  _addNewPolylineSegment(); // nouveau segment de trace Leaflet
   await _startGPSWatcher(false);
 }
 
@@ -8178,9 +8253,9 @@ async function _startGPSWatcher(fetchWeather) {
         { backgroundMessage: "MushTrack enregistre votre parcours.", backgroundTitle: "MushTrack GPS", requestPermissions: true, stale: false, distanceFilter: 5 },
         (position, error) => {
           if (error || isPaused) { console.error("BG GPS error:", error); return; }
-          const { latitude: lat, longitude: lon, accuracy, speed: gpsSpeedMs } = position;
+          const { latitude: lat, longitude: lon, accuracy, speed: gpsSpeedMs, altitude } = position;
           if (fetchWeather && !weatherFetched) { weatherFetched = true; fetchAndShowWeather(lat, lon); }
-          onGPSPosition(lat, lon, accuracy, gpsSpeedMs);
+          onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude);
         }
       );
     } catch (e) {
@@ -8235,6 +8310,11 @@ function setRecordButtonState(running) {
 }
 
 function _tickTimer() {
+  // Si GPS pas encore prêt : ne pas compter le chrono
+  if (!gpsReady || !runStartTime) {
+    if (durationEl) durationEl.textContent = "—";
+    return;
+  }
   // Wall-clock : résistant au throttling Android
   const elapsed = Math.floor((Date.now() - runStartTime - totalPausedMs) / 1000);
   seconds = elapsed;
@@ -8263,11 +8343,17 @@ function toggleRecording() {
 
   // ── Démarrage initial ─────────────────────────────────────────
   if (!timer && !isPaused) {
-    runStartTime = Date.now();
+    runStartTime = null;   // sera mis à jour quand GPS sera prêt
     totalPausedMs = 0;
     pauseStartTime = null;
     pauseCount = 0;
     isPaused = false;
+    gpsReadyCount = 0;
+    gpsReady = false;
+    gpsLostSince = null;
+    mapFollowing = true;
+    const recenterBtn = document.getElementById("gps-recenter-btn");
+    if (recenterBtn) recenterBtn.style.display = "none";
     timer = setInterval(_tickTimer, 1000);
     startGPS();
     setRecordButtonState(true);
@@ -8280,12 +8366,11 @@ function toggleRecording() {
     timer = null;
     pauseStartTime = Date.now();
     isPaused = true;
+    gpsPath.push({ gap: true }); // coupure de trace
     stopGPS();
     setRecordButtonState(false);
-    if (durationEl) {
-      durationEl.style.opacity = "0.45";
-      durationEl.title = "En pause";
-    }
+    if (durationEl) { durationEl.style.opacity = "0.45"; durationEl.title = "En pause"; }
+    setGpsSignalBar("searching", "En pause — GPS suspendu");
     return;
   }
 
@@ -8446,13 +8531,18 @@ function saveCurrentRun() {
 
   seconds = 0; distance = 0; runStartTime = null; totalPausedMs = 0;
   pauseStartTime = null; isPaused = false; pauseCount = 0;
+  gpsReadyCount = 0; gpsReady = false; gpsLostSince = null;
+  mapFollowing = true;
   if (distanceEl) distanceEl.textContent = "0.00";
-  if (durationEl) { durationEl.textContent = "00:00"; durationEl.style.opacity = ""; }
+  if (durationEl) { durationEl.textContent = "00:00"; durationEl.style.opacity = ""; durationEl.title = ""; }
   if (speedEl) speedEl.textContent = "0.0";
-  recordButton.textContent = "Demarrer";
-  recordButton.classList.remove("running");
+  const paceEl = document.querySelector("#pace");
+  if (paceEl) paceEl.textContent = "—";
+  setRecordButtonState(false);
   pendingRunSummary = null;
   maxSpeed = 0; minAlt = null; maxAlt = null; elevationGain = 0; lastAltitude = null;
+  const recenterBtn = document.getElementById("gps-recenter-btn");
+  if (recenterBtn) recenterBtn.style.display = "none";
   postRunForm.classList.add("hidden");
 
   saveState();
@@ -8486,6 +8576,13 @@ mapLayerBtn?.addEventListener("click", (e) => {
   mapLayerPanel.style.display = mapLayerPanel.style.display === "none" ? "block" : "none";
 });
 mapLayerPanel?.addEventListener("click", e => e.stopPropagation());
+
+// ── Bouton recentrer ───────────────────────────────────────────
+document.getElementById("gps-recenter-btn")?.addEventListener("click", () => {
+  mapFollowing = true;
+  document.getElementById("gps-recenter-btn").style.display = "none";
+  if (map && lastPosition) map.setView([lastPosition.lat, lastPosition.lon], Math.max(map.getZoom(), 15));
+});
 
 // ── Panneau unités GPS ──────────────────────────────────────────
 const gpsUnitBtn   = document.getElementById("gps-unit-btn");
@@ -10195,10 +10292,11 @@ function shareCurrentRun() {
   ctx.fillStyle = "#fc4c02";
   ctx.fillRect(0, 0, W, 8);
 
-  // Tracé GPS simplifié (fond carte)
-  if (gpsPath.length > 1) {
-    const lats = gpsPath.map(p => Array.isArray(p) ? p[0] : p.lat);
-    const lons = gpsPath.map(p => Array.isArray(p) ? p[1] : p.lon);
+  // Tracé GPS simplifié (fond carte) — filtrer les gap markers
+  const validGpsPath = gpsPath.filter(p => !p.gap && (Array.isArray(p) ? Number.isFinite(p[0]) : Number.isFinite(p.lat)));
+  if (validGpsPath.length > 1) {
+    const lats = validGpsPath.map(p => Array.isArray(p) ? p[0] : p.lat);
+    const lons = validGpsPath.map(p => Array.isArray(p) ? p[1] : p.lon);
     const minLat = Math.min(...lats), maxLat = Math.max(...lats);
     const minLon = Math.min(...lons), maxLon = Math.max(...lons);
     const mapW = W * 0.45, mapH = H - 80, mapX = W * 0.5, mapY = 40;
@@ -10215,14 +10313,16 @@ function shareCurrentRun() {
     ctx.fillStyle = "#0d1b2a";
     ctx.fillRect(mapX, mapY, mapW, mapH);
 
-    // Tracé
+    // Tracé — respecter les gap markers (segments séparés)
     ctx.beginPath();
-    gpsPath.forEach((p, i) => {
+    let newSegment = true;
+    validGpsPath.forEach(p => {
       const pLat = Array.isArray(p) ? p[0] : p.lat;
       const pLon = Array.isArray(p) ? p[1] : p.lon;
       const x = mapX + pad + (pLon - minLon) * scaleX;
       const y = mapY + mapH - pad - (pLat - minLat) * scaleY;
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      newSegment ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      newSegment = false;
     });
     ctx.strokeStyle = "#fc4c02";
     ctx.lineWidth = 3;
@@ -10240,8 +10340,8 @@ function shareCurrentRun() {
       ctx.fillStyle = color; ctx.fill();
       ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
     };
-    drawDot(gpsPath[0], "#22c55e");
-    drawDot(gpsPath[gpsPath.length-1], "#fc4c02");
+    drawDot(validGpsPath[0], "#22c55e");
+    drawDot(validGpsPath[validGpsPath.length-1], "#fc4c02");
     ctx.restore();
   } else {
     // Pas de tracé — fond simple
