@@ -2,7 +2,7 @@
 // Stratégie : network-only pour app.js / styles.css / index.html (toujours frais)
 //             cache-first pour images et icônes (statiques, changent rarement)
 
-const CACHE_NAME = "mushtrack-static-v34";
+const CACHE_NAME = "mushtrack-static-v35";
 
 // ── Push notifications ───────────────────────────────────────────────────────
 self.addEventListener("push", (event) => {
