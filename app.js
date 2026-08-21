@@ -12191,13 +12191,24 @@ let raceMap = null;
 let raceMapMarkers = [];
 let geocodeCache = {}; // location → {lat, lng}
 
+let _geocodeLastCall = 0;
 async function geocodeLocation(location) {
   if (!location) return null;
   const key = location.toLowerCase().trim();
   if (geocodeCache[key]) return geocodeCache[key];
   try {
+    // Nominatim rate limit: 1 req/s
+    const now = Date.now();
+    const wait = 1100 - (now - _geocodeLastCall);
+    if (wait > 0) await new Promise(r => setTimeout(r, wait));
+    _geocodeLastCall = Date.now();
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`;
-    const res = await fetch(url, { headers: { "Accept-Language": "fr" } });
+    const res = await fetch(url, {
+      headers: {
+        "Accept-Language": "fr",
+        "User-Agent": "MushTrack/1.2 (morardjuan@hotmail.com)"
+      }
+    });
     const data = await res.json();
     if (data && data[0]) {
       const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
