@@ -3467,19 +3467,6 @@ function renderVousMusherCard() {
   const name   = state.profile?.name   || "";
   const region = state.profile?.region || "";
   const level  = state.profile?.level  || "";
-  const nbDogs = state.dogs.length;
-
-  const activeSeason = (state.seasons || []).find(s => !s.endDate);
-  let km = 0, nbRuns = 0, label = "Total";
-  if (activeSeason) {
-    const runs = getSeasonRuns(activeSeason);
-    km     = runs.reduce((s, r) => s + Number(r.km || 0), 0);
-    nbRuns = runs.length;
-    label  = activeSeason.name || "Saison";
-  } else {
-    km     = (state.runs || []).reduce((s, r) => s + Number(r.km || 0), 0);
-    nbRuns = (state.runs || []).length;
-  }
 
   const dark = document.body.classList.contains("dark-mode");
   const bg   = dark
@@ -3487,29 +3474,12 @@ function renderVousMusherCard() {
     : "linear-gradient(135deg,#fc4c02,#e03a00)";
 
   el.innerHTML = `
-    <div style="background:${bg};border-radius:16px;padding:16px;color:#fff">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
-        <div>
-          <div style="font-size:${name ? "1.15rem" : "0.85rem"};font-weight:800;line-height:1.2;opacity:${name ? "1" : "0.6"}">${name || "Musher sans pseudo"}</div>
-          ${(region || level) ? `<div style="font-size:0.72rem;opacity:0.8;margin-top:4px">${[region,level].filter(Boolean).join(" · ")}</div>` : ""}
-        </div>
-        <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:.06em;opacity:0.7;text-align:right;line-height:1.4;padding-top:2px">${label}</div>
+    <div style="background:${bg};border-radius:14px;padding:12px 14px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="min-width:0">
+        <div style="font-size:${name ? "1rem" : "0.85rem"};font-weight:800;line-height:1.2;opacity:${name ? "1" : "0.55"};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name || "Musher sans pseudo"}</div>
+        ${(region || level) ? `<div style="font-size:0.7rem;opacity:0.78;margin-top:3px">${[region,level].filter(Boolean).join(" · ")}</div>` : ""}
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:rgba(0,0,0,0.18);border-radius:10px;padding:10px;margin-bottom:10px">
-        <div style="text-align:center">
-          <div style="font-size:1.3rem;font-weight:800">${Math.round(km)}</div>
-          <div style="font-size:0.64rem;opacity:0.75;margin-top:2px">km</div>
-        </div>
-        <div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)">
-          <div style="font-size:1.3rem;font-weight:800">${nbRuns}</div>
-          <div style="font-size:0.64rem;opacity:0.75;margin-top:2px">sorties</div>
-        </div>
-        <div style="text-align:center;border-left:1px solid rgba(255,255,255,0.2)">
-          <div style="font-size:1.3rem;font-weight:800">${nbDogs}</div>
-          <div style="font-size:0.64rem;opacity:0.75;margin-top:2px">chiens</div>
-        </div>
-      </div>
-      <button id="vous-musher-edit-btn" style="width:100%;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);border-radius:8px;color:#fff;font-size:0.78rem;font-weight:700;padding:7px;cursor:pointer;letter-spacing:.02em">Modifier le profil</button>
+      <button id="vous-musher-edit-btn" style="flex-shrink:0;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.35);border-radius:8px;color:#fff;font-size:0.72rem;font-weight:700;padding:6px 12px;cursor:pointer;white-space:nowrap">Modifier</button>
     </div>`;
 
   el.querySelector("#vous-musher-edit-btn")?.addEventListener("click", () => showScreen("settings"));
