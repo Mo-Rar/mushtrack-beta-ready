@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 90" fill="none">
+  <!-- Tête coureur -->
+  <circle cx="62" cy="12" r="7" stroke="currentColor" stroke-width="3" fill="none"/>
+  <!-- Corps -->
+  <line x1="62" y1="19" x2="58" y2="42" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <!-- Bras gauche (tient laisse) -->
+  <line x1="62" y1="26" x2="38" y2="32" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Bras droit -->
+  <line x1="62" y1="26" x2="72" y2="36" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Jambe gauche -->
+  <line x1="58" y1="42" x2="48" y2="62" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <line x1="48" y1="62" x2="42" y2="76" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <!-- Jambe droite -->
+  <line x1="58" y1="42" x2="68" y2="58" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <line x1="68" y1="58" x2="76" y2="72" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <!-- Laisse -->
+  <path d="M38 32 Q22 28 18 36 Q14 44 20 48" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- Chien corps -->
+  <ellipse cx="14" cy="54" rx="11" ry="6" stroke="currentColor" stroke-width="2.5" fill="none"/>
+  <!-- Chien tête -->
+  <circle cx="24" cy="50" r="5" stroke="currentColor" stroke-width="2.5" fill="none"/>
+  <!-- Chien oreille -->
+  <path d="M26 46 Q30 42 28 46" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- Chien pattes -->
+  <line x1="10" y1="58" x2="8" y2="68" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="16" y1="59" x2="14" y2="68" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="20" y1="59" x2="22" y2="68" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Chien queue -->
+  <path d="M4 54 Q-2 46 4 44" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+</svg>
