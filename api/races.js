@@ -22,7 +22,8 @@ async function fetchFromSupabase(filters) {
   if (!SUPABASE_URL || !SUPABASE_KEY) return null;
 
   try {
-    let url = `${SUPABASE_URL}/rest/v1/mushtrack_races?select=*&order=reliability.asc`;
+    // Seulement les courses approuvées ou sans statut (catalogue officiel)
+    const url = `${SUPABASE_URL}/rest/v1/mushtrack_races?select=*&or=(status.is.null,status.eq.approved)&order=reliability.asc`;
     const res = await fetch(url, {
       headers: {
         apikey: SUPABASE_KEY,
@@ -93,7 +94,12 @@ module.exports = async function handler(req, res) {
 
   if (url.searchParams.get("action") === "refresh") return runRefresh(res);
 
-  res.setHeader("Cache-Control", "s-maxage=3600, stale-while-revalidate=86400");
+  // Pas de cache si refresh forcé (admin), sinon 5 min CDN + 1h stale
+  if (url.searchParams.has("nocache")) {
+    res.setHeader("Cache-Control", "no-store");
+  } else {
+    res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=3600");
+  }
 
   const query = (url.searchParams.get("q") || "").toLowerCase();
   const type = url.searchParams.get("type") || "";
