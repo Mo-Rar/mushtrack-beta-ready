@@ -17,6 +17,26 @@ try {
 
 let currentUser = null;
 
+// ── Thème clair / sombre ───────────────────────────────────────
+(function applyStoredTheme() {
+  const t = localStorage.getItem("mushtrack-theme") || "light";
+  if (t === "dark") document.body.classList.add("dark-mode");
+})();
+
+function setTheme(theme) {
+  localStorage.setItem("mushtrack-theme", theme);
+  document.body.classList.toggle("dark-mode", theme === "dark");
+  document.getElementById("theme-btn-light")?.classList.toggle("active", theme === "light");
+  document.getElementById("theme-btn-dark")?.classList.toggle("active", theme === "dark");
+}
+
+function syncThemeButtons() {
+  const theme = localStorage.getItem("mushtrack-theme") || "light";
+  document.getElementById("theme-btn-light")?.classList.toggle("active", theme === "light");
+  document.getElementById("theme-btn-dark")?.classList.toggle("active", theme === "dark");
+}
+// ─────────────────────────────────────────────────────────────
+
 function showAuthOverlay() {
   document.getElementById("auth-overlay").classList.remove("hidden");
 }
@@ -910,7 +930,7 @@ const TRANSLATIONS = {
     dogs_delete_btn: "Supprimer",
     dogs_no_dogs: "Aucun chien enregistré.",
     // --- Race ---
-    race_competition: "Mode competition",
+    race_competition: "Calendrier international de mushing",
     race_title: "Course",
     race_missing: "Signaler une course manquante",
     race_leaderboard: "Classement du mois",
@@ -1188,7 +1208,7 @@ const TRANSLATIONS = {
     race_surface_variable: "Surface variable",
     race_interested_btn: "🎯 Mes souhaits",
     race_interested_active: "🎯 Dans mes souhaits",
-    race_add_btn: "Ajouter",
+    race_add_btn: "Ajouter à mon agenda",
     race_participating_btn: "✓ Participe",
     race_be_first: "Sois le premier à marquer ton intérêt pour cette course ! ⭐",
     race_participating_label: "✓ Participe",
@@ -2613,6 +2633,12 @@ let lastAltitude = null;
 let maxSpeed = 0;
 let minAlt = null, maxAlt = null;
 let pendingRunSummary = null;
+// Wall-clock run tracking (résistant au throttling Android)
+let runStartTime = null;   // Date.now() au démarrage
+let totalPausedMs = 0;     // ms de pause cumulées
+let pauseStartTime = null; // Date.now() au début de la pause courante
+let isPaused = false;
+let pauseCount = 0;
 let planWeatherLoading = false;
 let remoteRaceCatalog = [];
 let raceRadarLoading = false;
@@ -2933,6 +2959,7 @@ function showScreen(id, pushHistory = true) {
   screens.forEach((screen) => {
     screen.classList.toggle("active", screen.id === id);
   });
+  if (id === "settings") syncThemeButtons();
 
   bottomButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.go === id);
@@ -3175,7 +3202,7 @@ function render() {
   }
   // Cette semaine
   const weekPct = Math.min(100, Math.round(weekKmVal / targetKmVal * 100));
-  bindText("kpiWeek", `${weekKmVal.toFixed(1)} km`);
+  bindText("kpiWeek", `${weekKmVal.toFixed(1).replace(".", ",")} km`);
   bindText("kpiWeekSub", `${t('dash_race_goal_label')} : ${targetKmVal} km`);
   bindText("dashWeekPct", `${weekPct} %`);
   const dashWeekBarEl = document.querySelector('[data-bind-style="dashWeekBar"]');
@@ -3219,7 +3246,7 @@ function render() {
   );
   let enginPace;
   if (runsForEngin.length >= 3) {
-    const avgPace = runsForEngin.reduce((sum, r) => sum + (r.duration / r.distance), 0) / runsForEngin.length;
+    const avgPace = runsForEngin.reduce((sum, r) => sum + ((getRunDurationSec(r) / 60) / r.distance), 0) / runsForEngin.length;
     enginPace = avgPace; // min/km basé sur les vraies sorties
   } else {
     enginPace = enginDefaultPace[activeEngin] ?? 4.5;
@@ -3282,6 +3309,72 @@ function render() {
     bindText("dashDogEnergyPct", `${avgEnergy} %`);
     const dogEnergyEl = document.querySelector('[data-bind-style="dashDogEnergy"]');
     if (dogEnergyEl) dogEnergyEl.style.width = `${avgEnergy}%`;
+  }
+
+  // Feed sorties récentes
+  const dashFeed = document.getElementById("dash-feed");
+  const dashFeedCards = document.getElementById("dash-feed-cards");
+  if (dashFeedCards) {
+    const seenIds = new Set();
+    const recentRuns = [...(state.runs || [])]
+      .sort((a, b) => new Date(b.date || b.createdAt || 0) - new Date(a.date || a.createdAt || 0))
+      .filter(r => { if (seenIds.has(r.id)) return false; seenIds.add(r.id); return true; })
+      .slice(0, 2);
+    if (recentRuns.length > 0) {
+      dashFeed.style.display = "";
+      const dayNames = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+      const monthNames = ["jan","fév","mar","avr","mai","juin","juil","août","sep","oct","nov","déc"];
+      dashFeedCards.innerHTML = recentRuns.map((run) => {
+        const kmRaw = Number(run.km || 0).toFixed(1).replace(".", ",");
+        const speedRaw = Number(run.avgSpeed || run.speed || 0).toFixed(1).replace(".", ",");
+        const durSec = getRunDurationSec(run);
+        const durStr = formatDurationHuman(durSec);
+        const d = run.date ? new Date(run.date + "T12:00:00") : new Date(run.createdAt || Date.now());
+        const diffD = Math.round((Date.now() - d.getTime()) / 86400000);
+        const dateStr = diffD === 0 ? "Aujourd'hui" : diffD === 1 ? "Hier" :
+          `${dayNames[d.getDay()]} ${d.getDate()} ${monthNames[d.getMonth()]}`;
+        const engin = run.engin || run.type || "Sortie";
+        const recov = run.recovery || "Bonne";
+        return `<div class="dash-feed-card" data-go="course">
+          <div class="dash-feed-body">
+            <div class="dash-feed-meta">
+              <div class="dash-feed-header-row">
+                <span class="dash-feed-date">${dateStr} · ${engin}</span>
+                <span class="dash-feed-badge">${recov}</span>
+              </div>
+              <div class="dash-feed-stats">
+                <div class="dash-feed-stat"><strong>${kmRaw}</strong><span>km</span></div>
+                <div class="dash-feed-stat"><strong>${durStr}</strong><span>durée</span></div>
+                <div class="dash-feed-stat"><strong>${speedRaw}</strong><span>km/h</span></div>
+              </div>
+            </div>
+            <div class="dash-feed-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/></svg>
+            </div>
+          </div>
+        </div>`;
+      }).join("");
+    } else {
+      dashFeed.style.display = "none";
+    }
+  }
+
+  // Rangée attelage dashboard
+  const teamStrip = document.getElementById("dash-team-strip");
+  const teamStripDogs = document.getElementById("dash-team-strip-dogs");
+  if (teamStripDogs && teamDogs.length > 0) {
+    teamStrip.style.display = "";
+    teamStripDogs.innerHTML = teamDogs.map(dog => {
+      const sig = dog.healthSignal || "OK";
+      const cls = sig === "Attention" ? "attention" : sig === "Repos" ? "repos" : "ok";
+      const name = (dog.name || "—").substring(0, 8);
+      return `<div class="dash-dog-chip" data-go="dogs" title="${dog.name} — ${sig}">
+        <div class="dash-dog-chip-bubble ${cls}">🐾</div>
+        <span class="dash-dog-chip-name">${name}</span>
+      </div>`;
+    }).join("");
+  } else if (teamStrip) {
+    teamStrip.style.display = "none";
   }
 
   // Météo
@@ -3584,22 +3677,27 @@ function renderDogs() {
 
   const html = state.dogs.map((dog) => {
     const load = getDogRecentKm(dog.id);
+    const totalKm = getDogTotalKm(dog.id);
     const readiness = getDogReadiness(dog);
+    const loadPct = Math.min(100, load * 2);
     const photoHtml = dog.photoDataUrl
-      ? `<img src="${dog.photoDataUrl}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #fc4c02" alt="${dog.name}" />`
-      : `<div style="width:44px;height:44px;border-radius:50%;flex-shrink:0;background:#f0ede9;border:2px solid #e0dbd5;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:#bbb">${dog.name.charAt(0).toUpperCase()}</div>`;
+      ? `<img src="${dog.photoDataUrl}" class="dog-avatar-photo" alt="${dog.name}" />`
+      : `<div class="dog-avatar-initial">${dog.name.charAt(0).toUpperCase()}</div>`;
     return `
     <article class="dog-card ${readiness.level}" data-open-dog="${dog.id}">
-      <div style="display:flex;align-items:center;gap:12px">
+      <div class="dog-card-header">
         ${photoHtml}
-        <div>
-          <b>${dog.name}</b>
-          <span>${dog.role} - ${getDogAge(dog)} ans - ${dog.weight} kg - ${readiness.title}</span>
+        <div class="dog-card-info">
+          <div class="dog-card-name">${dog.name}</div>
+          <div class="dog-card-role">${dog.role} · ${getDogAge(dog)} ans · ${dog.weight} kg</div>
         </div>
+        <div class="dog-card-km">${Math.round(totalKm)}<span> km</span></div>
       </div>
-      <strong>${Math.round(dog.km || 0)} km</strong>
-      <div class="load-meter"><span style="width:${Math.min(100, load * 2)}%"></span></div>
-      <small>${load.toFixed(1)} ${t('dog_km_week')} - ${readiness.text}</small>
+      <div class="dog-load-bar"><div class="dog-load-fill" style="width:${loadPct}%"></div></div>
+      <div class="dog-card-footer">
+        <span class="dog-card-week">${load.toFixed(1).replace(".", ",")} km / sem.</span>
+        <span class="dog-card-status dog-status-${readiness.level}">${readiness.title}</span>
+      </div>
     </article>
   `}).join("");
 
@@ -4446,7 +4544,7 @@ function renderRuns() {
     const hasTrace = Array.isArray(run.path) && run.path.length > 1;
     const km = Number(run.km).toFixed(1);
     const speed = Number(run.avgSpeed || 0).toFixed(1);
-    const dur = run.duration ? formatDuration(run.duration) : "--:--";
+    const dur = getRunDurationSec(run) > 0 ? formatDuration(getRunDurationSec(run)) : "--:--";
     const paceMin = (run.avgSpeed && run.avgSpeed > 0) ? Math.floor(60 / run.avgSpeed) : null;
     const paceSec = (run.avgSpeed && run.avgSpeed > 0) ? Math.round((60 / run.avgSpeed - Math.floor(60 / run.avgSpeed)) * 60) : null;
     const paceStr = paceMin !== null ? `${paceMin}:${String(paceSec).padStart(2,'0')}` : "--:--";
@@ -4582,7 +4680,7 @@ function shareRunData(index) {
   const run = state.runs[index];
   if (!run) return;
   const km = Number(run.km).toFixed(1);
-  const dur = run.duration ? formatDuration(run.duration) : null;
+  const dur = getRunDurationSec(run) > 0 ? formatDuration(getRunDurationSec(run)) : null;
   const speed = run.avgSpeed ? Number(run.avgSpeed).toFixed(1) + " km/h" : null;
   const elev = run.elevationGain > 0 ? `D+ ${run.elevationGain} m` : null;
   const dogs = run.team?.map(id => state.dogs.find(d => d.id === id)?.name).filter(Boolean).join(", ");
@@ -4721,13 +4819,9 @@ function renderSeasons() {
   const totalKm    = allRuns.reduce((s, r) => s + Number(r.km || 0), 0);
   const totalRuns  = allRuns.length;
   const totalSecs  = allRuns.reduce((s, r) => {
-    const dur = r.duration || r.durationSec || 0;
-    return s + Number(dur);
+    return s + getRunDurationSec(r);
   }, 0);
-  const totalHours = totalSecs >= 60 ? (totalSecs / 3600) : allRuns.reduce((s, r) => {
-    // fallback: try durationMin
-    return s + Number(r.durationMin || 0) / 60;
-  }, 0);
+  const totalHours = totalSecs / 3600;
 
   let html = `<div style="padding:12px 16px 24px">`;
 
@@ -4983,10 +5077,17 @@ function openRunDetail(index) {
   }
 
   // Durée réelle
-  const durSec = run.duration || 0;
-  const durMin = Math.round(durSec > 300 ? durSec / 60 : durSec); // compatibilité anciens formats (minutes ou secondes)
-  const h = Math.floor(durMin / 60), m = durMin % 60;
-  document.getElementById("rd-duration").textContent = durMin > 0 ? (h > 0 ? `${h}h${String(m).padStart(2,"0")}` : `${m} min`) : "—";
+  const durTotalSec = getRunDurationSec(run);
+  const durMovingSec = run.movingSec || durTotalSec;
+  const durPausedSec = run.pausedSec || 0;
+  document.getElementById("rd-duration").textContent = formatDurationHuman(durTotalSec);
+  const rdMoving = document.getElementById("rd-moving-time");
+  if (rdMoving) {
+    rdMoving.textContent = durPausedSec > 0
+      ? `Mouvement : ${formatDurationHuman(durMovingSec)} · Pause : ${formatDurationHuman(durPausedSec)} (×${run.pauseCount || 1})`
+      : "";
+    rdMoving.style.display = durPausedSec > 0 ? "" : "none";
+  }
 
   // Infos
   const enginEl = document.getElementById("rd-engin");
@@ -6322,6 +6423,12 @@ function getDogRecentKm(id, days = 7) {
     .reduce((sum, r) => sum + Number(r.km || 0), 0);
 }
 
+function getDogTotalKm(id) {
+  return state.runs
+    .filter(r => r.team && r.team.includes(id))
+    .reduce((sum, r) => sum + Number(r.km || 0), 0);
+}
+
 function getDogFatigueIndex(id) {
   const km7 = getDogRecentKm(id, 7);
   const targetWeekly = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
@@ -6457,8 +6564,8 @@ function renderRaceSearch() {
     const status = dLeft < 0 ? t('race_finished') : t('race_days_before').replace('{n}', dLeft);
     const pinnedBadge = pinned ? `<span class="race-pinned-badge">⭐ Selectionnee</span>` : "";
     const adminBtns = isAdmin ? `
-      <button class="admin-race-edit-btn text-button" data-admin-edit="${race.id}" type="button" title="Modifier">✏️</button>
-      <button class="admin-race-delete-btn text-button" data-admin-delete="${race.id}" type="button" title="Supprimer">🗑️</button>
+      <button class="admin-race-edit-btn text-button" data-admin-edit="${race.id}" type="button" title="Modifier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      <button class="admin-race-delete-btn text-button" data-admin-delete="${race.id}" type="button" title="Supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
     ` : "";
     return `
       <article class="race-result ${race.reliability || "calendar"}${pinned ? " pinned" : ""}" data-race-id="${race.id}">
@@ -7274,7 +7381,7 @@ function renderAgenda() {
     const subtitle = isRace
       ? `${item.type || ""} · ${item.distance ? item.distance + " km" : ""} · ${item.location || ""}`
       : item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : t('agenda_event');
-    const notesHtml = item.notes ? `<p style="margin:6px 0 0;font-size:0.82rem;color:#666">${item.notes}</p>` : "";
+    const notesHtml = item.notes ? `<p class="agenda-notes">${item.notes}</p>` : "";
 
     // Formulaire d'édition inline
     const catOptions = ["veto","osteo","sortie","entrainement","materiel","course","autre"].map(c =>
@@ -7282,31 +7389,31 @@ function renderAgenda() {
     ).join("");
 
     return `
-      <article class="agenda-item" data-item-id="${item.id}" style="background:#fff;border:1px solid #f0f0f0;border-left:4px solid ${isRace?"#fc4c02":"#4a90d9"};border-radius:10px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-        <div style="display:flex;align-items:flex-start;gap:10px">
-          <span style="font-size:1.6rem;line-height:1">${icon}</span>
-          <div style="flex:1;min-width:0">
-            <p style="margin:0;font-size:0.75rem;color:${days < 0 ? "#aaa" : days <= 7 ? "#fc4c02" : "#666"};font-weight:600">${status} · ${formatFullDate(item.date)}</p>
-            <h3 style="margin:2px 0 4px;font-size:1rem;font-weight:700">${item.name || item.title || t('agenda_no_title')}</h3>
-            <p style="margin:0;font-size:0.8rem;color:#888">${subtitle}</p>
+      <article class="agenda-item ${isRace ? 'agenda-item--race' : 'agenda-item--event'} ${days < 0 ? 'agenda-item--past' : days <= 7 ? 'agenda-item--soon' : ''}" data-item-id="${item.id}">
+        <div class="agenda-item-top">
+          <div class="agenda-icon-box ${isRace ? 'agenda-icon-box--race' : 'agenda-icon-box--event'}"><span>${icon}</span></div>
+          <div class="agenda-content">
+            <p class="agenda-meta-line">${status} · ${formatFullDate(item.date)}</p>
+            <h3 class="agenda-title">${item.name || item.title || t('agenda_no_title')}</h3>
+            <p class="agenda-subtitle">${subtitle}</p>
             ${notesHtml}
           </div>
         </div>
         ${isRace && item.result ? `
-        <div style="margin-top:10px;padding:10px 12px;background:#fff8f5;border-radius:10px;border:1px solid #fcd9c9">
+        <div class="agenda-result-box">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span style="font-size:1.2rem">🏆</span>
-            ${item.result.rank ? `<strong style="font-size:1rem;color:#fc4c02">${item.result.rank}${item.result.totalParticipants ? ` / ${item.result.totalParticipants}` : ""}</strong>` : ""}
-            ${item.result.time ? `<span style="font-size:0.85rem;color:#666">· ${item.result.time}</span>` : ""}
-            ${item.result.notes ? `<span style="font-size:0.82rem;color:#888">· ${item.result.notes}</span>` : ""}
+            <span>🏆</span>
+            ${item.result.rank ? `<strong style="color:#fc4c02">${item.result.rank}${item.result.totalParticipants ? ` / ${item.result.totalParticipants}` : ""}</strong>` : ""}
+            ${item.result.time ? `<span style="color:#666">· ${item.result.time}</span>` : ""}
+            ${item.result.notes ? `<span style="color:#888">· ${item.result.notes}</span>` : ""}
           </div>
         </div>` : ""}
         ${isRace && days >= 0 ? renderRaceChecklist(item) : ""}
-        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-          ${isRace && days < 0 ? `<button data-agenda-result="${item.id}" type="button" style="flex:1;min-width:100px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #1a7a4a;border-radius:8px;background:#fff;color:#1a7a4a;cursor:pointer">${item.result ? t('agenda_result_edit_btn') : t('agenda_result_btn')}</button>` : ""}
-          ${isRace && days >= 0 ? `<button data-checklist-toggle="${item.id}" type="button" style="flex:1;min-width:100px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #6366f1;border-radius:8px;background:#fff;color:#6366f1;cursor:pointer">${t('agenda_checklist_label')}</button>` : ""}
-          <button data-agenda-edit="${item.id}" type="button" style="flex:1;min-width:80px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #fc4c02;border-radius:8px;background:#fff;color:#fc4c02;cursor:pointer">${t('agenda_edit_btn')}</button>
-          <button data-agenda-delete="${item.id}" type="button" style="flex:1;min-width:80px;padding:8px;font-size:0.82rem;font-weight:600;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#999;cursor:pointer">${t('agenda_delete_btn')}</button>
+        <div class="agenda-actions">
+          ${isRace && days < 0 ? `<button data-agenda-result="${item.id}" type="button" class="agenda-btn agenda-btn--result">${item.result ? t('agenda_result_edit_btn') : t('agenda_result_btn')}</button>` : ""}
+          ${isRace && days >= 0 ? `<button data-checklist-toggle="${item.id}" type="button" class="agenda-btn agenda-btn--checklist">${t('agenda_checklist_label')}</button>` : ""}
+          <button data-agenda-edit="${item.id}" type="button" class="agenda-btn agenda-btn--edit">${t('agenda_edit_btn')}</button>
+          <button data-agenda-delete="${item.id}" type="button" class="agenda-btn agenda-btn--delete">${t('agenda_delete_btn')}</button>
         </div>
         <form data-result-form="${item.id}" style="display:none;flex-direction:column;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #eee">
           <p style="margin:0 0 4px;font-size:0.78rem;font-weight:700;color:#1a7a4a;text-transform:uppercase;letter-spacing:.05em">${t('agenda_result_label')}</p>
@@ -7805,6 +7912,22 @@ function formatDuration(totalSeconds) {
   const secs = (totalSeconds % 60).toString().padStart(2, "0");
   return `${minutes}:${secs}`;
 }
+// Retourne toujours des secondes — gère l'ancien format (minutes) et le nouveau (secondes)
+function getRunDurationSec(r) {
+  if (r == null) return 0;
+  if (r.durationSec != null) return Number(r.durationSec);
+  // Ancien format : duration stocké en minutes
+  if (r.duration != null) return Number(r.duration) * 60;
+  return 0;
+}
+// Formate une durée en secondes → "X min" ou "Xh YY"
+function formatDurationHuman(totalSec) {
+  if (!totalSec || totalSec < 10) return "—";
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  if (h > 0) return `${h}h${String(m).padStart(2, "0")}`;
+  return `${m} min`;
+}
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
 
@@ -7871,6 +7994,25 @@ function initMap(lat = 46.8182, lon = 8.2275) {
   }).addTo(map);
 }
 
+function setGpsSignalBar(status, label) {
+  const bar = document.getElementById("gps-signal-bar");
+  const icon = document.getElementById("gps-signal-icon");
+  const text = document.getElementById("gps-signal-text");
+  if (!bar) return;
+  bar.className = "gps-signal-bar";
+  if (status === "found") {
+    bar.classList.add("gps-signal-found");
+    if (icon) icon.textContent = "📶";
+  } else if (status === "lost") {
+    bar.classList.add("gps-signal-lost");
+    if (icon) icon.textContent = "⚠️";
+  } else {
+    bar.classList.add("gps-signal-searching");
+    if (icon) icon.textContent = "📡";
+  }
+  if (text) text.textContent = label;
+}
+
 function updateMapPosition(lat, lon, label = "Position GPS active") {
   if (!map) {
     initMap(lat, lon);
@@ -7887,6 +8029,8 @@ function updateMapPosition(lat, lon, label = "Position GPS active") {
   if (gpsStatusEl) {
     gpsStatusEl.textContent = label;
   }
+
+  setGpsSignalBar("found", "Signal GPS trouvé");
 }
 
 function startLiveLocation() {
@@ -7894,10 +8038,12 @@ function startLiveLocation() {
 
   if (!navigator.geolocation) {
     if (gpsStatusEl) gpsStatusEl.textContent = "GPS non disponible sur cet appareil.";
+    setGpsSignalBar("lost", "GPS non disponible");
     return;
   }
 
   if (gpsStatusEl) gpsStatusEl.textContent = "Recherche de ta position...";
+  setGpsSignalBar("searching", "Recherche GPS…");
 
   liveWatchId = navigator.geolocation.watchPosition(
     (position) => {
@@ -7909,6 +8055,7 @@ function startLiveLocation() {
     },
     () => {
       if (gpsStatusEl) gpsStatusEl.textContent = "Position refusee ou signal GPS indisponible.";
+      setGpsSignalBar("lost", "Signal GPS indisponible");
     },
     {
       enableHighAccuracy: true,
@@ -7931,13 +8078,20 @@ function isCapacitorNative() {
 }
 
 function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
-  if (accuracy > 50) {
+  if (isPaused) return;
+  if (accuracy > 25) {
     updateMapPosition(lat, lon, t('gps_searching_acc').replace('{acc}', Math.round(accuracy)));
     return;
   }
   if (lastPosition) {
     const jump = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
     if (jump > 0.3) return;
+    // Rejeter les vitesses irréalistes (>80 km/h pour mushing)
+    const dtSec = (Date.now() - lastPosition.timestamp) / 1000;
+    if (dtSec > 0 && dtSec < 30) {
+      const speedKmh = (jump / dtSec) * 3600;
+      if (speedKmh > 80) return;
+    }
   }
   if (lastPosition) {
     const moved = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
@@ -7970,7 +8124,7 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
 
 function updateGpsDisplay(distKm, speedKmh) {
   const useMi   = state.gpsUnitMi  || false;
-  const usePace = state.gpsSpeedPace || false;
+  const usePace = state.gpsSpeedPace ?? true;
   const dist    = useMi ? distKm * 0.621371 : distKm;
   distanceEl.textContent = dist.toFixed(2);
   document.querySelectorAll(".gps-dist-unit").forEach(el => el.textContent = useMi ? "mi" : "km");
@@ -7996,53 +8150,55 @@ function updateGpsDisplay(distKm, speedKmh) {
 }
 
 async function startGPS() {
+  // Réinitialise TOUT l'état — seulement au démarrage d'une nouvelle sortie
   stopLiveLocation();
   gpsPath = [];
   lastPosition = null;
   elevationGain = 0;
   lastAltitude = null;
   if (polyline) polyline.setLatLngs([]);
+  await _startGPSWatcher(true);
+}
 
+async function _resumeGPS() {
+  // Reprend le GPS sans toucher à gpsPath/lastPosition/distance
+  // Ajoute un marqueur de coupure pour ne pas relier les points de part et d'autre de la pause
+  gpsPath.push({ gap: true });
+  lastPosition = null; // évite une ligne artificielle depuis le dernier point avant pause
+  await _startGPSWatcher(false);
+}
+
+async function _startGPSWatcher(fetchWeather) {
   let weatherFetched = false;
-
   if (isCapacitorNative()) {
-    // ── Mode Android natif : background geolocation ──────────────────────
     try {
       const BackgroundGeolocation = window.Capacitor?.Plugins?.BackgroundGeolocation;
       if (!BackgroundGeolocation) throw new Error("Plugin non disponible");
-
       watchId = await BackgroundGeolocation.addWatcher(
-        {
-          backgroundMessage: "MushTrack enregistre votre parcours.",
-          backgroundTitle: "MushTrack GPS",
-          requestPermissions: true,
-          stale: false,
-          distanceFilter: 5
-        },
+        { backgroundMessage: "MushTrack enregistre votre parcours.", backgroundTitle: "MushTrack GPS", requestPermissions: true, stale: false, distanceFilter: 5 },
         (position, error) => {
-          if (error) { console.error("BG GPS error:", error); return; }
+          if (error || isPaused) { console.error("BG GPS error:", error); return; }
           const { latitude: lat, longitude: lon, accuracy, speed: gpsSpeedMs } = position;
-          if (!weatherFetched) { weatherFetched = true; fetchAndShowWeather(lat, lon); }
+          if (fetchWeather && !weatherFetched) { weatherFetched = true; fetchAndShowWeather(lat, lon); }
           onGPSPosition(lat, lon, accuracy, gpsSpeedMs);
         }
       );
-
     } catch (e) {
       console.error("BackgroundGeolocation plugin error:", e);
-      _startGPSBrowser(weatherFetched);
+      _startGPSBrowser(fetchWeather, weatherFetched);
     }
   } else {
-    // ── Mode PWA navigateur : geolocation classique ───────────────────────
-    _startGPSBrowser(weatherFetched);
+    _startGPSBrowser(fetchWeather, weatherFetched);
   }
 }
 
-function _startGPSBrowser(weatherFetched) {
+function _startGPSBrowser(fetchWeather, weatherFetched = false) {
   if (!navigator.geolocation) { alert("GPS non disponible"); return; }
   watchId = navigator.geolocation.watchPosition(
     (position) => {
+      if (isPaused) return;
       const { latitude: lat, longitude: lon, accuracy, speed: gpsSpeedMs, altitude } = position.coords;
-      if (!weatherFetched) { weatherFetched = true; fetchAndShowWeather(lat, lon); }
+      if (fetchWeather && !weatherFetched) { weatherFetched = true; fetchAndShowWeather(lat, lon); }
       onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude);
     },
     (error) => { console.error("GPS error:", error); },
@@ -8078,46 +8234,72 @@ function setRecordButtonState(running) {
   }
 }
 
+function _tickTimer() {
+  // Wall-clock : résistant au throttling Android
+  const elapsed = Math.floor((Date.now() - runStartTime - totalPausedMs) / 1000);
+  seconds = elapsed;
+  if (durationEl) durationEl.textContent = formatDuration(elapsed);
+  const paceEl = document.querySelector("#pace");
+  const paceUnitEl = document.querySelector("#pace-unit");
+  const paceLabel = document.querySelector("#pace-label");
+  const usePace = state.gpsSpeedPace ?? true;
+  const useMi   = state.gpsUnitMi   || false;
+  if (usePace) {
+    if (paceEl && distance > 0.01 && elapsed > 5) {
+      const distUnit = useMi ? distance * 0.621371 : distance;
+      const minPerUnit = (elapsed / 60) / distUnit;
+      const pMin = Math.floor(minPerUnit);
+      const pSec = Math.round((minPerUnit - pMin) * 60);
+      paceEl.textContent = `${pMin}:${String(pSec).padStart(2, "0")}`;
+      if (paceUnitEl) paceUnitEl.textContent = useMi ? "min/mi" : "min/km";
+    }
+    if (speedEl) speedEl.textContent = "—";
+    if (paceLabel) paceLabel.textContent = "Allure";
+  }
+}
+
 function toggleRecording() {
   postRunForm.classList.add("hidden");
 
-  if (timer) {
-    clearInterval(timer);
-    timer = null;
-
-    stopGPS().then(() => startLiveLocation());
-
-
-    setRecordButtonState(false);
+  // ── Démarrage initial ─────────────────────────────────────────
+  if (!timer && !isPaused) {
+    runStartTime = Date.now();
+    totalPausedMs = 0;
+    pauseStartTime = null;
+    pauseCount = 0;
+    isPaused = false;
+    timer = setInterval(_tickTimer, 1000);
+    startGPS();
+    setRecordButtonState(true);
     return;
   }
 
-  timer = setInterval(() => {
-    seconds += 1;
-    durationEl.textContent = formatDuration(seconds);
-    const paceEl = document.querySelector("#pace");
-    const paceUnitEl = document.querySelector("#pace-unit");
-    const usePace = state.gpsSpeedPace || false;
-    const useMi   = state.gpsUnitMi   || false;
-    if (usePace) {
-      // Afficher allure min/km ou min/mi
-      if (paceEl && distance > 0) {
-        const distUnit = useMi ? distance * 0.621371 : distance;
-        const minPerUnit = (seconds / 60) / distUnit;
-        const pMin = Math.floor(minPerUnit);
-        const pSec = Math.round((minPerUnit - pMin) * 60);
-        paceEl.textContent = `${pMin}:${String(pSec).padStart(2, "0")}`;
-        if (paceUnitEl) paceUnitEl.textContent = useMi ? "min/mi" : "min/km";
-      }
-    } else {
-      // Afficher km/h ou mph — vitesse calculée depuis distance/temps
-      if (paceEl) paceEl.textContent = "--:--";
-      if (paceUnitEl) paceUnitEl.textContent = useMi ? "mph" : "km/h";
+  // ── Mise en pause ─────────────────────────────────────────────
+  if (timer && !isPaused) {
+    clearInterval(timer);
+    timer = null;
+    pauseStartTime = Date.now();
+    isPaused = true;
+    stopGPS();
+    setRecordButtonState(false);
+    if (durationEl) {
+      durationEl.style.opacity = "0.45";
+      durationEl.title = "En pause";
     }
-  }, 1000);
+    return;
+  }
 
-  startGPS();
-  setRecordButtonState(true);
+  // ── Reprise ───────────────────────────────────────────────────
+  if (isPaused) {
+    totalPausedMs += Date.now() - pauseStartTime;
+    pauseStartTime = null;
+    pauseCount++;
+    isPaused = false;
+    if (durationEl) { durationEl.style.opacity = ""; durationEl.title = ""; }
+    timer = setInterval(_tickTimer, 1000);
+    _resumeGPS();
+    setRecordButtonState(true);
+  }
 }
 
 function finishCurrentRun() {
@@ -8126,14 +8308,28 @@ function finishCurrentRun() {
     return;
   }
 
-  if (timer) toggleRecording();
+  // Arrêter proprement le timer et GPS
+  if (timer) { clearInterval(timer); timer = null; }
+  if (isPaused && pauseStartTime) { totalPausedMs += Date.now() - pauseStartTime; }
+  isPaused = false;
+  stopGPS();
 
-  const hours = seconds / 3600;
-  const speed = hours > 0 ? distance / hours : 0;
+  // Durée totale depuis le wall-clock (résistant au throttling Android)
+  const totalSec = runStartTime ? Math.floor((Date.now() - runStartTime - totalPausedMs) / 1000) : seconds;
+  const pausedSec = Math.floor(totalPausedMs / 1000);
+  const movingSec = totalSec - pausedSec;
+
+  // Vitesse calculée sur le temps en mouvement uniquement
+  const movingHours = movingSec / 3600;
+  const speed = movingHours > 0 && distance > 0 ? distance / movingHours : 0;
+
   pendingRunSummary = {
-    km: Number(distance.toFixed(1)),
+    km: Number(distance.toFixed(2)),
     speed: Number(speed.toFixed(1)),
-    duration: seconds,
+    durationSec: totalSec,        // secondes — nouveau format canonique
+    movingSec,
+    pausedSec,
+    pauseCount,
     elevationGain: Math.round(elevationGain),
     maxSpeed: Number(maxSpeed.toFixed(1)),
     altMin: minAlt !== null ? Math.round(minAlt) : null,
@@ -8221,7 +8417,10 @@ function saveCurrentRun() {
     type: document.querySelector("#runType").value,
     km: pendingRunSummary.km,
     speed: pendingRunSummary.speed,
-    duration: pendingRunSummary.duration ? Math.round(pendingRunSummary.duration / 60) : null,
+    durationSec: pendingRunSummary.durationSec || 0,  // SECONDES — format canonique
+    movingSec: pendingRunSummary.movingSec || pendingRunSummary.durationSec || 0,
+    pausedSec: pendingRunSummary.pausedSec || 0,
+    pauseCount: pendingRunSummary.pauseCount || 0,
     elevationGain: pendingRunSummary.elevationGain || 0,
     maxSpeed: pendingRunSummary.maxSpeed || 0,
     altMin: pendingRunSummary.altMin ?? null,
@@ -8245,11 +8444,11 @@ function saveCurrentRun() {
     state.selectedDogIds.includes(dog.id) ? { ...dog, km: (dog.km || 0) + run.km } : dog
   ));
 
-  seconds = 0;
-  distance = 0;
-  distanceEl.textContent = "0.00";
-  durationEl.textContent = "00:00";
-  speedEl.textContent = "0.0";
+  seconds = 0; distance = 0; runStartTime = null; totalPausedMs = 0;
+  pauseStartTime = null; isPaused = false; pauseCount = 0;
+  if (distanceEl) distanceEl.textContent = "0.00";
+  if (durationEl) { durationEl.textContent = "00:00"; durationEl.style.opacity = ""; }
+  if (speedEl) speedEl.textContent = "0.0";
   recordButton.textContent = "Demarrer";
   recordButton.classList.remove("running");
   pendingRunSummary = null;
@@ -8302,7 +8501,7 @@ document.addEventListener("click", () => {
 gpsUnitPanel?.addEventListener("click", e => e.stopPropagation());
 
 function applyGpsUnitUI() {
-  const usePace = state.gpsSpeedPace || false;
+  const usePace = state.gpsSpeedPace ?? true;
   const useMi   = state.gpsUnitMi   || false;
   // Labels unités
   const paceUnit = document.getElementById("pace-unit");
@@ -8326,7 +8525,70 @@ document.getElementById("unit-pace")?.addEventListener("click", () => { state.gp
 
 applyGpsUnitUI();
 
-// Sélecteur engin
+// Sélecteur engin + long-press pour modifier le poids
+let _enginLongPressTimer = null;
+let _enginEditing = null;
+
+function openEnginWeightModal(btn) {
+  _enginEditing = btn;
+  const engin = btn.dataset.engin;
+  const poids = parseInt(state.enginPoids?.[engin] ?? btn.dataset.poids ?? 0);
+  document.getElementById("engin-weight-title").textContent = "⚙ " + engin;
+  const input = document.getElementById("engin-weight-input");
+  input.value = poids;
+  const overlay = document.getElementById("engin-weight-overlay");
+  overlay.style.display = "flex";
+  updateEnginChargePreview(engin, poids);
+  input.addEventListener("input", () => {
+    updateEnginChargePreview(engin, parseInt(input.value) || 0);
+  }, { signal: overlay._ac?.signal });
+  overlay._ac = new AbortController();
+  input.addEventListener("input", () => {
+    updateEnginChargePreview(engin, parseInt(input.value) || 0);
+  }, { signal: overlay._ac.signal });
+}
+
+function updateEnginChargePreview(engin, poidsEngin) {
+  const POIDS_MUSHER = 75;
+  const nbChiens = (state.selectedDogs || state.dogs || []).length || 1;
+  const poidsTotal = engin === "Canicross" ? 0 : poidsEngin + POIDS_MUSHER;
+  const parChien = nbChiens > 0 ? Math.round(poidsTotal / nbChiens) : 0;
+  document.getElementById("engin-charge-total").textContent = poidsTotal;
+  document.getElementById("engin-charge-dogs").textContent = nbChiens;
+  document.getElementById("engin-charge-per").textContent = parChien;
+  const levelEl = document.getElementById("engin-charge-level");
+  if (engin === "Canicross") {
+    levelEl.textContent = "🏃 Canicross — pas de charge mécanique";
+    levelEl.style.color = "#888";
+  } else if (parChien > 50) {
+    levelEl.textContent = "🔴 Charge lourde — adapte la distance";
+    levelEl.style.color = "#c0392b";
+  } else if (parChien > 25) {
+    levelEl.textContent = "🟠 Charge modérée — surveille la récupération";
+    levelEl.style.color = "#ff6a00";
+  } else {
+    levelEl.textContent = "🟢 Charge légère — conditions idéales";
+    levelEl.style.color = "#1a7a4a";
+  }
+}
+
+window.closeEnginWeightModal = function() {
+  const overlay = document.getElementById("engin-weight-overlay");
+  overlay.style.display = "none";
+  overlay._ac?.abort();
+};
+
+window.saveEnginWeight = function() {
+  if (!_enginEditing) return;
+  const engin = _enginEditing.dataset.engin;
+  const poids = parseInt(document.getElementById("engin-weight-input").value) || 0;
+  if (!state.enginPoids) state.enginPoids = {};
+  state.enginPoids[engin] = poids;
+  _enginEditing.dataset.poids = poids;
+  saveState();
+  closeEnginWeightModal();
+};
+
 document.querySelectorAll(".engin-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".engin-btn").forEach(b => b.classList.remove("active"));
@@ -8334,7 +8596,19 @@ document.querySelectorAll(".engin-btn").forEach(btn => {
     state.selectedEngin = btn.dataset.engin;
     saveState();
   });
+  // Long press pour modifier le poids
+  btn.addEventListener("pointerdown", () => {
+    _enginLongPressTimer = setTimeout(() => openEnginWeightModal(btn), 600);
+  });
+  btn.addEventListener("pointerup", () => clearTimeout(_enginLongPressTimer));
+  btn.addEventListener("pointerleave", () => clearTimeout(_enginLongPressTimer));
+  btn.addEventListener("contextmenu", e => { e.preventDefault(); openEnginWeightModal(btn); });
+  // Restaurer poids personnalisé depuis state
+  if (state.enginPoids?.[btn.dataset.engin] !== undefined) {
+    btn.dataset.poids = state.enginPoids[btn.dataset.engin];
+  }
 });
+
 // Restaurer l'engin sélectionné au chargement
 if (state.selectedEngin) {
   const saved = document.querySelector(`.engin-btn[data-engin="${state.selectedEngin}"]`);
@@ -8348,7 +8622,9 @@ if (state.selectedEngin) {
 document.querySelector("#toggle-dog-picker-record")?.addEventListener("click", () => {
   _sledEditMode = !_sledEditMode;
   const btn = document.querySelector("#toggle-dog-picker-record");
-  if (btn) btn.textContent = _sledEditMode ? "✓ Terminé" : "Modifier ✏️";
+  if (btn) btn.textContent = _sledEditMode ? "Terminé" : "Modifier";
+  const diagram = document.getElementById("gps-sled-diagram");
+  if (diagram) diagram.style.display = _sledEditMode ? "" : "none";
   renderSledDiagram();
 });
 
@@ -9723,8 +9999,8 @@ document.getElementById("export-csv-btn")?.addEventListener("click", () => {
   const rows = runs.map(r => [
     r.date || "",
     Number(r.km || 0).toFixed(2),
-    r.duration ? Math.round(r.duration / 60) : "",
-    (r.duration && r.km) ? (r.km / (r.duration / 3600)).toFixed(1) : "",
+    getRunDurationSec(r) > 0 ? Math.round(getRunDurationSec(r) / 60) : "",
+    (getRunDurationSec(r) > 0 && r.km) ? (r.km / (getRunDurationSec(r) / 3600)).toFixed(1) : "",
     (r.dogIds || []).map(id => { const d = state.dogs.find(dd => dd.id === id); return d ? d.name : id; }).join(" / "),
     r.recovery || "",
     (r.notes || "").replace(/"/g, "'")
@@ -10341,8 +10617,9 @@ function renderFeed() {
     const reactions = post.reactions || [];
     const myReact   = reactions.includes(state.deviceId);
     const initials  = (post.user_name || "M").slice(0, 2).toUpperCase();
-    const mins      = post.duration ? Math.round(post.duration / 60) : null;
-    const pace      = (post.km && post.duration) ? (post.duration / 60 / post.km).toFixed(1) : null;
+    const postDurSec = getRunDurationSec(post);
+    const mins      = postDurSec > 0 ? Math.round(postDurSec / 60) : null;
+    const pace      = (post.km && postDurSec > 0) ? (postDurSec / 60 / post.km).toFixed(1) : null;
     const timeAgo   = formatTimeAgo(post.created_at);
 
     return `
@@ -10943,10 +11220,7 @@ async function generateShareImage(run) {
   const statsY = mapY + mapH + 60;
   const km     = Number(run.km || 0).toFixed(1);
   const speed  = run.avgSpeed ? Number(run.avgSpeed).toFixed(1) : (run.speed ? Number(run.speed).toFixed(1) : "—");
-  const dur    = (() => {
-    if (run.duration) { const m = Math.round(run.duration / 60); return m >= 60 ? `${Math.floor(m/60)}h${String(m%60).padStart(2,"0")}` : `${m} min`; }
-    return "—";
-  })();
+  const dur    = formatDurationHuman(getRunDurationSec(run));
 
   const stats = [
     { val: `${km}`, unit: "km",    label: "Distance" },

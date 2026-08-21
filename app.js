@@ -2633,6 +2633,12 @@ let lastAltitude = null;
 let maxSpeed = 0;
 let minAlt = null, maxAlt = null;
 let pendingRunSummary = null;
+// Wall-clock run tracking (résistant au throttling Android)
+let runStartTime = null;   // Date.now() au démarrage
+let totalPausedMs = 0;     // ms de pause cumulées
+let pauseStartTime = null; // Date.now() au début de la pause courante
+let isPaused = false;
+let pauseCount = 0;
 let planWeatherLoading = false;
 let remoteRaceCatalog = [];
 let raceRadarLoading = false;
@@ -3240,7 +3246,7 @@ function render() {
   );
   let enginPace;
   if (runsForEngin.length >= 3) {
-    const avgPace = runsForEngin.reduce((sum, r) => sum + (r.duration / r.distance), 0) / runsForEngin.length;
+    const avgPace = runsForEngin.reduce((sum, r) => sum + ((getRunDurationSec(r) / 60) / r.distance), 0) / runsForEngin.length;
     enginPace = avgPace; // min/km basé sur les vraies sorties
   } else {
     enginPace = enginDefaultPace[activeEngin] ?? 4.5;
@@ -3321,9 +3327,8 @@ function render() {
       dashFeedCards.innerHTML = recentRuns.map((run) => {
         const kmRaw = Number(run.km || 0).toFixed(1).replace(".", ",");
         const speedRaw = Number(run.avgSpeed || run.speed || 0).toFixed(1).replace(".", ",");
-        const dur = run.duration || run.time || 0;
-        const h = Math.floor(dur / 60), m = dur % 60;
-        const durStr = h > 0 ? `${h}h${String(m).padStart(2,"0")}` : `${m} min`;
+        const durSec = getRunDurationSec(run);
+        const durStr = formatDurationHuman(durSec);
         const d = run.date ? new Date(run.date + "T12:00:00") : new Date(run.createdAt || Date.now());
         const diffD = Math.round((Date.now() - d.getTime()) / 86400000);
         const dateStr = diffD === 0 ? "Aujourd'hui" : diffD === 1 ? "Hier" :
@@ -4539,7 +4544,7 @@ function renderRuns() {
     const hasTrace = Array.isArray(run.path) && run.path.length > 1;
     const km = Number(run.km).toFixed(1);
     const speed = Number(run.avgSpeed || 0).toFixed(1);
-    const dur = run.duration ? formatDuration(run.duration) : "--:--";
+    const dur = getRunDurationSec(run) > 0 ? formatDuration(getRunDurationSec(run)) : "--:--";
     const paceMin = (run.avgSpeed && run.avgSpeed > 0) ? Math.floor(60 / run.avgSpeed) : null;
     const paceSec = (run.avgSpeed && run.avgSpeed > 0) ? Math.round((60 / run.avgSpeed - Math.floor(60 / run.avgSpeed)) * 60) : null;
     const paceStr = paceMin !== null ? `${paceMin}:${String(paceSec).padStart(2,'0')}` : "--:--";
@@ -4675,7 +4680,7 @@ function shareRunData(index) {
   const run = state.runs[index];
   if (!run) return;
   const km = Number(run.km).toFixed(1);
-  const dur = run.duration ? formatDuration(run.duration) : null;
+  const dur = getRunDurationSec(run) > 0 ? formatDuration(getRunDurationSec(run)) : null;
   const speed = run.avgSpeed ? Number(run.avgSpeed).toFixed(1) + " km/h" : null;
   const elev = run.elevationGain > 0 ? `D+ ${run.elevationGain} m` : null;
   const dogs = run.team?.map(id => state.dogs.find(d => d.id === id)?.name).filter(Boolean).join(", ");
@@ -4814,13 +4819,9 @@ function renderSeasons() {
   const totalKm    = allRuns.reduce((s, r) => s + Number(r.km || 0), 0);
   const totalRuns  = allRuns.length;
   const totalSecs  = allRuns.reduce((s, r) => {
-    const dur = r.duration || r.durationSec || 0;
-    return s + Number(dur);
+    return s + getRunDurationSec(r);
   }, 0);
-  const totalHours = totalSecs >= 60 ? (totalSecs / 3600) : allRuns.reduce((s, r) => {
-    // fallback: try durationMin
-    return s + Number(r.durationMin || 0) / 60;
-  }, 0);
+  const totalHours = totalSecs / 3600;
 
   let html = `<div style="padding:12px 16px 24px">`;
 
@@ -5076,10 +5077,17 @@ function openRunDetail(index) {
   }
 
   // Durée réelle
-  const durSec = run.duration || 0;
-  const durMin = Math.round(durSec > 300 ? durSec / 60 : durSec); // compatibilité anciens formats (minutes ou secondes)
-  const h = Math.floor(durMin / 60), m = durMin % 60;
-  document.getElementById("rd-duration").textContent = durMin > 0 ? (h > 0 ? `${h}h${String(m).padStart(2,"0")}` : `${m} min`) : "—";
+  const durTotalSec = getRunDurationSec(run);
+  const durMovingSec = run.movingSec || durTotalSec;
+  const durPausedSec = run.pausedSec || 0;
+  document.getElementById("rd-duration").textContent = formatDurationHuman(durTotalSec);
+  const rdMoving = document.getElementById("rd-moving-time");
+  if (rdMoving) {
+    rdMoving.textContent = durPausedSec > 0
+      ? `Mouvement : ${formatDurationHuman(durMovingSec)} · Pause : ${formatDurationHuman(durPausedSec)} (×${run.pauseCount || 1})`
+      : "";
+    rdMoving.style.display = durPausedSec > 0 ? "" : "none";
+  }
 
   // Infos
   const enginEl = document.getElementById("rd-engin");
@@ -7904,6 +7912,22 @@ function formatDuration(totalSeconds) {
   const secs = (totalSeconds % 60).toString().padStart(2, "0");
   return `${minutes}:${secs}`;
 }
+// Retourne toujours des secondes — gère l'ancien format (minutes) et le nouveau (secondes)
+function getRunDurationSec(r) {
+  if (r == null) return 0;
+  if (r.durationSec != null) return Number(r.durationSec);
+  // Ancien format : duration stocké en minutes
+  if (r.duration != null) return Number(r.duration) * 60;
+  return 0;
+}
+// Formate une durée en secondes → "X min" ou "Xh YY"
+function formatDurationHuman(totalSec) {
+  if (!totalSec || totalSec < 10) return "—";
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  if (h > 0) return `${h}h${String(m).padStart(2, "0")}`;
+  return `${m} min`;
+}
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
 
@@ -8054,13 +8078,20 @@ function isCapacitorNative() {
 }
 
 function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
-  if (accuracy > 50) {
+  if (isPaused) return;
+  if (accuracy > 25) {
     updateMapPosition(lat, lon, t('gps_searching_acc').replace('{acc}', Math.round(accuracy)));
     return;
   }
   if (lastPosition) {
     const jump = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
     if (jump > 0.3) return;
+    // Rejeter les vitesses irréalistes (>80 km/h pour mushing)
+    const dtSec = (Date.now() - lastPosition.timestamp) / 1000;
+    if (dtSec > 0 && dtSec < 30) {
+      const speedKmh = (jump / dtSec) * 3600;
+      if (speedKmh > 80) return;
+    }
   }
   if (lastPosition) {
     const moved = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
@@ -8119,53 +8150,55 @@ function updateGpsDisplay(distKm, speedKmh) {
 }
 
 async function startGPS() {
+  // Réinitialise TOUT l'état — seulement au démarrage d'une nouvelle sortie
   stopLiveLocation();
   gpsPath = [];
   lastPosition = null;
   elevationGain = 0;
   lastAltitude = null;
   if (polyline) polyline.setLatLngs([]);
+  await _startGPSWatcher(true);
+}
 
+async function _resumeGPS() {
+  // Reprend le GPS sans toucher à gpsPath/lastPosition/distance
+  // Ajoute un marqueur de coupure pour ne pas relier les points de part et d'autre de la pause
+  gpsPath.push({ gap: true });
+  lastPosition = null; // évite une ligne artificielle depuis le dernier point avant pause
+  await _startGPSWatcher(false);
+}
+
+async function _startGPSWatcher(fetchWeather) {
   let weatherFetched = false;
-
   if (isCapacitorNative()) {
-    // ── Mode Android natif : background geolocation ──────────────────────
     try {
       const BackgroundGeolocation = window.Capacitor?.Plugins?.BackgroundGeolocation;
       if (!BackgroundGeolocation) throw new Error("Plugin non disponible");
-
       watchId = await BackgroundGeolocation.addWatcher(
-        {
-          backgroundMessage: "MushTrack enregistre votre parcours.",
-          backgroundTitle: "MushTrack GPS",
-          requestPermissions: true,
-          stale: false,
-          distanceFilter: 5
-        },
+        { backgroundMessage: "MushTrack enregistre votre parcours.", backgroundTitle: "MushTrack GPS", requestPermissions: true, stale: false, distanceFilter: 5 },
         (position, error) => {
-          if (error) { console.error("BG GPS error:", error); return; }
+          if (error || isPaused) { console.error("BG GPS error:", error); return; }
           const { latitude: lat, longitude: lon, accuracy, speed: gpsSpeedMs } = position;
-          if (!weatherFetched) { weatherFetched = true; fetchAndShowWeather(lat, lon); }
+          if (fetchWeather && !weatherFetched) { weatherFetched = true; fetchAndShowWeather(lat, lon); }
           onGPSPosition(lat, lon, accuracy, gpsSpeedMs);
         }
       );
-
     } catch (e) {
       console.error("BackgroundGeolocation plugin error:", e);
-      _startGPSBrowser(weatherFetched);
+      _startGPSBrowser(fetchWeather, weatherFetched);
     }
   } else {
-    // ── Mode PWA navigateur : geolocation classique ───────────────────────
-    _startGPSBrowser(weatherFetched);
+    _startGPSBrowser(fetchWeather, weatherFetched);
   }
 }
 
-function _startGPSBrowser(weatherFetched) {
+function _startGPSBrowser(fetchWeather, weatherFetched = false) {
   if (!navigator.geolocation) { alert("GPS non disponible"); return; }
   watchId = navigator.geolocation.watchPosition(
     (position) => {
+      if (isPaused) return;
       const { latitude: lat, longitude: lon, accuracy, speed: gpsSpeedMs, altitude } = position.coords;
-      if (!weatherFetched) { weatherFetched = true; fetchAndShowWeather(lat, lon); }
+      if (fetchWeather && !weatherFetched) { weatherFetched = true; fetchAndShowWeather(lat, lon); }
       onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude);
     },
     (error) => { console.error("GPS error:", error); },
@@ -8201,46 +8234,72 @@ function setRecordButtonState(running) {
   }
 }
 
+function _tickTimer() {
+  // Wall-clock : résistant au throttling Android
+  const elapsed = Math.floor((Date.now() - runStartTime - totalPausedMs) / 1000);
+  seconds = elapsed;
+  if (durationEl) durationEl.textContent = formatDuration(elapsed);
+  const paceEl = document.querySelector("#pace");
+  const paceUnitEl = document.querySelector("#pace-unit");
+  const paceLabel = document.querySelector("#pace-label");
+  const usePace = state.gpsSpeedPace ?? true;
+  const useMi   = state.gpsUnitMi   || false;
+  if (usePace) {
+    if (paceEl && distance > 0.01 && elapsed > 5) {
+      const distUnit = useMi ? distance * 0.621371 : distance;
+      const minPerUnit = (elapsed / 60) / distUnit;
+      const pMin = Math.floor(minPerUnit);
+      const pSec = Math.round((minPerUnit - pMin) * 60);
+      paceEl.textContent = `${pMin}:${String(pSec).padStart(2, "0")}`;
+      if (paceUnitEl) paceUnitEl.textContent = useMi ? "min/mi" : "min/km";
+    }
+    if (speedEl) speedEl.textContent = "—";
+    if (paceLabel) paceLabel.textContent = "Allure";
+  }
+}
+
 function toggleRecording() {
   postRunForm.classList.add("hidden");
 
-  if (timer) {
-    clearInterval(timer);
-    timer = null;
-
-    stopGPS().then(() => startLiveLocation());
-
-
-    setRecordButtonState(false);
+  // ── Démarrage initial ─────────────────────────────────────────
+  if (!timer && !isPaused) {
+    runStartTime = Date.now();
+    totalPausedMs = 0;
+    pauseStartTime = null;
+    pauseCount = 0;
+    isPaused = false;
+    timer = setInterval(_tickTimer, 1000);
+    startGPS();
+    setRecordButtonState(true);
     return;
   }
 
-  timer = setInterval(() => {
-    seconds += 1;
-    durationEl.textContent = formatDuration(seconds);
-    const paceEl = document.querySelector("#pace");
-    const paceUnitEl = document.querySelector("#pace-unit");
-    const usePace = state.gpsSpeedPace ?? true;
-    const useMi   = state.gpsUnitMi   || false;
-    if (usePace) {
-      // Afficher allure min/km ou min/mi
-      if (paceEl && distance > 0) {
-        const distUnit = useMi ? distance * 0.621371 : distance;
-        const minPerUnit = (seconds / 60) / distUnit;
-        const pMin = Math.floor(minPerUnit);
-        const pSec = Math.round((minPerUnit - pMin) * 60);
-        paceEl.textContent = `${pMin}:${String(pSec).padStart(2, "0")}`;
-        if (paceUnitEl) paceUnitEl.textContent = useMi ? "min/mi" : "min/km";
-      }
-    } else {
-      // Afficher km/h ou mph — vitesse calculée depuis distance/temps
-      if (paceEl) paceEl.textContent = "--:--";
-      if (paceUnitEl) paceUnitEl.textContent = useMi ? "mph" : "km/h";
+  // ── Mise en pause ─────────────────────────────────────────────
+  if (timer && !isPaused) {
+    clearInterval(timer);
+    timer = null;
+    pauseStartTime = Date.now();
+    isPaused = true;
+    stopGPS();
+    setRecordButtonState(false);
+    if (durationEl) {
+      durationEl.style.opacity = "0.45";
+      durationEl.title = "En pause";
     }
-  }, 1000);
+    return;
+  }
 
-  startGPS();
-  setRecordButtonState(true);
+  // ── Reprise ───────────────────────────────────────────────────
+  if (isPaused) {
+    totalPausedMs += Date.now() - pauseStartTime;
+    pauseStartTime = null;
+    pauseCount++;
+    isPaused = false;
+    if (durationEl) { durationEl.style.opacity = ""; durationEl.title = ""; }
+    timer = setInterval(_tickTimer, 1000);
+    _resumeGPS();
+    setRecordButtonState(true);
+  }
 }
 
 function finishCurrentRun() {
@@ -8249,14 +8308,28 @@ function finishCurrentRun() {
     return;
   }
 
-  if (timer) toggleRecording();
+  // Arrêter proprement le timer et GPS
+  if (timer) { clearInterval(timer); timer = null; }
+  if (isPaused && pauseStartTime) { totalPausedMs += Date.now() - pauseStartTime; }
+  isPaused = false;
+  stopGPS();
 
-  const hours = seconds / 3600;
-  const speed = hours > 0 ? distance / hours : 0;
+  // Durée totale depuis le wall-clock (résistant au throttling Android)
+  const totalSec = runStartTime ? Math.floor((Date.now() - runStartTime - totalPausedMs) / 1000) : seconds;
+  const pausedSec = Math.floor(totalPausedMs / 1000);
+  const movingSec = totalSec - pausedSec;
+
+  // Vitesse calculée sur le temps en mouvement uniquement
+  const movingHours = movingSec / 3600;
+  const speed = movingHours > 0 && distance > 0 ? distance / movingHours : 0;
+
   pendingRunSummary = {
-    km: Number(distance.toFixed(1)),
+    km: Number(distance.toFixed(2)),
     speed: Number(speed.toFixed(1)),
-    duration: seconds,
+    durationSec: totalSec,        // secondes — nouveau format canonique
+    movingSec,
+    pausedSec,
+    pauseCount,
     elevationGain: Math.round(elevationGain),
     maxSpeed: Number(maxSpeed.toFixed(1)),
     altMin: minAlt !== null ? Math.round(minAlt) : null,
@@ -8344,7 +8417,10 @@ function saveCurrentRun() {
     type: document.querySelector("#runType").value,
     km: pendingRunSummary.km,
     speed: pendingRunSummary.speed,
-    duration: pendingRunSummary.duration ? Math.round(pendingRunSummary.duration / 60) : null,
+    durationSec: pendingRunSummary.durationSec || 0,  // SECONDES — format canonique
+    movingSec: pendingRunSummary.movingSec || pendingRunSummary.durationSec || 0,
+    pausedSec: pendingRunSummary.pausedSec || 0,
+    pauseCount: pendingRunSummary.pauseCount || 0,
     elevationGain: pendingRunSummary.elevationGain || 0,
     maxSpeed: pendingRunSummary.maxSpeed || 0,
     altMin: pendingRunSummary.altMin ?? null,
@@ -8368,11 +8444,11 @@ function saveCurrentRun() {
     state.selectedDogIds.includes(dog.id) ? { ...dog, km: (dog.km || 0) + run.km } : dog
   ));
 
-  seconds = 0;
-  distance = 0;
-  distanceEl.textContent = "0.00";
-  durationEl.textContent = "00:00";
-  speedEl.textContent = "0.0";
+  seconds = 0; distance = 0; runStartTime = null; totalPausedMs = 0;
+  pauseStartTime = null; isPaused = false; pauseCount = 0;
+  if (distanceEl) distanceEl.textContent = "0.00";
+  if (durationEl) { durationEl.textContent = "00:00"; durationEl.style.opacity = ""; }
+  if (speedEl) speedEl.textContent = "0.0";
   recordButton.textContent = "Demarrer";
   recordButton.classList.remove("running");
   pendingRunSummary = null;
@@ -9923,8 +9999,8 @@ document.getElementById("export-csv-btn")?.addEventListener("click", () => {
   const rows = runs.map(r => [
     r.date || "",
     Number(r.km || 0).toFixed(2),
-    r.duration ? Math.round(r.duration / 60) : "",
-    (r.duration && r.km) ? (r.km / (r.duration / 3600)).toFixed(1) : "",
+    getRunDurationSec(r) > 0 ? Math.round(getRunDurationSec(r) / 60) : "",
+    (getRunDurationSec(r) > 0 && r.km) ? (r.km / (getRunDurationSec(r) / 3600)).toFixed(1) : "",
     (r.dogIds || []).map(id => { const d = state.dogs.find(dd => dd.id === id); return d ? d.name : id; }).join(" / "),
     r.recovery || "",
     (r.notes || "").replace(/"/g, "'")
@@ -10541,8 +10617,9 @@ function renderFeed() {
     const reactions = post.reactions || [];
     const myReact   = reactions.includes(state.deviceId);
     const initials  = (post.user_name || "M").slice(0, 2).toUpperCase();
-    const mins      = post.duration ? Math.round(post.duration / 60) : null;
-    const pace      = (post.km && post.duration) ? (post.duration / 60 / post.km).toFixed(1) : null;
+    const postDurSec = getRunDurationSec(post);
+    const mins      = postDurSec > 0 ? Math.round(postDurSec / 60) : null;
+    const pace      = (post.km && postDurSec > 0) ? (postDurSec / 60 / post.km).toFixed(1) : null;
     const timeAgo   = formatTimeAgo(post.created_at);
 
     return `
@@ -11143,10 +11220,7 @@ async function generateShareImage(run) {
   const statsY = mapY + mapH + 60;
   const km     = Number(run.km || 0).toFixed(1);
   const speed  = run.avgSpeed ? Number(run.avgSpeed).toFixed(1) : (run.speed ? Number(run.speed).toFixed(1) : "—");
-  const dur    = (() => {
-    if (run.duration) { const m = Math.round(run.duration / 60); return m >= 60 ? `${Math.floor(m/60)}h${String(m%60).padStart(2,"0")}` : `${m} min`; }
-    return "—";
-  })();
+  const dur    = formatDurationHuman(getRunDurationSec(run));
 
   const stats = [
     { val: `${km}`, unit: "km",    label: "Distance" },
