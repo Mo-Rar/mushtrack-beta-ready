@@ -2853,7 +2853,7 @@ async function flushOfflineQueue() {
   }
 }
 
-window.addEventListener("online",  () => { updateOfflineBanner(); flushOfflineQueue(); });
+window.addEventListener("online",  () => { updateOfflineBanner(); flushOfflineQueue(); syncLocalReports(); });
 window.addEventListener("offline", () => { updateOfflineBanner(); });
 
 // Pousse les données vers Supabase (upsert sur user_id)
@@ -7029,7 +7029,7 @@ function mergeRaceSources(items) {
   return [...map.values()];
 }
 
-async function fetchRaceRadar() {
+async function fetchRaceRadar(forceRefresh = false) {
   if (raceRadarLoading) return;
   const region = document.querySelector("#race-search-region")?.value.trim() || "";
   const type = document.querySelector("#race-search-type")?.value || "";
@@ -7042,6 +7042,7 @@ async function fetchRaceRadar() {
   if (distance) params.set("distance", distance);
   if (surface) params.set("surface", surface);
   if (reliability) params.set("reliability", reliability);
+  if (forceRefresh) params.set("nocache", Date.now());
 
   raceRadarLoading = true;
   raceRadarStatus = "Recherche web en cours";
@@ -7229,6 +7230,68 @@ function reportMissingRace() {
   setTimeout(() => document.getElementById("mr-name")?.focus(), 50);
 }
 
+// ── Détection de doublons ───────────────────────────────────────────────────
+
+function normalizeRaceText(str) {
+  if (!str) return "";
+  return str.toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ").trim();
+}
+
+function findSimilarRace(candidate, allRaces) {
+  const cn = normalizeRaceText(candidate.name);
+  const cWords = cn.split(" ").filter(w => w.length > 3);
+  if (!cWords.length) return null;
+
+  return allRaces.find(r => {
+    if (r.id === candidate.id) return false;
+    const rn = normalizeRaceText(r.name);
+    const rWords = rn.split(" ").filter(w => w.length > 3);
+    if (!rWords.length) return false;
+
+    const common = cWords.filter(w => rWords.includes(w));
+    const ratio = common.length / Math.max(cWords.length, rWords.length);
+    if (ratio < 0.5) return false;
+
+    if (candidate.date && r.date) {
+      const diff = Math.abs(new Date(candidate.date) - new Date(r.date)) / 86400000;
+      if (diff <= 45) return true;
+    }
+    if (candidate.location && r.location) {
+      const cl = normalizeRaceText(candidate.location).split(" ")[0];
+      if (cl && normalizeRaceText(r.location).includes(cl)) return true;
+    }
+    return ratio >= 0.7;
+  }) || null;
+}
+
+// ── Sync des signalements sauvegardés hors-ligne ────────────────────────────
+
+async function syncLocalReports() {
+  if (!supabase) return;
+  const pending = (state.missingRaceReports || []).filter(r => r.localOnly);
+  if (!pending.length) return;
+
+  for (const report of pending) {
+    try {
+      await supabase.from("mushtrack_races").insert([{
+        id: report.id, name: report.name, date: report.date, type: report.type,
+        region: report.location, location: report.location, url: report.url,
+        reliability: "user", source: "Signalee", surface: report.surface,
+        notes: report.notes, status: "pending"
+      }]);
+      const idx = state.missingRaceReports.findIndex(r => r.id === report.id);
+      if (idx !== -1) state.missingRaceReports[idx].localOnly = false;
+      saveState();
+      showSyncBadge(`"${report.name}" envoyée pour validation.`);
+    } catch { /* restera localOnly, réessayera au prochain reconnect */ }
+  }
+}
+
+// ── Signalement d'une course manquante ─────────────────────────────────────
+
 async function submitMissingRace() {
   const name     = document.getElementById("mr-name")?.value?.trim();
   const type     = document.getElementById("mr-type")?.value;
@@ -7246,6 +7309,14 @@ async function submitMissingRace() {
     return;
   }
   errEl.style.display = "none";
+
+  // Vérification doublon avant envoi
+  const allKnown = mergeRaceSources([...raceCatalog, ...state.missingRaceReports, ...remoteRaceCatalog]);
+  const similar = findSimilarRace({ name, date, location }, allKnown);
+  if (similar) {
+    const proceed = confirm(`⚠️ Course similaire déjà présente :\n"${similar.name}" — ${similar.date || "date inconnue"} · ${similar.location || ""}\n\nAjouter quand même ?`);
+    if (!proceed) return;
+  }
 
   const report = {
     id: `pending-${Date.now()}`,
@@ -7267,16 +7338,18 @@ async function submitMissingRace() {
       document.getElementById("missing-race-overlay")?.remove();
       showSyncBadge(`Merci ! "${name}" soumise pour validation.`);
     } catch {
+      report.localOnly = true;
       state.missingRaceReports.unshift(report);
       saveState();
       document.getElementById("missing-race-overlay")?.remove();
-      showSyncBadge(`"${name}" sauvegardée localement.`);
+      showSyncBadge(`"${name}" sauvegardée — sera envoyée à la reconnexion.`);
     }
   } else {
+    report.localOnly = true;
     state.missingRaceReports.unshift(report);
     saveState();
     document.getElementById("missing-race-overlay")?.remove();
-    showSyncBadge(`Merci ! "${name}" soumise pour validation.`);
+    showSyncBadge(`"${name}" sauvegardée localement.`);
   }
   renderRaceSearch();
 }
@@ -7302,31 +7375,76 @@ function renderAdminPanel() {
         panel.innerHTML = `<div class="admin-panel-box"><p class="empty-state" style="color:#e53e3e">Erreur Supabase : ${error.message}<br><small>Vérifie que la colonne <b>status</b> existe et que les politiques RLS sont actives.</small></p></div>`;
         return;
       }
+
+      const approved = mergeRaceSources([...raceCatalog, ...remoteRaceCatalog.filter(r => r.status === "approved")]);
+
       if (!data || data.length === 0) {
-        panel.innerHTML = `<div class="admin-panel-box"><span class="admin-panel-title">✅ Aucune course en attente</span></div>`;
+        panel.innerHTML = `
+          <div class="admin-panel-box">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <span class="admin-panel-title" style="margin:0">✅ Aucune course en attente</span>
+              <button id="admin-refresh-catalog" class="secondary-button" type="button" style="font-size:0.72rem;padding:5px 10px">🔄 Actualiser</button>
+            </div>
+          </div>`;
+        panel.querySelector("#admin-refresh-catalog")?.addEventListener("click", async (e) => {
+          e.currentTarget.textContent = "…";
+          await fetchRaceRadar(true);
+          renderAdminPanel();
+        });
         return;
       }
+
       panel.innerHTML = `
         <div class="admin-panel-box">
-          <span class="admin-panel-title">🔐 Admin — ${data.length} course(s) en attente</span>
-          ${data.map((race) => `
-            <article class="admin-race-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <span class="admin-panel-title" style="margin:0">🔐 Admin — ${data.length} en attente</span>
+            <button id="admin-refresh-catalog" class="secondary-button" type="button" style="font-size:0.72rem;padding:5px 10px">🔄 Actualiser</button>
+          </div>
+          ${data.map((race) => {
+            const similar = findSimilarRace(race, approved);
+            const dupWarn = similar
+              ? `<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:5px 8px;font-size:0.7rem;color:#856404;margin-top:4px">⚠️ Similaire à "<strong>${similar.name}</strong>" (${similar.date || "?"})</div>`
+              : "";
+            const srcLine = race.url
+              ? `<a href="${race.url}" target="_blank" rel="noopener" style="font-size:0.7rem;color:#fc4c02;word-break:break-all">${race.url}</a>`
+              : `<span style="font-size:0.7rem;color:#bbb">Aucune source fournie</span>`;
+            const distStr = race.distance ? ` · ${race.distance} km` : "";
+            const surfStr = race.surface && race.surface !== "A verifier" ? ` · ${race.surface}` : "";
+            return `
+            <article class="admin-race-card" data-race-id="${race.id}">
               <div class="admin-race-info">
                 <strong>${race.name}</strong>
-                <span>${race.date || "Date inconnue"} · ${race.location || ""} · ${race.type || ""}</span>
-                ${race.notes ? `<small>${race.notes}</small>` : ""}
+                <span>${race.date || "Date inconnue"} · ${race.location || "Lieu inconnu"} · ${race.type || ""}${distStr}${surfStr}</span>
+                ${race.notes ? `<small style="color:#888">${race.notes}</small>` : ""}
+                <div style="margin-top:4px">${srcLine}</div>
+                ${dupWarn}
               </div>
               <div class="admin-race-actions">
-                <button class="primary-button admin-approve-btn" data-approve="${race.id}" type="button">✅ Approuver</button>
+                <button class="primary-button admin-approve-btn" data-approve="${race.id}" data-name="${race.name}" type="button">✅ Approuver</button>
                 <button class="danger-button admin-reject-btn" data-reject="${race.id}" type="button">❌ Rejeter</button>
               </div>
-            </article>
-          `).join("")}
+            </article>`;
+          }).join("")}
         </div>
       `;
 
+      panel.querySelector("#admin-refresh-catalog")?.addEventListener("click", async (e) => {
+        e.currentTarget.textContent = "…";
+        await fetchRaceRadar(true);
+        renderAdminPanel();
+      });
+
       panel.querySelectorAll("[data-approve]").forEach((btn) => {
         btn.addEventListener("click", async () => {
+          const raceName = btn.dataset.name || "";
+          const similar = findSimilarRace(
+            data.find(r => r.id === btn.dataset.approve) || {},
+            approved
+          );
+          if (similar) {
+            const go = confirm(`⚠️ Course similaire déjà approuvée :\n"${similar.name}" — ${similar.date || "?"} · ${similar.location || ""}\n\nApprouver quand même "${raceName}" ?`);
+            if (!go) return;
+          }
           btn.disabled = true;
           btn.textContent = "En cours…";
           const { error } = await supabase.from("mushtrack_races").update({ status: "approved" }).eq("id", btn.dataset.approve);
