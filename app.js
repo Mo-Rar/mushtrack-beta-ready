@@ -7367,115 +7367,233 @@ function renderAdminPanel() {
     return;
   }
 
-  panel.innerHTML = `<div class="admin-panel-box"><p style="color:#888;font-size:0.82rem">Chargement des courses en attente…</p></div>`;
+  panel.innerHTML = `<div class="admin-panel-box"><p style="color:#888;font-size:0.82rem">Chargement…</p></div>`;
 
-  supabase.from("mushtrack_races").select("*").eq("status", "pending").order("created_at", { ascending: false })
-    .then(({ data, error }) => {
-      if (error) {
-        panel.innerHTML = `<div class="admin-panel-box"><p class="empty-state" style="color:#e53e3e">Erreur Supabase : ${error.message}<br><small>Vérifie que la colonne <b>status</b> existe et que les politiques RLS sont actives.</small></p></div>`;
-        return;
-      }
+  // Charger pending + detected en parallèle
+  Promise.all([
+    supabase.from("mushtrack_races").select("*").eq("status", "pending").order("created_at", { ascending: false }),
+    supabase.from("mushtrack_races").select("*").eq("status", "detected").order("created_at", { ascending: false })
+  ]).then(([pendingRes, detectedRes]) => renderAdminPanelData(panel, pendingRes, detectedRes));
+}
 
-      const approved = mergeRaceSources([...raceCatalog, ...remoteRaceCatalog.filter(r => r.status === "approved")]);
+function renderAdminPanelData(panel, { data: pendingData, error: pendingError }, { data: detectedData, error: detectedError }) {
+  const isAdmin = currentUser?.email === ADMIN_EMAIL;
+  if (!isAdmin) return;
 
-      if (!data || data.length === 0) {
-        panel.innerHTML = `
-          <div class="admin-panel-box">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-              <span class="admin-panel-title" style="margin:0">✅ Aucune course en attente</span>
-              <button id="admin-refresh-catalog" class="secondary-button" type="button" style="font-size:0.72rem;padding:5px 10px">🔄 Actualiser</button>
-            </div>
-          </div>`;
-        panel.querySelector("#admin-refresh-catalog")?.addEventListener("click", async (e) => {
-          e.currentTarget.textContent = "…";
-          await fetchRaceRadar(true);
-          renderAdminPanel();
-        });
-        return;
-      }
+  const refreshBtn = `<button id="admin-refresh-catalog" class="secondary-button" type="button" style="font-size:0.72rem;padding:5px 10px">🔄 Actualiser</button>`;
 
-      panel.innerHTML = `
-        <div class="admin-panel-box">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <span class="admin-panel-title" style="margin:0">🔐 Admin — ${data.length} en attente</span>
-            <button id="admin-refresh-catalog" class="secondary-button" type="button" style="font-size:0.72rem;padding:5px 10px">🔄 Actualiser</button>
+  // ── Section : nouvelles éditions détectées ──
+  const detectedRaces = (detectedData || []);
+  const detectedHtml = detectedRaces.length === 0 ? "" : `
+    <div class="admin-panel-box" style="border-left:3px solid #fc4c02;margin-bottom:12px">
+      <span class="admin-panel-title" style="margin-bottom:8px;display:block">🆕 ${detectedRaces.length} nouvelle(s) édition(s) détectée(s)</span>
+      ${detectedRaces.map(race => {
+        const parentName = race.source && !race.source.startsWith("http") ? race.source : "";
+        const noteShort = (race.notes || "").replace(/^Détection automatique — /, "");
+        const TYPES = ["Sprint","Mid-distance","Longue distance","Canicross","Dryland"];
+        return `
+        <article class="admin-race-card" data-detected-id="${race.id}">
+          <div class="admin-race-info">
+            <strong>${race.name}</strong>
+            ${parentName ? `<span style="font-size:0.7rem;color:#fc4c02">↩ Issue de : ${parentName}</span>` : ""}
+            <span>${race.date || "Date à confirmer"} · ${race.location || ""} · ${race.type || ""}</span>
+            <div style="font-size:0.7rem;color:#888;margin-top:2px">🔎 ${noteShort}</div>
+            ${race.url ? `<a href="${race.url}" target="_blank" rel="noopener" style="font-size:0.7rem;color:#fc4c02">🌐 Voir la source</a>` : ""}
           </div>
-          ${data.map((race) => {
-            const similar = findSimilarRace(race, approved);
-            const dupWarn = similar
-              ? `<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:5px 8px;font-size:0.7rem;color:#856404;margin-top:4px">⚠️ Similaire à "<strong>${similar.name}</strong>" (${similar.date || "?"})</div>`
-              : "";
-            const srcLine = race.url
-              ? `<a href="${race.url}" target="_blank" rel="noopener" style="font-size:0.7rem;color:#fc4c02;word-break:break-all">${race.url}</a>`
-              : `<span style="font-size:0.7rem;color:#bbb">Aucune source fournie</span>`;
-            const distStr = race.distance ? ` · ${race.distance} km` : "";
-            const surfStr = race.surface && race.surface !== "A verifier" ? ` · ${race.surface}` : "";
-            return `
-            <article class="admin-race-card" data-race-id="${race.id}">
-              <div class="admin-race-info">
-                <strong>${race.name}</strong>
-                <span>${race.date || "Date inconnue"} · ${race.location || "Lieu inconnu"} · ${race.type || ""}${distStr}${surfStr}</span>
-                ${race.notes ? `<small style="color:#888">${race.notes}</small>` : ""}
-                <div style="margin-top:4px">${srcLine}</div>
-                ${dupWarn}
+          <div class="admin-race-actions" style="flex-direction:column;gap:6px">
+            <button class="primary-button detected-approve-btn" data-id="${race.id}" type="button" style="font-size:0.72rem">✅ Approuver</button>
+            <button class="secondary-button detected-edit-btn" data-id="${race.id}" type="button" style="font-size:0.72rem">✏️ Modifier</button>
+            <button class="danger-button detected-ignore-btn" data-id="${race.id}" type="button" style="font-size:0.72rem">✕ Ignorer</button>
+          </div>
+          <div class="admin-edit-form hidden" data-detected-edit="${race.id}" style="width:100%;margin-top:8px">
+            <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Nom</label>
+            <input class="det-edit-name" value="${race.name}" style="width:100%;box-sizing:border-box;margin-bottom:8px" />
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+              <div>
+                <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Date</label>
+                <input class="det-edit-date" type="date" value="${race.date || ""}" style="width:100%;box-sizing:border-box" />
               </div>
-              <div class="admin-race-actions">
-                <button class="primary-button admin-approve-btn" data-approve="${race.id}" data-name="${race.name}" type="button">✅ Approuver</button>
-                <button class="danger-button admin-reject-btn" data-reject="${race.id}" type="button">❌ Rejeter</button>
+              <div>
+                <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Distance (km)</label>
+                <input class="det-edit-distance" type="number" value="${race.distance || ""}" style="width:100%;box-sizing:border-box" />
               </div>
-            </article>`;
-          }).join("")}
-        </div>
-      `;
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+              <div>
+                <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Lieu</label>
+                <input class="det-edit-location" value="${race.location || ""}" style="width:100%;box-sizing:border-box" />
+              </div>
+              <div>
+                <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Type</label>
+                <select class="det-edit-type" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem">
+                  ${TYPES.map(tp => `<option value="${tp}" ${race.type===tp?"selected":""}>${tp}</option>`).join("")}
+                </select>
+              </div>
+            </div>
+            <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Source officielle</label>
+            <input class="det-edit-url" type="url" value="${race.url || ""}" style="width:100%;box-sizing:border-box;margin-bottom:10px" />
+            <div style="display:flex;gap:8px">
+              <button class="primary-button det-save-btn" data-id="${race.id}" type="button" style="flex:1">✅ Confirmer et approuver</button>
+              <button class="secondary-button det-cancel-btn" data-id="${race.id}" type="button">Annuler</button>
+            </div>
+          </div>
+        </article>`;
+      }).join("")}
+    </div>`;
 
-      panel.querySelector("#admin-refresh-catalog")?.addEventListener("click", async (e) => {
-        e.currentTarget.textContent = "…";
-        await fetchRaceRadar(true);
-        renderAdminPanel();
-      });
+  // ── Section : courses en attente ──
+  const approved = mergeRaceSources([...raceCatalog, ...remoteRaceCatalog.filter(r => r.status === "approved")]);
 
-      panel.querySelectorAll("[data-approve]").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          const raceName = btn.dataset.name || "";
-          const similar = findSimilarRace(
-            data.find(r => r.id === btn.dataset.approve) || {},
-            approved
-          );
-          if (similar) {
-            const go = confirm(`⚠️ Course similaire déjà approuvée :\n"${similar.name}" — ${similar.date || "?"} · ${similar.location || ""}\n\nApprouver quand même "${raceName}" ?`);
-            if (!go) return;
-          }
-          btn.disabled = true;
-          btn.textContent = "En cours…";
-          const { error } = await supabase.from("mushtrack_races").update({ status: "approved" }).eq("id", btn.dataset.approve);
-          if (error) {
-            alert("Erreur lors de l'approbation : " + error.message + "\n\nVérifie les politiques RLS dans Supabase (UPDATE doit être autorisé).");
-            btn.disabled = false;
-            btn.textContent = "✅ Approuver";
-            return;
-          }
-          await fetchRaceRadar(true);
-          renderAdminPanel();
-          renderRaceSearch();
-        });
-      });
+  if (pendingError) {
+    panel.innerHTML = `<div class="admin-panel-box">${detectedHtml}<p class="empty-state" style="color:#e53e3e">Erreur Supabase : ${pendingError.message}</p></div>`;
+    return;
+  }
 
-      panel.querySelectorAll("[data-reject]").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          if (!confirm(`Rejeter et supprimer cette course ?`)) return;
-          btn.disabled = true;
-          btn.textContent = "En cours…";
-          const { error } = await supabase.from("mushtrack_races").delete().eq("id", btn.dataset.reject);
-          if (error) {
-            alert("Erreur lors du rejet : " + error.message + "\n\nVérifie les politiques RLS dans Supabase (DELETE doit être autorisé).");
-            btn.disabled = false;
-            btn.textContent = "❌ Rejeter";
-            return;
-          }
-          renderAdminPanel();
-        });
-      });
+  const data = pendingData || [];
+  panel.innerHTML = `
+    ${detectedHtml}
+    <div class="admin-panel-box">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <span class="admin-panel-title" style="margin:0">${data.length > 0 ? `🔐 Admin — ${data.length} en attente` : "✅ Aucune course en attente"}</span>
+        ${refreshBtn}
+      </div>
+      ${data.map((race) => {
+        const similar = findSimilarRace(race, approved);
+        const dupWarn = similar
+          ? `<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:5px 8px;font-size:0.7rem;color:#856404;margin-top:4px">⚠️ Similaire à "<strong>${similar.name}</strong>" (${similar.date || "?"})</div>`
+          : "";
+        const srcLine = race.url
+          ? `<a href="${race.url}" target="_blank" rel="noopener" style="font-size:0.7rem;color:#fc4c02;word-break:break-all">${race.url}</a>`
+          : `<span style="font-size:0.7rem;color:#bbb">Aucune source fournie</span>`;
+        const distStr = race.distance ? ` · ${race.distance} km` : "";
+        const surfStr = race.surface && race.surface !== "A verifier" ? ` · ${race.surface}` : "";
+        return `
+        <article class="admin-race-card" data-race-id="${race.id}">
+          <div class="admin-race-info">
+            <strong>${race.name}</strong>
+            <span>${race.date || "Date inconnue"} · ${race.location || "Lieu inconnu"} · ${race.type || ""}${distStr}${surfStr}</span>
+            ${race.notes ? `<small style="color:#888">${race.notes}</small>` : ""}
+            <div style="margin-top:4px">${srcLine}</div>
+            ${dupWarn}
+          </div>
+          <div class="admin-race-actions">
+            <button class="primary-button admin-approve-btn" data-approve="${race.id}" data-name="${race.name}" type="button">✅ Approuver</button>
+            <button class="danger-button admin-reject-btn" data-reject="${race.id}" type="button">❌ Rejeter</button>
+          </div>
+        </article>`;
+      }).join("")}
+    </div>
+  `;
+
+  // ── Listeners : refresh button ──
+  panel.querySelector("#admin-refresh-catalog")?.addEventListener("click", async (e) => {
+    e.currentTarget.textContent = "…";
+    await fetchRaceRadar(true);
+    renderAdminPanel();
+  });
+
+  // ── Listeners : nouvelles éditions détectées ──
+  panel.querySelectorAll(".detected-approve-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (currentUser?.email !== ADMIN_EMAIL) return;
+      btn.disabled = true; btn.textContent = "En cours…";
+      const { error } = await supabase.from("mushtrack_races").update({ status: "approved" }).eq("id", btn.dataset.id);
+      if (error) { alert("Erreur : " + error.message); btn.disabled = false; btn.textContent = "✅ Approuver"; return; }
+      await fetchRaceRadar(true);
+      renderAdminPanel(); renderRaceSearch();
     });
+  });
+
+  panel.querySelectorAll(".detected-edit-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const form = panel.querySelector(`[data-detected-edit="${btn.dataset.id}"]`);
+      form?.classList.toggle("hidden");
+    });
+  });
+
+  panel.querySelectorAll(".det-cancel-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      panel.querySelector(`[data-detected-edit="${btn.dataset.id}"]`)?.classList.add("hidden");
+    });
+  });
+
+  panel.querySelectorAll(".det-save-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (currentUser?.email !== ADMIN_EMAIL) return;
+      const form = panel.querySelector(`[data-detected-edit="${btn.dataset.id}"]`);
+      if (!form) return;
+      btn.disabled = true; btn.textContent = "En cours…";
+      const rawUrl = form.querySelector(".det-edit-url").value.trim();
+      const updates = {
+        name:     form.querySelector(".det-edit-name").value.trim(),
+        date:     form.querySelector(".det-edit-date").value,
+        location: form.querySelector(".det-edit-location").value.trim(),
+        distance: Number(form.querySelector(".det-edit-distance").value) || 0,
+        type:     form.querySelector(".det-edit-type").value,
+        url:      (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) ? rawUrl : "",
+        status:   "approved"
+      };
+      if (!updates.name) { alert("Le nom est requis."); btn.disabled = false; btn.textContent = "✅ Confirmer et approuver"; return; }
+      const { error } = await supabase.from("mushtrack_races").update(updates).eq("id", btn.dataset.id);
+      if (error) { alert("Erreur : " + error.message); btn.disabled = false; btn.textContent = "✅ Confirmer et approuver"; return; }
+      await fetchRaceRadar(true);
+      renderAdminPanel(); renderRaceSearch();
+    });
+  });
+
+  panel.querySelectorAll(".detected-ignore-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (currentUser?.email !== ADMIN_EMAIL) return;
+      if (!confirm("Ignorer cette détection ? Elle ne sera plus proposée.")) return;
+      btn.disabled = true;
+      await supabase.from("mushtrack_races").update({ status: "ignored" }).eq("id", btn.dataset.id);
+      renderAdminPanel();
+    });
+  });
+
+  // ── Listeners : courses en attente (approve/reject) ──
+  panel.querySelectorAll("[data-approve]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (currentUser?.email !== ADMIN_EMAIL) return;
+      const raceName = btn.dataset.name || "";
+      const similar = findSimilarRace(
+        data.find(r => r.id === btn.dataset.approve) || {},
+        approved
+      );
+      if (similar) {
+        const go = confirm(`⚠️ Course similaire déjà approuvée :\n"${similar.name}" — ${similar.date || "?"} · ${similar.location || ""}\n\nApprouver quand même "${raceName}" ?`);
+        if (!go) return;
+      }
+      btn.disabled = true;
+      btn.textContent = "En cours…";
+      const { error } = await supabase.from("mushtrack_races").update({ status: "approved" }).eq("id", btn.dataset.approve);
+      if (error) {
+        alert("Erreur lors de l'approbation : " + error.message + "\n\nVérifie les politiques RLS dans Supabase (UPDATE doit être autorisé).");
+        btn.disabled = false;
+        btn.textContent = "✅ Approuver";
+        return;
+      }
+      await fetchRaceRadar(true);
+      renderAdminPanel();
+      renderRaceSearch();
+    });
+  });
+
+  panel.querySelectorAll("[data-reject]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (!confirm(`Rejeter et supprimer cette course ?`)) return;
+      btn.disabled = true;
+      btn.textContent = "En cours…";
+      const { error } = await supabase.from("mushtrack_races").delete().eq("id", btn.dataset.reject);
+      if (error) {
+        alert("Erreur lors du rejet : " + error.message + "\n\nVérifie les politiques RLS dans Supabase (DELETE doit être autorisé).");
+        btn.disabled = false;
+        btn.textContent = "❌ Rejeter";
+        return;
+      }
+      renderAdminPanel();
+    });
+  });
 }
 
 const EVENT_ICONS = { veto:"🏥", osteo:"💆", sortie:"🐕", entrainement:"🏃", materiel:"🛒", course:"🏁", autre:"📌", race:"🏁" };

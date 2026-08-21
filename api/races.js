@@ -20,6 +20,41 @@ const seedRaces = [
 const SUPABASE_URL_DEFAULT = "https://ipfnldjrpocceptavvaf.supabase.co";
 const SUPABASE_KEY_DEFAULT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwZm5sZGpycG9jY2VwdGF2dmFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDk0MTQsImV4cCI6MjA5NjYyNTQxNH0.FVkq0EooacG7lETDAwxJ-ArocxUYFVZVfhxdhyWFhrI";
 
+// ── Détection de nouvelles éditions ────────────────────────────────────────
+
+// Retire l'année en fin de nom : "Finnmarkslopet 2027" → "Finnmarkslopet"
+function baseRaceName(name) {
+  return (name || "").replace(/\s+(19|20)\d{2}\s*$/, "").trim();
+}
+
+// Détecte si pageText annonce une nouvelle édition pour nextYear.
+// Stratégie prudente : exige un pattern de DATE précis pour cette année,
+// pas seulement la présence de l'année (copyright, stats, etc.).
+// Retourne { signals: "..." } si confiant, null sinon.
+function detectNextEdition(race, pageText, nextYear) {
+  const text = pageText.replace(/\s+/g, " ");
+  const textLow = text.toLowerCase();
+  if (!textLow.includes(nextYear)) return null;
+
+  const datePatterns = [
+    // "march 2028", "März 2028", "mars 2028"
+    new RegExp(`(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[,\\s]+${nextYear}`, "i"),
+    // "janvier 2028", "février 2028", etc.
+    new RegExp(`(janvier|f[eé]vrier|mars|avril|mai|juin|juillet|ao[uû]t|septembre|octobre|novembre|d[eé]cembre)\\s+${nextYear}`, "i"),
+    // "2028-03-14" ou "14/03/2028" ou "14.03.2028"
+    new RegExp(`${nextYear}[-/](0[1-9]|1[0-2])[-/]\\d{1,2}`),
+    new RegExp(`\\b\\d{1,2}[./-](0[1-9]|1[0-2])[./-]${nextYear}\\b`),
+    // "14 mars 2028" (francophone)
+    new RegExp(`\\b\\d{1,2}\\s+(jan|f[eé]v|mar|avr|mai|juin|juil|ao[uû]t|sep|oct|nov|d[eé]c)[a-z]*\\.?\\s+${nextYear}\\b`, "i"),
+  ];
+
+  const match = datePatterns.find(p => p.test(text));
+  if (!match) return null;
+
+  const raw = text.match(match)?.[0] || nextYear;
+  return { signals: `Date ${nextYear} détectée : "${raw.slice(0, 60).trim()}"` };
+}
+
 async function fetchFromSupabase(filters) {
   const SUPABASE_URL = process.env.SUPABASE_URL || SUPABASE_URL_DEFAULT;
   const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_KEY_DEFAULT;
@@ -59,35 +94,124 @@ async function checkSource(source) {
   const started = Date.now();
   try {
     const response = await fetch(source.url, { headers: { "User-Agent": "MushTrackRaceRadar/1.0" }, signal: AbortSignal.timeout(7000) });
-    if (!response.ok) return { id: source.id, ok: false, signal: `HTTP ${response.status}`, ms: Date.now() - started };
+    if (!response.ok) return { id: source.id, ok: false, signal: `HTTP ${response.status}`, ms: Date.now() - started, pageText: null };
     const text = await response.text();
     const content = text.toLowerCase().replace(/\s+/g, " ").slice(0, 200000);
     const found = source.keywords.filter(kw => content.includes(kw));
-    return { id: source.id, ok: true, signal: found.length > 0 ? `Signaux: ${found.slice(0,5).join(", ")}` : "Page ok, pas de signal", ms: Date.now() - started };
+    return {
+      id: source.id,
+      ok: true,
+      signal: found.length > 0 ? `Signaux: ${found.slice(0,5).join(", ")}` : "Page ok, pas de signal",
+      ms: Date.now() - started,
+      pageText: text.slice(0, 200000)  // conservé pour la détection d'éditions
+    };
   } catch (err) {
-    return { id: source.id, ok: false, signal: `Inaccessible: ${err.message.slice(0,80)}`, ms: Date.now() - started };
+    return { id: source.id, ok: false, signal: `Inaccessible: ${err.message.slice(0,80)}`, ms: Date.now() - started, pageText: null };
   }
 }
 
 async function runRefresh(res) {
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const SB_URL = process.env.SUPABASE_URL || SUPABASE_URL_DEFAULT;
+  const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_KEY_DEFAULT;
   const started = Date.now();
-  const results = await Promise.all(SOURCES.map(checkSource));
-  let updated = 0;
-  if (SUPABASE_URL && SUPABASE_KEY) {
-    for (const r of results) {
-      try {
-        const resp = await fetch(`${SUPABASE_URL}/rest/v1/mushtrack_races?id=eq.${encodeURIComponent(r.id)}`, {
-          method: "PATCH",
-          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-          body: JSON.stringify({ last_checked: new Date().toISOString(), source_ok: r.ok, source_signal: r.signal })
-        });
-        if (resp.ok) updated++;
-      } catch {}
+  const nextYear = (new Date().getFullYear() + 1).toString();
+  const sbHeaders = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json" };
+
+  // 1. Charger les courses approuvées avec une URL (sources dynamiques)
+  let approvedRaces = [];
+  let sourcesToCheck = SOURCES; // fallback si Supabase inaccessible
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/mushtrack_races?select=*&or=(status.is.null,status.eq.approved)`, { headers: sbHeaders });
+    if (r.ok) {
+      const data = await r.json();
+      approvedRaces = data.filter(race => race.url && race.url.startsWith("http"));
+      if (approvedRaces.length > 0) {
+        sourcesToCheck = approvedRaces.map(race => ({
+          id: race.id,
+          name: race.name,
+          url: race.url,
+          keywords: [nextYear, ...baseRaceName(race.name).split(/\s+/).filter(w => w.length > 3).slice(0, 2)]
+        }));
+      }
     }
+  } catch {}
+
+  // 2. Charger les IDs déjà détectés ou ignorés (pour ne pas recréer)
+  const skipIds = new Set();
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/mushtrack_races?select=id&or=(status.eq.detected,status.eq.ignored)`, { headers: sbHeaders });
+    if (r.ok) (await r.json()).forEach(row => skipIds.add(row.id));
+  } catch {}
+
+  // 3. Vérifier chaque source
+  const settled = await Promise.allSettled(sourcesToCheck.map(checkSource));
+  const results = settled.map((r, i) =>
+    r.status === "fulfilled" ? r.value : { id: sourcesToCheck[i].id, ok: false, signal: "Erreur réseau", ms: 0, pageText: null }
+  );
+
+  let updated = 0;
+  let detected = 0;
+
+  for (const r of results) {
+    // 4. Mettre à jour source_ok / source_signal sur la course parent
+    try {
+      const resp = await fetch(`${SB_URL}/rest/v1/mushtrack_races?id=eq.${encodeURIComponent(r.id)}`, {
+        method: "PATCH",
+        headers: { ...sbHeaders, Prefer: "return=minimal" },
+        body: JSON.stringify({ last_checked: new Date().toISOString(), source_ok: r.ok, source_signal: r.signal })
+      });
+      if (resp.ok) updated++;
+    } catch {}
+
+    // 5. Détecter une nouvelle édition si la source est accessible et retourne du texte
+    if (!r.ok || !r.pageText) continue;
+    const parentRace = approvedRaces.find(race => race.id === r.id);
+    if (!parentRace) continue;
+
+    const detectedId = `detected-${r.id}-${nextYear}`;
+    if (skipIds.has(detectedId)) continue; // déjà traité (détecté ou ignoré)
+
+    const detection = detectNextEdition(parentRace, r.pageText, nextYear);
+    if (!detection) continue;
+
+    // 6. Vérifier qu'une course similaire n'existe pas déjà dans Supabase
+    const proposedName = `${baseRaceName(parentRace.name)} ${nextYear}`;
+    try {
+      await fetch(`${SB_URL}/rest/v1/mushtrack_races`, {
+        method: "POST",
+        headers: { ...sbHeaders, Prefer: "return=minimal" },
+        body: JSON.stringify({
+          id: detectedId,
+          name: proposedName,
+          type: parentRace.type || "",
+          distance: parentRace.distance || 0,
+          region: parentRace.region || "",
+          location: parentRace.location || "",
+          url: parentRace.url,
+          reliability: parentRace.reliability || "watch",
+          surface: parentRace.surface || "",
+          source: parentRace.id,        // lien vers la course précédente
+          notes: `Détection automatique — ${detection.signals}`,
+          status: "detected",
+          source_signal: detection.signals,
+          source_ok: true,
+          last_checked: new Date().toISOString()
+        })
+      });
+      detected++;
+      skipIds.add(detectedId);
+    } catch {}
   }
-  return res.status(200).json({ ok: true, checkedAt: new Date().toISOString(), durationMs: Date.now() - started, sourcesChecked: results.length, supabaseUpdated: updated, results });
+
+  return res.status(200).json({
+    ok: true,
+    checkedAt: new Date().toISOString(),
+    durationMs: Date.now() - started,
+    sourcesChecked: results.length,
+    supabaseUpdated: updated,
+    newEditionsDetected: detected,
+    results: results.map(({ pageText, ...rest }) => rest) // pageText exclu de la réponse
+  });
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
