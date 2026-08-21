@@ -6640,8 +6640,20 @@ function renderRaceSearch() {
               <input class="admin-edit-distance" type="number" value="${race.distance || ""}" style="width:100%;box-sizing:border-box" />
             </div>
           </div>
-          <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Lieu</label>
-          <input class="admin-edit-location" value="${race.location || ""}" style="width:100%;box-sizing:border-box;margin-bottom:8px" />
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <div>
+              <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Lieu</label>
+              <input class="admin-edit-location" value="${race.location || ""}" style="width:100%;box-sizing:border-box" />
+            </div>
+            <div>
+              <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Type</label>
+              <select class="admin-edit-type" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:0.9rem">
+                ${["Sprint","Mid-distance","Longue distance","Canicross","Dryland"].map(tp =>
+                  `<option value="${tp}" ${race.type === tp ? "selected" : ""}>${tp}</option>`
+                ).join("")}
+              </select>
+            </div>
+          </div>
           <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Informations</label>
           <input class="admin-edit-notes" value="${race.notes || ""}" style="width:100%;box-sizing:border-box;margin-bottom:8px" />
           <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Source officielle</label>
@@ -6802,7 +6814,8 @@ function renderRaceSearch() {
           location: form.querySelector(".admin-edit-location").value.trim(),
           distance: Number(form.querySelector(".admin-edit-distance").value) || 0,
           notes:    form.querySelector(".admin-edit-notes").value.trim(),
-          url:      (rawUrl && (rawUrl.startsWith("http://") || rawUrl.startsWith("https://"))) ? rawUrl : ""
+          url:      (rawUrl && (rawUrl.startsWith("http://") || rawUrl.startsWith("https://"))) ? rawUrl : "",
+          type:     form.querySelector(".admin-edit-type").value
         };
         await adminUpdateRace(id, updates);
         renderRaceSearch();
