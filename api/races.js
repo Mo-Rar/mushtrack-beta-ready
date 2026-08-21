@@ -114,7 +114,7 @@ async function runRefresh(res) {
   const SB_URL = process.env.SUPABASE_URL || SUPABASE_URL_DEFAULT;
   const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_KEY_DEFAULT;
   const started = Date.now();
-  const nextYear = (new Date().getFullYear() + 1).toString();
+  const currentYear = new Date().getFullYear();
   const sbHeaders = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json" };
 
   // 1. Charger les courses approuvées avec une URL (sources dynamiques)
@@ -126,12 +126,18 @@ async function runRefresh(res) {
       const data = await r.json();
       approvedRaces = data.filter(race => race.url && race.url.startsWith("http"));
       if (approvedRaces.length > 0) {
-        sourcesToCheck = approvedRaces.map(race => ({
-          id: race.id,
-          name: race.name,
-          url: race.url,
-          keywords: [nextYear, ...baseRaceName(race.name).split(/\s+/).filter(w => w.length > 3).slice(0, 2)]
-        }));
+        sourcesToCheck = approvedRaces.map(race => {
+          // nextYear est l'année APRÈS la course (ex: course 2027 → on cherche 2028)
+          const raceYear = race.date ? new Date(race.date).getFullYear() : currentYear;
+          const raceNextYear = (Math.max(raceYear, currentYear) + 1).toString();
+          return {
+            id: race.id,
+            name: race.name,
+            url: race.url,
+            nextYear: raceNextYear,
+            keywords: [raceNextYear, ...baseRaceName(race.name).split(/\s+/).filter(w => w.length > 3).slice(0, 2)]
+          };
+        });
       }
     }
   } catch {}
@@ -168,14 +174,17 @@ async function runRefresh(res) {
     const parentRace = approvedRaces.find(race => race.id === r.id);
     if (!parentRace) continue;
 
-    const detectedId = `detected-${r.id}-${nextYear}`;
+    // Utilise le nextYear spécifique à cette course (source.nextYear)
+    const srcMeta = sourcesToCheck.find(s => s.id === r.id);
+    const raceNextYear = srcMeta?.nextYear || (currentYear + 1).toString();
+    const detectedId = `detected-${r.id}-${raceNextYear}`;
     if (skipIds.has(detectedId)) continue; // déjà traité (détecté ou ignoré)
 
-    const detection = detectNextEdition(parentRace, r.pageText, nextYear);
+    const detection = detectNextEdition(parentRace, r.pageText, raceNextYear);
     if (!detection) continue;
 
     // 6. Vérifier qu'une course similaire n'existe pas déjà dans Supabase
-    const proposedName = `${baseRaceName(parentRace.name)} ${nextYear}`;
+    const proposedName = `${baseRaceName(parentRace.name)} ${raceNextYear}`;
     try {
       await fetch(`${SB_URL}/rest/v1/mushtrack_races`, {
         method: "POST",
