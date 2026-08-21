@@ -7454,6 +7454,7 @@ function renderAdminPanel() {
             btn.textContent = "✅ Approuver";
             return;
           }
+          await fetchRaceRadar(true);
           renderAdminPanel();
           renderRaceSearch();
         });
