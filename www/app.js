@@ -6622,18 +6622,31 @@ function renderRaceSearch() {
         </div>
         ${race.notes ? `<p>${race.notes}</p>` : ""}
         <div class="race-result-actions">
-          <button class="secondary-button" data-open-race-source="${race.id}" type="button">Source</button>
+          ${race.url ? `<button class="secondary-button" data-open-race-source="${race.id}" type="button">🌐 Site officiel</button>` : ""}
           <button class="secondary-button${state.raceInterests[race.id] ? " btn-interested" : ""}" data-race-interest="${race.id}" type="button">${state.raceInterests[race.id] ? t('race_interested_active') : t('race_interested_btn')}</button>
           <button class="${state.agenda.some(a => a.sourceId === race.id) ? "btn-participe" : "primary-button"}" data-import-race="${race.id}" type="button">${state.agenda.some(a => a.sourceId === race.id) ? t('race_participating_btn') : t('race_add_btn')}</button>
         </div>
         ${renderRaceInterestSummary(race)}
         <div class="admin-edit-form hidden" data-edit-form="${race.id}">
-          <input class="admin-edit-name"     placeholder="Nom"       value="${race.name}" />
-          <input class="admin-edit-date"     type="date"             value="${race.date}" />
-          <input class="admin-edit-location" placeholder="Lieu"      value="${race.location || ""}" />
-          <input class="admin-edit-distance" type="number" placeholder="Distance km" value="${race.distance || ""}" />
-          <input class="admin-edit-notes"    placeholder="Notes"     value="${race.notes || ""}" />
-          <div style="display:flex;gap:8px;margin-top:6px">
+          <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Nom de la course</label>
+          <input class="admin-edit-name" value="${race.name}" style="width:100%;box-sizing:border-box;margin-bottom:8px" />
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <div>
+              <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Date</label>
+              <input class="admin-edit-date" type="date" value="${race.date}" style="width:100%;box-sizing:border-box" />
+            </div>
+            <div>
+              <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Distance (km)</label>
+              <input class="admin-edit-distance" type="number" value="${race.distance || ""}" style="width:100%;box-sizing:border-box" />
+            </div>
+          </div>
+          <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Lieu</label>
+          <input class="admin-edit-location" value="${race.location || ""}" style="width:100%;box-sizing:border-box;margin-bottom:8px" />
+          <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Informations</label>
+          <input class="admin-edit-notes" value="${race.notes || ""}" style="width:100%;box-sizing:border-box;margin-bottom:8px" />
+          <label style="display:block;font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Source officielle</label>
+          <input class="admin-edit-url" type="url" placeholder="https://..." value="${race.url || ""}" style="width:100%;box-sizing:border-box;margin-bottom:10px" />
+          <div style="display:flex;gap:8px">
             <button class="primary-button admin-edit-save" data-save-edit="${race.id}" type="button">${t('race_save_btn')}</button>
             <button class="secondary-button admin-edit-cancel" data-cancel-edit="${race.id}" type="button">${t('btn_cancel')}</button>
           </div>
@@ -6782,12 +6795,14 @@ function renderRaceSearch() {
       btn.addEventListener("click", async () => {
         const id = btn.dataset.saveEdit;
         const form = btn.closest(".admin-edit-form");
+        const rawUrl = form.querySelector(".admin-edit-url").value.trim();
         const updates = {
           name:     form.querySelector(".admin-edit-name").value.trim(),
           date:     form.querySelector(".admin-edit-date").value,
           location: form.querySelector(".admin-edit-location").value.trim(),
           distance: Number(form.querySelector(".admin-edit-distance").value) || 0,
-          notes:    form.querySelector(".admin-edit-notes").value.trim()
+          notes:    form.querySelector(".admin-edit-notes").value.trim(),
+          url:      (rawUrl && (rawUrl.startsWith("http://") || rawUrl.startsWith("https://"))) ? rawUrl : ""
         };
         await adminUpdateRace(id, updates);
         renderRaceSearch();
@@ -6800,6 +6815,7 @@ function renderRaceSearch() {
 
 // ── Logique admin : supprimer une course ──────────────────────────────────────
 async function adminDeleteRace(id) {
+  if (currentUser?.email !== ADMIN_EMAIL) return;
   // 1. Course dans Supabase (remoteRaceCatalog) ?
   const isRemote = remoteRaceCatalog.some((r) => r.id === id);
   if (isRemote && supabase) {
@@ -6826,6 +6842,7 @@ async function adminDeleteRace(id) {
 
 // ── Logique admin : modifier une course ──────────────────────────────────────
 async function adminUpdateRace(id, updates) {
+  if (currentUser?.email !== ADMIN_EMAIL) return;
   // 1. Course dans Supabase ?
   const isRemote = remoteRaceCatalog.some((r) => r.id === id);
   if (isRemote && supabase) {
