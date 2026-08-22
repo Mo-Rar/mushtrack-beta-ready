@@ -12260,16 +12260,42 @@ async function initRaceMap() {
   const isParticipating = r => state.agenda.some(a => a.sourceId === r.id);
   const isInterested = r => Boolean(state.raceInterests[r.id]);
 
-  let geocoded = 0;
+  // Passe 1 : géocoder toutes les courses et regrouper par coordonnée
+  const raceCoords = [];
   for (const race of races) {
     const loc = race.location || race.region || race.country || "";
     if (!loc) continue;
     const coords = await geocodeLocation(loc);
     if (!coords) continue;
-    geocoded++;
+    raceCoords.push({ race, coords });
+  }
+
+  // Compte le total par coordonnée pour calculer le bon angle de décalage
+  const coordCount = {};
+  for (const { coords } of raceCoords) {
+    const ck = `${coords.lat.toFixed(5)},${coords.lng.toFixed(5)}`;
+    coordCount[ck] = (coordCount[ck] || 0) + 1;
+  }
+  const coordIndex = {};
+
+  // Passe 2 : placer les marqueurs avec décalage si plusieurs au même endroit
+  let geocoded = raceCoords.length;
+  for (const { race, coords } of raceCoords) {
+    const ck = `${coords.lat.toFixed(5)},${coords.lng.toFixed(5)}`;
+    const total = coordCount[ck];
+    const idx = coordIndex[ck] = (coordIndex[ck] || 0);
+    coordIndex[ck]++;
+
+    let jLat = coords.lat, jLng = coords.lng;
+    if (total > 1) {
+      const R = 0.0012; // rayon ~130m
+      const angle = (idx * 2 * Math.PI) / total;
+      jLat = coords.lat + R * Math.cos(angle);
+      jLng = coords.lng + R * Math.sin(angle) / Math.cos(coords.lat * Math.PI / 180);
+    }
 
     const color = isParticipating(race) ? "#22c55e" : isInterested(race) ? "#3b82f6" : "#fc4c02";
-    const marker = L.marker([coords.lat, coords.lng], { icon: mkIcon(color) }).addTo(raceMap);
+    const marker = L.marker([jLat, jLng], { icon: mkIcon(color) }).addTo(raceMap);
     raceMapMarkers.push(marker);
 
     marker.on("click", () => {
