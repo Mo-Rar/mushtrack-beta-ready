@@ -12248,36 +12248,20 @@ let raceMapMarkers = [];
 const GEOCODE_LS_KEY = "mushtrack_geocode_cache_v1";
 let geocodeCache = (() => { try { return JSON.parse(localStorage.getItem(GEOCODE_LS_KEY) || "{}"); } catch { return {}; } })();
 
-let _geocodeLastCall = 0;
 async function geocodeLocation(location) {
   if (!location) return null;
   const key = location.toLowerCase().trim();
   if (geocodeCache[key]) return geocodeCache[key]; // cache local → instantané
   try {
-    // Nominatim rate limit: 1 req/s
-    const now = Date.now();
-    const wait = 1100 - (now - _geocodeLastCall);
-    if (wait > 0) await new Promise(r => setTimeout(r, wait));
-    _geocodeLastCall = Date.now();
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`;
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 5000); // timeout 5s
-    const res = await fetch(url, {
-      signal: ctrl.signal,
-      headers: {
-        "Accept-Language": "fr",
-        "User-Agent": "MushTrack/1.2 (morardjuan@hotmail.com)"
-      }
-    });
-    clearTimeout(timer);
+    // Passe par l'API Vercel pour éviter les blocages CORS/réseau de Nominatim
+    const res = await fetch(`${API_BASE}/api/geocode?q=${encodeURIComponent(location)}`);
     const data = await res.json();
-    if (data && data[0]) {
-      const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-      geocodeCache[key] = coords;
+    if (data && data.lat) {
+      geocodeCache[key] = data;
       try { localStorage.setItem(GEOCODE_LS_KEY, JSON.stringify(geocodeCache)); } catch {}
-      return coords;
+      return data;
     }
-  } catch { /* hors ligne ou timeout */ }
+  } catch { /* hors ligne */ }
   return null;
 }
 
