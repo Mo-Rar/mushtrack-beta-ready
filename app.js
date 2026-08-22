@@ -12189,7 +12189,9 @@ document.getElementById("runs-view-map-btn")?.addEventListener("click", () => {
 // ── Vue carte des courses ─────────────────────────────────────────────────────
 let raceMap = null;
 let raceMapMarkers = [];
-let geocodeCache = {}; // location → {lat, lng}
+// Cache persistant dans localStorage pour éviter de re-géocoder à chaque chargement
+const GEOCODE_LS_KEY = "mushtrack_geocode_cache_v1";
+let geocodeCache = (() => { try { return JSON.parse(localStorage.getItem(GEOCODE_LS_KEY) || "{}"); } catch { return {}; } })();
 
 let _geocodeLastCall = 0;
 async function geocodeLocation(location) {
@@ -12213,6 +12215,7 @@ async function geocodeLocation(location) {
     if (data && data[0]) {
       const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
       geocodeCache[key] = coords;
+      try { localStorage.setItem(GEOCODE_LS_KEY, JSON.stringify(geocodeCache)); } catch {}
       return coords;
     }
   } catch { /* hors ligne */ }
