@@ -5,6 +5,22 @@ module.exports = async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(204).end();
 
+  // Géocodage proxy (évite les blocages CORS depuis l'app)
+  if (req.query.action === "geocode") {
+    const q = req.query.q;
+    if (!q) return res.status(400).json(null);
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`;
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 8000);
+      const r = await fetch(url, { signal: ctrl.signal, headers: { "User-Agent": "MushTrack/1.2 (morardjuan@hotmail.com)", "Accept-Language": "fr" } });
+      clearTimeout(timer);
+      const data = await r.json();
+      if (data && data[0]) return res.status(200).json({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+    } catch {}
+    return res.status(200).json(null);
+  }
+
   if (!process.env.SUPABASE_URL || !(process.env.SUPABASE_SERVICE_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY))
     return res.status(200).json({ configured: false, mushers: [] });
 

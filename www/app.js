@@ -12254,7 +12254,7 @@ async function geocodeLocation(location) {
   if (geocodeCache[key]) return geocodeCache[key]; // cache local → instantané
   try {
     // Passe par l'API Vercel pour éviter les blocages CORS/réseau de Nominatim
-    const res = await fetch(`${API_BASE}/api/geocode?q=${encodeURIComponent(location)}`);
+    const res = await fetch(`${API_BASE}/api/map?action=geocode&q=${encodeURIComponent(location)}`);
     const data = await res.json();
     if (data && data.lat) {
       geocodeCache[key] = data;
