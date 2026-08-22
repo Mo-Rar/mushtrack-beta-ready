@@ -12252,7 +12252,7 @@ let _geocodeLastCall = 0;
 async function geocodeLocation(location) {
   if (!location) return null;
   const key = location.toLowerCase().trim();
-  if (geocodeCache[key]) return geocodeCache[key];
+  if (geocodeCache[key]) return geocodeCache[key]; // cache local → instantané
   try {
     // Nominatim rate limit: 1 req/s
     const now = Date.now();
@@ -12260,12 +12260,16 @@ async function geocodeLocation(location) {
     if (wait > 0) await new Promise(r => setTimeout(r, wait));
     _geocodeLastCall = Date.now();
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 5000); // timeout 5s
     const res = await fetch(url, {
+      signal: ctrl.signal,
       headers: {
         "Accept-Language": "fr",
         "User-Agent": "MushTrack/1.2 (morardjuan@hotmail.com)"
       }
     });
+    clearTimeout(timer);
     const data = await res.json();
     if (data && data[0]) {
       const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
@@ -12273,7 +12277,7 @@ async function geocodeLocation(location) {
       try { localStorage.setItem(GEOCODE_LS_KEY, JSON.stringify(geocodeCache)); } catch {}
       return coords;
     }
-  } catch { /* hors ligne */ }
+  } catch { /* hors ligne ou timeout */ }
   return null;
 }
 
