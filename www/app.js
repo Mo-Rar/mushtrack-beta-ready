@@ -7160,6 +7160,7 @@ async function fetchRaceRadar(forceRefresh = false) {
     raceRadarUpdatedAt = data.updatedAt || new Date().toISOString();
     const okSources = Array.isArray(data.sourceStatus) ? data.sourceStatus.filter((source) => source.ok).length : 0;
     raceRadarStatus = okSources ? `API Vercel active - ${okSources} source(s) verifiee(s)` : "API Vercel active";
+    notifyNewRaces(remoteRaceCatalog);
   } catch (error) {
     raceRadarStatus = "API hors ligne - catalogue local";
   } finally {
@@ -11911,6 +11912,50 @@ async function shareCurrentTrail(run) {
   }
 }
 
+// ── Notification nouvelles courses ───────────────────────────────────────────
+function notifyNewRaces(races) {
+  if (localStorage.getItem("mushtrack_notif_denied")) return;
+  if (Notification.permission !== "granted") return;
+
+  const SEEN_KEY = "mushtrack_seen_race_ids";
+  const today = new Date().toISOString().slice(0, 10);
+  const future = races.filter(r => r.date && r.date >= today && (!r.status || r.status === "approved"));
+  const futureIds = future.map(r => r.id);
+
+  let seenIds;
+  try { seenIds = new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || "[]")); }
+  catch { seenIds = new Set(); }
+
+  const newRaces = future.filter(r => !seenIds.has(r.id));
+
+  // Sauvegarder les IDs connus maintenant
+  try { localStorage.setItem(SEEN_KEY, JSON.stringify(futureIds)); } catch {}
+
+  if (!newRaces.length) return;
+  if (seenIds.size === 0) return; // Premier chargement — pas de notif
+
+  const n = newRaces.length;
+  const body = n === 1
+    ? `Nouvelle course : ${newRaces[0].name} (${newRaces[0].date})`
+    : `${n} nouvelles courses ajoutées au calendrier !`;
+
+  // Notification web (navigateur)
+  try { new Notification("MushTrack 🏁", { body, icon: "/icon-192.png" }); } catch {}
+
+  // Notification locale Capacitor (Android)
+  const LocalNotifications = window.Capacitor?.Plugins?.LocalNotifications;
+  if (LocalNotifications) {
+    LocalNotifications.schedule({ notifications: [{
+      id: 99,
+      title: "MushTrack 🏁",
+      body,
+      schedule: { at: new Date(Date.now() + 2000) },
+      sound: null,
+      smallIcon: "ic_launcher_foreground"
+    }]}).catch(() => {});
+  }
+}
+
 // ── Push Notifications ────────────────────────────────────────────────────────
 const VAPID_PUBLIC_KEY = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjZkOqp0nOFuUzIjbCzxO5_8IhFk";
 
@@ -11953,13 +11998,19 @@ async function subscribeToPush() {
   }
 }
 
-// Demande la permission après 10 secondes (laisser l'app charger)
+// Demande la permission une seule fois — si refusé, ne plus demander
 setTimeout(() => {
-  if (Notification.permission === "default") {
-    subscribeToPush();
-  } else if (Notification.permission === "granted") {
-    subscribeToPush();
+  const denied = localStorage.getItem("mushtrack_notif_denied");
+  if (denied) return; // L'utilisateur a déjà refusé → on ne redemande jamais
+  if (Notification.permission === "denied") {
+    localStorage.setItem("mushtrack_notif_denied", "1");
+    return;
   }
+  subscribeToPush().then(() => {
+    if (Notification.permission === "denied") {
+      localStorage.setItem("mushtrack_notif_denied", "1");
+    }
+  });
 }, 10000);
 
 // ── Notifications locales d'inactivité ───────────────────────────────────────
@@ -11979,9 +12030,13 @@ async function scheduleInactivityReminder() {
   const daysSince = Math.floor((Date.now() - new Date(lastRun.date).getTime()) / (1000 * 60 * 60 * 24));
   const inactiveDays = state.settings?.reminderDays || 3;
 
-  // Demander la permission
+  // Ne pas redemander si l'utilisateur a déjà refusé
+  if (localStorage.getItem("mushtrack_notif_denied")) return;
   const perm = await LocalNotifications.requestPermissions().catch(() => ({ display: "denied" }));
-  if (perm.display !== "granted") return;
+  if (perm.display !== "granted") {
+    localStorage.setItem("mushtrack_notif_denied", "1");
+    return;
+  }
 
   // Annuler les anciens rappels
   await LocalNotifications.cancel({ notifications: [{ id: 42 }] }).catch(() => {});
