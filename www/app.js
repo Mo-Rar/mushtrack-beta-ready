@@ -12315,15 +12315,23 @@ async function initRaceMap() {
   const isParticipating = r => state.agenda.some(a => a.sourceId === r.id);
   const isInterested = r => Boolean(state.raceInterests[r.id]);
 
-  // Passe 1 : géocoder toutes les courses et regrouper par coordonnée
+  // Passe 1 : géocoder les courses futures uniquement (pas les courses passées)
+  const today = new Date().toISOString().slice(0, 10);
+  const futurRaces = races.filter(r => r.date >= today);
+
+  // Indicateur de chargement
+  cardEl.style.display = "block";
+  cardEl.innerHTML = `<p style="text-align:center;color:#aaa;padding:20px;font-size:0.85rem">⏳ Chargement de la carte…</p>`;
+
   const raceCoords = [];
-  for (const race of races) {
+  for (const race of futurRaces) {
     const loc = race.location || race.region || race.country || "";
     if (!loc) continue;
     const coords = await geocodeLocation(loc);
     if (!coords) continue;
     raceCoords.push({ race, coords });
   }
+  cardEl.style.display = "none";
 
   // Compte le total par coordonnée pour calculer le bon angle de décalage
   const coordCount = {};
