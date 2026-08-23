@@ -8527,7 +8527,7 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
       if (speedKmh > 80) return; // vitesse irréaliste pour mushing
     }
     const moved = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
-    if (moved < 0.005) return; // <5 m → ignorer
+    if (moved < 0.003) return; // <3 m → ignorer (était 5m, trop agressif)
   }
 
   // ── Regain de signal ─────────────────────────────────────────────────────
@@ -8540,8 +8540,8 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
   // ── Warmup : attendre 3 bonnes positions avant de démarrer ───────────────
   if (!gpsReady) {
     gpsReadyCount++;
-    updateMapPosition(lat, lon, `GPS prêt · ±${Math.round(acc)} m (${gpsReadyCount}/3)`);
-    if (gpsReadyCount < 3) return;
+    updateMapPosition(lat, lon, `GPS prêt · ±${Math.round(acc)} m (${gpsReadyCount}/2)`);
+    if (gpsReadyCount < 2) return;
     // GPS prêt : démarrer le chrono depuis maintenant
     gpsReady = true;
     runStartTime = Date.now();
@@ -8550,14 +8550,18 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
 
   updateMapPosition(lat, lon, `GPS · ±${Math.round(acc)} m`);
 
-  // ── Altitude ─────────────────────────────────────────────────────────────
+  // ── Altitude (lissage pour éviter accumulation de bruit GPS) ─────────────
   if (altitude != null) {
-    if (lastAltitude !== null && altitude - lastAltitude > 1) {
-      elevationGain += altitude - lastAltitude;
+    if (!window._altBuf) window._altBuf = [];
+    window._altBuf.push(altitude);
+    if (window._altBuf.length > 5) window._altBuf.shift();
+    const smoothAlt = window._altBuf.reduce((a, b) => a + b, 0) / window._altBuf.length;
+    if (lastAltitude !== null && smoothAlt - lastAltitude > 5) {
+      elevationGain += smoothAlt - lastAltitude;
     }
-    lastAltitude = altitude;
-    if (minAlt === null || altitude < minAlt) minAlt = altitude;
-    if (maxAlt === null || altitude > maxAlt) maxAlt = altitude;
+    lastAltitude = smoothAlt;
+    if (minAlt === null || smoothAlt < minAlt) minAlt = smoothAlt;
+    if (maxAlt === null || smoothAlt > maxAlt) maxAlt = smoothAlt;
   }
 
   // ── Point enrichi ────────────────────────────────────────────────────────
@@ -8628,6 +8632,7 @@ async function startGPS() {
   lastPosition = null;
   elevationGain = 0;
   lastAltitude = null;
+  window._altBuf = [];
   distance = 0;
   maxSpeed = 0; minAlt = null; maxAlt = null;
   // Réinitialiser toutes les polylines Leaflet
@@ -11874,16 +11879,26 @@ async function loadSharedTrails() {
   } catch (e) {}
 }
 
+function applyPrivacyZone(points, radiusKm = 0.5) {
+  if (!points || points.length < 2) return points;
+  const start = points[0];
+  const end   = points[points.length - 1];
+  const dist = (a, b) => calculateDistance(a.lat || a[0], a.lon || a[1], b.lat || b[0], b.lon || b[1]);
+  const trimmed = points.filter(p => dist(p, start) >= radiusKm && dist(p, end) >= radiusKm);
+  return trimmed.length >= 2 ? trimmed : points;
+}
+
 async function shareCurrentTrail(run) {
   if (!run || !run.positions || run.positions.length < 2) {
     alert("Pas assez de points GPS pour partager cette piste.");
     return;
   }
+  const publicPositions = applyPrivacyZone(run.positions, 0.5);
   const geojson = {
     type: "Feature",
     geometry: {
       type: "LineString",
-      coordinates: run.positions.map(p => [p.lon, p.lat])
+      coordinates: publicPositions.map(p => [p.lon, p.lat])
     },
     properties: {}
   };
