@@ -8499,8 +8499,14 @@ function isCapacitorNative() {
   return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 }
 
-function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
+function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude, altitudeAccuracy, simulated, posTime) {
   if (isPaused) return;
+
+  // Rejeter les positions simulées (tests Android, émulateurs)
+  if (simulated === true) return;
+
+  // Log diagnostic (temporaire — retirer après validation terrain)
+  console.log(`[GPS] pts=${gpsPath.filter(p=>!p.gap).length} acc=±${Math.round(accuracy??999)}m altAcc=${altitudeAccuracy??'n/a'} sim=${simulated} t=${posTime ? new Date(posTime).toISOString().slice(11,19) : 'now'}`);
 
   const acc = accuracy ?? 999;
 
@@ -8553,7 +8559,9 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
   updateMapPosition(lat, lon, `GPS · ±${Math.round(acc)} m`);
 
   // ── Altitude (lissage pour éviter accumulation de bruit GPS) ─────────────
-  if (altitude != null) {
+  // altitudeAccuracy > 20m = mesure trop imprécise pour le D+ (point conservé pour tracé/distance)
+  const altitudeUsable = altitude != null && (altitudeAccuracy == null || altitudeAccuracy <= 20);
+  if (altitudeUsable) {
     // Moyenne glissante sur 5 mesures pour lisser le bruit GPS (±30m brut)
     if (!window._altBuf) window._altBuf = [];
     window._altBuf.push(altitude);
@@ -8570,7 +8578,7 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
   // ── Point enrichi ────────────────────────────────────────────────────────
   const point = {
     lat, lon,
-    timestamp: Date.now(),
+    timestamp: posTime ?? Date.now(),   // timestamp GPS (plus précis que Date.now)
     accuracy: Math.round(acc),
     speed: gpsSpeedMs != null ? Math.round(gpsSpeedMs * 3.6 * 10) / 10 : null,
     altitude: altitude != null ? Math.round(altitude) : null
@@ -8664,9 +8672,9 @@ async function _startGPSWatcher(fetchWeather) {
         { backgroundMessage: "MushTrack enregistre votre parcours.", backgroundTitle: "MushTrack GPS", requestPermissions: true, stale: false, distanceFilter: 5 },
         (position, error) => {
           if (error || isPaused) { console.error("BG GPS error:", error); return; }
-          const { latitude: lat, longitude: lon, accuracy, speed: gpsSpeedMs, altitude } = position;
+          const { latitude: lat, longitude: lon, accuracy, speed: gpsSpeedMs, altitude, altitudeAccuracy, simulated, time } = position;
           if (fetchWeather && !weatherFetched) { weatherFetched = true; fetchAndShowWeather(lat, lon); }
-          onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude);
+          onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude, altitudeAccuracy, simulated, time);
         }
       );
     } catch (e) {

@@ -6,6 +6,9 @@
     "url": "https://mushtrack-beta-ready.vercel.app",
     "cleartext": false
   },
+  "android": {
+    "useLegacyBridge": true
+  },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 0,
