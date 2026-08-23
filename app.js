@@ -5239,7 +5239,7 @@ function openRunDetail(index) {
   if (rdShareWrap) {
     rdShareWrap.style.display = "";
     if (rdShareBtn) {
-      const hasGPS = run.positions && run.positions.length >= 2;
+      const hasGPS = (run.path || run.positions || []).filter(p => !p.gap).length >= 2;
       rdShareBtn.onclick = () => {
         if (!hasGPS) { alert("Cette sortie n'a pas de tracé GPS enregistré."); return; }
         shareCurrentTrail(run);
@@ -8527,7 +8527,7 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude) {
       if (speedKmh > 80) return; // vitesse irréaliste pour mushing
     }
     const moved = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
-    if (moved < 0.003) return; // <3 m → ignorer (était 5m, trop agressif)
+    if (!isCapacitorNative() && moved < 0.003) return;
   }
 
   // ── Regain de signal ─────────────────────────────────────────────────────
@@ -8795,17 +8795,17 @@ function toggleRecording() {
   }
 }
 
-function finishCurrentRun() {
+async function finishCurrentRun() {
   if (distance < 0.05) {
     alert("Distance insuffisante pour sauvegarder cette sortie (minimum 50m).");
     return;
   }
 
-  // Arrêter proprement le timer et GPS
+  // Arrêter proprement le timer et GPS (await pour ne pas perdre les derniers points)
   if (timer) { clearInterval(timer); timer = null; }
   if (isPaused && pauseStartTime) { totalPausedMs += Date.now() - pauseStartTime; }
   isPaused = false;
-  stopGPS();
+  await stopGPS();
 
   // Durée totale depuis le wall-clock (résistant au throttling Android)
   const totalSec = runStartTime ? Math.floor((Date.now() - runStartTime - totalPausedMs) / 1000) : seconds;
@@ -8919,6 +8919,7 @@ function saveCurrentRun() {
     altMin: pendingRunSummary.altMin ?? null,
     altMax: pendingRunSummary.altMax ?? null,
     path: gpsPath,
+    positions: gpsPath, // alias — plusieurs fonctions lisent run.positions
     team: [...state.selectedDogIds],
     teamRoles: { ...state.runDogRoles },
     weather: document.querySelector("#weather").value,
@@ -11580,7 +11581,7 @@ function renderRunChart(run, mode) {
   const canvas = document.getElementById("rd-chart-canvas");
   if (!wrap || !canvas) return;
 
-  const positions = run.positions || [];
+  const positions = (run.path || run.positions || []).filter(p => !p.gap && Number.isFinite(p.lat));
   const hasSpeeds = positions.some(p => p.speed != null);
   const hasAlts   = positions.some(p => p.altitude != null || p.alt != null);
 
@@ -11665,7 +11666,7 @@ async function generateShareImage(run) {
   ctx.restore();
 
   // ── Carte GPS (mini tracé) ───────────────────────────────────────────────────
-  const positions = run.positions || [];
+  const positions = (run.path || run.positions || []).filter(p => !p.gap && Number.isFinite(p.lat));
   const mapY = 120, mapH = 420, mapX = 60, mapW = W - 120;
   if (positions.length >= 2) {
     // fond carte
@@ -11879,26 +11880,40 @@ async function loadSharedTrails() {
   } catch (e) {}
 }
 
-function applyPrivacyZone(points, radiusKm = 0.5) {
-  if (!points || points.length < 2) return points;
-  const start = points[0];
-  const end   = points[points.length - 1];
-  const dist = (a, b) => calculateDistance(a.lat || a[0], a.lon || a[1], b.lat || b[0], b.lon || b[1]);
-  const trimmed = points.filter(p => dist(p, start) >= radiusKm && dist(p, end) >= radiusKm);
-  return trimmed.length >= 2 ? trimmed : points;
+function applyPrivacyZone(points, trimKm = 0.5) {
+  const pts = (points || []).filter(p => !p.gap && Number.isFinite(p.lat) && Number.isFinite(p.lon ?? p.lng));
+  if (pts.length < 2) return null;
+  const cumDist = [0];
+  for (let i = 1; i < pts.length; i++) {
+    const p = pts[i], prev = pts[i - 1];
+    cumDist.push(cumDist[i - 1] + calculateDistance(prev.lat, prev.lon ?? prev.lng, p.lat, p.lon ?? p.lng));
+  }
+  const totalKm = cumDist[cumDist.length - 1];
+  if (totalKm < trimKm * 2.5) return null;
+  let startIdx = -1;
+  for (let i = 0; i < pts.length; i++) { if (cumDist[i] >= trimKm) { startIdx = i; break; } }
+  let endIdx = -1;
+  for (let i = pts.length - 1; i >= 0; i--) { if (cumDist[i] <= totalKm - trimKm) { endIdx = i; break; } }
+  if (startIdx === -1 || endIdx === -1 || startIdx >= endIdx) return null;
+  return pts.slice(startIdx, endIdx + 1);
 }
 
 async function shareCurrentTrail(run) {
-  if (!run || !run.positions || run.positions.length < 2) {
+  const rawPath = (run.path || run.positions || []).filter(p => !p.gap && Number.isFinite(p.lat));
+  if (rawPath.length < 2) {
     alert("Pas assez de points GPS pour partager cette piste.");
     return;
   }
-  const publicPositions = applyPrivacyZone(run.positions, 0.5);
+  const publicPositions = applyPrivacyZone(rawPath, 0.5);
+  if (!publicPositions) {
+    alert("Ce parcours est trop court pour être partagé publiquement (moins de 1,25 km).\nLe départ ou l'arrivée ne peut pas être masqué.");
+    return;
+  }
   const geojson = {
     type: "Feature",
     geometry: {
       type: "LineString",
-      coordinates: publicPositions.map(p => [p.lon, p.lat])
+      coordinates: publicPositions.map(p => [p.lon ?? p.lng, p.lat])
     },
     properties: {}
   };
