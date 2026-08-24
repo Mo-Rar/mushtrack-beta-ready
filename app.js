@@ -8998,6 +8998,52 @@ function saveCurrentRun() {
 
   saveState();
   showScreen("record");
+
+  // Correction altitude en arrière-plan (données terrain OpenTopoData)
+  correctElevationFromAPI(state.runs[0]);
+}
+
+async function correctElevationFromAPI(run) {
+  if (!run) return;
+  const pts = (run.path || []).filter(p => !p.gap && Number.isFinite(p.lat) && Number.isFinite(p.lon ?? p.lng));
+  if (pts.length < 2) return;
+
+  const MAX = 100;
+  const step = Math.max(1, Math.floor(pts.length / MAX));
+  const sampled = [];
+  for (let i = 0; i < pts.length; i += step) sampled.push(pts[i]);
+  if (sampled[sampled.length - 1] !== pts[pts.length - 1]) sampled.push(pts[pts.length - 1]);
+
+  try {
+    const locations = sampled.map(p => `${p.lat.toFixed(6)},${(p.lon ?? p.lng).toFixed(6)}`).join("|");
+    const res = await fetch(`${API_BASE}/api/map?action=elevation&locations=${encodeURIComponent(locations)}`);
+    const data = await res.json();
+    if (!data || !Array.isArray(data.results)) return;
+
+    const elevs = data.results.map(r => r.elevation).filter(e => typeof e === "number" && Number.isFinite(e));
+    if (elevs.length < 2) return;
+
+    let gain = 0, minE = elevs[0], maxE = elevs[0];
+    for (let i = 1; i < elevs.length; i++) {
+      const diff = elevs[i] - elevs[i - 1];
+      if (diff > 2) gain += diff;
+      if (elevs[i] < minE) minE = elevs[i];
+      if (elevs[i] > maxE) maxE = elevs[i];
+    }
+
+    run.elevationGain = Math.round(gain);
+    run.altMin = Math.round(minE);
+    run.altMax = Math.round(maxE);
+    saveState();
+    const elevEl = document.getElementById("rd-elev");
+    if (elevEl) elevEl.textContent = run.elevationGain > 0 ? "+" + run.elevationGain + " m" : "—";
+    const altEl = document.getElementById("rd-alt");
+    const altWrap = document.getElementById("rd-alt-wrap");
+    if (altEl && altWrap) {
+      altEl.textContent = Math.round(minE) + " – " + Math.round(maxE) + " m";
+      altWrap.style.display = "";
+    }
+  } catch { /* hors ligne — conserver l'altitude GPS */ }
 }
 
 navButtons.forEach((button) => {
