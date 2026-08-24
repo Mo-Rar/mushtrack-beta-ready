@@ -5187,18 +5187,12 @@ function openRunDetail(index) {
     rdTeam.style.display = "none";
   }
 
-  // Durée réelle
+  // Durée : temps de déplacement + temps écoulé (style Strava)
   const durTotalSec = getRunDurationSec(run);
   const durMovingSec = run.movingSec || durTotalSec;
-  const durPausedSec = run.pausedSec || 0;
-  document.getElementById("rd-duration").textContent = formatDurationHuman(durTotalSec);
-  const rdMoving = document.getElementById("rd-moving-time");
-  if (rdMoving) {
-    rdMoving.textContent = durPausedSec > 0
-      ? `Mouvement : ${formatDurationHuman(durMovingSec)} · Pause : ${formatDurationHuman(durPausedSec)} (×${run.pauseCount || 1})`
-      : "";
-    rdMoving.style.display = durPausedSec > 0 ? "" : "none";
-  }
+  document.getElementById("rd-duration").textContent = formatDuration(durMovingSec);
+  const rdElapsed = document.getElementById("rd-elapsed");
+  if (rdElapsed) rdElapsed.textContent = formatDuration(durTotalSec);
 
   // Infos
   const enginEl = document.getElementById("rd-engin");
@@ -8821,7 +8815,20 @@ async function finishCurrentRun() {
   // Durée totale depuis le wall-clock (résistant au throttling Android)
   const totalSec = runStartTime ? Math.floor((Date.now() - runStartTime - totalPausedMs) / 1000) : seconds;
   const pausedSec = Math.floor(totalPausedMs / 1000);
-  const movingSec = totalSec - pausedSec;
+
+  // Temps de déplacement réel (style Strava) — basé sur la vitesse GPS point à point
+  let gpsMovingSec = 0;
+  const pathPts = gpsPath.filter(p => !p.gap && p.timestamp && Number.isFinite(p.lat));
+  for (let i = 1; i < pathPts.length; i++) {
+    const prev = pathPts[i - 1], curr = pathPts[i];
+    const dtSec = (curr.timestamp - prev.timestamp) / 1000;
+    if (dtSec <= 0 || dtSec > 60) continue; // gap ou anomalie
+    const distKm = calculateDistance(prev.lat, prev.lon, curr.lat, curr.lon);
+    const speedKmh = (distKm / dtSec) * 3600;
+    if (speedKmh >= 1.5) gpsMovingSec += dtSec; // en mouvement si > 1.5 km/h
+  }
+  // Fallback : si pas assez de points GPS, utiliser wall-clock minus pauses
+  const movingSec = gpsMovingSec > 10 ? Math.round(gpsMovingSec) : Math.max(totalSec - pausedSec, 1);
 
   // Vitesse calculée sur le temps en mouvement uniquement
   const movingHours = movingSec / 3600;
