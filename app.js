@@ -5286,8 +5286,35 @@ function openRunDetail(index) {
     }).addTo(_runDetailMap);
 
     if (path.length > 1) {
-      const polyline = L.polyline(path, { color: "#fc4c02", weight: 4, opacity: 0.9 }).addTo(_runDetailMap);
-      _runDetailMap.fitBounds(polyline.getBounds(), { padding: [20, 20] });
+      // Zone de confidentialité : calculer les indices à 500m du début et de la fin
+      const PRIV_KM = 0.5;
+      const rawPath = (run.path || []).filter(p => !p.gap && Number.isFinite(Array.isArray(p) ? p[0] : p.lat));
+      let cumDist = [0];
+      for (let i = 1; i < rawPath.length; i++) {
+        const a = rawPath[i - 1], b = rawPath[i];
+        const aLat = Array.isArray(a) ? a[0] : a.lat, aLon = Array.isArray(a) ? a[1] : (a.lon ?? a.lng);
+        const bLat = Array.isArray(b) ? b[0] : b.lat, bLon = Array.isArray(b) ? b[1] : (b.lon ?? b.lng);
+        cumDist.push(cumDist[i - 1] + calculateDistance(aLat, aLon, bLat, bLon));
+      }
+      const totalKm = cumDist[cumDist.length - 1] || 0;
+      const showZone = totalKm > PRIV_KM * 2.5;
+      let startIdx = 0, endIdx = path.length - 1;
+      if (showZone) {
+        for (let i = 0; i < cumDist.length; i++) { if (cumDist[i] >= PRIV_KM) { startIdx = i; break; } }
+        for (let i = cumDist.length - 1; i >= 0; i--) { if (cumDist[i] <= totalKm - PRIV_KM) { endIdx = i; break; } }
+      }
+
+      const privStyle = { color: "#9ca3af", weight: 4, opacity: 0.7, dashArray: "6 4" };
+      const mainStyle = { color: "#fc4c02", weight: 4, opacity: 0.9 };
+
+      let mainPolyline;
+      if (showZone && startIdx > 0)
+        L.polyline(path.slice(0, startIdx + 1), privStyle).addTo(_runDetailMap);
+      mainPolyline = L.polyline(path.slice(startIdx, endIdx + 1), mainStyle).addTo(_runDetailMap);
+      if (showZone && endIdx < path.length - 1)
+        L.polyline(path.slice(endIdx), privStyle).addTo(_runDetailMap);
+
+      _runDetailMap.fitBounds(mainPolyline.getBounds(), { padding: [20, 20] });
 
       // Marqueur départ (vert)
       L.circleMarker(path[0], { radius: 8, fillColor: "#22c55e", color: "#fff", weight: 2, fillOpacity: 1 })
