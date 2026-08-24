@@ -8558,7 +8558,7 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude, altitudeAccurac
 
   // ── Altitude (lissage pour éviter accumulation de bruit GPS) ─────────────
   // altitudeAccuracy > 20m = mesure trop imprécise pour le D+ (point conservé pour tracé/distance)
-  const altitudeUsable = altitude != null && (altitudeAccuracy == null || altitudeAccuracy <= 20);
+  const altitudeUsable = altitude != null && (altitudeAccuracy == null || altitudeAccuracy <= 50);
   if (altitudeUsable) {
     if (!window._altBuf) window._altBuf = [];
     window._altBuf.push(altitude);
