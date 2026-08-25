@@ -9008,8 +9008,9 @@ function saveCurrentRun() {
 }
 
 async function correctElevationFromAPI(run) {
-  if (!run) return;
+  if (!run) { console.warn("[ELEV] run est null"); return; }
   const pts = (run.path || []).filter(p => !p.gap && Number.isFinite(p.lat) && Number.isFinite(p.lon ?? p.lng));
+  console.log(`[ELEV] pts valides: ${pts.length}`);
   if (pts.length < 2) return;
 
   // Échantillonner jusqu'à 100 points (limite OpenTopoData)
@@ -9018,14 +9019,26 @@ async function correctElevationFromAPI(run) {
   const sampled = [];
   for (let i = 0; i < pts.length; i += step) sampled.push(pts[i]);
   if (sampled[sampled.length - 1] !== pts[pts.length - 1]) sampled.push(pts[pts.length - 1]);
+  console.log(`[ELEV] points échantillonnés: ${sampled.length}`);
 
   try {
+    // Pas de double-encodage : les | et , doivent rester lisibles pour OpenTopoData
     const locations = sampled.map(p => `${p.lat.toFixed(6)},${(p.lon ?? p.lng).toFixed(6)}`).join("|");
-    const res = await fetch(`${API_BASE}/api/map?action=elevation&locations=${encodeURIComponent(locations)}`);
+    const url = `${API_BASE}/api/map?action=elevation&locations=${encodeURIComponent(locations)}`;
+    console.log(`[ELEV] fetch → ${url.slice(0, 80)}…`);
+
+    const res = await fetch(url);
+    console.log(`[ELEV] status HTTP: ${res.status}`);
     const data = await res.json();
-    if (!data || !Array.isArray(data.results)) return;
+    console.log(`[ELEV] réponse:`, JSON.stringify(data).slice(0, 200));
+
+    if (!data || !Array.isArray(data.results)) {
+      console.warn("[ELEV] data.results absent ou invalide");
+      return;
+    }
 
     const elevs = data.results.map(r => r.elevation).filter(e => typeof e === "number" && Number.isFinite(e));
+    console.log(`[ELEV] élévations reçues: ${elevs.length}, min=${Math.min(...elevs)}m max=${Math.max(...elevs)}m`);
     if (elevs.length < 2) return;
 
     // Recalculer D+ avec les élévations terrain (seuil 2m — données propres)
@@ -9036,6 +9049,7 @@ async function correctElevationFromAPI(run) {
       if (elevs[i] < minE) minE = elevs[i];
       if (elevs[i] > maxE) maxE = elevs[i];
     }
+    console.log(`[ELEV] D+ calculé: ${Math.round(gain)}m, alt ${Math.round(minE)}–${Math.round(maxE)}m`);
 
     run.elevationGain = Math.round(gain);
     run.altMin = Math.round(minE);
@@ -9050,7 +9064,10 @@ async function correctElevationFromAPI(run) {
       altEl.textContent = Math.round(minE) + " – " + Math.round(maxE) + " m";
       altWrap.style.display = "";
     }
-  } catch { /* hors ligne — conserver l'altitude GPS */ }
+    console.log("[ELEV] correction appliquée ✓");
+  } catch (e) {
+    console.error("[ELEV] erreur:", e.message || e);
+  }
 }
 
 navButtons.forEach((button) => {
