@@ -10,7 +10,7 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(204).end();
 
   if (!process.env.SUPABASE_URL || !(process.env.SUPABASE_SERVICE_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY)) {
-    return res.status(200).json({ configured: false, posts: [], _debug: { url: !!process.env.SUPABASE_URL, sk: !!process.env.SUPABASE_SERVICE_KEY, srk: !!process.env.SUPABASE_SERVICE_ROLE_KEY } });
+    return res.status(200).json({ configured: false, posts: [] });
   }
 
   try {
