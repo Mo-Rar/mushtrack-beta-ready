@@ -11118,6 +11118,10 @@ let selectedPhotoFile = null;
 function onPhotoInputChange(e) {
   const file = e.target.files[0];
   if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    alert(t("net_photo_too_large") || "Photo trop grande (max 5 Mo). Choisis une image plus petite.");
+    return;
+  }
   selectedPhotoFile = file;
   const reader = new FileReader();
   reader.onload = (ev) => {
@@ -11131,15 +11135,14 @@ function onPhotoInputChange(e) {
   reader.readAsDataURL(file);
   const label = document.getElementById("community-photo-label");
   if (label) {
-    label.innerHTML = `&#x2705; Photo sélectionnée <input id="community-photo-input" type="file" accept="image/*" capture="environment" style="display:none"/>`;
+    label.innerHTML = `&#x2705; Photo sélectionnée <input id="community-photo-input" type="file" accept="image/*" style="display:none"/>`;
     document.getElementById("community-photo-input")?.addEventListener("change", onPhotoInputChange);
   }
 }
 document.getElementById("community-photo-input")?.addEventListener("change", onPhotoInputChange);
 
-async function uploadFeedPhoto(file, deviceId) {
-  const ext  = file.name.split(".").pop() || "jpg";
-  const path = `${deviceId}/${Date.now()}.${ext}`;
+async function uploadFeedPhoto(file, deviceId, path) {
+  if (!path) { const ext = file.name.split(".").pop() || "jpg"; path = `${deviceId}/${Date.now()}.${ext}`; }
   const { data, error } = await supabase.storage
     .from("mushtrack-photos")
     .upload(path, file, { contentType: file.type, upsert: false });
@@ -11159,10 +11162,13 @@ document.getElementById("community-share-btn")?.addEventListener("click", async 
     .filter(Boolean);
 
   let photoUrl = "";
+  let uploadedPath = "";
   try {
     if (selectedPhotoFile) {
       btn.textContent = t("net_upload_photo");
-      photoUrl = await uploadFeedPhoto(selectedPhotoFile, state.deviceId);
+      const ext = selectedPhotoFile.name.split(".").pop() || "jpg";
+      uploadedPath = `${state.deviceId}/${Date.now()}.${ext}`;
+      photoUrl = await uploadFeedPhoto(selectedPhotoFile, state.deviceId, uploadedPath);
     }
 
     const res = await fetch(`${API_BASE}/api/feed`, {
@@ -11184,14 +11190,17 @@ document.getElementById("community-share-btn")?.addEventListener("click", async 
     });
     const data = await res.json();
     if (data.configured === false) {
+      if (uploadedPath) supabase.storage.from("mushtrack-photos").remove([uploadedPath]).catch(() => {});
       btn.textContent = t("net_unavailable");
       return;
     }
     selectedPhotoFile = null;
+    uploadedPath = "";
     localStorage.setItem("mushtrack-last-shared-run", `${lastSharedRun.date}-${lastSharedRun.km}`);
     document.getElementById("community-share-banner").style.display = "none";
     await fetchFeed();
   } catch (e) {
+    if (uploadedPath) supabase.storage.from("mushtrack-photos").remove([uploadedPath]).catch(() => {});
     btn.textContent = t("net_error");
     console.error(e);
   } finally {
