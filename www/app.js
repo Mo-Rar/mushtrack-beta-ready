@@ -4676,7 +4676,7 @@ function renderRuns() {
             <button class="strava-run-menu" data-run-menu="${index}" type="button" title="Options">
               <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
             </button>
-            <div class="run-card-dropdown" data-dropdown="${index}" style="display:none;position:absolute;right:0;top:28px;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.15);min-width:140px;z-index:100;overflow:hidden">
+            <div class="run-card-dropdown" data-dropdown="${index}" style="display:none;position:absolute;right:0;bottom:28px;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.15);min-width:140px;z-index:9999;overflow:hidden">
               <button data-edit-run="${index}" type="button" style="display:block;width:100%;padding:11px 16px;border:none;background:none;text-align:left;font-size:0.9rem;cursor:pointer">✏️ Modifier</button>
               <button data-delete-run="${index}" type="button" style="display:block;width:100%;padding:11px 16px;border:none;background:none;text-align:left;font-size:0.9rem;color:#d94040;cursor:pointer">🗑️ Supprimer</button>
             </div>
