@@ -5468,6 +5468,8 @@ document.getElementById("edit-engin-btns")?.addEventListener("click", e => {
   if (!btn) return;
   document.querySelectorAll("#edit-engin-btns .engin-btn").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
+  const typeEl = document.getElementById("edit-run-type");
+  if (typeEl) typeEl.value = btn.dataset.engin;
 });
 
 document.getElementById("edit-run-save")?.addEventListener("click", () => {
