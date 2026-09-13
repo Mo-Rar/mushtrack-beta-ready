@@ -5346,6 +5346,98 @@ document.getElementById("run-detail-delete")?.addEventListener("click", () => {
   showScreen(_runDetailOrigin);
 });
 
+// ── Édition sortie ──────────────────────────────────────────────
+const _runEditOverlay = document.getElementById("run-edit-overlay");
+
+document.getElementById("run-detail-edit")?.addEventListener("click", () => {
+  if (_runDetailIndex === null) return;
+  const run = state.runs[_runDetailIndex];
+  if (!run) return;
+
+  // Engin
+  document.querySelectorAll("#edit-engin-btns .engin-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.engin === (run.engin || "Canicross"));
+  });
+
+  // Type
+  document.getElementById("edit-run-type").value = run.type || "";
+
+  // Équipe
+  const teamList = document.getElementById("edit-team-list");
+  const roles = ["Leader", "Swing", "Team", "Wheel"];
+  teamList.innerHTML = state.dogs.map(dog => {
+    const checked = (run.team || []).includes(dog.id) ? "checked" : "";
+    const role = run.teamRoles?.[dog.id] || "Team";
+    return `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f0f0f0">
+      <input type="checkbox" data-dog-id="${dog.id}" ${checked} style="width:18px;height:18px"/>
+      <span style="flex:1;font-size:0.9rem">${dog.name}</span>
+      <select data-dog-role="${dog.id}" style="padding:4px 6px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:0.8rem">
+        ${roles.map(r => `<option${r === role ? " selected" : ""}>${r}</option>`).join("")}
+      </select>
+    </label>`;
+  }).join("");
+
+  // Énergie
+  document.getElementById("edit-energy").value = run.energy || 4;
+
+  // Récupération
+  document.getElementById("edit-recovery").value = run.recovery || "Bonne";
+
+  // Checkboxes
+  document.getElementById("edit-paw-check").checked = !!run.paws;
+  document.getElementById("edit-hydrated").checked = !!run.hydrated;
+
+  // Notes
+  document.getElementById("edit-notes").value = run.notes || "";
+
+  _runEditOverlay.style.display = "flex";
+});
+
+document.getElementById("edit-run-cancel")?.addEventListener("click", () => {
+  _runEditOverlay.style.display = "none";
+});
+
+document.getElementById("edit-engin-btns")?.addEventListener("click", e => {
+  const btn = e.target.closest(".engin-btn");
+  if (!btn) return;
+  document.querySelectorAll("#edit-engin-btns .engin-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+});
+
+document.getElementById("edit-run-save")?.addEventListener("click", () => {
+  if (_runDetailIndex === null) return;
+  const run = state.runs[_runDetailIndex];
+  if (!run) return;
+
+  const activeEngin = document.querySelector("#edit-engin-btns .engin-btn.active");
+  run.engin = activeEngin?.dataset.engin || run.engin;
+  run.enginPoids = Number(activeEngin?.dataset.poids || run.enginPoids || 0);
+  run.type = document.getElementById("edit-run-type").value || run.type;
+  run.energy = Number(document.getElementById("edit-energy").value);
+  run.recovery = document.getElementById("edit-recovery").value;
+  run.paws = document.getElementById("edit-paw-check").checked;
+  run.hydrated = document.getElementById("edit-hydrated").checked;
+  run.notes = document.getElementById("edit-notes").value;
+
+  // Équipe
+  const newTeam = [];
+  const newRoles = {};
+  document.querySelectorAll("#edit-team-list input[data-dog-id]").forEach(cb => {
+    if (cb.checked) {
+      const id = cb.dataset.dogId;
+      newTeam.push(id);
+      const roleEl = document.querySelector(`#edit-team-list select[data-dog-role="${id}"]`);
+      newRoles[id] = roleEl?.value || "Team";
+    }
+  });
+  run.team = newTeam;
+  run.teamRoles = newRoles;
+
+  saveState();
+  _runEditOverlay.style.display = "none";
+  openRunDetail(_runDetailIndex); // rafraîchit l'affichage
+});
+
 function renderWeeklyChart() {
   const list = document.querySelector('[data-list="weeklyChart"]');
   if (!list) return;
