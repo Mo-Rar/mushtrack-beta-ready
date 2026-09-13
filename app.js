@@ -5144,7 +5144,7 @@ function openRunDetail(index) {
   _runDetailOrigin = history.state?.screen || "record";
 
   // Stats
-  document.getElementById("run-detail-type").textContent = run.type || "Sortie";
+  document.getElementById("run-detail-type").textContent = run.engin || run.type || "Sortie";
   document.getElementById("run-detail-date").textContent = formatDate(run.date);
   document.getElementById("rd-km").textContent = (run.km || 0).toFixed(2) + " km";
   document.getElementById("rd-speed").textContent = (run.speed || 0).toFixed(1) + " km/h";
