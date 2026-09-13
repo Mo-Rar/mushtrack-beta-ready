@@ -4672,9 +4672,15 @@ function renderRuns() {
           <button class="strava-run-share" data-share-sheet="${index}" type="button" title="Partager">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="17" height="17"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           </button>
-          <button class="strava-run-menu" data-run-option="${index}" type="button" title="Modifier">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
-          </button>
+          <div style="position:relative">
+            <button class="strava-run-menu" data-run-menu="${index}" type="button" title="Options">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+            </button>
+            <div class="run-card-dropdown" data-dropdown="${index}" style="display:none;position:absolute;right:0;top:28px;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.15);min-width:140px;z-index:100;overflow:hidden">
+              <button data-edit-run="${index}" type="button" style="display:block;width:100%;padding:11px 16px;border:none;background:none;text-align:left;font-size:0.9rem;cursor:pointer">✏️ Modifier</button>
+              <button data-delete-run="${index}" type="button" style="display:block;width:100%;padding:11px 16px;border:none;background:none;text-align:left;font-size:0.9rem;color:#d94040;cursor:pointer">🗑️ Supprimer</button>
+            </div>
+          </div>
         </div>
         ${hasTrace ? renderRoutePreview(run.path, index) : ""}
         <div class="run-card-stats">
@@ -4695,17 +4701,6 @@ function renderRuns() {
             <span class="run-stat-label">m D+</span>
           </div>` : ""}
         </div>
-        <div class="run-details">
-          <span>${t('run_speed_label')} ${speed} km/h</span>
-          <span>${t('run_energy_label')} ${run.energy || "-"}/5</span>
-          <span>${run.paws ? t('run_paws_ok') : t('run_paws_check')}</span>
-          <span>${run.hydrated ? t('run_hydration_ok') : t('run_hydration_low')}</span>
-          <p>${run.notes || t('run_no_note')}</p>
-          <div class="card-actions">
-            <button class="secondary-button" data-run-option="${index}" type="button">${t('run_edit_btn')}</button>
-            <button class="danger-button" data-delete-run="${index}" type="button">${t('run_delete_btn')}</button>
-          </div>
-        </div>
       </article>
     `;
   }).join("");
@@ -4724,20 +4719,39 @@ function renderRuns() {
       });
     });
 
-    list.querySelectorAll("[data-run-option]").forEach((button) => {
+    list.querySelectorAll("[data-run-menu]").forEach((button) => {
       button.addEventListener("click", (event) => {
         event.stopPropagation();
-        const card = button.closest(".run-card");
-        if (card) card.classList.toggle("show-details");
+        const idx = button.dataset.runMenu;
+        const dropdown = list.querySelector(`[data-dropdown="${idx}"]`);
+        const isOpen = dropdown.style.display !== "none";
+        list.querySelectorAll("[data-dropdown]").forEach(d => d.style.display = "none");
+        dropdown.style.display = isOpen ? "none" : "block";
+      });
+    });
+
+    list.querySelectorAll("[data-edit-run]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        list.querySelectorAll("[data-dropdown]").forEach(d => d.style.display = "none");
+        const idx = Number(button.dataset.editRun);
+        _runDetailIndex = idx;
+        document.getElementById("run-detail-edit")?.click();
       });
     });
 
     list.querySelectorAll("[data-delete-run]").forEach((button) => {
       button.addEventListener("click", (event) => {
         event.stopPropagation();
+        list.querySelectorAll("[data-dropdown]").forEach(d => d.style.display = "none");
+        if (!confirm("Supprimer cette activité ?")) return;
         deleteRun(Number(button.dataset.deleteRun));
       });
     });
+
+    document.addEventListener("click", () => {
+      list.querySelectorAll("[data-dropdown]").forEach(d => d.style.display = "none");
+    }, { once: false });
 
     list.querySelectorAll("[data-share-sheet]").forEach((button) => {
       button.addEventListener("click", (event) => {
