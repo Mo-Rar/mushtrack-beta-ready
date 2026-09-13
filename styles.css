@@ -4093,6 +4093,7 @@ textarea {
   display: flex;
   align-items: flex-end;
 }
+.dash-hero-body { flex-direction: column; align-items: flex-start; }
 .dash-hero-objectif {
   font-size: 0.82rem; font-weight: 700;
   color: rgba(255,255,255,0.80);
