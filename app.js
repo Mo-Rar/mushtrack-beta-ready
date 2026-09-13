@@ -4734,9 +4734,7 @@ function renderRuns() {
       button.addEventListener("click", (event) => {
         event.stopPropagation();
         list.querySelectorAll("[data-dropdown]").forEach(d => d.style.display = "none");
-        const idx = Number(button.dataset.editRun);
-        _runDetailIndex = idx;
-        document.getElementById("run-detail-edit")?.click();
+        openRunEditModal(Number(button.dataset.editRun));
       });
     });
 
@@ -5361,6 +5359,36 @@ document.getElementById("run-detail-delete")?.addEventListener("click", () => {
 
 // ── Édition sortie ──────────────────────────────────────────────
 const _runEditOverlay = document.getElementById("run-edit-overlay");
+
+function openRunEditModal(idx) {
+  _runDetailIndex = idx;
+  const run = state.runs[idx];
+  if (!run || !_runEditOverlay) return;
+
+  document.querySelectorAll("#edit-engin-btns .engin-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.engin === (run.engin || "Canicross"));
+  });
+  document.getElementById("edit-run-type").value = run.type || "";
+  const teamList = document.getElementById("edit-team-list");
+  const roles = ["Leader", "Swing", "Team", "Wheel"];
+  teamList.innerHTML = state.dogs.map(dog => {
+    const checked = (run.team || []).includes(dog.id) ? "checked" : "";
+    const role = run.teamRoles?.[dog.id] || "Team";
+    return `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f0f0f0">
+      <input type="checkbox" data-dog-id="${dog.id}" ${checked} style="width:18px;height:18px"/>
+      <span style="flex:1;font-size:0.9rem">${dog.name}</span>
+      <select data-dog-role="${dog.id}" style="padding:4px 6px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:0.8rem">
+        ${roles.map(r => `<option${r === role ? " selected" : ""}>${r}</option>`).join("")}
+      </select>
+    </label>`;
+  }).join("");
+  document.getElementById("edit-energy").value = run.energy || 4;
+  document.getElementById("edit-recovery").value = run.recovery || "Bonne";
+  document.getElementById("edit-paw-check").checked = !!run.paws;
+  document.getElementById("edit-hydrated").checked = !!run.hydrated;
+  document.getElementById("edit-notes").value = run.notes || "";
+  _runEditOverlay.style.display = "flex";
+}
 
 document.getElementById("run-detail-edit")?.addEventListener("click", () => {
   if (_runDetailIndex === null) return;
