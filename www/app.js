@@ -3089,15 +3089,26 @@ function currentScreenId() {
 }
 
 function handleBackButton() {
-  // Modale de partage ouverte → la fermer
-  const shareModal = document.getElementById("share-modal");
-  if (shareModal && shareModal.style.display !== "none") {
-    shareModal.style.display = "none";
-    return;
+  // 1. Fermer n'importe quel overlay visible en priorité
+  const overlayIds = ["run-edit-overlay", "engin-weight-overlay", "share-modal", "challenge-form"];
+  for (const oid of overlayIds) {
+    const el = document.getElementById(oid);
+    if (el && el.style.display !== "none" && el.style.display !== "") {
+      el.style.display = "none";
+      return;
+    }
   }
+
+  // 2. Naviguer selon l'écran actif
   const cur = currentScreenId();
-  if (cur === "run-detail") {
-    showScreen(_runDetailOrigin, false);
+  const backMap = {
+    "run-detail": _runDetailOrigin || "dashboard",
+    "dog-detail": "team",
+    "settings": "dashboard",
+    "course": "dashboard",
+  };
+  if (backMap[cur]) {
+    showScreen(backMap[cur], false);
   } else if (cur !== "dashboard") {
     showScreen("dashboard", false);
   } else {
