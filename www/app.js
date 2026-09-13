@@ -4660,6 +4660,15 @@ function removeFromSlot(slot) {
 }
 // ─────────────────────────────────────────────────────────────
 
+const ENGIN_CARD_ICON = {
+  'Canicross':   '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/></svg>',
+  'Trottinette': '<span style="font-size:1.25rem;line-height:1">🛴</span>',
+  'VTT':         '<span style="font-size:1.25rem;line-height:1">🚵</span>',
+  'Kart':        '<img src="assets/icon-kart.svg" width="24" height="24" style="object-fit:contain"/>',
+  'ATV':         '<img src="assets/icon-atv.svg" width="24" height="24" style="object-fit:contain"/>',
+  'Traîneau':    '<img src="assets/icon-traineau.svg" width="24" height="24" style="object-fit:contain"/>',
+};
+
 function renderRuns() {
   const runsHtml = state.runs.map((run, index) => {
     const teamNames = run.team.map((id) => state.dogs.find((dog) => dog.id === id)?.name).filter(Boolean).join(", ");
@@ -4674,7 +4683,7 @@ function renderRuns() {
       <article class="run-card" data-run-index="${index}">
         <div class="run-card-header">
           <div class="run-card-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/></svg>
+            ${ENGIN_CARD_ICON[run.engin] || ENGIN_CARD_ICON['Canicross']}
           </div>
           <div class="run-card-meta">
             <div class="run-card-title">${run.engin || run.type}</div>
