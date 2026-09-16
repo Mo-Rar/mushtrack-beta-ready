@@ -3427,7 +3427,10 @@ function render() {
           `${dayNames[d.getDay()]} ${d.getDate()} ${monthNames[d.getMonth()]}`;
         const engin = run.engin || run.type || "Sortie";
         const recov = run.recovery || "Bonne";
+        const realIdx = state.runs.findIndex(r => r.id === run.id);
+        const hasTrace = realIdx >= 0 && Array.isArray(run.path) && run.path.length > 1;
         return `<div class="dash-feed-card" data-go="course">
+          ${hasTrace ? `<div class="route-preview dash-feed-trace" data-run-idx="${realIdx}"></div>` : ""}
           <div class="dash-feed-body">
             <div class="dash-feed-meta">
               <div class="dash-feed-header-row">
@@ -3446,6 +3449,7 @@ function render() {
           </div>
         </div>`;
       }).join("");
+    requestAnimationFrame(() => initRoutePreviews());
     } else {
       dashFeed.style.display = "none";
     }
