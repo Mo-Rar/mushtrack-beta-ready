@@ -11920,9 +11920,8 @@ async function initMushersMap() {
   if (!musherMap) {
     if (typeof L === "undefined") return;
     musherMap = L.map("mushers-map", { zoomControl: true, attributionControl: false }).setView([46.5, 2.5], 5);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-      maxZoom: 18,
-      subdomains: "abcd"
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18
     }).addTo(musherMap);
   } else {
     musherMap.invalidateSize();
