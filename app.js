@@ -4797,9 +4797,13 @@ function openShareSheet(index) {
     <div id="share-sheet">
       <div class="share-sheet-handle"></div>
       <p class="share-sheet-title">${run.type} · ${formatDate(run.date)}</p>
+      <button class="share-sheet-btn" id="ss-feed">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>Partager sur le Réseau</span>
+      </button>
       <button class="share-sheet-btn" id="ss-activity">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-        <span>Partager l'activité</span>
+        <span>Partager (texte / SMS)</span>
       </button>
       ${hasTrace ? `<button class="share-sheet-btn" id="ss-gpx">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -4812,11 +4816,113 @@ function openShareSheet(index) {
   // Ferme en cliquant hors du sheet
   overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
   document.getElementById("ss-cancel").addEventListener("click", () => overlay.remove());
+  document.getElementById("ss-feed").addEventListener("click", () => { overlay.remove(); openFeedShareModal(index); });
   document.getElementById("ss-activity").addEventListener("click", () => { overlay.remove(); shareRunData(index); });
   document.getElementById("ss-gpx")?.addEventListener("click", () => { overlay.remove(); shareRunGpx(index); });
 
   // Animate in
   requestAnimationFrame(() => overlay.classList.add("open"));
+}
+
+function openFeedShareModal(index) {
+  const run = state.runs[index];
+  if (!run) return;
+  const km = Number(run.km).toFixed(1);
+  const dur = getRunDurationSec(run) > 0 ? formatDuration(getRunDurationSec(run)) : null;
+  const engin = run.engin || run.type || "Sortie";
+
+  document.getElementById("feed-share-overlay")?.remove();
+  const overlay = document.createElement("div");
+  overlay.id = "feed-share-overlay";
+  overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center";
+  overlay.innerHTML = `
+    <div style="background:#fff;width:100%;max-width:430px;border-radius:24px 24px 0 0;padding:20px 20px 40px;box-shadow:0 -8px 40px rgba(0,0,0,0.2);max-height:85vh;overflow-y:auto">
+      <div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 16px"></div>
+      <h3 style="margin:0 0 4px;font-size:1rem;font-weight:800">Partager sur le Réseau</h3>
+      <p style="margin:0 0 16px;font-size:0.82rem;color:#888">${engin} · ${formatDate(run.date)} · ${km} km${dur ? " · " + dur : ""}</p>
+
+      <label style="display:block;margin-bottom:12px">
+        <span style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em">Note (optionnelle)</span>
+        <textarea id="fsd-notes" rows="3" style="display:block;width:100%;margin-top:4px;padding:8px 10px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:0.9rem;box-sizing:border-box;resize:vertical">${run.notes || ""}</textarea>
+      </label>
+
+      <label id="fsd-photo-label" style="display:flex;align-items:center;gap:10px;padding:12px;border:1.5px dashed #e0e0e0;border-radius:10px;cursor:pointer;margin-bottom:16px;font-size:0.88rem;color:#555">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span id="fsd-photo-txt">Ajouter une photo depuis l'album</span>
+        <input id="fsd-photo-input" type="file" accept="image/*" style="display:none"/>
+      </label>
+
+      <div style="display:flex;gap:10px">
+        <button id="fsd-cancel" type="button" style="flex:1;padding:11px;border:1.5px solid #e0e0e0;background:#fff;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer">Annuler</button>
+        <button id="fsd-submit" type="button" style="flex:1;padding:11px;border:none;background:#fc4c02;color:#fff;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer">Partager</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  let fsdPhotoFile = null;
+  overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
+  document.getElementById("fsd-cancel").addEventListener("click", () => overlay.remove());
+
+  document.getElementById("fsd-photo-input").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert("Photo trop lourde (max 5 Mo)"); return; }
+    fsdPhotoFile = file;
+    document.getElementById("fsd-photo-txt").textContent = "✅ " + file.name;
+    document.getElementById("fsd-photo-label").style.borderColor = "#fc4c02";
+  });
+
+  document.getElementById("fsd-submit").addEventListener("click", async () => {
+    const btn = document.getElementById("fsd-submit");
+    btn.disabled = true;
+    btn.textContent = "Partage…";
+
+    const dogs = (run.team || []).map(id => { const d = state.dogs.find(dd => dd.id === id); return d ? d.name : ""; }).filter(Boolean);
+    let photoUrl = "";
+    let uploadedPath = "";
+    try {
+      if (fsdPhotoFile) {
+        btn.textContent = "Photo…";
+        const ext = fsdPhotoFile.name.split(".").pop() || "jpg";
+        uploadedPath = `${state.deviceId}/${Date.now()}.${ext}`;
+        photoUrl = await uploadFeedPhoto(fsdPhotoFile, state.deviceId, uploadedPath);
+      }
+      const notes = document.getElementById("fsd-notes").value.trim();
+      const res = await fetch(`${API_BASE}/api/feed`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          deviceId: state.deviceId,
+          userName: state.profile.name || "Musher",
+          region:   state.profile.region || "",
+          level:    state.profile.level || "",
+          km:       run.km,
+          duration: run.duration || 0,
+          type:     engin,
+          dogNames: dogs.join(", "),
+          dogCount: dogs.length,
+          notes,
+          photoUrl
+        })
+      });
+      const data = await res.json();
+      if (!data.configured) {
+        if (uploadedPath) supabase.storage.from("mushtrack-photos").remove([uploadedPath]).catch(() => {});
+        btn.textContent = "Réseau indisponible";
+        btn.disabled = false;
+        return;
+      }
+      overlay.remove();
+      showSyncBadge("✅ Partagé sur le Réseau !");
+      showScreen("community");
+      await fetchFeed();
+    } catch (err) {
+      if (uploadedPath) supabase.storage.from("mushtrack-photos").remove([uploadedPath]).catch(() => {});
+      btn.textContent = "Erreur";
+      btn.disabled = false;
+      console.error(err);
+    }
+  });
 }
 
 function shareRunData(index) {
