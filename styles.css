@@ -4688,12 +4688,12 @@ textarea {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 10px 4px 8px;
+  gap: 4px;
+  padding: 14px 4px 10px;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--text-muted);
   cursor: pointer;
