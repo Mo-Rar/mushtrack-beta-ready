@@ -166,20 +166,17 @@ function addUserBar(email) {
 async function initAuth() {
   if (!supabase) return;
 
-  // Détecte le flow de réinitialisation de mot de passe
-  // Supabase redirige avec #type=recovery&access_token=...
-  const hash = window.location.hash;
-  if (hash.includes("type=recovery")) {
-    showResetPasswordOverlay();
-    // Nettoyer le hash de l'URL sans recharger
-    history.replaceState(null, "", window.location.pathname);
-    return;
-  }
-
-  // Écoute l'événement PASSWORD_RECOVERY (fallback pour certains clients)
+  // Laisse Supabase traiter les tokens du hash lui-même.
+  // PASSWORD_RECOVERY est émis APRÈS que la session est établie → updateUser fonctionne.
   supabase.auth.onAuthStateChange((event) => {
-    if (event === "PASSWORD_RECOVERY") showResetPasswordOverlay();
+    if (event === "PASSWORD_RECOVERY") {
+      history.replaceState(null, "", window.location.pathname);
+      showResetPasswordOverlay();
+    }
   });
+
+  // Si l'URL contient un lien de récupération, Supabase le traite via onAuthStateChange
+  if (window.location.hash.includes("type=recovery")) return;
 
   const { data } = await supabase.auth.getSession();
   if (data.session?.user) {
