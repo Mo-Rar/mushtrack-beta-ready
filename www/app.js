@@ -11626,8 +11626,8 @@ function renderFeed() {
     const myReact   = reactions.includes(state.deviceId);
     const initials  = (post.user_name || "M").slice(0, 2).toUpperCase();
     const postDurSec = getRunDurationSec(post);
-    const mins      = postDurSec > 0 ? Math.round(postDurSec / 60) : null;
-    const pace      = (post.km && postDurSec > 0) ? (postDurSec / 60 / post.km).toFixed(1) : null;
+    const durStr    = postDurSec > 0 ? formatDurationHuman(postDurSec) : null;
+    const avgSpeed  = post.avg_speed || (post.km && postDurSec > 0 ? Math.round(post.km / (postDurSec / 3600) * 10) / 10 : null);
     const timeAgo   = formatTimeAgo(post.created_at);
 
     return `
@@ -11643,8 +11643,8 @@ function renderFeed() {
 
       <div class="feed-stats">
         <div class="feed-stat"><span>${Number(post.km || 0).toFixed(1)}</span><small>km</small></div>
-        ${mins ? `<div class="feed-stat"><span>${mins}</span><small>min</small></div>` : ""}
-        ${pace ? `<div class="feed-stat"><span>${pace}</span><small>min/km</small></div>` : ""}
+        ${durStr ? `<div class="feed-stat"><span>${durStr}</span><small>temps</small></div>` : ""}
+        ${avgSpeed ? `<div class="feed-stat"><span>${Number(avgSpeed).toFixed(1)}</span><small>km/h</small></div>` : ""}
         ${post.dog_count ? `<div class="feed-stat"><span>${post.dog_count}</span><small>${post.dog_count > 1 ? t('net_dog_count_p') : t('net_dog_count_s')}</small></div>` : ""}
       </div>
 
