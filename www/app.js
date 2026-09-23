@@ -4903,6 +4903,7 @@ function openFeedShareModal(index) {
           level:    state.profile.level || "",
           km:       run.km,
           duration: run.duration || 0,
+          avgSpeed: run.avgSpeed || run.speed || 0,
           type:     engin,
           dogNames: dogs.join(", "),
           dogCount: dogs.length,
@@ -11558,6 +11559,7 @@ document.getElementById("community-share-btn")?.addEventListener("click", async 
         level:     state.profile.level || "",
         km:        lastSharedRun.km,
         duration:  lastSharedRun.duration || 0,
+        avgSpeed:  lastSharedRun.avgSpeed || lastSharedRun.speed || 0,
         type:      lastSharedRun.type || "",
         dogNames:  dogs.join(", "),
         dogCount:  dogs.length,
@@ -11625,9 +11627,9 @@ function renderFeed() {
     const reactions = post.reactions || [];
     const myReact   = reactions.includes(state.deviceId);
     const initials  = (post.user_name || "M").slice(0, 2).toUpperCase();
-    const postDurSec = getRunDurationSec(post);
+    const postDurSec = Number(post.duration) || 0;
     const durStr    = postDurSec > 0 ? formatDurationHuman(postDurSec) : null;
-    const avgSpeed  = post.avg_speed || (post.km && postDurSec > 0 ? Math.round(post.km / (postDurSec / 3600) * 10) / 10 : null);
+    const avgSpeed  = Number(post.avg_speed) || (post.km && postDurSec > 0 ? Math.round(post.km / (postDurSec / 3600) * 10) / 10 : null);
     const timeAgo   = formatTimeAgo(post.created_at);
 
     return `

@@ -98,7 +98,7 @@ module.exports = async function handler(req, res) {
       }
 
       // Nouveau post
-      const { deviceId, userName, region, level, km, duration, type, dogNames, dogCount, notes, photoUrl } = body;
+      const { deviceId, userName, region, level, km, duration, avgSpeed, type, dogNames, dogCount, notes, photoUrl } = body;
       if (!deviceId) return res.status(400).json({ error: "deviceId requis" });
 
       const row = await sb(`${FEED_TABLE}`, "POST",
@@ -110,6 +110,7 @@ module.exports = async function handler(req, res) {
           level: level || "",
           km: Number(km) || 0,
           duration: Number(duration) || 0,
+          avg_speed: Number(avgSpeed) || 0,
           type: type || "",
           dog_names: dogNames || "",
           dog_count: Number(dogCount) || 0,
