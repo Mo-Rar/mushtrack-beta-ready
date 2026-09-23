@@ -10128,33 +10128,143 @@ document.querySelectorAll(".advice-filter-btn").forEach((btn) => {
 
 render();
 
-document.querySelector("#manual-run-button")?.addEventListener("click", () => {
+document.querySelector("#manual-run-button")?.addEventListener("click", openManualRunModal);
 
-    const km = prompt("Distance km");
-    if (!km) return;
+function openManualRunModal() {
+  document.getElementById("manual-run-overlay")?.remove();
+  const today = new Date().toISOString().slice(0, 10);
+  const overlay = document.createElement("div");
+  overlay.id = "manual-run-overlay";
+  overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9997;display:flex;align-items:flex-end;justify-content:center";
+  overlay.innerHTML = `
+    <div style="background:#fff;width:100%;max-width:430px;border-radius:24px 24px 0 0;padding:20px 20px 40px;box-shadow:0 -8px 40px rgba(0,0,0,0.2);max-height:92vh;overflow-y:auto">
+      <div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 16px"></div>
+      <h3 style="margin:0 0 18px;font-size:1rem;font-weight:800">Ajouter une sortie</h3>
 
-    const speed = prompt("Vitesse moyenne km/h") || 12;
+      <p style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px">Date</p>
+      <input id="mr-date" type="date" value="${today}" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:0.95rem;margin-bottom:16px"/>
 
-    const type = prompt("Type de sortie") || "Endurance";
+      <p style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px">Discipline</p>
+      <div class="engin-btns" id="mr-engin-btns" style="margin-bottom:16px">
+        <button class="engin-btn active" data-engin="Canicross" data-poids="0">🏃 Canicross</button>
+        <button class="engin-btn" data-engin="Trottinette" data-poids="18">🛴 Trott.</button>
+        <button class="engin-btn" data-engin="VTT" data-poids="18">🚵 VTT</button>
+        <button class="engin-btn" data-engin="Kart" data-poids="100"><img src="assets/icon-kart.svg" class="engin-icon" alt="kart"/> Kart</button>
+        <button class="engin-btn" data-engin="ATV" data-poids="200"><img src="assets/icon-atv.svg" class="engin-icon" alt="ATV"/> ATV</button>
+        <button class="engin-btn" data-engin="Traîneau" data-poids="18"><img src="assets/icon-traineau.svg" class="engin-icon" alt="traîneau"/> Traîneau</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <div>
+          <p style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin:0 0 6px">Distance (km)</p>
+          <input id="mr-km" type="number" min="0" step="0.1" placeholder="0.0" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:0.95rem"/>
+        </div>
+        <div>
+          <p style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin:0 0 6px">Durée (min)</p>
+          <input id="mr-dur" type="number" min="0" step="1" placeholder="0" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:0.95rem"/>
+        </div>
+        <div>
+          <p style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin:0 0 6px">Vitesse moy. (km/h)</p>
+          <input id="mr-speed" type="number" min="0" step="0.1" placeholder="0.0" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:0.95rem"/>
+        </div>
+        <div>
+          <p style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin:0 0 6px">Météo</p>
+          <select id="mr-weather" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:0.9rem;background:#fff">
+            <option value="Ensoleillé">☀️ Ensoleillé</option>
+            <option value="Nuageux">☁️ Nuageux</option>
+            <option value="Neige" selected>❄️ Neige</option>
+            <option value="Pluie">🌧️ Pluie</option>
+            <option value="Vent">💨 Vent</option>
+            <option value="Brouillard">🌫️ Brouillard</option>
+          </select>
+        </div>
+      </div>
+
+      <p style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px">Énergie de l'équipe</p>
+      <div style="display:flex;gap:8px;margin-bottom:16px" id="mr-energy-btns">
+        ${[1,2,3,4,5].map(n => `<button data-e="${n}" style="flex:1;padding:9px 0;border:1.5px solid #e0e0e0;border-radius:10px;background:#fff;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all .15s">${n}</button>`).join("")}
+      </div>
+
+      <p style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin:0 0 6px">Récupération</p>
+      <select id="mr-recovery" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:0.9rem;background:#fff;margin-bottom:16px">
+        <option value="Excellente">⭐ Excellente</option>
+        <option value="Bonne" selected>👍 Bonne</option>
+        <option value="À surveiller">⚠️ À surveiller</option>
+        <option value="Difficile">😓 Difficile</option>
+      </select>
+
+      <p style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin:0 0 6px">Notes</p>
+      <textarea id="mr-notes" rows="3" placeholder="Observations sur la sortie…" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:0.9rem;resize:none;margin-bottom:20px"></textarea>
+
+      <div id="mr-error" style="display:none;color:#d94040;font-size:0.85rem;margin-bottom:10px"></div>
+      <div style="display:flex;gap:10px">
+        <button id="mr-cancel" style="flex:1;padding:13px;background:#f5f5f5;border:none;border-radius:12px;font-size:0.95rem;font-weight:600;cursor:pointer">Annuler</button>
+        <button id="mr-save" style="flex:2;padding:13px;background:#fc4c02;color:#fff;border:none;border-radius:12px;font-size:0.95rem;font-weight:700;cursor:pointer">Enregistrer</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  let selectedEnergy = 4;
+  const energyBtns = overlay.querySelectorAll("#mr-energy-btns button");
+  function setEnergy(n) {
+    selectedEnergy = n;
+    energyBtns.forEach(b => {
+      const active = Number(b.dataset.e) <= n;
+      b.style.background = active ? "#fc4c02" : "#fff";
+      b.style.color = active ? "#fff" : "#333";
+      b.style.borderColor = active ? "#fc4c02" : "#e0e0e0";
+    });
+  }
+  setEnergy(4);
+  energyBtns.forEach(b => b.addEventListener("click", () => setEnergy(Number(b.dataset.e))));
+
+  overlay.querySelectorAll("#mr-engin-btns .engin-btn").forEach(b => {
+    b.addEventListener("click", () => {
+      overlay.querySelectorAll("#mr-engin-btns .engin-btn").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+    });
+  });
+
+  overlay.querySelector("#mr-cancel").addEventListener("click", () => overlay.remove());
+  overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
+
+  overlay.querySelector("#mr-save").addEventListener("click", () => {
+    const km = parseFloat(document.getElementById("mr-km").value);
+    if (!km || km <= 0) {
+      document.getElementById("mr-error").style.display = "block";
+      document.getElementById("mr-error").textContent = "La distance est obligatoire.";
+      return;
+    }
+    const activeEngin = overlay.querySelector("#mr-engin-btns .engin-btn.active");
+    const engin = activeEngin?.dataset.engin || "Canicross";
+    const enginPoids = Number(activeEngin?.dataset.poids || 0);
+    const durMin = parseFloat(document.getElementById("mr-dur").value) || 0;
+    const speedInput = parseFloat(document.getElementById("mr-speed").value);
+    const avgSpeed = speedInput > 0 ? speedInput : (durMin > 0 ? Math.round((km / durMin) * 60 * 10) / 10 : 0);
 
     state.runs.unshift({
-      date: new Date().toISOString().slice(0, 10),
-      type,
-      km: Number(km),
-      speed: Number(speed),
-      team: [...state.selectedDogIds],
-      weather: "Ajout manuel",
-      energy: 4,
-      recovery: "Bonne",
+      id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+      date: document.getElementById("mr-date").value || today,
+      engin,
+      enginPoids,
+      type: engin,
+      km,
+      duration: durMin * 60,
+      avgSpeed,
+      weather: document.getElementById("mr-weather").value,
+      energy: selectedEnergy,
+      recovery: document.getElementById("mr-recovery").value,
       paws: true,
       hydrated: true,
-      notes: "Sortie ajoutee manuellement",
+      notes: document.getElementById("mr-notes").value.trim(),
+      team: [...state.selectedDogIds],
       path: []
     });
-
     saveState();
     render();
-});
+    overlay.remove();
+  });
+}
 
 setTimeout(() => {
   initMap();
