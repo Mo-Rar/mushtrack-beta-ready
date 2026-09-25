@@ -121,6 +121,62 @@ async function checkSource(source) {
   }
 }
 
+async function syncFromLiveRace(SB_URL, SB_KEY, sbHeaders) {
+  const currentYear = new Date().getFullYear();
+  const years = [currentYear, currentYear + 1];
+  let added = 0;
+
+  for (const year of years) {
+    try {
+      const r = await fetch(`https://liverace.no/api/races?year=${year}`, {
+        headers: { "User-Agent": "MushTrackRaceRadar/1.0" },
+        signal: AbortSignal.timeout(8000)
+      });
+      if (!r.ok) continue;
+      const data = await r.json();
+      const races = data.data || [];
+
+      for (const race of races) {
+        if (!race.title || race.title.toLowerCase().includes("test")) continue;
+        const raceId = `liverace-${race.id}`;
+        const startDate = race.startDate ? race.startDate.slice(0, 10) : "";
+
+        // Vérifie si déjà en base
+        const check = await fetch(`${SB_URL}/rest/v1/mushtrack_races?id=eq.${encodeURIComponent(raceId)}&select=id`, { headers: sbHeaders });
+        if (check.ok) {
+          const existing = await check.json();
+          if (existing.length > 0) continue; // déjà présente
+        }
+
+        const logoUrl = (race.logoUrl || "").trim().replace(/^﻿/, "");
+        await fetch(`${SB_URL}/rest/v1/mushtrack_races`, {
+          method: "POST",
+          headers: { ...sbHeaders, Prefer: "return=minimal" },
+          body: JSON.stringify({
+            id: raceId,
+            name: race.title,
+            date: startDate,
+            type: "Longue distance",
+            distance: 0,
+            region: "Norvege Norway Scandinavia Europe",
+            location: "Norvège",
+            url: logoUrl.startsWith("http") ? logoUrl : "",
+            reliability: "official",
+            surface: "Neige",
+            source: "liverace",
+            notes: `Synchronisé automatiquement depuis LiveRace. ID: ${race.id}`,
+            status: "approved",
+            source_ok: true,
+            last_checked: new Date().toISOString()
+          })
+        });
+        added++;
+      }
+    } catch {}
+  }
+  return added;
+}
+
 async function runRefresh(res) {
   const SB_URL = process.env.SUPABASE_URL || SUPABASE_URL_DEFAULT;
   const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_KEY_DEFAULT;
@@ -165,6 +221,9 @@ async function runRefresh(res) {
   const results = settled.map((r, i) =>
     r.status === "fulfilled" ? r.value : { id: sourcesToCheck[i].id, ok: false, signal: "Erreur réseau", ms: 0, pageText: null }
   );
+
+  // 0. Sync LiveRace API — ajoute les nouvelles courses automatiquement
+  const liveRaceAdded = await syncFromLiveRace(SB_URL, SB_KEY, sbHeaders);
 
   let updated = 0;
   let detected = 0;
@@ -227,10 +286,11 @@ async function runRefresh(res) {
     ok: true,
     checkedAt: new Date().toISOString(),
     durationMs: Date.now() - started,
+    liveRaceAdded,
     sourcesChecked: results.length,
     supabaseUpdated: updated,
     newEditionsDetected: detected,
-    results: results.map(({ pageText, ...rest }) => rest) // pageText exclu de la réponse
+    results: results.map(({ pageText, ...rest }) => rest)
   });
 }
 // ─────────────────────────────────────────────────────────────────────────────
