@@ -3271,7 +3271,23 @@ function render() {
 
   // ── KPIs dashboard ──────────────────────────────────────────
   const weekKmVal = getWeekKm();
-  const targetKmVal = state.raceType === "Sprint" ? 18 : state.raceType === "Longue distance" ? 62 : 38;
+  // Objectif adaptatif : moyenne des 4 dernières semaines + 10%
+  function getAdaptiveTarget() {
+    const now = new Date();
+    const weekMs = 7 * 86400000;
+    let total = 0, weeksWithData = 0;
+    for (let w = 1; w <= 4; w++) {
+      const wEnd = new Date(now.getTime() - (w - 1) * weekMs);
+      const wStart = new Date(now.getTime() - w * weekMs);
+      const wKm = state.runs
+        .filter(r => { const d = r.date ? new Date(r.date + "T12:00:00").getTime() : 0; return d >= wStart.getTime() && d < wEnd.getTime(); })
+        .reduce((s, r) => s + Number(r.km || 0), 0);
+      if (wKm > 0) { total += wKm; weeksWithData++; }
+    }
+    if (weeksWithData === 0) return 15;
+    return Math.round((total / weeksWithData) * 1.1);
+  }
+  const targetKmVal = getAdaptiveTarget();
   // Progression saison
   const kpiBar = document.querySelector('[data-bind-style="kpiProgressBar"]');
   if (kpiBar) kpiBar.style.width = `${progress}%`;
@@ -3292,7 +3308,7 @@ function render() {
   // Cette semaine
   const weekPct = Math.min(100, Math.round(weekKmVal / targetKmVal * 100));
   bindText("kpiWeek", `${weekKmVal.toFixed(1).replace(".", ",")} km`);
-  bindText("kpiWeekSub", `${t('dash_race_goal_label')} : ${targetKmVal} km`);
+  bindText("kpiWeekSub", `obj. ${targetKmVal} km · +10% vs moy. 4 sem.`);
   bindText("dashWeekPct", `${weekPct} %`);
   const dashWeekBarEl = document.querySelector('[data-bind-style="dashWeekBar"]');
   if (dashWeekBarEl) dashWeekBarEl.style.width = `${weekPct}%`;
