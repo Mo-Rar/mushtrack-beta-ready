@@ -8865,16 +8865,50 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude, altitudeAccurac
     if (maxAlt === null || smoothAlt > maxAlt) maxAlt = smoothAlt;
   }
 
+  // ── Filtre Kalman simplifié (lissage position) ───────────────────────────
+  if (!window._kalman) window._kalman = { lat: null, lon: null, variance: -1 };
+  const K = window._kalman;
+  const Q = 3;  // bruit du processus (mouvement)
+  if (K.variance < 0) {
+    K.lat = lat; K.lon = lon; K.variance = acc * acc;
+  } else {
+    K.variance += Q * Q;
+    const gain = K.variance / (K.variance + acc * acc);
+    K.lat = K.lat + gain * (lat - K.lat);
+    K.lon = K.lon + gain * (lon - K.lon);
+    K.variance = (1 - gain) * K.variance;
+  }
+  const smoothLat = K.lat;
+  const smoothLon = K.lon;
+
   // ── Point enrichi ────────────────────────────────────────────────────────
   const point = {
-    lat, lon,
-    timestamp: posTime ?? Date.now(),   // timestamp GPS (plus précis que Date.now)
+    lat: smoothLat, lon: smoothLon,
+    timestamp: posTime ?? Date.now(),
     accuracy: Math.round(acc),
     speed: gpsSpeedMs != null ? Math.round(gpsSpeedMs * 3.6 * 10) / 10 : null,
     altitude: altitude != null ? Math.round(altitude) : null
   };
   gpsPath.push(point);
-  if (polyline) polyline.addLatLng([lat, lon]);
+  if (polyline) polyline.addLatLng([smoothLat, smoothLon]);
+
+  // ── Sauvegarde automatique toutes les 10 points (~30-60 sec) ─────────────
+  if (gpsPath.filter(p => !p.gap).length % 10 === 0) {
+    try {
+      localStorage.setItem("mushtrack_gps_recovery", JSON.stringify({
+        savedAt: Date.now(),
+        distance,
+        elevationGain,
+        maxSpeed,
+        minAlt,
+        maxAlt,
+        seconds,
+        runStartTime,
+        totalPausedMs,
+        gpsPath: gpsPath.slice(-500)  // max 500 derniers points
+      }));
+    } catch {}
+  }
 
   // ── Distance ─────────────────────────────────────────────────────────────
   if (lastPosition) {
@@ -8927,6 +8961,46 @@ function updateGpsDisplay(distKm, speedKmh) {
 }
 
 async function startGPS() {
+  // ── Vérifier si une sortie non terminée existe ───────────────────────────
+  try {
+    const saved = localStorage.getItem("mushtrack_gps_recovery");
+    if (saved) {
+      const rec = JSON.parse(saved);
+      const ageMin = Math.round((Date.now() - rec.savedAt) / 60000);
+      if (ageMin < 180) { // moins de 3h → proposer récupération
+        const recover = confirm(`⚠️ Sortie non terminée détectée (il y a ${ageMin} min)\n${(rec.distance||0).toFixed(2)} km enregistrés.\n\nVoulez-vous récupérer cette sortie ?`);
+        if (recover) {
+          // Restaurer l'état
+          distance = rec.distance || 0;
+          elevationGain = rec.elevationGain || 0;
+          maxSpeed = rec.maxSpeed || 0;
+          minAlt = rec.minAlt || null;
+          maxAlt = rec.maxAlt || null;
+          seconds = rec.seconds || 0;
+          runStartTime = rec.runStartTime || Date.now();
+          totalPausedMs = rec.totalPausedMs || 0;
+          gpsPath = rec.gpsPath || [];
+          // Redessiner la trace sur la carte
+          gpsPolylines.forEach(p => { try { p.remove(); } catch {} });
+          gpsPolylines = []; polyline = null;
+          _addNewPolylineSegment();
+          const validPoints = gpsPath.filter(p => !p.gap && p.lat && p.lon);
+          if (validPoints.length && polyline) {
+            validPoints.forEach(p => polyline.addLatLng([p.lat, p.lon]));
+            const last = validPoints[validPoints.length - 1];
+            lastPosition = last;
+            if (map) map.setView([last.lat, last.lon], map.getZoom());
+          }
+          gpsReady = true;
+          window._kalman = { lat: null, lon: null, variance: -1 };
+          await _startGPSWatcher(false);
+          return;
+        }
+      }
+      localStorage.removeItem("mushtrack_gps_recovery");
+    }
+  } catch {}
+
   // Réinitialise TOUT l'état — seulement au démarrage d'une nouvelle sortie
   stopLiveLocation();
   gpsPath = [];
@@ -8934,6 +9008,7 @@ async function startGPS() {
   elevationGain = 0;
   lastAltitude = null;
   window._altBuf = [];
+  window._kalman = { lat: null, lon: null, variance: -1 };
   distance = 0;
   maxSpeed = 0; minAlt = null; maxAlt = null;
   // Réinitialiser toutes les polylines Leaflet
@@ -9101,6 +9176,9 @@ async function finishCurrentRun() {
     alert("Distance insuffisante pour sauvegarder cette sortie (minimum 50m).");
     return;
   }
+
+  // Effacer la sauvegarde de récupération — sortie terminée proprement
+  try { localStorage.removeItem("mushtrack_gps_recovery"); } catch {}
 
   // Arrêter proprement le timer et GPS (await pour ne pas perdre les derniers points)
   if (timer) { clearInterval(timer); timer = null; }
