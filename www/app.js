@@ -8741,13 +8741,32 @@ function setGpsSignalBar(status, label) {
   if (text) text.textContent = label;
 }
 
-function updateMapPosition(lat, lon, label = "Position GPS active") {
+function updateMapPosition(lat, lon, label = "Position GPS active", accuracyM = null) {
   if (!map) {
     initMap(lat, lon);
   }
 
   if (marker) {
     marker.setLatLng([lat, lon]);
+  }
+
+  if (accuracyM && accuracyM > 0 && accuracyM <= 100) {
+    if (!window._accuracyCircle) {
+      window._accuracyCircle = L.circle([lat, lon], {
+        radius: accuracyM,
+        color: "#fc4c02",
+        fillColor: "#fc4c02",
+        fillOpacity: 0.08,
+        weight: 1,
+        opacity: 0.4
+      }).addTo(map);
+    } else {
+      window._accuracyCircle.setLatLng([lat, lon]);
+      window._accuracyCircle.setRadius(accuracyM);
+    }
+  } else if (window._accuracyCircle) {
+    window._accuracyCircle.remove();
+    window._accuracyCircle = null;
   }
 
   if (map && mapFollowing) {
@@ -8865,7 +8884,7 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude, altitudeAccurac
     setGpsSignalBar("found", `GPS prêt · ±${Math.round(acc)} m`);
   }
 
-  updateMapPosition(lat, lon, `GPS · ±${Math.round(acc)} m`);
+  updateMapPosition(lat, lon, `GPS · ±${Math.round(acc)} m`, acc);
 
   // ── Altitude (lissage pour éviter accumulation de bruit GPS) ─────────────
   // altitudeAccuracy > 20m = mesure trop imprécise pour le D+ (point conservé pour tracé/distance)
@@ -8884,10 +8903,11 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude, altitudeAccurac
     if (maxAlt === null || smoothAlt > maxAlt) maxAlt = smoothAlt;
   }
 
-  // ── Filtre Kalman simplifié (lissage position) ───────────────────────────
+  // ── Filtre Kalman adaptatif selon la vitesse ─────────────────────────────
   if (!window._kalman) window._kalman = { lat: null, lon: null, variance: -1 };
   const K = window._kalman;
-  const Q = 3;
+  const speedKmhNow = gpsSpeedMs != null && gpsSpeedMs > 0 ? gpsSpeedMs * 3.6 : 0;
+  const Q = speedKmhNow > 20 ? 8 : speedKmhNow > 10 ? 5 : 3;
   if (K.variance < 0) {
     K.lat = lat; K.lon = lon; K.variance = acc * acc;
   } else {
@@ -9225,17 +9245,41 @@ async function finishCurrentRun() {
   const movingHours = movingSec / 3600;
   const speed = movingHours > 0 && distance > 0 ? distance / movingHours : 0;
 
+  function dpPerp(p, a, b) {
+    const dx = b.lon - a.lon, dy = b.lat - a.lat;
+    if (dx === 0 && dy === 0) return Math.hypot(p.lon - a.lon, p.lat - a.lat);
+    const t = ((p.lon - a.lon) * dx + (p.lat - a.lat) * dy) / (dx * dx + dy * dy);
+    return Math.hypot(p.lon - (a.lon + t * dx), p.lat - (a.lat + t * dy));
+  }
+  function douglasPeucker(pts, eps) {
+    if (pts.length < 3) return pts;
+    let maxD = 0, idx = 0;
+    for (let i = 1; i < pts.length - 1; i++) {
+      const d = dpPerp(pts[i], pts[0], pts[pts.length - 1]);
+      if (d > maxD) { maxD = d; idx = i; }
+    }
+    if (maxD > eps) {
+      const l = douglasPeucker(pts.slice(0, idx + 1), eps);
+      const r = douglasPeucker(pts.slice(idx), eps);
+      return [...l.slice(0, -1), ...r];
+    }
+    return [pts[0], pts[pts.length - 1]];
+  }
+  const validPts = gpsPath.filter(p => !p.gap && p.lat && p.lon);
+  const simplifiedPath = douglasPeucker(validPts, 0.00005);
+
   pendingRunSummary = {
     km: Number(distance.toFixed(2)),
     speed: Number(speed.toFixed(1)),
-    durationSec: totalSec,        // secondes — nouveau format canonique
+    durationSec: totalSec,
     movingSec,
     pausedSec,
     pauseCount,
     elevationGain: Math.round(elevationGain),
     maxSpeed: Number(maxSpeed.toFixed(1)),
     altMin: minAlt !== null ? Math.round(minAlt) : null,
-    altMax: maxAlt !== null ? Math.round(maxAlt) : null
+    altMax: maxAlt !== null ? Math.round(maxAlt) : null,
+    gpsPath: simplifiedPath
   };
 
   document.querySelector("#runType").value = detectRunType(pendingRunSummary.km, pendingRunSummary.speed);
