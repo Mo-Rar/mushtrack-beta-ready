@@ -8816,10 +8816,9 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude, altitudeAccurac
 
   const acc = accuracy ?? 999;
 
-  // ── Signal faible : positionner la carte mais ne pas enregistrer ─────────
-  if (acc > 25) {
-    updateMapPosition(lat, lon, `Recherche GPS précis · ±${Math.round(acc)} m`);
-    // Si le signal était bon et vient de se dégrader → marquer une coupure
+  // ── Signal très faible (>100m) : on ne peut pas faire confiance au point ──
+  if (acc > 100) {
+    updateMapPosition(lat, lon, `Signal GPS faible · ±${Math.round(acc)} m`);
     if (gpsReady && !gpsLostSince) {
       gpsLostSince = Date.now();
       gpsPath.push({ gap: true });
@@ -8827,6 +8826,10 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude, altitudeAccurac
       setGpsSignalBar("lost", `Signal faible · ±${Math.round(acc)} m — distance suspendue`);
     }
     return;
+  }
+  // ── Signal moyen (25–100m) : on enregistre mais on prévient ─────────────
+  if (acc > 25) {
+    setGpsSignalBar("found", `GPS moyen · ±${Math.round(acc)} m`);
   }
 
   // ── Filtres qualité ──────────────────────────────────────────────────────
@@ -9002,7 +9005,7 @@ function _startGPSBrowser(fetchWeather, weatherFetched = false) {
       onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude);
     },
     (error) => { console.error("GPS error:", error); },
-    { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 }
   );
 }
 
