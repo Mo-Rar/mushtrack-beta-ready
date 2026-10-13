@@ -4730,13 +4730,9 @@ function renderRuns() {
             <span class="run-stat-label">${t('run_duration_label')}</span>
           </div>
           <div class="run-stat">
-            <span class="run-stat-value">${paceStr}</span>
-            <span class="run-stat-label">${t('run_pace_label')}</span>
+            <span class="run-stat-value">${Number(run.avgSpeed || run.speed || 0).toFixed(1)}</span>
+            <span class="run-stat-label">km/h</span>
           </div>
-          ${run.elevationGain > 0 ? `<div class="run-stat">
-            <span class="run-stat-value">+${run.elevationGain}</span>
-            <span class="run-stat-label">m D+</span>
-          </div>` : ""}
         </div>
       </article>
     `;
