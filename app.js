@@ -5343,12 +5343,23 @@ function openRunDetail(index) {
     rdTeam.style.display = "none";
   }
 
-  // Durée : temps de déplacement + temps écoulé (style Strava)
+  // Durée : temps en mouvement (comme Strava) + temps total en sous-titre
   const durTotalSec = getRunDurationSec(run);
   const durMovingSec = run.movingSec || durTotalSec;
   document.getElementById("rd-duration").textContent = formatDuration(durMovingSec);
   const rdElapsed = document.getElementById("rd-elapsed");
   if (rdElapsed) rdElapsed.textContent = formatDuration(durTotalSec);
+  // Afficher le temps total en dessous si différent du temps en mouvement
+  const rdMovingTime = document.getElementById("rd-moving-time");
+  if (rdMovingTime) {
+    const diff = durTotalSec - durMovingSec;
+    if (diff > 30) {
+      rdMovingTime.textContent = `Temps total : ${formatDuration(durTotalSec)} · Arrêts : ${formatDuration(diff)}`;
+      rdMovingTime.style.display = "block";
+    } else {
+      rdMovingTime.style.display = "none";
+    }
+  }
 
   // Infos
   const enginEl = document.getElementById("rd-engin");
