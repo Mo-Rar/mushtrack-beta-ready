@@ -8949,9 +8949,9 @@ function onGPSPosition(lat, lon, accuracy, gpsSpeedMs, altitude, altitudeAccurac
     } catch {}
   }
 
-  // ── Distance ─────────────────────────────────────────────────────────────
+  // ── Distance (coordonnées lissées uniquement) ────────────────────────────
   if (lastPosition) {
-    const segment = calculateDistance(lastPosition.lat, lastPosition.lon, lat, lon);
+    const segment = calculateDistance(lastPosition.lat, lastPosition.lon, smoothLat, smoothLon);
     if (segment < 1) distance += segment;
   }
   lastPosition = point;
@@ -9265,8 +9265,19 @@ async function finishCurrentRun() {
     }
     return [pts[0], pts[pts.length - 1]];
   }
-  const validPts = gpsPath.filter(p => !p.gap && p.lat && p.lon);
-  const simplifiedPath = douglasPeucker(validPts, 0.00005);
+  const segments = [];
+  let currentSeg = [];
+  for (const p of gpsPath) {
+    if (p.gap) {
+      if (currentSeg.length > 1) segments.push(douglasPeucker(currentSeg, 0.00005));
+      segments.push([{ gap: true }]);
+      currentSeg = [];
+    } else if (p.lat && p.lon) {
+      currentSeg.push(p);
+    }
+  }
+  if (currentSeg.length > 1) segments.push(douglasPeucker(currentSeg, 0.00005));
+  const simplifiedPath = segments.flat();
 
   pendingRunSummary = {
     km: Number(distance.toFixed(2)),
