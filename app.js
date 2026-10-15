@@ -3442,7 +3442,7 @@ function render() {
         const recov = run.recovery || "Bonne";
         const realIdx = state.runs.findIndex(r => r.id === run.id);
         const hasTrace = realIdx >= 0 && Array.isArray(run.path) && run.path.length > 1;
-        return `<div class="dash-feed-card" style="cursor:pointer" onclick="showRunDetail(state.runs[${realIdx}])">
+        return `<div class="dash-feed-card" style="cursor:pointer" onclick="(function(){const r=state.runs.find(x=>x.id==='${run.id}');if(r)showRunDetail(r);})()">
           ${hasTrace ? `<div class="route-preview dash-feed-trace" data-run-idx="${realIdx}"></div>` : ""}
           <div class="dash-feed-body">
             <div class="dash-feed-meta">
