@@ -43,8 +43,8 @@
     }
 
     const map = L.map("map", { zoomControl: true }).setView([46.8, 2.3], 5);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-      attribution: "© OpenStreetMap · CartoDB", maxZoom: 19
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors", maxZoom: 19
     }).addTo(map);
 
     const markerIcon = L.divIcon({
