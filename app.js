@@ -2740,10 +2740,10 @@ function loadState() {
     const repaired = repairStateTypes(parsed);
     return normalizeState({ ...structuredClone(defaultState), ...repaired });
   } catch (err) {
-    console.warn("MushTrack: localStorage corrompu, reset vers état par défaut.", err);
-    // Badge visible pour prévenir l'utilisateur
-    setTimeout(() => showSyncBadge(t("badge_data_reset")), 1500);
-    localStorage.removeItem("mushtrack-state");
+    console.warn("MushTrack: localStorage corrompu, sauvegarde préservée.", err);
+    // Préserve les données corrompues au lieu de les effacer
+    try { localStorage.setItem("mushtrack-state-backup-" + Date.now(), saved); } catch {}
+    setTimeout(() => showSyncBadge("⚠️ Données illisibles — contacte le support"), 1500);
     return structuredClone(defaultState);
   }
 }
