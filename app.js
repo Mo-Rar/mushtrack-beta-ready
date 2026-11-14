@@ -8615,9 +8615,10 @@ function formatDate(value) {
 }
 
 function formatDuration(totalSeconds) {
-  const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
-  const secs = (totalSeconds % 60).toString().padStart(2, "0");
-  return `${minutes}:${secs}`;
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, "0");
+  const s = (totalSeconds % 60).toString().padStart(2, "0");
+  return h > 0 ? `${h}:${m}:${s}` : `${m}:${s}`;
 }
 // Retourne toujours des secondes — gère l'ancien format (minutes) et le nouveau (secondes)
 function getRunDurationSec(r) {
@@ -8634,6 +8635,7 @@ function formatDurationHuman(totalSec) {
   const m = Math.floor((totalSec % 3600) / 60);
   if (h > 0) return `${h}h${String(m).padStart(2, "0")}`;
   return `${m} min`;
+
 }
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
