@@ -10390,7 +10390,7 @@ function openManualRunModal() {
       enginPoids,
       type: engin,
       km,
-      duration: durMin * 60,
+      durationSec: durMin * 60,
       avgSpeed,
       weather: document.getElementById("mr-weather").value,
       energy: selectedEnergy,
