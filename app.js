@@ -2970,6 +2970,24 @@ async function pushToSupabase() {
   }
 }
 
+// Sauvegarde immédiate d'une sortie dans Supabase sans attendre le debounce
+async function backupRunToSupabase(run) {
+  if (!supabase || !currentUser || !run) return;
+  try {
+    const allRuns = Array.isArray(state.runs) ? state.runs : [run];
+    await supabase.from(SYNC_TABLE).upsert({
+      user_id:    currentUser.id,
+      runs:       allRuns,
+      dogs:       state.dogs,
+      agenda:     state.agenda,
+      settings: { profile: state.profile, raceDate: state.raceDate, raceName: state.raceName, raceType: state.raceType, raceKm: state.raceKm, goalKm: state.goalKm, goalDate: state.goalDate, seasonMode: state.seasonMode },
+      updated_at: new Date().toISOString()
+    }, { onConflict: "user_id" });
+  } catch (err) {
+    console.warn("MushTrack: backup sortie échoué:", err.message);
+  }
+}
+
 // Tire les données du cloud et les applique si plus récentes que le local
 async function syncFromSupabase() {
   if (!supabase || !currentUser) return;
@@ -9402,6 +9420,7 @@ function saveCurrentRun() {
   state.dogs = state.dogs.map((dog) => (
     state.selectedDogIds.includes(dog.id) ? { ...dog, km: (dog.km || 0) + run.km } : dog
   ));
+  backupRunToSupabase(run);
 
   seconds = 0; distance = 0; runStartTime = null; totalPausedMs = 0;
   pauseStartTime = null; isPaused = false; pauseCount = 0;
@@ -10408,6 +10427,7 @@ function openManualRunModal() {
       team: [...state.selectedDogIds],
       path: []
     });
+    backupRunToSupabase(state.runs[0]);
     saveState();
     render();
     overlay.remove();
