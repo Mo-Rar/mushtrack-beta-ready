@@ -2989,7 +2989,12 @@ async function syncFromSupabase() {
     if (remoteTs > localTs) {
       let changed = false;
       if (Array.isArray(data.dogs))   { state.dogs   = data.dogs;   changed = true; }
-      if (Array.isArray(data.runs)   && data.runs.length   > 0) { state.runs   = data.runs;   changed = true; }
+      if (Array.isArray(data.runs) && data.runs.length > 0) {
+        // Fusion : garde toutes les sorties locales + les sorties cloud absentes en local
+        const localIds = new Set(state.runs.map(r => r.id));
+        const newRuns  = data.runs.filter(r => r.id && !localIds.has(r.id));
+        if (newRuns.length > 0) { state.runs = [...state.runs, ...newRuns]; changed = true; }
+      }
       if (Array.isArray(data.agenda) && data.agenda.length > 0) { state.agenda = data.agenda; changed = true; }
       if (data.settings && typeof data.settings === "object") {
         const s = data.settings;
